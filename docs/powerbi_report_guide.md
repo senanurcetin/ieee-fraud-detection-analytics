@@ -6,72 +6,134 @@ Ana dosya:
 powerbi/fraud_project_v2.pbix
 ```
 
-## 1. Yönetici Özeti
+## Mevcut Teknik Durum
 
-Amaç: Fraud probleminin büyüklüğünü ve ana risk ayrışmalarını tek sayfada göstermek.
+`fraud_project_v2.pbix` açılır durumdadır ve BigQuery DirectQuery veri modelini korur. Rapor içinde 6 Türkçe sayfa vardır. Mevcut layout, açılabilir teslimi garanti etmek için metin kutuları ve gömülü analiz görselleriyle yapılandırılmıştır.
 
-İçerik:
+Bir sonraki kalite seviyesi, bu sayfaların Power BI Desktop içinde native visual setine çevrilmesidir. Bunun için veri katmanı hazırdır: tüm rapor sayfaları `workintech-working.fraud_project_powerbi` datasetindeki `fact_*` ve `pbi_*` tablolarından beslenmelidir.
 
-- Toplam işlem ve fraud oranı
-- Sınıf dengesizliği
-- Product C risk lift
-- Identity varlığına göre fraud ayrışması
-- Kritik risk bandı lift analizi
+## Sayfa 1 - Yönetici Özeti
 
-## 2. Risk Konsantrasyonu
+Ana mesaj: Fraud düşük frekanslıdır fakat belirli segmentlerde yoğunlaşır.
 
-Amaç: Fraud riskinin ürün ve identity kırılımlarında nasıl yoğunlaştığını göstermek.
+Kullanılacak tablolar:
 
-İçerik:
+- `pbi_executive_kpis`
+- `pbi_product_risk`
+- `pbi_identity_risk`
+- `pbi_model_risk_bands`
 
-- ProductCD bazlı fraud oranı
-- Device type kırılımları
-- Identity kaydı olan ve olmayan işlemler
-- Yüksek riskli ürün-device kombinasyonları
+Native visual hedefleri:
 
-## 3. Tutar ve Zaman Analizi
+- KPI card: toplam işlem
+- KPI card: fraud oranı
+- KPI card: fraud işlem sayısı
+- KPI card: kritik risk bandı fraud oranı
+- Bar chart: ProductCD bazında fraud rate ve lift
+- Bar chart: identity var/yok fraud rate
+- Column chart: risk bandı lift
 
-Amaç: İşlem tutarı ve zaman penceresinin fraud davranışındaki rolünü göstermek.
+## Sayfa 2 - Risk Konsantrasyonu
 
-İçerik:
+Ana mesaj: Risk ürün, cihaz ve identity segmentlerinde homojen dağılmaz.
 
-- Tutar bandı fraud oranları
-- İşlem tutarı dağılımı
-- Günlük fraud oranı drift görünümü
-- Göreli saat bazında hacim ve fraud oranı
+Kullanılacak tablolar:
 
-## 4. Ödeme ve Email Segmentleri
+- `pbi_product_risk`
+- `pbi_identity_risk`
+- `mart_product_device_stats`
+- `pbi_report_narrative`
 
-Amaç: Ödeme tipi ve email domain gruplarının operasyonel segment üretip üretmediğini göstermek.
+Native visual hedefleri:
 
-İçerik:
+- Bar chart: product bazında lift
+- Matrix: product/device segmentleri
+- KPI card: en yüksek lift
+- KPI card: en yüksek fraud share
+- Table: önerilen aksiyon mesajı
 
-- Kart ağı ve kart tipi heatmap analizi
-- Email domain fraud oranı
-- Hacim ve risk birlikte yorumlama
+## Sayfa 3 - Tutar ve Zaman Analizi
 
-## 5. Model Skorlama ve Risk Bantları
+Ana mesaj: Fraud davranışı tutar ve zaman ekseninde doğrusal değildir.
 
-Amaç: Model skorlarının operasyonel önceliklendirme katmanına nasıl çevrildiğini göstermek.
+Kullanılacak tablolar:
 
-İçerik:
+- `pbi_amount_bands`
+- `pbi_daily_drift`
 
-- Feature importance
-- Validasyon ROC eğrisi
-- Risk bandı bazlı fraud oranı
-- Kritik ve yüksek risk bantları
+Native visual hedefleri:
 
-## 6. Veri Kalitesi ve Mimari
+- Combo chart: günlük işlem hacmi ve fraud rate
+- Line chart: 7 günlük fraud rate hareketli ortalama
+- Bar chart: amount band fraud rate
+- Table: drift flag günleri
+- KPI card: p95 işlem tutarı
 
-Amaç: Analizin veri güvenilirliği ve mimari izlenebilirliğini göstermek.
+## Sayfa 4 - Ödeme ve Email Segmentleri
 
-İçerik:
+Ana mesaj: Ödeme tipi ve email domain grupları operasyonel izleme segmentleri üretir.
 
-- Feature ailesi bazında eksiklik oranı
-- dbt katman mimarisi
-- Veri ambarı akışı
-- Raporlama katmanı ve test kapsamı
+Kullanılacak tablolar:
 
-## Sunum Akışı
+- `pbi_payment_heatmap`
+- `pbi_email_domain_risk`
 
-Sunum, önce problemin büyüklüğünü ve ana KPI'ları göstermelidir. Ardından riskin belirli segmentlerde yoğunlaştığı kanıtlanmalı, model skorları ise en son operasyonel önceliklendirme katmanı olarak anlatılmalıdır. Teknik mimari sayfası ana hikayenin sonunda güvenilirlik ve sürdürülebilirlik kanıtı olarak kullanılmalıdır.
+Native visual hedefleri:
+
+- Matrix heatmap: card network x card type fraud rate
+- Bar chart: email domain fraud rate
+- Bar chart: email domain fraud share
+- KPI card: en yüksek email lift
+- KPI card: en yüksek ödeme segment lift
+
+## Sayfa 5 - Model Skorlama ve Risk Bantları
+
+Ana mesaj: Model skoru kararın kendisi değil, operasyonel önceliklendirme katmanıdır.
+
+Kullanılacak tablolar:
+
+- `pbi_model_risk_bands`
+- `pbi_feature_importance`
+- `fact_train_transactions`
+
+Native visual hedefleri:
+
+- Bar chart: risk bandı fraud rate
+- Bar chart: risk bandı lift
+- Bar chart: top 15 feature importance
+- KPI card: critical risk fraud rate
+- KPI card: high + critical işlem hacmi
+
+## Sayfa 6 - Veri Kalitesi ve Mimari
+
+Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelidir.
+
+Kullanılacak tablolar:
+
+- `pbi_data_quality_scorecard`
+- `pbi_quality_contract`
+- `pbi_report_narrative`
+
+Native visual hedefleri:
+
+- Table: kalite kontratı PASS/FAIL
+- Bar chart: feature family bazında ortalama missing rate
+- KPI card: toplam dbt test sayısı
+- KPI card: source row-count kontrol sonucu
+- Text/table: mimari ve kalite mesajı
+
+## Format Standardı
+
+- Dil: Türkçe
+- Başlıklar: kısa, yönetici seviyesinde, tek mesajlı
+- Renkler: koyu lacivert, kırmızı risk, petrol yeşili, nötr gri
+- Sayfa düzeni: üstte KPI alanı, ortada ana görsel, altta detay tablo veya aksiyon mesajı
+- Tüm yüzdeler yüzde formatında, işlem sayıları binlik ayracıyla, tutarlar para formatında gösterilmelidir.
+
+## Kabul Kriteri
+
+- 6 sayfa görünür ve boş değildir.
+- Her sayfada en az 3 native Power BI visual vardır.
+- Her visual `fraud_project_powerbi` datasetindeki tablolardan beslenir.
+- Rapor DirectQuery modunda kalır.
+- Sayfalarda geliştirme aracı, yapay üretim izi veya demo dili bulunmaz.

@@ -71,6 +71,22 @@ models:
     config:
       tags: ["powerbi", "data_quality"]
 
+  - name: pbi_report_narrative
+    description: "Power BI sayfaları için yönetici mesajı, analitik odak ve önerilen aksiyon metinleri."
+    config:
+      tags: ["powerbi", "executive", "storytelling"]
+
+  - name: pbi_quality_contract
+    description: "Power BI içinde gösterilebilir row-count ve kalite kontratı tablosu."
+    config:
+      tags: ["powerbi", "data_quality", "qa"]
+    columns:
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["PASS"]
+
 exposures:
   - name: fraud_project_v2
     label: "fraud_project_v2"
@@ -90,6 +106,8 @@ exposures:
       - ref('pbi_model_risk_bands')
       - ref('pbi_feature_importance')
       - ref('pbi_data_quality_scorecard')
+      - ref('pbi_report_narrative')
+      - ref('pbi_quality_contract')
     owner:
       name: "Fraud Analytics Team"
       email: "fraud.analytics@company.com"
