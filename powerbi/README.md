@@ -20,7 +20,7 @@ Rapor 6 ana sunum sayfası ve 1 canlı model kontrol sayfasından oluşur:
 
 PBIX dosyası BigQuery DirectQuery veri modelini korur. Final raporlama katmanı `workintech-working.fraud_project_powerbi` datasetidir.
 
-`Canlı Analitik Katmanı` sayfası Power BI modelindeki `mart_*` tablolarına bağlı native card, bar, line ve table görselleri içerir. Bu sayfa, raporun yalnızca gömülü analiz görsellerinden ibaret olmadığını ve DirectQuery model alanlarının rapor içinde çalıştığını doğrulamak için eklendi.
+Ana 6 sunum sayfası artık yalnızca gömülü analiz görsellerinden oluşmaz; her ana sayfada BigQuery modelindeki tablolara bağlı native Power BI card, slicer, chart veya table görselleri vardır. `Canlı Analitik Katmanı` sayfası ek teknik kontrol sayfasıdır.
 
 ## Görsel Varlıklar
 
@@ -41,7 +41,8 @@ Ek yönetici görselleri:
 
 - PBIX paket bütünlüğü: PASS
 - Sayfa sayısı: 7
-- Visual container sayısı: 46
-- Native query-bound visual sayısı: 9
-- dbt prod build: PASS, 96 PASS / 0 ERROR / 1 exposure NO-OP
+- Visual container sayısı: 63
+- Native query-bound visual sayısı: 40
+- Her ana sunum sayfasında en az 4 query-bound native visual var
+- dbt prod build: PASS, 102 PASS / 0 ERROR / 1 exposure NO-OP
 - dbt docs generate: PASS

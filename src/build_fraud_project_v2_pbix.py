@@ -25,39 +25,25 @@ PAGE_ORDER = [
 
 PAGE_IMAGE_LAYOUTS = {
     "Yönetici Özeti": [
-        ("17_executive_control_panel.png", 44, 124, 1138, 168),
-        ("10_product_lift.png", 52, 316, 352, 198),
-        ("11_identity_lift.png", 464, 316, 352, 198),
-        ("24_risk_funnel.png", 876, 316, 352, 198),
-        ("21_executive_decision_matrix.png", 138, 532, 1004, 150),
+        ("21_executive_decision_matrix.png", 78, 544, 1080, 130),
     ],
     "Risk Konsantrasyonu": [
-        ("18_segment_watchlist.png", 54, 126, 1110, 300),
-        ("10_product_lift.png", 58, 462, 360, 205),
-        ("11_identity_lift.png", 460, 462, 360, 205),
-        ("04_product_device_risk.png", 862, 462, 330, 205),
+        ("18_segment_watchlist.png", 648, 398, 520, 244),
     ],
     "Tutar ve Zaman Analizi": [
-        ("03_amount_bands.png", 58, 132, 520, 250),
-        ("14_amount_distribution.png", 650, 132, 500, 250),
-        ("02_daily_fraud_rate.png", 58, 414, 560, 230),
-        ("15_hourly_pattern.png", 676, 414, 470, 230),
+        ("14_amount_distribution.png", 686, 398, 470, 242),
     ],
     "Ödeme ve Email Segmentleri": [
-        ("12_card_payment_heatmap.png", 72, 130, 500, 390),
-        ("13_email_domain_risk.png", 650, 130, 500, 390),
-        ("21_executive_decision_matrix.png", 134, 540, 1010, 130),
+        ("12_card_payment_heatmap.png", 58, 360, 500, 282),
+        ("21_executive_decision_matrix.png", 628, 526, 520, 120),
     ],
     "Model Skorlama ve Risk Bantları": [
-        ("19_model_threshold_simulation.png", 60, 128, 680, 260),
-        ("22_review_strategy_matrix.png", 780, 128, 390, 260),
-        ("05_feature_importance.png", 58, 414, 520, 245),
-        ("08_risk_bands.png", 650, 414, 500, 245),
+        ("05_feature_importance.png", 58, 404, 520, 244),
+        ("22_review_strategy_matrix.png", 650, 404, 500, 244),
     ],
     "Veri Kalitesi ve Mimari": [
-        ("25_dbt_quality_gate.png", 70, 130, 1060, 210),
-        ("07_missingness_by_family.png", 78, 362, 520, 300),
-        ("09_architecture.png", 646, 372, 500, 270),
+        ("25_dbt_quality_gate.png", 62, 128, 1090, 168),
+        ("09_architecture.png", 654, 392, 500, 250),
     ],
 }
 
@@ -477,6 +463,354 @@ def table_visual(
     )
 
 
+def slicer_visual(
+    name: str,
+    table: str,
+    column: str,
+    label: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+) -> dict:
+    alias = f"{name}_src"
+    query_ref = f"{table}.{column}"
+    return native_visual(
+        name=name,
+        visual_type="slicer",
+        table=table,
+        alias=alias,
+        projections={"Values": [query_ref]},
+        selects=[column_select(alias, table, column)],
+        transform_selects=[(label, query_ref, "Values", "category")],
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        z=z,
+        order_by=column,
+        title=label,
+    )
+
+
+def main_page_native_visuals(display_name: str) -> list[dict]:
+    if display_name == "Yönetici Özeti":
+        return [
+            card_visual("exec_total_txn", "mart_fraud_summary", "total_transactions", "Toplam işlem", 54, 120, 230, 78, 110),
+            card_visual("exec_fraud_txn", "mart_fraud_summary", "fraud_transactions", "Sahte işlem", 304, 120, 230, 78, 111),
+            card_visual("exec_fraud_rate", "mart_fraud_summary", "fraud_rate", "Baz sahtecilik oranı", 554, 120, 230, 78, 112),
+            card_visual("exec_identity_rate", "mart_fraud_summary", "identity_coverage_rate", "Identity kapsama", 804, 120, 230, 78, 113),
+            slicer_visual("exec_product_slicer", "fact_train_transactions", "product_cd", "Ürün filtresi", 1054, 120, 130, 78, 114),
+            bar_visual(
+                "exec_product_risk",
+                "mart_product_device_stats",
+                "product_cd",
+                "fraud_rate",
+                "Ürün",
+                "Ürün bazlı fraud oranı",
+                54,
+                228,
+                330,
+                230,
+                115,
+            ),
+            bar_visual(
+                "exec_risk_band_lift",
+                "mart_risk_band_stats",
+                "risk_band",
+                "lift",
+                "Risk bandı",
+                "Risk bandı lift",
+                430,
+                228,
+                330,
+                230,
+                116,
+            ),
+            table_visual(
+                "exec_risk_queue",
+                "mart_risk_band_stats",
+                [
+                    ("risk_band", "Risk bandı", "category"),
+                    ("review_priority", "Öncelik", "category"),
+                    ("transaction_count", "İşlem", "numeric"),
+                    ("observed_fraud_rate", "Fraud oranı", "numeric"),
+                    ("expected_fraud_capture", "Yakalama payı", "numeric"),
+                ],
+                806,
+                228,
+                372,
+                230,
+                117,
+                "band_rank",
+            ),
+        ]
+
+    if display_name == "Risk Konsantrasyonu":
+        return [
+            slicer_visual("risk_product_slicer", "fact_train_transactions", "product_cd", "Ürün", 54, 118, 130, 72, 110),
+            slicer_visual("risk_band_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 204, 118, 150, 72, 111),
+            table_visual(
+                "risk_product_device_table",
+                "mart_product_device_stats",
+                [
+                    ("product_cd", "Ürün", "category"),
+                    ("device_type", "Cihaz", "category"),
+                    ("transaction_count", "İşlem", "numeric"),
+                    ("fraud_rate", "Fraud oranı", "numeric"),
+                    ("lift", "Lift", "numeric"),
+                    ("fraud_share", "Fraud payı", "numeric"),
+                ],
+                54,
+                210,
+                560,
+                180,
+                112,
+                "product_cd",
+            ),
+            bar_visual(
+                "risk_product_lift",
+                "mart_product_device_stats",
+                "product_cd",
+                "lift",
+                "Ürün",
+                "Ürün ve cihaz birleşik lift",
+                654,
+                118,
+                250,
+                250,
+                113,
+            ),
+            bar_visual(
+                "risk_device_rate",
+                "mart_product_device_stats",
+                "device_type",
+                "fraud_rate",
+                "Cihaz",
+                "Cihaz kırılımı fraud oranı",
+                930,
+                118,
+                250,
+                250,
+                114,
+            ),
+            table_visual(
+                "risk_band_capture_table",
+                "mart_risk_band_stats",
+                [
+                    ("risk_band", "Risk bandı", "category"),
+                    ("transaction_count", "İşlem", "numeric"),
+                    ("observed_fraud_rate", "Fraud oranı", "numeric"),
+                    ("lift", "Lift", "numeric"),
+                    ("expected_fraud_capture", "Yakalama payı", "numeric"),
+                ],
+                54,
+                410,
+                560,
+                210,
+                115,
+                "band_rank",
+            ),
+        ]
+
+    if display_name == "Tutar ve Zaman Analizi":
+        return [
+            slicer_visual("amount_band_slicer", "fact_train_transactions", "amount_band", "Tutar bandı", 54, 118, 170, 72, 110),
+            bar_visual(
+                "amount_band_rate",
+                "mart_amount_bands",
+                "amount_band",
+                "fraud_rate",
+                "Tutar bandı",
+                "Tutar bandı fraud oranı",
+                54,
+                214,
+                340,
+                170,
+                111,
+            ),
+            line_visual(
+                "daily_ma7_rate",
+                "mart_daily_stats",
+                "transaction_day",
+                "fraud_rate_ma7",
+                "Gün",
+                "7 günlük fraud trendi",
+                430,
+                118,
+                728,
+                266,
+                112,
+            ),
+            table_visual(
+                "daily_drift_table",
+                "mart_daily_stats",
+                [
+                    ("transaction_day", "Gün", "category"),
+                    ("transaction_count", "İşlem", "numeric"),
+                    ("fraud_rate", "Fraud oranı", "numeric"),
+                    ("fraud_rate_ma7", "7g ortalama", "numeric"),
+                    ("drift_flag", "Drift durumu", "category"),
+                ],
+                54,
+                416,
+                590,
+                214,
+                113,
+                "transaction_day",
+            ),
+        ]
+
+    if display_name == "Ödeme ve Email Segmentleri":
+        return [
+            slicer_visual("email_domain_slicer", "fact_train_transactions", "purchaser_email_group", "Email grubu", 58, 118, 190, 72, 110),
+            bar_visual(
+                "payment_card_network_fraud",
+                "fact_train_transactions",
+                "card_network",
+                "is_fraud",
+                "Kart ağı",
+                "Kart ağı sahte işlem adedi",
+                58,
+                214,
+                240,
+                126,
+                111,
+            ),
+            bar_visual(
+                "payment_card_type_fraud",
+                "fact_train_transactions",
+                "card_type",
+                "is_fraud",
+                "Kart tipi",
+                "Kart tipi sahte işlem adedi",
+                324,
+                214,
+                234,
+                126,
+                112,
+            ),
+            bar_visual(
+                "email_domain_rate",
+                "mart_email_domain_stats",
+                "purchaser_email_group",
+                "fraud_rate",
+                "Email domain",
+                "Email domain fraud oranı",
+                628,
+                118,
+                520,
+                190,
+                113,
+                "clusteredBarChart",
+            ),
+            table_visual(
+                "email_domain_table",
+                "mart_email_domain_stats",
+                [
+                    ("purchaser_email_group", "Email grubu", "category"),
+                    ("transaction_count", "İşlem", "numeric"),
+                    ("fraud_rate", "Fraud oranı", "numeric"),
+                    ("lift", "Lift", "numeric"),
+                    ("fraud_share", "Fraud payı", "numeric"),
+                ],
+                628,
+                330,
+                520,
+                176,
+                114,
+                "purchaser_email_group",
+            ),
+        ]
+
+    if display_name == "Model Skorlama ve Risk Bantları":
+        return [
+            slicer_visual("model_risk_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 58, 118, 160, 72, 110),
+            bar_visual(
+                "model_observed_rate",
+                "mart_risk_band_stats",
+                "risk_band",
+                "observed_fraud_rate",
+                "Risk bandı",
+                "Risk bandı gözlenen fraud oranı",
+                58,
+                214,
+                330,
+                166,
+                111,
+            ),
+            bar_visual(
+                "model_capture_rate",
+                "mart_risk_band_stats",
+                "risk_band",
+                "expected_fraud_capture",
+                "Risk bandı",
+                "Risk bandı yakalama payı",
+                424,
+                118,
+                330,
+                262,
+                112,
+            ),
+            table_visual(
+                "model_review_queue",
+                "mart_risk_band_stats",
+                [
+                    ("risk_band", "Risk bandı", "category"),
+                    ("review_priority", "Öncelik", "category"),
+                    ("transaction_count", "İşlem", "numeric"),
+                    ("observed_fraud_rate", "Fraud oranı", "numeric"),
+                    ("expected_fraud_capture", "Yakalama payı", "numeric"),
+                ],
+                790,
+                118,
+                360,
+                262,
+                113,
+                "band_rank",
+            ),
+        ]
+
+    if display_name == "Veri Kalitesi ve Mimari":
+        return [
+            table_visual(
+                "quality_missingness_table",
+                "mart_feature_missingness",
+                [
+                    ("column_family", "Feature ailesi", "category"),
+                    ("column_name", "Kolon", "category"),
+                    ("missing_rate", "Eksiklik oranı", "numeric"),
+                    ("missing_count", "Eksik kayıt", "numeric"),
+                ],
+                62,
+                326,
+                550,
+                298,
+                110,
+                "column_family",
+            ),
+            bar_visual(
+                "quality_missingness_bar",
+                "mart_feature_missingness",
+                "column_family",
+                "missing_rate",
+                "Feature ailesi",
+                "Feature ailesi eksiklik skoru",
+                654,
+                318,
+                500,
+                190,
+                111,
+                "clusteredBarChart",
+            ),
+            card_visual("quality_row_count", "mart_feature_missingness", "row_count", "Profil edilen satır", 654, 526, 230, 86, 112),
+            card_visual("quality_missing_count", "mart_feature_missingness", "missing_count", "Eksik değer sinyali", 922, 526, 230, 86, 113),
+        ]
+
+    return []
+
+
 def add_native_analytics_page(layout: dict) -> dict:
     section = {
         "config": "{}",
@@ -614,6 +948,7 @@ def apply_enhanced_page_layouts(layout: dict) -> dict:
         visuals = list(text_containers)
         for index, (asset_name, x, y, width, height) in enumerate(placements, start=20):
             visuals.append(image_visual(f"enhanced_{section['ordinal']}_{index}", asset_name, x, y, width, height, index))
+        visuals.extend(main_page_native_visuals(section["displayName"]))
         section["visualContainers"] = visuals
     return layout
 

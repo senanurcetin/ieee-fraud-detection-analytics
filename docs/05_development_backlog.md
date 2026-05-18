@@ -54,7 +54,7 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde kusursuza yakla�
 
 1. dbt kalite kapısı
    - `dbt build --target prod` final kalite komutu olarak kullanılmalı.
-   - 67 data test ve singular QA testleri korunmalı.
+   - 73 data test ve singular QA testleri korunmalı.
    - Test başarısızsa Power BI final raporu yenilenmemeli.
 
 2. Power BI veri kontratı
