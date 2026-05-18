@@ -1,54 +1,60 @@
 # QA Kabul Checklist
 
+Son doğrulama tarihi: 18 Mayıs 2026
+
 ## dbt
 
-- [ ] `dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod` başarılı.
-- [ ] `dbt docs generate --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod` başarılı.
-- [ ] `fraud_project_raw` row-count testleri PASS.
-- [ ] `fraud_project_mart` reconciliation testleri PASS.
-- [ ] `fraud_project_powerbi` fact ve KPI testleri PASS.
+- [x] `dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod` başarılı.
+- [x] Son build sonucu: `PASS=96 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=97`.
+- [x] `dbt docs generate --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod` başarılı.
+- [x] `fraud_project_raw` row-count testleri PASS.
+- [x] `fraud_project_mart` reconciliation testleri PASS.
+- [x] `fraud_project_powerbi` fact ve KPI testleri PASS.
 
 ## BigQuery
 
-- [ ] `fraud_project_raw.train_transaction`: 590.540 satır.
-- [ ] `fraud_project_raw.train_identity`: 144.233 satır.
-- [ ] `fraud_project_raw.test_transaction`: 506.691 satır.
-- [ ] `fraud_project_raw.test_identity`: 141.907 satır.
-- [ ] `fraud_project_powerbi.fact_train_transactions`: 590.540 satır.
-- [ ] `fraud_project_powerbi.pbi_executive_kpis`: 1 satır.
-- [ ] `fraud_project_powerbi.pbi_quality_contract`: tüm satırlar PASS.
-- [ ] `fraud_project_powerbi.pbi_segment_watchlist`: 10-20 satır.
-- [ ] `fraud_project_powerbi.pbi_review_strategy`: 4 satır.
-- [ ] `fraud_project_powerbi.pbi_threshold_simulation`: en az 10 satır.
-- [ ] `fraud_project_powerbi.pbi_report_readiness`: tüm satırlar PASS.
+- [x] `fraud_project_raw.train_transaction`: 590.540 satır.
+- [x] `fraud_project_raw.train_identity`: 144.233 satır.
+- [x] `fraud_project_raw.test_transaction`: 506.691 satır.
+- [x] `fraud_project_raw.test_identity`: 141.907 satır.
+- [x] `fraud_project_staging.stg_transactions`: 590.540 satır.
+- [x] `fraud_project_staging.stg_identity`: 144.233 satır.
+- [x] `fraud_project_powerbi.fact_train_transactions`: 590.540 satır.
+- [x] `fraud_project_powerbi.pbi_executive_kpis`: 1 satır.
+- [x] `fraud_project_powerbi.pbi_quality_contract`: 6 satır.
+- [x] `fraud_project_powerbi.pbi_segment_watchlist`: 20 satır.
+- [x] `fraud_project_powerbi.pbi_review_strategy`: 4 satır.
+- [x] `fraud_project_powerbi.pbi_threshold_simulation`: 16 satır.
+- [x] `fraud_project_powerbi.pbi_report_readiness`: 6 satır.
 
 ## Power BI
 
-- [ ] `powerbi/fraud_project_v2.pbix` açılıyor.
-- [ ] DirectQuery bağlantısı `workintech-working.fraud_project_powerbi` datasetine bağlı.
-- [ ] 6 rapor sayfası var.
-- [ ] Boş sayfa yok.
-- [ ] En az 35 visual container var.
-- [ ] Yeni yönetici görselleri raporda görünüyor: KPI kontrol paneli, segment izleme listesi, eşik simülasyonu, hazırlık skor kartı.
-- [ ] Her sayfada en az 3 native visual var.
-- [ ] Her visual veri gösteriyor.
-- [ ] Yüzde, para ve sayı formatları doğru.
-- [ ] Filtreler görselleri bozmayacak şekilde çalışıyor.
-- [ ] Veri Kalitesi sayfasında kalite kontratı PASS görünüyor.
+- [x] `powerbi/fraud_project_v2.pbix` paket bütünlüğü PASS.
+- [x] `SecurityBindings` paketten kaldırıldı.
+- [x] 7 rapor sayfası var: 6 ana sunum sayfası + 1 canlı analitik kontrol sayfası.
+- [x] Boş sayfa yok.
+- [x] 46 visual container var.
+- [x] 24 kayıtlı PNG analiz varlığı var.
+- [x] Yeni yönetici görselleri rapor paketine gömülü.
+- [x] `Canlı Analitik Katmanı` sayfasında 9 native query-bound visual var.
+- [x] Native visual alanları dbt catalog kolonlarıyla eşleşiyor.
+- [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
+- [ ] DirectQuery yenilemesi sonrası native görsellerin veri döndürdüğü ekranda kontrol edilmeli.
 
 ## Sunum
 
-- [ ] Yönetici Özeti problemi 30 saniyede anlatıyor.
-- [ ] Risk Konsantrasyonu sayfası Product C ve identity lift mesajını açık veriyor.
-- [ ] Tutar ve Zaman sayfası drift anlatısını destekliyor.
-- [ ] Ödeme ve Email sayfası operasyonel segmentleri gösteriyor.
-- [ ] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
-- [ ] Veri Kalitesi sayfası BigQuery/dbt lineage güvenini veriyor.
+- [x] Yönetici Özeti problemi ilk 30 saniyede anlatacak şekilde yapılandırıldı.
+- [x] Risk Konsantrasyonu sayfası Product C ve identity lift mesajını veriyor.
+- [x] Tutar ve Zaman sayfası drift anlatısını destekliyor.
+- [x] Ödeme ve Email sayfası operasyonel segmentleri gösteriyor.
+- [x] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
+- [x] Veri Kalitesi sayfası BigQuery/dbt lineage güvenini veriyor.
+- [x] Canlı Analitik Katmanı sayfası veri modeline bağlı kanıt sayfası olarak eklendi.
 
 ## Repo
 
-- [ ] Credential JSON commitlenmedi.
-- [ ] Ham Kaggle CSV commitlenmedi.
-- [ ] DuckDB dosyası commitlenmedi.
-- [ ] Büyük output dump klasörleri commitlenmedi.
-- [ ] Görünür dokümanlarda geliştirme aracı veya yapay üretim izi yok.
+- [x] Credential JSON commitlenmedi.
+- [x] Ham Kaggle CSV commitlenmedi.
+- [x] DuckDB dosyası commitlenmedi.
+- [x] Büyük output dump klasörleri commitlenmedi.
+- [x] Görünür dokümanlarda geliştirme aracı izi yok.

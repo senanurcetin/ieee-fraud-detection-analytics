@@ -143,6 +143,464 @@ def image_visual(name: str, item_name: str, x: float, y: float, width: float, he
     }
 
 
+def textbox_visual(
+    name: str,
+    text: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+    font_size: int = 14,
+    bold: bool = False,
+    color: str = "#17212B",
+) -> dict:
+    config = {
+        "name": name,
+        "layouts": [{"id": 0, "position": {"x": x, "y": y, "z": z, "width": width, "height": height}}],
+        "singleVisual": {
+            "visualType": "textbox",
+            "drillFilterOtherVisuals": True,
+            "objects": {
+                "general": [
+                    {
+                        "properties": {
+                            "paragraphs": [
+                                {
+                                    "textRuns": [
+                                        {
+                                            "value": text,
+                                            "textStyle": {
+                                                "fontSize": f"{font_size}pt",
+                                                "fontWeight": "bold" if bold else "normal",
+                                                "color": color,
+                                            },
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+        },
+    }
+    return {
+        "x": x,
+        "y": y,
+        "z": z,
+        "width": width,
+        "height": height,
+        "config": json.dumps(config, ensure_ascii=False, separators=(",", ":")),
+        "filters": "[]",
+    }
+
+
+def source_ref(alias: str) -> dict:
+    return {"SourceRef": {"Source": alias}}
+
+
+def column_expr(alias: str, column: str) -> dict:
+    return {"Column": {"Expression": source_ref(alias), "Property": column}}
+
+
+def column_select(alias: str, table: str, column: str) -> dict:
+    return {
+        "Column": {"Expression": source_ref(alias), "Property": column},
+        "Name": f"{table}.{column}",
+    }
+
+
+def sum_select(alias: str, table: str, column: str) -> dict:
+    return {
+        "Aggregation": {
+            "Expression": {"Column": {"Expression": source_ref(alias), "Property": column}},
+            "Function": 0,
+        },
+        "Name": f"Sum({table}.{column})",
+    }
+
+
+def query_from_selects(table: str, alias: str, selects: list[dict], order_by: str | None = None) -> dict:
+    query = {
+        "Version": 2,
+        "From": [{"Name": alias, "Entity": table, "Type": 0}],
+        "Select": selects,
+    }
+    if order_by:
+        query["OrderBy"] = [{"Direction": 1, "Expression": column_expr(alias, order_by)}]
+    return query
+
+
+def semantic_query_payload(query: dict, projection_count: int, window_count: int = 500) -> str:
+    payload = {
+        "Commands": [
+            {
+                "SemanticQueryDataShapeCommand": {
+                    "Query": query,
+                    "Binding": {
+                        "Primary": {"Groupings": [{"Projections": list(range(projection_count))}]},
+                        "DataReduction": {"DataVolume": 4, "Primary": {"Window": {"Count": window_count}}},
+                        "Version": 1,
+                    },
+                    "ExecutionMetricsKind": 1,
+                }
+            }
+        ]
+    }
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+
+
+def data_transforms(selects: list[tuple[str, str, str, str]], projection_ordering: dict[str, list[int]]) -> str:
+    metadata = []
+    select_payload = []
+    for display_name, query_name, role, value_type in selects:
+        type_code = 2048 if value_type == "category" else 259
+        metadata.append({"Restatement": display_name, "Name": query_name, "Type": type_code})
+        select_payload.append(
+            {
+                "displayName": display_name,
+                "queryName": query_name,
+                "roles": {role: True},
+                "type": {"category": None} if value_type == "category" else {"numeric": True},
+            }
+        )
+    payload = {
+        "selects": select_payload,
+        "projectionOrdering": projection_ordering,
+        "queryMetadata": {"Select": metadata},
+        "visualElements": [],
+    }
+    return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+
+
+def native_visual(
+    name: str,
+    visual_type: str,
+    table: str,
+    alias: str,
+    projections: dict[str, list[str]],
+    selects: list[dict],
+    transform_selects: list[tuple[str, str, str, str]],
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+    order_by: str | None = None,
+    title: str | None = None,
+) -> dict:
+    query = query_from_selects(table, alias, selects, order_by)
+    config = {
+        "name": name,
+        "layouts": [{"id": 0, "position": {"x": x, "y": y, "z": z, "width": width, "height": height}}],
+        "singleVisual": {
+            "visualType": visual_type,
+            "projections": {
+                role: [{"queryRef": query_ref} for query_ref in query_refs]
+                for role, query_refs in projections.items()
+            },
+            "prototypeQuery": query,
+            "drillFilterOtherVisuals": True,
+            "objects": {
+                "title": [
+                    {
+                        "properties": {
+                            "show": {"expr": {"Literal": {"Value": "true"}}},
+                            "text": {"expr": {"Literal": {"Value": f"'{title or name}'"}}},
+                            "fontColor": {"solid": {"color": "#17212B"}},
+                            "fontSize": {"expr": {"Literal": {"Value": "11D"}}},
+                        }
+                    }
+                ],
+                "categoryAxis": [{"properties": {"show": {"expr": {"Literal": {"Value": "true"}}}}}],
+                "valueAxis": [{"properties": {"show": {"expr": {"Literal": {"Value": "true"}}}}}],
+                "labels": [{"properties": {"show": {"expr": {"Literal": {"Value": "true"}}}}}],
+            },
+        },
+    }
+    projection_ordering = {
+        role: [
+            next(index for index, (_display, query_ref, transform_role, _value_type) in enumerate(transform_selects) if query_ref == query_name and transform_role == role)
+            for query_name in query_refs
+        ]
+        for role, query_refs in projections.items()
+    }
+    return {
+        "x": x,
+        "y": y,
+        "z": z,
+        "width": width,
+        "height": height,
+        "config": json.dumps(config, ensure_ascii=False, separators=(",", ":")),
+        "query": semantic_query_payload(query, len(selects)),
+        "dataTransforms": data_transforms(transform_selects, projection_ordering),
+        "filters": "[]",
+    }
+
+
+def card_visual(
+    name: str,
+    table: str,
+    column: str,
+    label: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+) -> dict:
+    alias = f"{name}_src"
+    query_ref = f"Sum({table}.{column})"
+    return native_visual(
+        name=name,
+        visual_type="card",
+        table=table,
+        alias=alias,
+        projections={"Values": [query_ref]},
+        selects=[sum_select(alias, table, column)],
+        transform_selects=[(label, query_ref, "Values", "numeric")],
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        z=z,
+        title=label,
+    )
+
+
+def bar_visual(
+    name: str,
+    table: str,
+    category_column: str,
+    value_column: str,
+    category_label: str,
+    value_label: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+    visual_type: str = "clusteredColumnChart",
+    order_by: str | None = None,
+) -> dict:
+    alias = f"{name}_src"
+    category_ref = f"{table}.{category_column}"
+    value_ref = f"Sum({table}.{value_column})"
+    return native_visual(
+        name=name,
+        visual_type=visual_type,
+        table=table,
+        alias=alias,
+        projections={"Category": [category_ref], "Y": [value_ref]},
+        selects=[column_select(alias, table, category_column), sum_select(alias, table, value_column)],
+        transform_selects=[(category_label, category_ref, "Category", "category"), (value_label, value_ref, "Y", "numeric")],
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        z=z,
+        order_by=order_by or category_column,
+        title=value_label,
+    )
+
+
+def line_visual(
+    name: str,
+    table: str,
+    category_column: str,
+    value_column: str,
+    category_label: str,
+    value_label: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+) -> dict:
+    return bar_visual(
+        name=name,
+        table=table,
+        category_column=category_column,
+        value_column=value_column,
+        category_label=category_label,
+        value_label=value_label,
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        z=z,
+        visual_type="lineChart",
+        order_by=category_column,
+    )
+
+
+def table_visual(
+    name: str,
+    table: str,
+    columns: list[tuple[str, str, str]],
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+    order_by: str | None = None,
+) -> dict:
+    alias = f"{name}_src"
+    selects = []
+    projections = []
+    transform_selects = []
+    for column, label, value_type in columns:
+        if value_type == "numeric":
+            query_ref = f"Sum({table}.{column})"
+            selects.append(sum_select(alias, table, column))
+        else:
+            query_ref = f"{table}.{column}"
+            selects.append(column_select(alias, table, column))
+        projections.append(query_ref)
+        transform_selects.append((label, query_ref, "Values", value_type))
+    return native_visual(
+        name=name,
+        visual_type="tableEx",
+        table=table,
+        alias=alias,
+        projections={"Values": projections},
+        selects=selects,
+        transform_selects=transform_selects,
+        x=x,
+        y=y,
+        width=width,
+        height=height,
+        z=z,
+        order_by=order_by,
+        title=name,
+    )
+
+
+def add_native_analytics_page(layout: dict) -> dict:
+    section = {
+        "config": "{}",
+        "displayName": "Canlı Analitik Katmanı",
+        "displayOption": 1,
+        "filters": "[]",
+        "height": 720,
+        "name": f"ReportSection{len(layout['sections'])}",
+        "ordinal": len(layout["sections"]),
+        "width": 1280,
+        "visualContainers": [
+            textbox_visual(
+                "native_title",
+                "Canlı Analitik Katmanı: DirectQuery model alanlarıyla çalışan doğrulama sayfası",
+                44,
+                28,
+                1120,
+                48,
+                1000,
+                20,
+                True,
+            ),
+            textbox_visual(
+                "native_subtitle",
+                "Bu sayfadaki görseller Power BI modelindeki mart tablolarına bağlıdır; statik anlatım sayfalarının veri modeline bağlandığını kontrol etmek için kullanılır.",
+                46,
+                76,
+                1120,
+                40,
+                1001,
+                12,
+            ),
+            card_visual("native_total_txn", "mart_fraud_summary", "total_transactions", "Toplam işlem", 54, 128, 250, 88, 1),
+            card_visual("native_fraud_txn", "mart_fraud_summary", "fraud_transactions", "Sahte işlem", 326, 128, 250, 88, 2),
+            card_visual("native_fraud_rate", "mart_fraud_summary", "fraud_rate", "Baz sahtecilik oranı", 598, 128, 250, 88, 3),
+            card_visual("native_identity_rate", "mart_fraud_summary", "identity_coverage_rate", "Identity kapsama", 870, 128, 250, 88, 4),
+            bar_visual(
+                "native_amount_band_risk",
+                "mart_amount_bands",
+                "amount_band",
+                "fraud_rate",
+                "Tutar bandı",
+                "Tutar bandı sahtecilik oranı",
+                54,
+                246,
+                360,
+                190,
+                5,
+            ),
+            line_visual(
+                "native_daily_fraud_rate",
+                "mart_daily_stats",
+                "transaction_day",
+                "fraud_rate_ma7",
+                "Gün",
+                "7 günlük sahtecilik oranı",
+                452,
+                246,
+                380,
+                190,
+                6,
+            ),
+            bar_visual(
+                "native_email_domain_risk",
+                "mart_email_domain_stats",
+                "purchaser_email_group",
+                "fraud_rate",
+                "Email domain",
+                "Email domain sahtecilik oranı",
+                868,
+                246,
+                330,
+                190,
+                7,
+                "clusteredBarChart",
+            ),
+            table_visual(
+                "native_risk_band_queue",
+                "mart_risk_band_stats",
+                [
+                    ("split", "Veri kesiti", "category"),
+                    ("risk_band", "Risk bandı", "category"),
+                    ("review_priority", "İnceleme önceliği", "category"),
+                    ("transaction_count", "İşlem adedi", "numeric"),
+                    ("observed_fraud_rate", "Gözlenen sahtecilik oranı", "numeric"),
+                    ("lift", "Lift", "numeric"),
+                    ("expected_fraud_capture", "Yakalanan risk payı", "numeric"),
+                ],
+                54,
+                470,
+                544,
+                178,
+                8,
+                "band_rank",
+            ),
+            table_visual(
+                "native_quality_watch",
+                "mart_feature_missingness",
+                [
+                    ("column_family", "Feature ailesi", "category"),
+                    ("column_name", "Kolon", "category"),
+                    ("missing_rate", "Eksiklik oranı", "numeric"),
+                    ("missing_count", "Eksik kayıt", "numeric"),
+                ],
+                634,
+                470,
+                430,
+                178,
+                9,
+                "column_family",
+            ),
+        ],
+    }
+    layout["sections"].append(section)
+    layout["config"] = json.dumps(
+        {
+            **json.loads(layout["config"]),
+            "activeSectionIndex": 0,
+        },
+        separators=(",", ":"),
+    )
+    return layout
+
+
 def apply_enhanced_page_layouts(layout: dict) -> dict:
     for section in layout["sections"]:
         placements = PAGE_IMAGE_LAYOUTS.get(section["displayName"])
@@ -233,6 +691,7 @@ def build_pbix() -> None:
     layout = normalize_layout(layout)
     layout = update_registered_resource_manifest(layout, resources)
     layout = apply_enhanced_page_layouts(layout)
+    layout = add_native_analytics_page(layout)
     layout_bytes = json.dumps(layout, ensure_ascii=False, separators=(",", ":")).encode("utf-16le")
 
     with ZipFile(BASE_PBIX, "r") as source:

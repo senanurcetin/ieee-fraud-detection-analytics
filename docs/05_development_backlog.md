@@ -54,7 +54,7 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde kusursuza yakla�
 
 1. dbt kalite kapısı
    - `dbt build --target prod` final kalite komutu olarak kullanılmalı.
-   - 53 data test ve singular QA testleri korunmalı.
+   - 67 data test ve singular QA testleri korunmalı.
    - Test başarısızsa Power BI final raporu yenilenmemeli.
 
 2. Power BI veri kontratı
@@ -82,7 +82,7 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde kusursuza yakla�
 3. Yönetici dil kontrolü
    - Teknik jargon minimumda tutulmalı.
    - Her sayfada "ne oldu, neden önemli, ne yapılmalı" yapısı kurulmalı.
-   - Görünür hiçbir yerde geliştirme aracı, yapay üretim izi veya proje içi teknik not olmamalı.
+   - Görünür hiçbir yerde geliştirme aracı izi, demo dili veya proje içi teknik not olmamalı.
 
 ## P4 - Teslim ve Portföy
 
@@ -100,5 +100,5 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde kusursuza yakla�
    - Power BI açılır.
    - BigQuery bağlantısı çalışır.
    - dbt build geçer.
-   - Rapor 6 sayfa doludur.
+   - Rapor 6 ana sunum sayfası ve 1 canlı analitik kontrol sayfasıyla doludur.
    - Analiz hikayesi savunulabilir ve profesyoneldir.

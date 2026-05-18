@@ -1,131 +1,81 @@
-# 06 - Sonraki Geliştirme Backlog'u
+# 06 - Eksik Listesi ve Son Geliştirme Durumu
 
-Bu liste, son geliştirme iterasyonundan sonra kalan işleri ve öncelikleri gösterir. Mevcut durum artık boş rapor değildir; `fraud_project_v2.pbix` içinde 6 sayfa, 35 visual container ve yeni yönetici analiz görselleri vardır.
+Bu doküman, son düzeltmeden sonra projenin gerçek durumunu ve kalan kalite risklerini gösterir. Mevcut teslim artık boş veya yalnızca taslak rapor değildir; `powerbi/fraud_project_v2.pbix` içinde 6 ana sunum sayfası, 1 canlı analitik kontrol sayfası, 46 visual container ve BigQuery model alanlarına bağlı 9 native visual vardır.
 
-## Bu Iterasyonda Tamamlananlar
+## Bu Iterasyonda Kapatılan Eksikler
 
-1. Power BI karar destek veri katmanı güçlendirildi
-   - `pbi_segment_watchlist`: ürün, identity, tutar, ödeme ve email segmentlerini tek risk öncelik listesinde birleştirir.
-   - `pbi_review_strategy`: risk bantlarını operasyon kuyruğu, günlük inceleme hacmi ve yönetim notu ile eşler.
-   - `pbi_threshold_simulation`: model skor eşiğine göre inceleme yükü, fraud yakalama oranı ve kesinlik/geri çağırma dengesini gösterir.
-   - `pbi_report_readiness`: veri, anlatı, risk ve model operasyon hazırlığını PASS/FAIL formatında özetler.
+1. Power BI placeholder riski kapatıldı
+   - Yeni yönetici görselleri PBIX içinde `RegisteredResources` manifestine eklendi.
+   - Paket doğrulamasında 24 görsel varlık kayıtlı görünüyor.
+   - `SecurityBindings` kaldırılmış durumda; PBIX zip bütünlüğü PASS.
 
-2. dbt kalite kapsamı genişletildi
-   - Model sayısı 29'a çıktı.
-   - Data test sayısı 67'ye çıktı.
-   - Yeni Power BI modelleri için row-count, accepted values, unique, not null ve range testleri eklendi.
-   - Prod hedefte yeni modeller ve testler başarıyla çalıştı.
+2. Native görsel kanıt katmanı eklendi
+   - Yeni sayfa: `Canlı Analitik Katmanı`.
+   - 4 card, 1 clustered column chart, 1 line chart, 1 clustered bar chart ve 2 table visual eklendi.
+   - Görseller `mart_fraud_summary`, `mart_amount_bands`, `mart_daily_stats`, `mart_email_domain_stats`, `mart_risk_band_stats` ve `mart_feature_missingness` tablolarına bağlıdır.
+   - Native visual alanları dbt catalog ile kolon seviyesinde doğrulandı.
 
-3. Power BI rapor içeriği güçlendirildi
-   - `17_executive_control_panel.png`: yönetici KPI kontrol paneli.
-   - `18_segment_watchlist.png`: operasyonel segment izleme listesi.
-   - `19_model_threshold_simulation.png`: model eşik simülasyonu.
-   - `20_qa_readiness_scorecard.png`: sunum öncesi kalite ve hazırlık skor kartı.
-   - `21_executive_decision_matrix.png`: üst yönetim aksiyon matrisi.
-   - `22_review_strategy_matrix.png`: model skorundan operasyon kuyruğuna geçiş stratejisi.
-   - `24_risk_funnel.png`: inceleme hacmi ve fraud yakalama hunisi.
-   - `25_dbt_quality_gate.png`: dbt ve BigQuery kalite kapısı.
-   - `fraud_project_v2.pbix` bu görsellerle yeniden üretildi.
+3. dbt prod kalite kapısı tekrar çalıştırıldı
+   - 29 model bulundu.
+   - 67 data test çalıştı.
+   - Sonuç: `PASS=96 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=97`.
+   - `dbt docs generate` başarıyla tamamlandı ve `target/catalog.json` güncellendi.
 
-4. Rapor sayfa yapısı güncellendi
-   - Yönetici Özeti: KPI kontrol paneli, Product C lift, identity lift, risk bandı lift ve segment izleme listesi.
-   - Risk Konsantrasyonu: segment izleme listesi ve ana risk kırılımları.
-   - Model Skorlama: eşik simülasyonu, feature importance ve risk bantları.
-   - Veri Kalitesi: hazırlık skor kartı, missingness ve mimari görseli.
+4. BigQuery katmanları doğrulandı
+   - Raw Kaggle tabloları beklenen satır sayılarıyla duruyor.
+   - Staging view sorguları satır döndürüyor.
+   - Mart ve Power BI datasetleri dolu.
+   - `fraud_project_powerbi.fact_train_transactions`: 590.540 satır.
+   - `fraud_project_powerbi.pbi_segment_watchlist`: 20 satır.
+   - `fraud_project_powerbi.pbi_report_readiness`: 6 satır.
 
-## P0 - Kalan Kritik İşler
+## Kalan P0 Kontroller
 
-1. Power BI Desktop açılış kontrolü
-   - `powerbi/fraud_project_v2.pbix` Power BI Desktop'ta açılmalı.
-   - 6 sayfanın tamamı kontrol edilmeli.
-   - Yeni görsellerin kırpılmadığı, üst üste binmediği ve okunabilir olduğu doğrulanmalı.
+1. Power BI Desktop görsel açılış kontrolü
+   - `powerbi/fraud_project_v2.pbix` dosyasını Power BI Desktop içinde aç.
+   - 7 sayfanın tamamını sırayla kontrol et.
+   - Özellikle `Canlı Analitik Katmanı` sayfasında native card/bar/line/table görsellerinin veri döndürdüğünü kontrol et.
 
-2. Native visual dönüşümü
-   - Mevcut rapor açılabilir ve sunuma hazır statik analiz görselleri içerir.
-   - Final profesyonel eşik için ana grafikler Power BI native visual'a çevrilmelidir.
-   - Öncelik sırası:
-     - Yönetici KPI kartları.
-     - Segment izleme tablosu.
-     - Product/identity lift bar chart.
-     - Threshold simulation line chart.
-     - QA readiness table.
+2. DirectQuery tablo görünürlüğü
+   - Veri panelinde `fact_train_transactions` ve `mart_*` tabloları görünüyorsa yeni native sayfa çalışmalıdır.
+   - `pbi_*` tabloları da rapora eklenirse ana 6 sayfa tamamen native visual seviyesine taşınabilir.
 
-3. DirectQuery model kontrolü
-   - Power BI modelinde `fraud_project_powerbi` datasetindeki yeni tablolar görünmeli:
-     - `pbi_segment_watchlist`
-     - `pbi_review_strategy`
-     - `pbi_threshold_simulation`
-     - `pbi_report_readiness`
-   - Görünmüyorsa Power BI Desktop içinden BigQuery navigator ile bu tablolar eklenmelidir.
+3. Son sunum estetik kontrolü
+   - Üst yönetim sunumu için ilk 6 sayfa ana anlatım olarak kullanılmalı.
+   - 7. sayfa teknik doğrulama ve canlı model kanıtı olarak gösterilmeli.
+   - Görsellerin kesilmediği, ölçeklenmediği ve başlıkların okunur olduğu Power BI Desktop içinde kontrol edilmeli.
 
-4. Tam dbt kalite kapısı
-   - Finalden önce yalnız seçili modeller değil, tam build çalıştırılmalıdır:
+## P1 - Bir Sonraki Profesyonel Seviye
 
-```powershell
-dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
-dbt docs generate --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
-```
+1. Ana 6 sayfanın native dönüşümü
+   - Yönetici KPI kartları native card olarak taşınmalı.
+   - Segment watchlist native table veya matrix olmalı.
+   - Product/identity lift chart'ları native bar chart olmalı.
+   - Threshold simulation native line chart olmalı.
+   - QA readiness native table olmalı.
 
-## P1 - Analitik Derinlik
+2. Power BI ölçü katmanı
+   - `Fraud Rate`
+   - `Fraud Transactions`
+   - `High Critical Share`
+   - `Average Amount`
+   - `Predicted Risk`
+   - `Review Workload Share`
 
-1. Yönetici aksiyon katmanı
-   - Segment izleme listesi her satır için önerilen operasyon aksiyonu içeriyor.
-   - Power BI'da bu alan tablo tooltip'i veya detay tablosu olarak gösterilmeli.
-
-2. Model kapasite senaryosu
-   - Threshold simülasyonu üzerinden üç karar senaryosu hazırlanmalı:
-     - Geniş izleme
-     - Dengeli operasyon
-     - Dar kritik kuyruk
-   - Her senaryoda beklenen fraud capture ve operasyon yükü açıklanmalı.
-
-3. Segment risk kontrolü
-   - Küçük hacimli segmentlerin yanıltıcı etkisini azaltmak için `transaction_count >= 1000` filtresi korunmalı.
-   - Sunumda fraud rate tek başına değil, fraud share ve transaction share ile birlikte anlatılmalı.
-
-## P2 - Power BI Format Kalitesi
-
-1. Sayfa hizalama
-   - Tüm sayfalarda 1280x720 canvas korunmalı.
-   - Üst başlık, orta analiz alanı ve alt aksiyon alanı aynı grid mantığıyla hizalanmalı.
-
-2. Sayı formatları
-   - Fraud rate, fraud share, workload share ve capture rate yüzde formatında olmalı.
-   - İşlem sayıları binlik ayraçla gösterilmeli.
-   - Lift değerleri `x` formatında gösterilmeli.
-
-3. Kurumsal tema
-   - Lacivert ana renk, kırmızı risk, petrol yeşili kalite/başarı ve nötr gri destek rengi korunmalı.
-   - Aşırı dekoratif veya demo hissi veren görsel kullanılmamalı.
-
-## P3 - Sunum ve Portföy
-
-1. 3 dakikalık yönetici anlatımı
-   - Problem büyüklüğü.
-   - Riskin nerede yoğunlaştığı.
-   - Modelin operasyon kuyruğuna nasıl çevrildiği.
-   - Veri kalitesi ve güvenilirlik kanıtı.
-
-2. 10 dakikalık teknik walkthrough
-   - Kaggle raw data.
-   - BigQuery dataset katmanları.
-   - dbt lineage ve testler.
-   - Power BI DirectQuery raporlama katmanı.
-   - Model skorlaması ve eşik dengesi.
-
-3. GitHub sunum kanıtları
-   - README içine mimari özet ve rapor sayfa listesi korunmalı.
-   - Büyük ham veri ve credential dosyaları repo dışında kalmalı.
-   - Power BI raporu ana teslim dosyası olarak `powerbi/fraud_project_v2.pbix` kalmalı.
+3. Format standardizasyonu
+   - Fraud oranları yüzde formatında.
+   - İşlem sayıları binlik ayraçla.
+   - Lift değerleri `x` formatında.
+   - Kritik risk kırmızı, kalite/başarı petrol yeşili, ana metin koyu lacivert.
 
 ## Kabul Eşiği
 
-Final kabul için aşağıdaki maddeler aynı anda sağlanmalıdır:
+Final portföy kullanımı için aşağıdaki maddeler aynı anda sağlanmalıdır:
 
-- BigQuery `fraud_project_powerbi` datasetinde tüm `pbi_*` tabloları dolu.
-- dbt full build ve docs generate başarılı.
+- BigQuery `fraud_project_powerbi` datasetindeki tüm rapor tabloları dolu.
+- dbt full build PASS.
+- dbt docs generate PASS.
 - Power BI dosyası açılıyor.
-- 6 sayfa boş değil.
-- Yönetici Özeti ilk 30 saniyede ana mesajı veriyor.
-- Model sayfası operasyonel karar desteğini açık anlatıyor.
-- Veri Kalitesi sayfası veri güvenilirliğini kanıtlıyor.
+- 6 ana sunum sayfası boş değil.
+- 7. sayfadaki native görseller veri döndürüyor.
+- Rapor içinde proje dışı üretim izi, demo dili veya gereksiz teknik not görünmüyor.

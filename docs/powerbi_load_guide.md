@@ -6,7 +6,7 @@ Ana teslim dosyası:
 powerbi/fraud_project_v2.pbix
 ```
 
-Bu dosya 6 sayfalık rapor layout'u ve mevcut Power BI veri modelini içerir.
+Bu dosya 6 ana sunum sayfası, 1 canlı analitik kontrol sayfası ve mevcut Power BI DirectQuery veri modelini içerir.
 
 ## BigQuery Üzerinden Yenileme
 
@@ -26,14 +26,33 @@ Power BI Desktop içinde Google BigQuery bağlantısı kullanılırken hedef dat
 workintech-working.fraud_project_powerbi
 ```
 
-Yüklenecek tablolar:
+## Ana Rapor Tabloları
 
 - `fact_train_transactions`
-- `mart_model_predictions`
+- `pbi_executive_kpis`
+- `pbi_product_risk`
+- `pbi_identity_risk`
+- `pbi_amount_bands`
+- `pbi_daily_drift`
+- `pbi_payment_heatmap`
+- `pbi_email_domain_risk`
+- `pbi_model_risk_bands`
+- `pbi_feature_importance`
+- `pbi_data_quality_scorecard`
+- `pbi_report_narrative`
+- `pbi_quality_contract`
+- `pbi_segment_watchlist`
+- `pbi_review_strategy`
+- `pbi_threshold_simulation`
+- `pbi_report_readiness`
+
+## Mevcut PBIX Modelinde Görünen Mart Tabloları
+
+`Canlı Analitik Katmanı` sayfasındaki native görseller aşağıdaki mevcut model tablolarını kullanır:
+
 - `mart_fraud_summary`
-- `mart_daily_stats`
 - `mart_amount_bands`
-- `mart_product_device_stats`
+- `mart_daily_stats`
 - `mart_email_domain_stats`
 - `mart_risk_band_stats`
 - `mart_feature_missingness`
