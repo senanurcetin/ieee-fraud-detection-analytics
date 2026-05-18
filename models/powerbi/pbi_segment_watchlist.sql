@@ -1,0 +1,122 @@
+with segments as (
+    select
+        'Ürün' as segment_family,
+        product_cd as segment_name,
+        transaction_count,
+        fraud_count,
+        fraud_rate,
+        baseline_fraud_rate,
+        lift,
+        transaction_share,
+        fraud_share,
+        avg_transaction_amount
+    from {{ ref('pbi_product_risk') }}
+
+    union all
+
+    select
+        'Identity' as segment_family,
+        identity_segment as segment_name,
+        transaction_count,
+        fraud_count,
+        fraud_rate,
+        baseline_fraud_rate,
+        lift,
+        transaction_share,
+        fraud_share,
+        null as avg_transaction_amount
+    from {{ ref('pbi_identity_risk') }}
+
+    union all
+
+    select
+        'Tutar bandı' as segment_family,
+        amount_band as segment_name,
+        transaction_count,
+        fraud_count,
+        fraud_rate,
+        baseline_fraud_rate,
+        lift,
+        transaction_share,
+        fraud_share,
+        avg_transaction_amount
+    from {{ ref('pbi_amount_bands') }}
+
+    union all
+
+    select
+        'Email domain' as segment_family,
+        purchaser_email_group as segment_name,
+        transaction_count,
+        fraud_count,
+        fraud_rate,
+        baseline_fraud_rate,
+        lift,
+        transaction_share,
+        fraud_share,
+        avg_transaction_amount
+    from {{ ref('pbi_email_domain_risk') }}
+
+    union all
+
+    select
+        'Ödeme' as segment_family,
+        concat(card_network, ' / ', card_type) as segment_name,
+        transaction_count,
+        fraud_count,
+        fraud_rate,
+        baseline_fraud_rate,
+        lift,
+        transaction_share,
+        fraud_share,
+        avg_transaction_amount
+    from {{ ref('pbi_payment_heatmap') }}
+),
+
+scored as (
+    select
+        *,
+        (coalesce(fraud_share, 0) * 0.45)
+        + (coalesce(lift, 0) * 0.35)
+        + (coalesce(transaction_share, 0) * 0.20) as priority_score
+    from segments
+    where transaction_count >= 1000
+),
+
+ranked as (
+    select
+        *,
+        row_number() over (
+            order by priority_score desc, fraud_share desc, lift desc, transaction_count desc
+        ) as watchlist_rank
+    from scored
+)
+
+select
+    watchlist_rank,
+    segment_family,
+    segment_name,
+    transaction_count,
+    fraud_count,
+    fraud_rate,
+    baseline_fraud_rate,
+    lift,
+    transaction_share,
+    fraud_share,
+    avg_transaction_amount,
+    priority_score,
+    case
+        when fraud_share >= 0.20 and lift >= 1.50 then 'Kritik'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'Yüksek'
+        when lift >= 1.10 then 'İzle'
+        else 'Normal'
+    end as risk_priority,
+    case
+        when fraud_share >= 0.20 and lift >= 1.50 then 'Acil segment inceleme ve kural seti kalibrasyonu'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'Günlük operasyon kuyruğunda öncelikli takip'
+        when lift >= 1.10 then 'Haftalık trend ve hacim izlemesi'
+        else 'Standart raporlama'
+    end as recommended_action
+from ranked
+where watchlist_rank <= 20
+order by watchlist_rank

@@ -23,6 +23,43 @@ PAGE_ORDER = [
     ("Veri Kalitesi", "Veri Kalitesi ve Mimari"),
 ]
 
+PAGE_IMAGE_LAYOUTS = {
+    "Yönetici Özeti": [
+        ("17_executive_control_panel.png", 44, 124, 1138, 168),
+        ("10_product_lift.png", 52, 316, 352, 198),
+        ("11_identity_lift.png", 464, 316, 352, 198),
+        ("16_risk_band_lift.png", 876, 316, 352, 198),
+        ("18_segment_watchlist.png", 138, 532, 1004, 150),
+    ],
+    "Risk Konsantrasyonu": [
+        ("18_segment_watchlist.png", 54, 126, 1110, 315),
+        ("10_product_lift.png", 58, 462, 360, 205),
+        ("11_identity_lift.png", 460, 462, 360, 205),
+        ("04_product_device_risk.png", 862, 462, 330, 205),
+    ],
+    "Tutar ve Zaman Analizi": [
+        ("03_amount_bands.png", 58, 132, 520, 250),
+        ("14_amount_distribution.png", 650, 132, 500, 250),
+        ("02_daily_fraud_rate.png", 58, 414, 560, 230),
+        ("15_hourly_pattern.png", 676, 414, 470, 230),
+    ],
+    "Ödeme ve Email Segmentleri": [
+        ("12_card_payment_heatmap.png", 72, 130, 500, 390),
+        ("13_email_domain_risk.png", 650, 130, 500, 390),
+        ("18_segment_watchlist.png", 134, 540, 1010, 130),
+    ],
+    "Model Skorlama ve Risk Bantları": [
+        ("19_model_threshold_simulation.png", 60, 128, 1090, 260),
+        ("05_feature_importance.png", 58, 414, 520, 245),
+        ("08_risk_bands.png", 650, 414, 500, 245),
+    ],
+    "Veri Kalitesi ve Mimari": [
+        ("20_qa_readiness_scorecard.png", 70, 130, 1060, 210),
+        ("07_missingness_by_family.png", 78, 362, 520, 300),
+        ("09_architecture.png", 646, 372, 500, 270),
+    ],
+}
+
 
 def read_layout_template() -> tuple[dict, dict[str, bytes]]:
     if not LAYOUT_TEMPLATE.exists():
@@ -66,6 +103,60 @@ def normalize_layout(layout: dict) -> dict:
     return layout
 
 
+def image_visual(name: str, item_name: str, x: float, y: float, width: float, height: float, z: int) -> dict:
+    config = {
+        "name": name,
+        "layouts": [{"id": 0, "position": {"x": x, "y": y, "z": z, "width": width, "height": height}}],
+        "singleVisual": {
+            "visualType": "image",
+            "drillFilterOtherVisuals": True,
+            "objects": {
+                "general": [
+                    {
+                        "properties": {
+                            "imageUrl": {
+                                "expr": {
+                                    "ResourcePackageItem": {
+                                        "PackageName": "RegisteredResources",
+                                        "PackageType": 1,
+                                        "ItemName": item_name,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+        },
+    }
+    return {
+        "x": x,
+        "y": y,
+        "z": z,
+        "width": width,
+        "height": height,
+        "config": json.dumps(config, ensure_ascii=False, separators=(",", ":")),
+        "filters": "[]",
+    }
+
+
+def apply_enhanced_page_layouts(layout: dict) -> dict:
+    for section in layout["sections"]:
+        placements = PAGE_IMAGE_LAYOUTS.get(section["displayName"])
+        if not placements:
+            continue
+        text_containers = []
+        for container in section["visualContainers"]:
+            config = json.loads(container.get("config", "{}"))
+            if config.get("singleVisual", {}).get("visualType") == "textbox":
+                text_containers.append(container)
+        visuals = list(text_containers)
+        for index, (asset_name, x, y, width, height) in enumerate(placements, start=20):
+            visuals.append(image_visual(f"enhanced_{section['ordinal']}_{index}", asset_name, x, y, width, height, index))
+        section["visualContainers"] = visuals
+    return layout
+
+
 def add_png_content_type(raw: bytes) -> bytes:
     namespace = "http://schemas.openxmlformats.org/package/2006/content-types"
     ET.register_namespace("", namespace)
@@ -90,13 +181,24 @@ def copy_assets(resources: dict[str, bytes]) -> None:
             (ASSET_DIR / Path(name).name).write_bytes(data)
 
 
+def collect_local_assets() -> dict[str, bytes]:
+    resources: dict[str, bytes] = {}
+    if not ASSET_DIR.exists():
+        return resources
+    for path in ASSET_DIR.glob("*.png"):
+        resources[f"Report/StaticResources/RegisteredResources/{path.name}"] = path.read_bytes()
+    return resources
+
+
 def build_pbix() -> None:
     if not BASE_PBIX.exists():
         raise FileNotFoundError(f"Base PBIX not found: {BASE_PBIX}")
 
     POWERBI_DIR.mkdir(parents=True, exist_ok=True)
     layout, resources = read_layout_template()
+    resources.update(collect_local_assets())
     layout = normalize_layout(layout)
+    layout = apply_enhanced_page_layouts(layout)
     layout_bytes = json.dumps(layout, ensure_ascii=False, separators=(",", ":")).encode("utf-16le")
 
     with ZipFile(BASE_PBIX, "r") as source:

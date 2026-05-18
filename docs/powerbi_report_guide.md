@@ -137,3 +137,14 @@ Native visual hedefleri:
 - Her visual `fraud_project_powerbi` datasetindeki tablolardan beslenir.
 - Rapor DirectQuery modunda kalır.
 - Sayfalarda geliştirme aracı, yapay üretim izi veya demo dili bulunmaz.
+
+## Son Geliştirme Durumu
+
+Son iterasyonda rapor içeriği yeni yönetici analiz görselleriyle güçlendirildi:
+
+- Yönetici KPI kontrol paneli.
+- Operasyonel segment izleme listesi.
+- Model skor eşiği simülasyonu.
+- Sunum öncesi hazırlık ve kalite skor kartı.
+
+Bu geliştirme PBIX dosyasına uygulanmıştır. Rapor hâlen Power BI Desktop içinde native visual dönüşümüne adaydır; dönüşüm için kesin alan ve görsel tarifleri `docs/powerbi_native_visual_spec.md` dosyasında yer alır.

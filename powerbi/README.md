@@ -22,3 +22,12 @@ PBIX dosyası BigQuery DirectQuery veri modelini korur ve rapor layout'unu profe
 ## Görsel Varlıklar
 
 `powerbi/assets/` klasörü raporda kullanılan analiz görsellerini içerir. Görseller; fraud oranı, risk lift, tutar dağılımı, ödeme segmentleri, email domain riski, model performansı ve veri kalitesi temalarını kapsar.
+
+Ek yönetici görselleri:
+
+- `17_executive_control_panel.png`
+- `18_segment_watchlist.png`
+- `19_model_threshold_simulation.png`
+- `20_qa_readiness_scorecard.png`
+
+Bu görseller BigQuery `fraud_project_powerbi` datasetindeki raporlama tablolarından üretilir ve `fraud_project_v2.pbix` içine gömülüdür.

@@ -17,6 +17,10 @@
 - [ ] `fraud_project_powerbi.fact_train_transactions`: 590.540 satır.
 - [ ] `fraud_project_powerbi.pbi_executive_kpis`: 1 satır.
 - [ ] `fraud_project_powerbi.pbi_quality_contract`: tüm satırlar PASS.
+- [ ] `fraud_project_powerbi.pbi_segment_watchlist`: 10-20 satır.
+- [ ] `fraud_project_powerbi.pbi_review_strategy`: 4 satır.
+- [ ] `fraud_project_powerbi.pbi_threshold_simulation`: en az 10 satır.
+- [ ] `fraud_project_powerbi.pbi_report_readiness`: tüm satırlar PASS.
 
 ## Power BI
 
@@ -24,6 +28,8 @@
 - [ ] DirectQuery bağlantısı `workintech-working.fraud_project_powerbi` datasetine bağlı.
 - [ ] 6 rapor sayfası var.
 - [ ] Boş sayfa yok.
+- [ ] En az 34 visual container var.
+- [ ] Yeni yönetici görselleri raporda görünüyor: KPI kontrol paneli, segment izleme listesi, eşik simülasyonu, hazırlık skor kartı.
 - [ ] Her sayfada en az 3 native visual var.
 - [ ] Her visual veri gösteriyor.
 - [ ] Yüzde, para ve sayı formatları doğru.

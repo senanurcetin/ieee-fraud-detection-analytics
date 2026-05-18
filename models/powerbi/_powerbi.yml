@@ -87,6 +87,78 @@ models:
               arguments:
                 values: ["PASS"]
 
+  - name: pbi_segment_watchlist
+    description: "Ürün, identity, tutar, ödeme ve email kırılımlarını tek operasyonel izleme listesinde birleştiren risk öncelik tablosu."
+    config:
+      tags: ["powerbi", "executive", "segment", "watchlist"]
+    tests:
+      - row_count_between:
+          arguments:
+            min_count: 10
+            max_count: 20
+    columns:
+      - name: watchlist_rank
+        tests:
+          - not_null
+          - unique
+      - name: risk_priority
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Kritik", "Yüksek", "İzle", "Normal"]
+
+  - name: pbi_review_strategy
+    description: "Model risk bantlarını operasyon kuyruğu, günlük inceleme hacmi ve yönetim aksiyonu ile eşleyen strateji tablosu."
+    config:
+      tags: ["powerbi", "model", "operations", "executive"]
+    tests:
+      - row_count_equals:
+          arguments:
+            expected_count: 4
+    columns:
+      - name: risk_band
+        tests:
+          - not_null
+          - unique
+
+  - name: pbi_threshold_simulation
+    description: "Model skor eşiğine göre inceleme yükü, yakalanan fraud oranı ve precision trade-off simülasyonu."
+    config:
+      tags: ["powerbi", "model", "threshold", "operations"]
+    tests:
+      - row_count_between:
+          arguments:
+            min_count: 10
+            max_count: 20
+    columns:
+      - name: score_threshold
+        tests:
+          - not_null
+          - unique
+      - name: fraud_capture_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: workload_share
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: pbi_report_readiness
+    description: "Sunum öncesi veri, anlatı, risk analitiği ve model operasyon hazırlık kontrollerini özetleyen kabul tablosu."
+    config:
+      tags: ["powerbi", "qa", "executive"]
+    columns:
+      - name: status
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["PASS"]
+
 exposures:
   - name: fraud_project_v2
     label: "fraud_project_v2"
@@ -108,6 +180,10 @@ exposures:
       - ref('pbi_data_quality_scorecard')
       - ref('pbi_report_narrative')
       - ref('pbi_quality_contract')
+      - ref('pbi_segment_watchlist')
+      - ref('pbi_review_strategy')
+      - ref('pbi_threshold_simulation')
+      - ref('pbi_report_readiness')
     owner:
       name: "Fraud Analytics Team"
       email: "fraud.analytics@company.com"

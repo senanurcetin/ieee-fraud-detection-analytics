@@ -25,6 +25,10 @@ Kullanılacak ana tablolar:
 - `pbi_data_quality_scorecard`
 - `pbi_report_narrative`
 - `pbi_quality_contract`
+- `pbi_segment_watchlist`
+- `pbi_review_strategy`
+- `pbi_threshold_simulation`
+- `pbi_report_readiness`
 
 ## DAX Ölçüleri
 
@@ -65,11 +69,13 @@ Predicted Risk = AVERAGE(fact_train_transactions[predicted_fraud_probability])
 - Card: `pbi_executive_kpis[critical_risk_fraud_rate]`
 - Clustered column chart: Axis `pbi_product_risk[product_cd]`, Values `pbi_product_risk[fraud_rate]`
 - Clustered column chart: Axis `pbi_identity_risk[identity_segment]`, Values `pbi_identity_risk[fraud_rate]`
+- Table: `pbi_segment_watchlist[segment_family]`, `segment_name`, `fraud_rate`, `lift`, `fraud_share`, `risk_priority`
 
 ### Risk Konsantrasyonu
 
 - Bar chart: Axis `pbi_product_risk[product_cd]`, Values `pbi_product_risk[lift]`
 - Matrix: Rows `mart_product_device_stats[product_cd]`, Columns `mart_product_device_stats[device_type]`, Values `mart_product_device_stats[fraud_rate]`
+- Table: `pbi_segment_watchlist[watchlist_rank]`, `segment_family`, `segment_name`, `recommended_action`
 - Table: `pbi_report_narrative[executive_message]`, `pbi_report_narrative[recommended_action]`, page filter `page_name = Risk Konsantrasyonu`
 
 ### Tutar ve Zaman Analizi
@@ -89,10 +95,13 @@ Predicted Risk = AVERAGE(fact_train_transactions[predicted_fraud_probability])
 - Bar chart: Axis `pbi_model_risk_bands[risk_band]`, Values `pbi_model_risk_bands[observed_fraud_rate]`, Sort by `band_rank`
 - Bar chart: Axis `pbi_model_risk_bands[risk_band]`, Values `pbi_model_risk_bands[lift]`, Sort by `band_rank`
 - Bar chart: Axis `pbi_feature_importance[feature]`, Values `pbi_feature_importance[importance]`, Top N 15 by `importance`
+- Line chart: Axis `pbi_threshold_simulation[score_threshold]`, Values `fraud_capture_rate`, `workload_share`, `precision_rate`
+- Table: `pbi_review_strategy[risk_band]`, `queue_policy`, `estimated_daily_review_volume`, `management_note`
 
 ### Veri Kalitesi ve Mimari
 
 - Table: `pbi_quality_contract[object_name]`, `expected_rows`, `actual_rows`, `status`
+- Table: `pbi_report_readiness[check_name]`, `expected_value`, `actual_value`, `status`
 - Bar chart: Axis `pbi_data_quality_scorecard[column_family]`, Values `avg_missing_rate`
 - Table: `pbi_report_narrative[executive_message]`, `pbi_report_narrative[recommended_action]`, page filter `page_name = Veri Kalitesi ve Mimari`
 
