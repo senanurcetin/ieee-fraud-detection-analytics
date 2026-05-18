@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PBI_DIR = ROOT / "outputs" / "powerbi"
 CHART_DIR = ROOT / "outputs" / "charts"
 PROJECT_DIR = PBI_DIR / f"ieee_fraud_powerbi_project_{uuid.uuid4().hex[:8]}"
-OUT_FILE = ROOT / "outputs" / "powerbi" / "ieee_fraud_detection_dashboard.pbit"
+OUT_FILE = ROOT / "outputs" / "powerbi" / "fraud_project_dashboard.pbit"
 PBI_TOOLS = ROOT / "tools" / "pbi-tools" / "core" / "pbi-tools.core.exe"
 
 
@@ -407,7 +407,7 @@ def main() -> None:
     (PBI_DIR / "POWERBI_OPEN_NOTES.md").write_text(
         "# Power BI Açılış Notları\n\n"
         "Rapor Power BI Desktop `2.153.1206.0` sürümüyle uyumlu olacak şekilde hazırlanmıştır.\n\n"
-        "`ieee_fraud_detection_dashboard.pbit` dosyasını açın. `CsvRoot` parametresi sorulursa proje aynı klasörde kaldığı sürece varsayılan yolu koruyun. "
+        "`fraud_project_dashboard.pbit` dosyasını açın. `CsvRoot` parametresi sorulursa proje aynı klasörde kaldığı sürece varsayılan yolu koruyun. "
         "Template başka bir konuma taşındıysa `CsvRoot` değerini CSV martlarının bulunduğu klasöre yönlendirin.\n\n"
         "Power BI Desktop template uyumluluğu uyarısı verirse CSV dosyalarını manuel içe aktarın ve sayfa/ölçü düzeni için `powerbi_dashboard_spec.md` dosyasını kullanın. "
         "Temel veri modeli dbt ile üretilen CSV mart katmanıdır.",

@@ -1,39 +1,56 @@
 # BigQuery Deployment
 
-Bu proje BigQuery üzerinde çalışacak şekilde hazırlanmıştır. Komutları çalıştırmadan önce kimlik bilgileri ve proje ayarları yapılandırılmalıdır.
+Bu proje BigQuery üzerinde `fraud_project` adıyla katmanlı bir analitik mimari kurar. Deployment scripti ham CSV yüklemesini, dbt dönüşümlerini, testleri ve Power BI raporlama tablolarını tek akışta çalıştırır.
 
-## Gerekli Ortam Değişkenleri
+## Dataset Yapısı
 
-```powershell
-$env:GCP_PROJECT_ID="workintech-working"
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
-$env:BIGQUERY_LOCATION="US"
-```
+- `fraud_project_raw`
+- `fraud_project_staging`
+- `fraud_project_intermediate`
+- `fraud_project_mart`
+- `fraud_project_powerbi`
 
-## Ham Tabloları Yükleme
-
-```powershell
-python src\upload_to_bigquery.py
-```
-
-Loader aşağıdaki datasetleri oluşturur:
-
-- `raw`
-- `staging`
-- `intermediate`
-- `mart`
-- `dbt_default`
-
-Ardından dbt modelleri BigQuery hedefiyle çalıştırılabilir:
+## Komut
 
 ```powershell
-& "$env:APPDATA\Python\Python312\Scripts\dbt.exe" run --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod
-& "$env:APPDATA\Python\Python312\Scripts\dbt.exe" test --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod
+.\scripts\deploy_bigquery.ps1 `
+  -Credentials "C:\Users\MONSTER\Downloads\workintech-working-2378ce4f85e2.json" `
+  -ProjectId "workintech-working" `
+  -Location "US" `
+  -ReportingDataset "fraud_project_powerbi"
 ```
+
+## dbt Komutları
+
+```powershell
+dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+```
+
+## Power BI Raporlama Katmanı
+
+`fraud_project_powerbi` datasetinde aşağıdaki tablolar oluşturulur:
+
+- `fact_train_transactions`
+- `mart_model_predictions`
+- `mart_fraud_summary`
+- `mart_daily_stats`
+- `mart_amount_bands`
+- `mart_product_device_stats`
+- `mart_email_domain_stats`
+- `mart_risk_band_stats`
+- `mart_feature_missingness`
+
+## Minimum Yetkiler
+
+Servis hesabı için gerekli minimum BigQuery rolleri:
+
+- BigQuery Job User
+- BigQuery Data Editor
+- BigQuery Data Viewer
 
 ## Operasyonel Notlar
 
-- `maximum_bytes_billed` değeri profil dosyasında açık tutulmalıdır.
-- BI raporlamasında önce mart tabloları kullanılmalıdır.
-- Ham transaction tabloları çok geniş kolon yapısına sahip olduğu için doğrudan rapor katmanında taranmamalıdır.
-- Kaggle ham veri dosyaları GitHub'a yüklenmemelidir.
+- Ham transaction tabloları çok geniş kolon yapısına sahiptir; raporlama için doğrudan ham katman yerine mart ve Power BI datasetleri kullanılmalıdır.
+- `fraud_project_powerbi` katmanı, Power BI Desktop içinde sade ve yönetilebilir bir model oluşturmak için özetlenmiş tablolardan oluşur.
+- Servis hesabı JSON dosyası repoya eklenmez.

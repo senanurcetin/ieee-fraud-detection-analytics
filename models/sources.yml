@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: raw
-    schema: raw
+    schema: "{{ 'fraud_project_raw' if target.type == 'bigquery' else 'raw' }}"
     tables:
       - name: train_transaction
       - name: train_identity

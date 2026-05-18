@@ -14,6 +14,13 @@ DB_PATH = ROOT / "data" / "processed" / "ieee_fraud.duckdb"
 
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "workintech-working")
 LOCATION = os.environ.get("BIGQUERY_LOCATION", "US")
+DATASETS = [
+    "fraud_project_raw",
+    "fraud_project_staging",
+    "fraud_project_intermediate",
+    "fraud_project_mart",
+    "fraud_project_powerbi",
+]
 
 
 RAW_FILES = {
@@ -77,13 +84,13 @@ def main() -> None:
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(credential_path)
 
     client = bigquery.Client(project=PROJECT_ID, location=LOCATION)
-    for dataset in ["raw", "staging", "intermediate", "mart", "dbt_default"]:
+    for dataset in DATASETS:
         create_dataset(client, dataset)
     for table, path in RAW_FILES.items():
-        load_csv(client, "raw", table, path)
-    load_duckdb_table(client, "raw", "feature_missingness", "raw.feature_missingness")
-    load_duckdb_table(client, "raw", "ml_predictions", "raw.ml_predictions")
-    print("Next: dbt run --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod")
+        load_csv(client, "fraud_project_raw", table, path)
+    load_duckdb_table(client, "fraud_project_raw", "feature_missingness", "raw.feature_missingness")
+    load_duckdb_table(client, "fraud_project_raw", "ml_predictions", "raw.ml_predictions")
+    print("Next: dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod")
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ PBI_DIR = ROOT / "outputs" / "powerbi"
 
 DEFAULT_PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "workintech-working")
 DEFAULT_LOCATION = os.environ.get("BIGQUERY_LOCATION", "US")
-DEFAULT_DATASET = os.environ.get("BIGQUERY_REPORTING_DATASET", "powerbi")
+DEFAULT_DATASET = os.environ.get("BIGQUERY_REPORTING_DATASET", "fraud_project_powerbi")
 
 REPORTING_FILES = [
     "mart_fraud_summary.csv",

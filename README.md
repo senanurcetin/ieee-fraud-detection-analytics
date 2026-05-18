@@ -1,54 +1,76 @@
-# IEEE-CIS Fraud Detection Analytics Project
+# fraud_project
 
-Kaggle IEEE-CIS Fraud Detection veri seti üzerinde hazırlanmış profesyonel fraud analizi, veri modelleme, model skorlama, Power BI raporlama ve sunum teslim paketidir.
+IEEE-CIS Fraud Detection veri seti üzerinde hazırlanmış uçtan uca fraud analitiği projesidir. Çalışma; Kaggle CSV dosyalarının veri ambarına alınması, dbt ile katmanlı veri modelleme, makine öğrenmesi skorlaması ve Power BI yönetici raporuna kadar tekrarlanabilir bir analitik teslim paketi sunar.
 
-Projenin ana hikayesi analiz odaklıdır: sahtecilik nadir görülür, ancak ürün ailesi, identity kaydı, ödeme tipi, email domain, işlem tutarı ve zaman kırılımlarında belirgin şekilde yoğunlaşır. Model skorları, bu segmentleri BI tarafında önceliklendirilebilir inceleme kuyruklarına dönüştürmek için kullanılır.
+## Proje Hikayesi
 
-## Proje Kapsamı
+Analizin ana sorusu şudur: Sahtecilik hangi işlem segmentlerinde yoğunlaşıyor ve operasyon ekipleri bu riski nasıl önceliklendirmeli?
 
-- Veri ambarı: DuckDB tabanlı analitik model
-- Dönüşüm: dbt staging, intermediate ve mart katmanları
-- Modelleme: LightGBM skorlaması ve zamana dayalı doğrulama
-- BI teslimi: Power BI uyumlu CSV martları ve PBIT template
-- Sunum: düzenlenebilir PowerPoint analitik vaka çalışması
+Veri setinde sahtecilik oranı düşük görünse de risk rastgele dağılmaz. Product C, identity kaydı bulunan işlemler, bazı ödeme tipi kombinasyonları, email domain grupları, tutar bantları ve zaman pencereleri belirgin risk ayrışması üretir. Power BI raporu bu ayrışmayı üst yönetim sunumuna uygun şekilde özetler; model skorları ise operasyonel inceleme kuyrukları için risk bandı katmanı sağlar.
 
-Ham Kaggle verileri GitHub'a eklenmez. Repo yalnızca kod, modelleme katmanı, dokümantasyon ve yeniden üretilebilir proje yapısını içerir.
+## Repo Yapısı
 
-## Veri Setini Hazırlama
-
-`C:\Users\MONSTER\Downloads\ieee-fraud-detection.zip` dosyası yoksa Kaggle indirme scriptlerinden biri kullanılabilir:
-
-```powershell
-.\scripts\download_kaggle.ps1
+```text
+fraud_project/
+├── analyses/
+├── bigquery/
+├── docs/
+├── macros/
+├── models/
+│   ├── staging/
+│   ├── intermediate/
+│   └── marts/
+├── powerbi/
+│   ├── assets/
+│   ├── fraud_project.pbix
+│   └── README.md
+├── profiles/
+├── scripts/
+├── seeds/
+├── snapshots/
+├── src/
+├── tests/
+├── dbt_project.yml
+├── packages.yml
+└── README.md
 ```
 
-```bash
-./scripts/download_kaggle.sh
-```
+## Veri Katmanları
+
+- `fraud_project_raw`: Kaggle ham transaction ve identity tabloları, model destek tabloları.
+- `fraud_project_staging`: Tip dönüşümü ve standartlaştırılmış alan adları.
+- `fraud_project_intermediate`: Transaction ve identity join katmanı, analitik feature üretimi.
+- `fraud_project_mart`: Fraud summary, günlük istatistikler, segment ve risk bandı martları.
+- `fraud_project_powerbi`: Power BI için final raporlama tabloları.
 
 ## Çalıştırma
 
+Local analitik depo ve model skorlarını üretmek:
+
 ```powershell
 python src\prepare_raw_and_ml.py
-& "$env:APPDATA\Python\Python312\Scripts\dbt.exe" run --project-dir dbt_ieee_fraud --profiles-dir profiles
-& "$env:APPDATA\Python\Python312\Scripts\dbt.exe" test --project-dir dbt_ieee_fraud --profiles-dir profiles
+dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
 python src\export_powerbi_and_charts.py
-python src\create_powerbi_template.py
-python src\build_presentation_deck.py
+python src\build_fraud_project_pbix.py
 ```
 
-Power BI template:
+BigQuery deployment:
 
-`outputs/powerbi/ieee_fraud_detection_dashboard.pbit`
+```powershell
+.\scripts\deploy_bigquery.ps1 `
+  -Credentials "C:\Users\MONSTER\Downloads\workintech-working-2378ce4f85e2.json" `
+  -ProjectId "workintech-working" `
+  -Location "US" `
+  -ReportingDataset "fraud_project_powerbi"
+```
 
-Düzenlenebilir PowerPoint sunumu:
+## Ana Teslimler
 
-`outputs/presentation/ieee-cis-fraud-detection-analysis.pptx`
+- Power BI raporu: `powerbi/fraud_project.pbix`
+- Power BI görsel varlıkları: `powerbi/assets/`
+- dbt modelleri: `models/`
+- BigQuery rehberi: `bigquery/README.md`
+- Sunum ve analiz dokümanları: `docs/`
 
-Analiz hikayesi:
-
-`outputs/tables/analysis_story.md`
-
-## BigQuery
-
-Proje BigQuery yükleme scriptleri ve dbt profil şablonlarıyla birlikte gelir. Otomatik yükleme için servis hesabı JSON dosyası veya Application Default Credentials yapılandırması gerekir.
+Ham Kaggle dosyaları, servis hesabı JSON dosyası, DuckDB dosyaları ve geçici output klasörleri repoya eklenmez.

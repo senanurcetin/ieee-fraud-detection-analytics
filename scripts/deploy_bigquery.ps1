@@ -4,7 +4,7 @@ param(
 
     [string]$ProjectId = "workintech-working",
     [string]$Location = "US",
-    [string]$ReportingDataset = "powerbi"
+    [string]$ReportingDataset = "fraud_project_powerbi"
 )
 
 $ErrorActionPreference = "Stop"
@@ -26,10 +26,13 @@ if (-not (Test-Path -LiteralPath $dbt)) {
 
 & $python src\prepare_raw_and_ml.py
 & $python src\upload_to_bigquery.py --project-id $ProjectId --location $Location --credentials $env:GOOGLE_APPLICATION_CREDENTIALS
-& $dbt run --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod
-& $dbt test --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod
+& $dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+& $dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
 & $python src\export_powerbi_and_charts.py
+& $python src\create_powerbi_template.py
 & $python src\upload_reporting_tables_to_bigquery.py --project-id $ProjectId --location $Location --dataset $ReportingDataset --credentials $env:GOOGLE_APPLICATION_CREDENTIALS
+& $python src\create_powerbi_connection_files.py
+& $python src\build_fraud_project_pbix.py
 
 Write-Host ""
 Write-Host "BigQuery deployment complete."

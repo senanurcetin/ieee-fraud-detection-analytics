@@ -12,6 +12,7 @@ models:
           - accepted_values:
               arguments:
                 values: [0, 1]
+                quote: false
   - name: stg_identity
     columns:
       - name: transaction_id

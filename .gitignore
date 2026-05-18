@@ -14,9 +14,9 @@ outputs/tables/*.json
 tools/
 .dbt/
 profiles/.user.yml
-dbt_ieee_fraud/target/
-dbt_ieee_fraud/dbt_packages/
-dbt_ieee_fraud/logs/
+target/
+dbt_packages/
+logs/
 __pycache__/
 *.pyc
 *.duckdb

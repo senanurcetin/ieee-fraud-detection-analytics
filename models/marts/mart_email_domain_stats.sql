@@ -2,7 +2,7 @@ select
     purchaser_email_group,
     count(*) as transaction_count,
     sum(is_fraud) as fraud_count,
-    avg(is_fraud::double) as fraud_rate,
+    {{ fp_avg_rate('is_fraud') }} as fraud_rate,
     avg(transaction_amount) as avg_transaction_amount
 from {{ ref('int_features') }}
 group by 1

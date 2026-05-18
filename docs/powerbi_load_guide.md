@@ -1,36 +1,49 @@
 # Power BI Yükleme Rehberi
 
-`.pbit` dosyası Power BI Desktop sürüm veya paketleme farkı nedeniyle açılmazsa ana yöntem olarak BigQuery ya da CSV klasör bağlantısını kullanın.
+Ana teslim dosyası:
 
-## Seçenek 1: BigQuery Üzerinden Açma
-
-Önce BigQuery yüklemesini çalıştırın:
-
-```powershell
-.\scripts\deploy_bigquery.ps1 -Credentials "C:\path\to\service-account.json" -ProjectId "workintech-working" -Location "US" -ReportingDataset "powerbi"
+```text
+powerbi/fraud_project.pbix
 ```
 
-Bu komut ham tabloları BigQuery'ye yükler, dbt modellerini BigQuery üzerinde çalıştırır ve Power BI için hazır raporlama tablolarını `workintech-working.powerbi` datasetine yazar.
+Bu dosya 6 sayfalık rapor layout'u ve mevcut Power BI veri modelini içerir.
 
-Power BI Desktop içinde:
+## BigQuery Üzerinden Yenileme
 
-1. `Get Data` > `Google BigQuery` seçin.
-2. Google hesabı veya servis hesabı ile giriş yapın.
-3. `workintech-working` projesini açın.
-4. `powerbi` datasetini seçin.
-5. `fact_train_transactions` ve `mart_*` tablolarını `Import` modu ile yükleyin.
+Önce BigQuery deployment çalıştırılır:
 
-Önerilen ilişki:
+```powershell
+.\scripts\deploy_bigquery.ps1 `
+  -Credentials "C:\Users\MONSTER\Downloads\workintech-working-2378ce4f85e2.json" `
+  -ProjectId "workintech-working" `
+  -Location "US" `
+  -ReportingDataset "fraud_project_powerbi"
+```
 
-- `fact_train_transactions[transaction_id]` -> `mart_model_predictions[transaction_id]`
+Power BI Desktop içinde Google BigQuery bağlantısı kullanılırken hedef dataset:
 
-## Seçenek 2: Lokal CSV Klasöründen Açma
+```text
+workintech-working.fraud_project_powerbi
+```
 
-Power BI Desktop ile şu dosyayı açın:
+Yüklenecek tablolar:
 
-`outputs/powerbi/ieee_fraud_csv_folder.pbids`
+- `fact_train_transactions`
+- `mart_model_predictions`
+- `mart_fraud_summary`
+- `mart_daily_stats`
+- `mart_amount_bands`
+- `mart_product_device_stats`
+- `mart_email_domain_stats`
+- `mart_risk_band_stats`
+- `mart_feature_missingness`
 
-Navigator ekranında CSV dosyaları görünecektir. Tabloları seçip `Load` veya `Transform Data` ile içeri alın.
+## Önerilen İlişki
+
+```text
+fact_train_transactions[transaction_id]
+  -> mart_model_predictions[transaction_id]
+```
 
 ## Önerilen DAX Ölçüleri
 

@@ -1,15 +1,18 @@
-name: ieee_fraud_detection
+name: fraud_project
 version: "1.0.0"
 config-version: 2
 
 profile: ieee_fraud_detection
 
 model-paths: ["models"]
+analysis-paths: ["analyses"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
 test-paths: ["tests"]
 macro-paths: ["macros"]
 
 models:
-  ieee_fraud_detection:
+  fraud_project:
     staging:
       +schema: staging
       +materialized: view
