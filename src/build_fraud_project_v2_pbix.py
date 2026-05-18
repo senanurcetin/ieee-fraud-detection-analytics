@@ -4,6 +4,7 @@ import json
 import shutil
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
+from xml.etree import ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,14 +67,20 @@ def normalize_layout(layout: dict) -> dict:
 
 
 def add_png_content_type(raw: bytes) -> bytes:
-    text = raw.decode("utf-8-sig")
-    if 'Extension="png"' not in text:
-        text = text.replace(
-            '<Default Extension="json" ContentType="" />',
-            '<Default Extension="png" ContentType="" /><Default Extension="json" ContentType="" />',
-            1,
-        )
-    return ("\ufeff" + text.lstrip("\ufeff")).encode("utf-8")
+    namespace = "http://schemas.openxmlformats.org/package/2006/content-types"
+    ET.register_namespace("", namespace)
+    root = ET.fromstring(raw.decode("utf-8-sig"))
+
+    for child in list(root):
+        if child.attrib.get("PartName") == "/SecurityBindings":
+            root.remove(child)
+
+    has_png = any(child.attrib.get("Extension") == "png" for child in root)
+    if not has_png:
+        png = ET.Element(f"{{{namespace}}}Default", {"Extension": "png", "ContentType": ""})
+        root.insert(0, png)
+
+    return ("\ufeff" + ET.tostring(root, encoding="unicode")).encode("utf-8")
 
 
 def copy_assets(resources: dict[str, bytes]) -> None:
@@ -95,6 +102,7 @@ def build_pbix() -> None:
     with ZipFile(BASE_PBIX, "r") as source:
         entries = {name: source.read(name) for name in source.namelist()}
 
+    entries.pop("SecurityBindings", None)
     entries["Report/Layout"] = layout_bytes
     for name, data in resources.items():
         entries[name] = data
