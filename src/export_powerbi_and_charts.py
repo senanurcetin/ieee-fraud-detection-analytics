@@ -207,6 +207,176 @@ def chart_risk_band(risk: pd.DataFrame) -> None:
     savefig(CHART_DIR / "08_risk_bands.png")
 
 
+def chart_product_lift(con: duckdb.DuckDBPyConnection, baseline: float) -> None:
+    df = read(
+        con,
+        """
+        select
+            product_cd_clean as product_cd,
+            count(*) as transaction_count,
+            avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by fraud_rate desc
+        """,
+    )
+    fig, ax = plt.subplots(figsize=(8.5, 4.8))
+    bars = ax.bar(df["product_cd"], df["fraud_rate"] * 100, color=[COLORS["red"], COLORS["amber"], COLORS["violet"], COLORS["blue"], COLORS["teal"]])
+    ax.axhline(baseline * 100, color=COLORS["ink"], linestyle="--", linewidth=1.2)
+    ax.text(0.02, baseline * 100 + 0.25, f"Baseline {baseline * 100:.2f}%", color=COLORS["ink"], fontsize=9)
+    ax.set_title("Product C is the primary risk outlier", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Fraud rate (%)")
+    ax.set_ylim(0, df["fraud_rate"].max() * 100 * 1.22)
+    ax.grid(axis="y", color=COLORS["grid"])
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.tick_params(axis="x", length=0)
+    for bar, (_, row) in zip(bars, df.iterrows()):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.25, f"{row['fraud_rate'] * 100:.1f}%\n{int(row['transaction_count'] / 1000)}k", ha="center", fontsize=9)
+    savefig(CHART_DIR / "10_product_lift.png")
+
+
+def chart_identity_lift(con: duckdb.DuckDBPyConnection, baseline: float) -> None:
+    df = read(
+        con,
+        """
+        select
+            case when has_identity = 1 then 'Identity present' else 'No identity record' end as identity_status,
+            count(*) as transaction_count,
+            avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by fraud_rate
+        """,
+    )
+    fig, ax = plt.subplots(figsize=(7.6, 4.6))
+    ax.bar(df["identity_status"], df["fraud_rate"] * 100, color=[COLORS["teal"], COLORS["red"]], width=0.5)
+    ax.axhline(baseline * 100, color=COLORS["ink"], linestyle="--", linewidth=1)
+    ax.set_title("Identity coverage is a risk signal, not just data completeness", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Fraud rate (%)")
+    ax.set_ylim(0, df["fraud_rate"].max() * 100 * 1.28)
+    ax.grid(axis="y", color=COLORS["grid"])
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    for idx, row in df.iterrows():
+        ax.text(idx, row["fraud_rate"] * 100 + 0.18, f"{row['fraud_rate'] * 100:.2f}%\n{int(row['transaction_count']):,}", ha="center", fontsize=10)
+    savefig(CHART_DIR / "11_identity_lift.png")
+
+
+def chart_card_heatmap(con: duckdb.DuckDBPyConnection) -> None:
+    df = read(
+        con,
+        """
+        select
+            card_network,
+            card_type,
+            count(*) as transaction_count,
+            avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        where card_network != 'Unknown' and card_type != 'Unknown'
+        group by 1, 2
+        having count(*) >= 1000
+        """,
+    )
+    matrix = df.pivot(index="card_network", columns="card_type", values="fraud_rate").fillna(0) * 100
+    fig, ax = plt.subplots(figsize=(7.8, 4.8))
+    im = ax.imshow(matrix.values, cmap="YlOrRd", aspect="auto")
+    ax.set_xticks(range(len(matrix.columns)), matrix.columns)
+    ax.set_yticks(range(len(matrix.index)), matrix.index)
+    for i in range(len(matrix.index)):
+        for j in range(len(matrix.columns)):
+            value = matrix.iloc[i, j]
+            ax.text(j, i, f"{value:.1f}%", ha="center", va="center", fontsize=10, color=COLORS["ink"])
+    ax.set_title("Credit card combinations show higher fraud exposure", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02, label="Fraud rate (%)")
+    ax.spines[:].set_visible(False)
+    savefig(CHART_DIR / "12_card_payment_heatmap.png")
+
+
+def chart_email_risk(con: duckdb.DuckDBPyConnection, baseline: float) -> None:
+    df = read(con, "select * from mart.mart_email_domain_stats order by fraud_rate desc")
+    fig, ax = plt.subplots(figsize=(8.4, 4.8))
+    ax.barh(df["purchaser_email_group"][::-1], df["fraud_rate"][::-1] * 100, color=COLORS["blue"])
+    ax.axvline(baseline * 100, color=COLORS["ink"], linestyle="--", linewidth=1)
+    ax.set_title("Email domain groups split risk into practical BI segments", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("Fraud rate (%)")
+    ax.grid(axis="x", color=COLORS["grid"])
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    ax.tick_params(axis="y", length=0)
+    savefig(CHART_DIR / "13_email_domain_risk.png")
+
+
+def chart_amount_distribution(con: duckdb.DuckDBPyConnection) -> None:
+    df = read(
+        con,
+        """
+        select
+            case when is_fraud = 1 then 'Fraud' else 'Legitimate' end as label,
+            transaction_amount
+        from intermediate.int_features
+        where transaction_amount between 0 and 1500
+        """,
+    )
+    fig, ax = plt.subplots(figsize=(8.4, 4.8))
+    legit = df[df["label"].eq("Legitimate")]["transaction_amount"]
+    fraud = df[df["label"].eq("Fraud")]["transaction_amount"]
+    ax.hist(legit, bins=80, alpha=0.45, density=True, color=COLORS["teal"], label="Legitimate")
+    ax.hist(fraud, bins=80, alpha=0.55, density=True, color=COLORS["red"], label="Fraud")
+    ax.set_title("Fraud amount distribution over-indexes at both small and high values", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("Transaction amount, capped at $1,500")
+    ax.set_ylabel("Density")
+    ax.legend(frameon=False)
+    ax.grid(axis="y", color=COLORS["grid"])
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    savefig(CHART_DIR / "14_amount_distribution.png")
+
+
+def chart_hourly_pattern(con: duckdb.DuckDBPyConnection) -> None:
+    df = read(
+        con,
+        """
+        select
+            cast(floor((transaction_dt % 86400) / 3600) as integer) as transaction_hour,
+            count(*) as transaction_count,
+            avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by 1
+        """,
+    )
+    fig, ax1 = plt.subplots(figsize=(9, 4.8))
+    ax1.plot(df["transaction_hour"], df["fraud_rate"] * 100, color=COLORS["red"], linewidth=2.5, marker="o")
+    ax1.set_ylabel("Fraud rate (%)", color=COLORS["red"])
+    ax1.tick_params(axis="y", labelcolor=COLORS["red"])
+    ax1.set_xticks(range(0, 24, 2))
+    ax1.grid(axis="y", color=COLORS["grid"])
+    ax2 = ax1.twinx()
+    ax2.bar(df["transaction_hour"], df["transaction_count"], color=COLORS["blue"], alpha=0.18, width=0.8)
+    ax2.set_ylabel("Transaction count", color=COLORS["blue"])
+    ax2.tick_params(axis="y", labelcolor=COLORS["blue"])
+    ax1.set_title("Within-day risk pattern adds monitoring context", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax1.set_xlabel("Relative hour of day from TransactionDT")
+    ax1.spines[["top", "right"]].set_visible(False)
+    ax2.spines[["top", "left"]].set_visible(False)
+    savefig(CHART_DIR / "15_hourly_pattern.png")
+
+
+def chart_risk_lift(risk: pd.DataFrame, baseline: float) -> None:
+    df = risk[risk["split"].eq("train")].copy()
+    order = ["Low", "Elevated", "High", "Critical"]
+    df["risk_band"] = pd.Categorical(df["risk_band"], categories=order, ordered=True)
+    df = df.sort_values("risk_band")
+    df["lift"] = df["observed_fraud_rate"] / baseline
+    fig, ax = plt.subplots(figsize=(8.2, 4.8))
+    ax.bar(df["risk_band"].astype(str), df["lift"], color=[COLORS["teal"], COLORS["amber"], COLORS["violet"], COLORS["red"]])
+    ax.axhline(1, color=COLORS["ink"], linestyle="--", linewidth=1)
+    ax.set_title("Model risk bands create review queues with measurable lift", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Fraud-rate lift vs baseline")
+    ax.grid(axis="y", color=COLORS["grid"])
+    ax.spines[["top", "right", "left"]].set_visible(False)
+    for idx, (_, row) in enumerate(df.iterrows()):
+        ax.text(idx, row["lift"] + 0.8, f"{row['lift']:.1f}x", ha="center", fontsize=10, weight="bold")
+    savefig(CHART_DIR / "16_risk_band_lift.png")
+
+
 def chart_architecture() -> None:
     from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
@@ -306,13 +476,58 @@ CALCULATE([Transactions], fact_train_transactions[risk_band] IN {"High", "Critic
 
 ## Pages
 
-1. Executive Overview: KPI cards, fraud-rate trend, risk-band split.
-2. Segment Risk: product/device matrix, email-domain risk, amount-band exposure.
-3. Model Monitoring: AUC, feature importance, prediction risk bands, observed fraud by band.
-4. Data Quality: missingness by family, identity coverage, dbt test status.
-5. Architecture: ingest, BigQuery/DuckDB warehouse, dbt layers, ML scoring, BI consumption.
+1. Executive Overview: baseline fraud rate, Product C lift, identity lift, and model risk-band lift.
+2. Product Identity: product-level fraud concentration and identity-present versus no-identity behavior.
+3. Payment Email: card network/type heatmap and purchaser email-domain risk groups.
+4. Amount Time: amount-band fraud rate, amount distribution, daily fraud drift, and relative-hour pattern.
+5. Model Risk: feature importance, time-based ROC, risk bands, and observed fraud by score band.
+6. Data Quality: structural missingness, identity coverage, dbt test status, and architecture context.
+
+## Narrative
+
+Start the presentation with the business question: where does fraud concentrate? Use the dashboard to prove that fraud is not random across product, identity, payment, email, amount, and time. Show the model only after the segment analysis, as the operational layer that turns those patterns into review queues.
 """
     (PBI_DIR / "powerbi_dashboard_spec.md").write_text(dashboard, encoding="utf-8")
+
+    con = duckdb.connect(str(DB_PATH), read_only=True)
+    product = read(
+        con,
+        """
+        select product_cd_clean as product_cd, count(*) as transactions, avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by fraud_rate desc
+        """,
+    )
+    identity = read(
+        con,
+        """
+        select has_identity, count(*) as transactions, avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by has_identity
+        """,
+    )
+    story = f"""# Analysis Story
+
+## Central Question
+
+Where does fraud concentrate, and how should a BI team monitor it?
+
+## Key Findings
+
+1. Fraud is rare but concentrated: baseline fraud rate is {pct(row['fraud_rate'])}.
+2. Product risk is uneven: Product C fraud rate is {product.iloc[0]['fraud_rate'] * 100:.2f}% versus Product W at {product[product['product_cd'].eq('W')].iloc[0]['fraud_rate'] * 100:.2f}%.
+3. Identity presence is a risk signal: identity-present transactions show {identity[identity['has_identity'].eq(1)].iloc[0]['fraud_rate'] * 100:.2f}% fraud versus {identity[identity['has_identity'].eq(0)].iloc[0]['fraud_rate'] * 100:.2f}% without identity records.
+4. Amount risk is non-linear: <$25 and $250+ bands show higher fraud rates than mid-size purchases.
+5. Payment attributes matter: credit card combinations over-index versus debit card combinations.
+6. The model should be used as a monitoring/ranking layer: Critical risk band captures very high fraud-rate lift versus baseline.
+
+## Recommended Narrative
+
+Start with class imbalance, then prove that fraud is not random. Move through product, identity, amount, payment, email, and time patterns. End with model risk bands as an operational monitoring layer, not as a black-box final decision engine.
+"""
+    (TABLES_DIR / "analysis_story.md").write_text(story, encoding="utf-8")
 
 
 def main() -> None:
@@ -336,6 +551,14 @@ def main() -> None:
     chart_roc(metrics)
     chart_missingness(missingness)
     chart_risk_band(risk)
+    baseline = float(summary.iloc[0]["fraud_rate"])
+    chart_product_lift(con, baseline)
+    chart_identity_lift(con, baseline)
+    chart_card_heatmap(con)
+    chart_email_risk(con, baseline)
+    chart_amount_distribution(con)
+    chart_hourly_pattern(con)
+    chart_risk_lift(risk, baseline)
     chart_architecture()
     write_docs(summary, metrics)
     print(f"Power BI files: {PBI_DIR}")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import uuid
 from pathlib import Path
 
 import pandas as pd
@@ -11,7 +12,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 PBI_DIR = ROOT / "outputs" / "powerbi"
 CHART_DIR = ROOT / "outputs" / "charts"
-PROJECT_DIR = ROOT / "outputs" / "powerbi" / "ieee_fraud_powerbi_project"
+PROJECT_DIR = PBI_DIR / f"ieee_fraud_powerbi_project_{uuid.uuid4().hex[:8]}"
 OUT_FILE = ROOT / "outputs" / "powerbi" / "ieee_fraud_detection_dashboard.pbit"
 PBI_TOOLS = ROOT / "tools" / "pbi-tools" / "core" / "pbi-tools.core.exe"
 
@@ -32,48 +33,68 @@ TABLE_FILES = [
 PAGES = [
     {
         "name": "Executive Overview",
-        "title": "IEEE-CIS Fraud Detection | Executive Overview",
-        "subtitle": "Rare-event fraud profile, temporal movement, and transaction amount exposure.",
+        "title": "Fraud is rare, but it is highly concentrated",
+        "subtitle": "The dashboard should explain where fraud clusters before showing the technical pipeline.",
         "images": [
             ("01_class_imbalance.png", 48, 140, 360, 240),
-            ("02_daily_fraud_rate.png", 444, 126, 760, 278),
-            ("03_amount_bands.png", 214, 438, 760, 220),
+            ("10_product_lift.png", 444, 126, 360, 250),
+            ("11_identity_lift.png", 836, 126, 360, 250),
+            ("16_risk_band_lift.png", 260, 420, 760, 220),
         ],
     },
     {
-        "name": "Segment Risk",
-        "title": "Fraud Risk Concentrates By Segment",
-        "subtitle": "Product, device, identity coverage, and email-domain features create monitoring cuts.",
+        "name": "Product Identity",
+        "title": "Product and identity fields create the clearest fraud splits",
+        "subtitle": "Product C and identity-present transactions materially over-index versus baseline.",
         "images": [
-            ("04_product_device_risk.png", 58, 126, 548, 402),
-            ("07_missingness_by_family.png", 646, 126, 548, 402),
-            ("08_risk_bands.png", 332, 540, 520, 140),
+            ("10_product_lift.png", 58, 130, 520, 360),
+            ("11_identity_lift.png", 646, 130, 500, 360),
+            ("04_product_device_risk.png", 260, 510, 740, 160),
         ],
     },
     {
-        "name": "Model Monitoring",
-        "title": "LightGBM Scores Become BI-Ready Risk Bands",
-        "subtitle": "Time-based validation avoids random-leakage optimism and supports operational thresholds.",
+        "name": "Payment Email",
+        "title": "Payment type and email domain add practical monitoring dimensions",
+        "subtitle": "Credit combinations and specific purchaser email groups show higher fraud exposure.",
         "images": [
-            ("05_feature_importance.png", 58, 130, 560, 390),
-            ("06_validation_roc.png", 676, 130, 430, 390),
-            ("08_risk_bands.png", 232, 532, 760, 150),
+            ("12_card_payment_heatmap.png", 72, 130, 500, 390),
+            ("13_email_domain_risk.png", 650, 130, 500, 390),
         ],
     },
     {
-        "name": "Architecture",
-        "title": "Free-Tier Analytics Architecture",
-        "subtitle": "Kaggle CSV ingest, BigQuery-ready warehouse design, dbt Core transformation, Python scoring, and Power BI consumption.",
+        "name": "Amount Time",
+        "title": "Amount and time patterns show non-linear fraud behavior",
+        "subtitle": "Small tickets, high-value bands, and relative time windows need separate monitoring.",
         "images": [
-            ("09_architecture.png", 60, 128, 1120, 520),
+            ("03_amount_bands.png", 58, 132, 520, 250),
+            ("14_amount_distribution.png", 650, 132, 500, 250),
+            ("02_daily_fraud_rate.png", 58, 414, 560, 230),
+            ("15_hourly_pattern.png", 676, 414, 470, 230),
+        ],
+    },
+    {
+        "name": "Model Risk",
+        "title": "Model scores turn analysis into review queues",
+        "subtitle": "The model is used as a ranking and monitoring layer, not as a final autonomous decision engine.",
+        "images": [
+            ("05_feature_importance.png", 58, 130, 520, 350),
+            ("06_validation_roc.png", 650, 130, 460, 350),
+            ("08_risk_bands.png", 292, 506, 700, 150),
+        ],
+    },
+    {
+        "name": "Data Quality",
+        "title": "Structural missingness explains why feature engineering matters",
+        "subtitle": "Missingness is a dataset characteristic that should be monitored, not silently imputed away.",
+        "images": [
+            ("07_missingness_by_family.png", 78, 140, 520, 390),
+            ("09_architecture.png", 646, 148, 500, 320),
         ],
     },
 ]
 
 
 def ensure_clean_project() -> None:
-    if PROJECT_DIR.exists():
-        shutil.rmtree(PROJECT_DIR)
     (PROJECT_DIR / "Model" / "tables").mkdir(parents=True)
     (PROJECT_DIR / "Model" / "cultures").mkdir(parents=True)
     (PROJECT_DIR / "Report" / "sections").mkdir(parents=True)
@@ -150,7 +171,7 @@ def write_model() -> None:
         "",
         "annotation __PBI_TimeIntelligenceEnabled = 0",
         "",
-        "annotation PBIDesktopVersion = 2.140.0.0",
+        "annotation PBIDesktopVersion = 2.153.1206.0",
         "",
         'annotation PBI_QueryOrder = ["CsvRoot",' + ",".join(json.dumps(Path(name).stem) for name in TABLE_FILES) + "]",
         "",
@@ -383,6 +404,15 @@ def main() -> None:
     write_model()
     write_report()
     compile_template()
+    (PBI_DIR / "POWERBI_OPEN_NOTES.md").write_text(
+        "# Power BI Open Notes\n\n"
+        "Generated for Power BI Desktop `2.153.1206.0`, detected on this machine.\n\n"
+        "Open `ieee_fraud_detection_dashboard.pbit`. When prompted for the `CsvRoot` parameter, keep the default path if the project is still in this workspace. "
+        "If the template is moved, point `CsvRoot` to the folder containing the exported CSV marts.\n\n"
+        "If Power BI Desktop still reports template-version incompatibility, import the CSV files from this folder manually and use `powerbi_dashboard_spec.md` for the page/measures layout. "
+        "The generated PBIT is a convenience artifact; the canonical data model is the CSV mart layer generated from dbt.",
+        encoding="utf-8",
+    )
     print(OUT_FILE)
 
 

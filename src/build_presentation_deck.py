@@ -42,6 +42,34 @@ def load_numbers() -> dict:
     amount = con.execute("select * from mart.mart_amount_bands order by amount_band").fetch_df()
     risk = con.execute("select * from mart.mart_risk_band_stats where split = 'train' order by avg_predicted_probability desc").fetch_df()
     product = con.execute("select * from mart.mart_product_device_stats order by fraud_rate desc, transaction_count desc limit 1").fetch_df().iloc[0].to_dict()
+    product_all = con.execute(
+        """
+        select product_cd_clean as product_cd, count(*) as transaction_count, avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by fraud_rate desc
+        """
+    ).fetch_df()
+    identity = con.execute(
+        """
+        select has_identity, count(*) as transaction_count, avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        group by 1
+        order by has_identity
+        """
+    ).fetch_df()
+    card = con.execute(
+        """
+        select card_network, card_type, count(*) as transaction_count, avg(is_fraud::double) as fraud_rate
+        from intermediate.int_features
+        where card_network != 'Unknown' and card_type != 'Unknown'
+        group by 1, 2
+        having count(*) >= 1000
+        order by fraud_rate desc
+        limit 1
+        """
+    ).fetch_df().iloc[0].to_dict()
+    email = con.execute("select * from mart.mart_email_domain_stats order by fraud_rate desc limit 1").fetch_df().iloc[0].to_dict()
     missing = con.execute(
         """
         select column_family, avg(missing_rate) as avg_missing
@@ -59,6 +87,10 @@ def load_numbers() -> dict:
         "amount": amount.to_dict(orient="records"),
         "risk": risk.to_dict(orient="records"),
         "product": product,
+        "product_all": product_all.to_dict(orient="records"),
+        "identity": identity.to_dict(orient="records"),
+        "card": card,
+        "email": email,
         "missing": missing,
         "metrics": metrics,
         "feature": feature,
@@ -158,6 +190,13 @@ def write_slides(numbers: dict) -> None:
     s = numbers["summary"]
     metrics = numbers["metrics"]
     product = numbers["product"]
+    product_rows = numbers["product_all"]
+    product_c = next(row for row in product_rows if row["product_cd"] == "C")
+    product_w = next(row for row in product_rows if row["product_cd"] == "W")
+    identity_present = next(row for row in numbers["identity"] if row["has_identity"] == 1)
+    identity_missing = next(row for row in numbers["identity"] if row["has_identity"] == 0)
+    card = numbers["card"]
+    email = numbers["email"]
     missing = numbers["missing"]
     feature = numbers["feature"]
     critical = next(row for row in numbers["risk"] if row["risk_band"] == "Critical")
@@ -173,86 +212,106 @@ def write_slides(numbers: dict) -> None:
         "07_missingness_by_family.png",
         "08_risk_bands.png",
         "09_architecture.png",
+        "10_product_lift.png",
+        "11_identity_lift.png",
+        "12_card_payment_heatmap.png",
+        "13_email_domain_risk.png",
+        "14_amount_distribution.png",
+        "15_hourly_pattern.png",
+        "16_risk_band_lift.png",
     ]}
 
     slides = [
         slide_module(1, f"""
-  addBase(slide, "FRAUD ANALYTICS CASE STUDY", "IEEE-CIS Fraud Detection: BI + ML Production Analysis");
-  text(slide, "A full analytics pipeline from Kaggle CSVs to dbt marts, LightGBM risk scoring, Power BI handoff, and BigQuery-ready deployment.", 58, 148, 780, 64, {{ size: 16, color: C.ink }});
+  addBase(slide, "FRAUD ANALYSIS STORY", "Fraud is rare, but it is not random");
+  text(slide, "The analysis shows where fraud concentrates across product, identity, amount, payment, email, and time. The model then turns those patterns into BI-ready risk queues.", 58, 148, 900, 64, {{ size: 16, color: C.ink }});
   card(slide, "TRAIN TRANSACTIONS", "{int(s['total_transactions']):,}", "Official Kaggle train_transaction.csv", 58, 246, 250, C.teal);
-  card(slide, "OBSERVED FRAUD RATE", "{pct(s['fraud_rate'])}", "{int(s['fraud_transactions']):,} fraud labels", 336, 246, 250, C.red);
-  card(slide, "IDENTITY COVERAGE", "{pct(s['identity_coverage_rate'])}", "Joined via TransactionID", 614, 246, 250, C.blue);
-  card(slide, "VALIDATION AUC", "{metrics['ml']['validation_auc']:.3f}", "Time-based holdout", 892, 246, 250, C.violet);
-  image(slide, {charts['09_architecture.png']}, 118, 396, 1040, 226, "Architecture overview");
+  card(slide, "BASE FRAUD RATE", "{pct(s['fraud_rate'])}", "{int(s['fraud_transactions']):,} fraud labels", 336, 246, 250, C.red);
+  card(slide, "PRODUCT C RATE", "{pct(product_c['fraud_rate'])}", "{product_c['transaction_count']:,} transactions", 614, 246, 250, C.violet);
+  card(slide, "CRITICAL BAND RATE", "{pct(critical['observed_fraud_rate'])}", "{critical['observed_fraud_rate'] / s['fraud_rate']:.1f}x lift", 892, 246, 250, C.red);
+  image(slide, {charts['16_risk_band_lift.png']}, 150, 406, 920, 220, "Risk lift chart");
 """),
         slide_module(2, f"""
-  addBase(slide, "DATA FOUNDATION", "The Kaggle files form a transaction-first fraud warehouse");
+  addBase(slide, "ANALYSIS FRAME", "The right question is concentration, not generic accuracy");
   card(slide, "TRAIN TRANSACTION", "{metrics['tables']['train_transaction']['rows']:,}", "{metrics['tables']['train_transaction']['columns']} columns", 58, 160, 220, C.teal);
   card(slide, "TRAIN IDENTITY", "{metrics['tables']['train_identity']['rows']:,}", "{metrics['tables']['train_identity']['columns']} columns", 300, 160, 220, C.blue);
   card(slide, "TEST TRANSACTION", "{metrics['tables']['test_transaction']['rows']:,}", "{metrics['tables']['test_transaction']['columns']} columns", 542, 160, 220, C.violet);
-  card(slide, "DBT QA", "11 / 11", "not-null, unique, accepted values", 784, 160, 220, C.green);
-  callout(slide, "Design decision", "TransactionID remains the warehouse grain. Identity data is sparse and joined as an enrichment layer, not treated as a required dimension.", 58, 320, 420, 176, C.blue);
-  callout(slide, "Modeling implication", "Feature families are preserved: core transaction, card, address, C/D/M/V engineered features, email domains, and identity/device attributes.", 520, 320, 420, 176, C.violet);
-  callout(slide, "BI implication", "Power BI consumes curated marts rather than raw 400-column tables. The full fact table remains available for drill-through and QA.", 58, 520, 882, 92, C.teal);
+  card(slide, "FRAUD LABELS", "{int(s['fraud_transactions']):,}", "rare-event target", 784, 160, 220, C.red);
+  callout(slide, "Question 1", "Where does fraud rate exceed the {pct(s['fraud_rate'])} baseline, and by how much?", 58, 320, 330, 142, C.red);
+  callout(slide, "Question 2", "Which dimensions are useful for dashboard segmentation: product, identity, amount, card, email, and time?", 422, 320, 330, 142, C.blue);
+  callout(slide, "Question 3", "Can model scores create review queues that are measurable and explainable in Power BI?", 786, 320, 330, 142, C.violet);
+  image(slide, {charts['01_class_imbalance.png']}, 260, 500, 690, 130, "Class imbalance");
 """),
         slide_module(3, f"""
-  addBase(slide, "ARCHITECTURE", "Cloud-ready design with a zero-cost local implementation");
-  image(slide, {charts['09_architecture.png']}, 52, 142, 1136, 500, "Pipeline architecture");
-  pill(slide, "BigQuery free-tier target", 88, 604, 190, C.blue);
-  pill(slide, "DuckDB local reproducibility", 304, 604, 220, C.green);
-  pill(slide, "dbt Core transformations", 550, 604, 210, C.violet);
-  pill(slide, "Power BI dashboard", 786, 604, 180, C.amber);
+  addBase(slide, "FINDING 1", "Product family is the clearest business split");
+  image(slide, {charts['10_product_lift.png']}, 64, 150, 650, 390, "Product lift");
+  card(slide, "PRODUCT C", "{pct(product_c['fraud_rate'])}", "{product_c['fraud_rate'] / s['fraud_rate']:.1f}x baseline", 780, 170, 260, C.red);
+  card(slide, "PRODUCT W", "{pct(product_w['fraud_rate'])}", "large but lower-risk volume", 780, 318, 260, C.teal);
+  callout(slide, "Interpretation", "Product C is not just a small anomaly; it has materially higher fraud exposure and should be a default executive dashboard filter.", 780, 470, 360, 112, C.red);
 """),
         slide_module(4, f"""
-  addBase(slide, "RARE EVENT", "Fraud is only {pct(s['fraud_rate'])} of labeled transactions");
-  image(slide, {charts['01_class_imbalance.png']}, 70, 152, 510, 330, "Class imbalance");
-  card(slide, "LEGITIMATE", "{int(s['legitimate_transactions']):,}", "Dominant class", 650, 164, 230, C.teal);
-  card(slide, "FRAUD", "{int(s['fraud_transactions']):,}", "Minority class", 908, 164, 230, C.red);
-  callout(slide, "Analytical consequence", "Accuracy is not useful by itself. Monitoring should emphasize fraud-rate lift, risk bands, precision-recall behavior, and segment concentration.", 650, 322, 488, 146, C.red);
-  callout(slide, "Operational consequence", "Manual review queues should be thresholded by model score and business capacity, not by a single universal fraud rule.", 70, 516, 1068, 88, C.blue);
+  addBase(slide, "FINDING 2", "Identity presence is a risk signal, not only a data quality field");
+  image(slide, {charts['11_identity_lift.png']}, 78, 156, 560, 360, "Identity lift");
+  card(slide, "IDENTITY PRESENT", "{pct(identity_present['fraud_rate'])}", "{int(identity_present['transaction_count']):,} records", 704, 174, 270, C.red);
+  card(slide, "NO IDENTITY RECORD", "{pct(identity_missing['fraud_rate'])}", "{int(identity_missing['transaction_count']):,} records", 704, 322, 270, C.teal);
+  callout(slide, "Interpretation", "Identity rows are sparse, but when present they mark a materially riskier subset. Treat has_identity as a monitoring feature, not only as join coverage.", 704, 474, 380, 110, C.blue);
 """),
         slide_module(5, f"""
-  addBase(slide, "TEMPORAL SIGNAL", "Risk changes across the relative transaction window");
-  image(slide, {charts['02_daily_fraud_rate.png']}, 58, 150, 1078, 386, "Daily fraud-rate trend");
-  callout(slide, "Why this matters", "The validation split is time-based, using the last 20% of TransactionDT. This is stricter than random validation and better matches production drift.", 138, 560, 910, 76, C.blue);
+  addBase(slide, "FINDING 3", "Transaction amount risk is non-linear");
+  image(slide, {charts['03_amount_bands.png']}, 54, 150, 530, 330, "Amount bands");
+  image(slide, {charts['14_amount_distribution.png']}, 650, 150, 500, 330, "Amount distribution");
+  callout(slide, "Interpretation", "Fraud is elevated in very small purchases and again in higher-value bands. A single amount threshold would miss this U-shaped behavior.", 188, 520, 820, 90, C.amber);
 """),
         slide_module(6, f"""
-  addBase(slide, "SEGMENT RISK", "Fraud exposure is not evenly distributed");
-  image(slide, {charts['04_product_device_risk.png']}, 54, 150, 540, 380, "Product device risk");
-  image(slide, {charts['03_amount_bands.png']}, 646, 150, 500, 300, "Amount bands");
-  card(slide, "TOP RISK SEGMENT", "{product['product_cd']} / {product['device_type']}", "{pct(product['fraud_rate'])} fraud rate", 646, 486, 246, C.violet);
-  card(slide, "MEDIAN AMOUNT", "{money(s['median_transaction_amount'])}", "Transaction amount", 920, 486, 226, C.amber);
+  addBase(slide, "FINDING 4", "Payment attributes separate credit risk from debit volume");
+  image(slide, {charts['12_card_payment_heatmap.png']}, 74, 150, 560, 372, "Card heatmap");
+  card(slide, "TOP CARD SPLIT", "{card['card_network']} / {card['card_type']}", "{pct(card['fraud_rate'])} fraud rate", 704, 174, 330, C.red);
+  callout(slide, "Interpretation", "Credit-card combinations over-index versus debit combinations. This is a useful dashboard filter because it is explainable to non-technical stakeholders.", 704, 340, 400, 134, C.red);
+  callout(slide, "Dashboard action", "Slice Product C by card network/type before deciding whether risk is product-led or payment-method-led.", 704, 510, 400, 82, C.blue);
 """),
         slide_module(7, f"""
-  addBase(slide, "DATA QUALITY", "Missingness is structural and must be modeled explicitly");
+  addBase(slide, "FINDING 5", "Email domains create simple, explainable risk segments");
+  image(slide, {charts['13_email_domain_risk.png']}, 82, 150, 600, 380, "Email domain risk");
+  card(slide, "HIGHEST EMAIL GROUP", "{email['purchaser_email_group']}", "{pct(email['fraud_rate'])} fraud rate", 742, 170, 300, C.blue);
+  callout(slide, "Interpretation", "Email domain is not a final fraud rule, but it is useful for monitoring because it creates stable, business-readable risk buckets.", 742, 328, 390, 120, C.blue);
+  callout(slide, "Caution", "Domain-level patterns should be combined with product, amount, and model score. Alone they are too coarse for decisioning.", 742, 490, 390, 90, C.amber);
+"""),
+        slide_module(8, f"""
+  addBase(slide, "FINDING 6", "Fraud risk drifts over time, so validation must respect time");
+  image(slide, {charts['02_daily_fraud_rate.png']}, 58, 150, 560, 330, "Daily fraud-rate trend");
+  image(slide, {charts['15_hourly_pattern.png']}, 676, 150, 470, 330, "Hourly pattern");
+  callout(slide, "Interpretation", "The daily series is not flat. A random split can overstate model stability; the model is therefore validated on the last 20% of TransactionDT.", 168, 520, 870, 92, C.red);
+"""),
+        slide_module(9, f"""
+  addBase(slide, "DATA QUALITY", "Structural missingness is part of the signal");
   image(slide, {charts['07_missingness_by_family.png']}, 68, 150, 550, 382, "Missingness by feature family");
   card(slide, "MOST SPARSE FAMILY", "{missing['column_family']}", "{pct(missing['avg_missing'])} average missing", 682, 164, 310, C.green);
   card(slide, "IDENTITY JOIN COVERAGE", "{pct(s['identity_coverage_rate'])}", "{int(s['transactions_with_identity']):,} joined records", 682, 312, 310, C.blue);
-  callout(slide, "dbt policy", "Keep raw sparsity visible in staging, create explicit has_identity flags in intermediate models, and expose missingness marts for BI QA.", 682, 460, 410, 130, C.green);
-"""),
-        slide_module(8, f"""
-  addBase(slide, "MODEL SIGNAL", "LightGBM provides usable fraud ranking for BI monitoring");
-  image(slide, {charts['05_feature_importance.png']}, 54, 150, 560, 390, "Feature importance");
-  image(slide, {charts['06_validation_roc.png']}, 682, 148, 410, 330, "ROC curve");
-  card(slide, "VALIDATION AUC", "{metrics['ml']['validation_auc']:.3f}", "Last 20% by time", 682, 508, 190, C.blue);
-  card(slide, "AVG PRECISION", "{metrics['ml']['validation_average_precision']:.3f}", "Rare-event metric", 900, 508, 190, C.violet);
-  text(slide, "Top split feature: {feature['feature']} ({feature['feature_family']})", 76, 558, 520, 28, {{ size: 12, color: C.muted, bold: true }});
-"""),
-        slide_module(9, f"""
-  addBase(slide, "RISK OPERATING LAYER", "Risk bands convert scores into review queues");
-  image(slide, {charts['08_risk_bands.png']}, 70, 154, 610, 380, "Risk bands");
-  card(slide, "CRITICAL BAND", "{pct(critical['observed_fraud_rate'])}", "{int(critical['transaction_count']):,} train transactions", 734, 168, 260, C.red);
-  card(slide, "HIGH BAND", "{pct(high['observed_fraud_rate'])}", "{int(high['transaction_count']):,} train transactions", 734, 316, 260, C.violet);
-  callout(slide, "Power BI action", "Use Critical and High as the default monitoring queue. Elevated becomes a trend/segment watchlist, while Low validates false-negative drift.", 734, 470, 350, 112, C.red);
+  callout(slide, "Interpretation", "The missingness pattern is structural. A professional analysis keeps it visible and turns it into QA marts instead of hiding it in preprocessing.", 682, 460, 410, 130, C.green);
 """),
         slide_module(10, f"""
-  addBase(slide, "DELIVERY PACKAGE", "The project is ready for local BI and BigQuery free-tier deployment");
-  callout(slide, "Built outputs", "DuckDB warehouse, dbt staging/intermediate/mart models, dbt tests, Power BI CSV marts, Power BI Template (.pbit), chart assets, and this editable PowerPoint deck.", 72, 154, 510, 138, C.teal);
-  callout(slide, "BigQuery path", "Upload raw CSVs to BigQuery, point dbt-bigquery profile to the dataset, keep maximum_bytes_billed set, and materialize only curated marts for BI.", 72, 326, 510, 138, C.blue);
-  callout(slide, "Scale risks", "Raw CSV size, sparse V/id columns, class imbalance, temporal drift, and BI import size. Trigger BigQuery-first refresh when Power BI fact import becomes slow.", 72, 498, 510, 122, C.red);
-  image(slide, {charts['09_architecture.png']}, 642, 174, 520, 300, "Architecture");
-  card(slide, "DBT MODELS", "12", "2 staging, 2 intermediate, 8 marts", 642, 500, 220, C.violet);
-  card(slide, "DBT TESTS", "11", "All passing", 894, 500, 220, C.green);
+  addBase(slide, "MODEL EVIDENCE", "The model is a ranking layer for BI, not just a Kaggle score");
+  image(slide, {charts['05_feature_importance.png']}, 54, 150, 560, 390, "Feature importance");
+  image(slide, {charts['06_validation_roc.png']}, 682, 148, 410, 330, "ROC curve");
+  card(slide, "VALIDATION AUC", "{metrics['ml']['validation_auc']:.3f}", "time-based holdout", 682, 508, 190, C.blue);
+  card(slide, "AVG PRECISION", "{metrics['ml']['validation_average_precision']:.3f}", "rare-event metric", 900, 508, 190, C.violet);
+  text(slide, "Top split feature: {feature['feature']} ({feature['feature_family']})", 76, 558, 520, 28, {{ size: 12, color: C.muted, bold: true }});
+"""),
+        slide_module(11, f"""
+  addBase(slide, "OPERATIONALIZATION", "Risk bands translate analysis into review queues");
+  image(slide, {charts['08_risk_bands.png']}, 58, 150, 530, 350, "Risk bands");
+  image(slide, {charts['16_risk_band_lift.png']}, 650, 150, 500, 350, "Risk band lift");
+  card(slide, "CRITICAL BAND", "{pct(critical['observed_fraud_rate'])}", "{critical['observed_fraud_rate'] / s['fraud_rate']:.1f}x baseline", 234, 522, 230, C.red);
+  card(slide, "HIGH BAND", "{pct(high['observed_fraud_rate'])}", "{high['observed_fraud_rate'] / s['fraud_rate']:.1f}x baseline", 742, 522, 230, C.violet);
+"""),
+        slide_module(12, f"""
+  addBase(slide, "WHAT TO PRESENT", "This is a fraud analysis project with a production-ready handoff");
+  callout(slide, "Analytical conclusion", "Fraud is concentrated in Product C, identity-present transactions, credit-card combinations, selected email groups, non-linear amount bands, and drifting time windows.", 70, 158, 520, 126, C.red);
+  callout(slide, "Dashboard conclusion", "Power BI should lead with product, identity, amount, payment, email, time, and risk-band pages. Architecture is supporting evidence, not the main story.", 70, 326, 520, 126, C.blue);
+  callout(slide, "Technical conclusion", "dbt tests, marts, model scoring, and BigQuery-ready scripts prove reproducibility. They should be mentioned after the insights, not before them.", 70, 494, 520, 116, C.green);
+  image(slide, {charts['09_architecture.png']}, 650, 170, 500, 310, "Architecture");
+  card(slide, "DBT TESTS", "11 / 11", "quality gates passed", 680, 510, 210, C.green);
+  card(slide, "POWER BI", "2.153.1206.0", "template metadata updated", 920, 510, 210, C.amber);
 """),
     ]
 
@@ -299,7 +358,7 @@ def build_deck() -> None:
             "--contact-sheet",
             str(CONTACT_SHEET),
             "--slide-count",
-            "10",
+            "12",
             "--slide-size",
             "1280x720",
         ],

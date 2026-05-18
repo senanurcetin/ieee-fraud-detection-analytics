@@ -2,6 +2,8 @@
 
 Professional EDA, dbt modeling, ML scoring, Power BI-ready marts, BigQuery-ready deployment assets, and presentation output for the Kaggle IEEE-CIS Fraud Detection dataset.
 
+The project story is analysis-first: fraud is rare, but it concentrates across product family, identity presence, payment attributes, email domains, transaction amount, and time. The ML model is used as a ranking layer for BI review queues, not as a black-box replacement for the analysis.
+
 ## Zero-Cost Execution Pattern
 
 - Local warehouse: DuckDB file at `data/processed/ieee_fraud.duckdb`
@@ -43,6 +45,10 @@ Then open the generated Power BI template:
 The editable PowerPoint deck is generated at:
 
 `outputs/presentation/ieee-cis-fraud-detection-analysis.pptx`
+
+The presentation narrative is summarized at:
+
+`outputs/tables/analysis_story.md`
 
 ## BigQuery
 
