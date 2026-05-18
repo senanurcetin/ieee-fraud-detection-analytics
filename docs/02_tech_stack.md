@@ -61,7 +61,7 @@ Model çıktıları `mart_model_predictions` ve `mart_risk_band_stats` tablolar�
 Ana teslim dosyası:
 
 ```text
-powerbi/fraud_project.pbix
+powerbi/fraud_project_v2.pbix
 ```
 
 Rapor, `fraud_project_powerbi` datasetindeki fact ve mart tabloları için hazırlanmıştır. Sayfalar, üst yönetim sunumunda doğrudan kullanılacak şekilde Türkçe başlık, KPI ve analiz görselleriyle düzenlenmiştir.

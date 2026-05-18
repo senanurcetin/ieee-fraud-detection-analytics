@@ -22,3 +22,7 @@ models:
     marts:
       +schema: mart
       +materialized: table
+    powerbi:
+      +schema: powerbi
+      +materialized: table
+      +tags: ["powerbi", "executive", "fraud"]

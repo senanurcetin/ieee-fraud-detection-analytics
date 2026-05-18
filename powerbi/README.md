@@ -3,7 +3,7 @@
 Ana teslim dosyası:
 
 ```text
-powerbi/fraud_project.pbix
+powerbi/fraud_project_v2.pbix
 ```
 
 Rapor 6 sayfadan oluşur:
@@ -17,7 +17,7 @@ Rapor 6 sayfadan oluşur:
 
 ## Veri Modeli
 
-PBIX dosyası açılabilen mevcut veri modelini korur ve rapor layout'unu profesyonel sunum akışına göre doldurur. Power BI için final veri katmanı `fraud_project_powerbi` datasetidir.
+PBIX dosyası BigQuery DirectQuery veri modelini korur ve rapor layout'unu profesyonel sunum akışına göre doldurur. Power BI için final veri katmanı `fraud_project_powerbi` datasetidir.
 
 ## Görsel Varlıklar
 

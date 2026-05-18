@@ -6,9 +6,9 @@ with base as (
     from {{ ref('int_features') }}
 ),
 
-email as (
+product_risk as (
     select
-        purchaser_email_group,
+        product_cd_clean as product_cd,
         count(*) as transaction_count,
         sum(is_fraud) as fraud_count,
         {{ fp_avg_rate('is_fraud') }} as fraud_rate,
@@ -18,15 +18,15 @@ email as (
 )
 
 select
-    e.purchaser_email_group,
-    e.transaction_count,
-    e.fraud_count,
-    e.fraud_rate,
+    p.product_cd,
+    p.transaction_count,
+    p.fraud_count,
+    p.fraud_rate,
     base.baseline_fraud_rate,
-    e.fraud_rate / nullif(base.baseline_fraud_rate, 0) as lift,
-    {{ fp_float('e.transaction_count') }} / nullif({{ fp_float('base.total_transactions') }}, 0) as transaction_share,
-    {{ fp_float('e.fraud_count') }} / nullif({{ fp_float('base.total_fraud_count') }}, 0) as fraud_share,
-    e.avg_transaction_amount
-from email as e
+    p.fraud_rate / nullif(base.baseline_fraud_rate, 0) as lift,
+    {{ fp_float('p.transaction_count') }} / nullif({{ fp_float('base.total_transactions') }}, 0) as transaction_share,
+    {{ fp_float('p.fraud_count') }} / nullif({{ fp_float('base.total_fraud_count') }}, 0) as fraud_share,
+    p.avg_transaction_amount
+from product_risk as p
 cross join base
-order by e.transaction_count desc
+order by p.fraud_rate desc

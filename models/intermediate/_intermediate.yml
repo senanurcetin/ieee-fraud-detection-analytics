@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: int_fraud_joined
+    description: "Transaction ve identity staging tablolarını tekil transaction seviyesinde birleştirir."
+    config:
+      tags: ["intermediate", "fraud"]
+    columns:
+      - name: transaction_id
+        description: "Tekil işlem anahtarı."
+        tests:
+          - not_null
+          - unique
+      - name: transaction_amount
+        description: "İşlem tutarı."
+        tests:
+          - not_null
+          - not_negative
+      - name: has_identity
+        description: "İşlemin identity tablosunda kaydı olup olmadığını gösterir."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+  - name: int_features
+    description: "Power BI ve ML yorumlaması için tutar, ürün, kart, email, cihaz ve zaman segmentlerini üretir."
+    config:
+      tags: ["intermediate", "fraud", "feature_engineering"]
+    columns:
+      - name: transaction_id
+        tests:
+          - not_null
+          - unique
+      - name: amount_band
+        description: "Yönetici raporunda kullanılan tutar bandı."
+        tests:
+          - not_null
+      - name: product_cd_clean
+        description: "Temizlenmiş ürün kodu."
+        tests:
+          - not_null
+      - name: purchaser_email_group
+        description: "Purchaser email domain segmenti."
+        tests:
+          - not_null

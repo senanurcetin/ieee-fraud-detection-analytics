@@ -3,7 +3,7 @@
 Ana teslim dosyası:
 
 ```text
-powerbi/fraud_project.pbix
+powerbi/fraud_project_v2.pbix
 ```
 
 Bu dosya 6 sayfalık rapor layout'u ve mevcut Power BI veri modelini içerir.

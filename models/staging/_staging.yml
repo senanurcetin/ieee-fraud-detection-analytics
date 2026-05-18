@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: stg_transactions
+    description: "Transaction ham verisini standart veri tipleri, temiz alan adları ve temel fraud analiz kolonlarıyla staging katmanına taşır."
+    config:
+      tags: ["staging", "fraud"]
+    columns:
+      - name: transaction_id
+        description: "Tekil işlem anahtarı."
+        tests:
+          - not_null
+          - unique
+      - name: is_fraud
+        description: "Fraud etiketi; 1 sahtecilik, 0 normal işlem."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: transaction_amount
+        description: "İşlem tutarı."
+        tests:
+          - not_null
+          - not_negative
+      - name: transaction_day
+        description: "TransactionDT üzerinden türetilmiş göreli işlem günü."
+        tests:
+          - not_null
+          - not_negative
+
+  - name: stg_identity
+    description: "Identity ham verisini cihaz ve identity sinyalleriyle standartlaştırır."
+    config:
+      tags: ["staging", "fraud"]
+    columns:
+      - name: transaction_id
+        description: "Identity kaydını transaction tablosuna bağlayan anahtar."
+        tests:
+          - not_null
+          - unique
+      - name: device_type
+        description: "Cihaz türü."
+      - name: device_info
+        description: "Cihaz bilgisi."

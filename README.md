@@ -22,7 +22,7 @@ fraud_project/
 │   └── marts/
 ├── powerbi/
 │   ├── assets/
-│   ├── fraud_project.pbix
+│   ├── fraud_project_v2.pbix
 │   └── README.md
 ├── profiles/
 ├── scripts/
@@ -67,7 +67,7 @@ BigQuery deployment:
 
 ## Ana Teslimler
 
-- Power BI raporu: `powerbi/fraud_project.pbix`
+- Power BI raporu: `powerbi/fraud_project_v2.pbix`
 - Power BI görsel varlıkları: `powerbi/assets/`
 - dbt modelleri: `models/`
 - BigQuery rehberi: `bigquery/README.md`

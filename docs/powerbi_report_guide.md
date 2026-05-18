@@ -3,7 +3,7 @@
 Ana dosya:
 
 ```text
-powerbi/fraud_project.pbix
+powerbi/fraud_project_v2.pbix
 ```
 
 ## 1. Yönetici Özeti

@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: fact_train_transactions
+    description: "Power BI DirectQuery için train transaction fact tablosu; fraud etiketi, segmentler ve model skorlarını içerir."
+    config:
+      tags: ["powerbi", "fraud"]
+    columns:
+      - name: transaction_id
+        tests:
+          - not_null
+          - unique
+      - name: is_fraud
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+  - name: pbi_executive_kpis
+    description: "Yönetici Özeti sayfası için tek satırlık KPI tablosu."
+    config:
+      tags: ["powerbi", "executive"]
+    tests:
+      - row_count_equals:
+          arguments:
+            expected_count: 1
+
+  - name: pbi_product_risk
+    description: "Ürün bazlı fraud oranı, lift ve risk katkısı."
+    config:
+      tags: ["powerbi", "executive", "segment"]
+
+  - name: pbi_identity_risk
+    description: "Identity kaydı var/yok kırılımında fraud riski."
+    config:
+      tags: ["powerbi", "executive", "identity"]
+
+  - name: pbi_amount_bands
+    description: "Tutar bandı sayfası için hazır aggregation tablosu."
+    config:
+      tags: ["powerbi", "amount"]
+
+  - name: pbi_daily_drift
+    description: "Günlük fraud drift ve hacim trendi."
+    config:
+      tags: ["powerbi", "time"]
+
+  - name: pbi_payment_heatmap
+    description: "Kart ağı ve kart tipi heatmap tablosu."
+    config:
+      tags: ["powerbi", "payment"]
+
+  - name: pbi_email_domain_risk
+    description: "Email domain grubu bazında risk tablosu."
+    config:
+      tags: ["powerbi", "email"]
+
+  - name: pbi_model_risk_bands
+    description: "Model risk bantları ve operasyonel önceliklendirme tablosu."
+    config:
+      tags: ["powerbi", "model", "executive"]
+
+  - name: pbi_feature_importance
+    description: "Feature importance sıralaması."
+    config:
+      tags: ["powerbi", "model"]
+
+  - name: pbi_data_quality_scorecard
+    description: "Veri kalitesi sayfası için feature family bazlı eksiklik skoru."
+    config:
+      tags: ["powerbi", "data_quality"]
+
+exposures:
+  - name: fraud_project_v2
+    label: "fraud_project_v2"
+    type: dashboard
+    maturity: high
+    url: "powerbi/fraud_project_v2.pbix"
+    description: "BigQuery DirectQuery bağlantılı Türkçe fraud yönetici raporu."
+    depends_on:
+      - ref('fact_train_transactions')
+      - ref('pbi_executive_kpis')
+      - ref('pbi_product_risk')
+      - ref('pbi_identity_risk')
+      - ref('pbi_amount_bands')
+      - ref('pbi_daily_drift')
+      - ref('pbi_payment_heatmap')
+      - ref('pbi_email_domain_risk')
+      - ref('pbi_model_risk_bands')
+      - ref('pbi_feature_importance')
+      - ref('pbi_data_quality_scorecard')
+    owner:
+      name: "Fraud Analytics Team"
+      email: "fraud.analytics@company.com"

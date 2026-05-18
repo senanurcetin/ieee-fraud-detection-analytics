@@ -2,12 +2,46 @@ version: 2
 
 sources:
   - name: raw
+    description: "Kaggle IEEE-CIS Fraud Detection ham veri katmanı ve model destek çıktıları."
     schema: "{{ 'fraud_project_raw' if target.type == 'bigquery' else 'raw' }}"
     tables:
       - name: train_transaction
+        description: "Eğitim transaction tablosu; fraud etiketi ve işlem özelliklerini içerir."
+        tests:
+          - row_count_equals:
+              arguments:
+                expected_count: 590540
       - name: train_identity
+        description: "Eğitim identity tablosu; cihaz ve identity sinyallerini içerir."
+        tests:
+          - row_count_equals:
+              arguments:
+                expected_count: 144233
       - name: test_transaction
+        description: "Kaggle test transaction tablosu."
+        tests:
+          - row_count_equals:
+              arguments:
+                expected_count: 506691
       - name: test_identity
+        description: "Kaggle test identity tablosu."
+        tests:
+          - row_count_equals:
+              arguments:
+                expected_count: 141907
       - name: sample_submission
+        description: "Kaggle sample submission tablosu."
+        tests:
+          - row_count_equals:
+              arguments:
+                expected_count: 506691
       - name: ml_predictions
+        description: "LightGBM modelinin train ve test işlemleri için ürettiği fraud olasılıkları ve risk bantları."
+        tests:
+          - row_count_equals:
+              arguments:
+                expected_count: 1097231
       - name: feature_missingness
+        description: "Ham kolonlar için eksiklik oranı profil tablosu."
+      - name: feature_importance
+        description: "LightGBM feature importance çıktısı."

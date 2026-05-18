@@ -324,6 +324,8 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
             "feature_family": [column_family(col) for col in features],
         }
     ).sort_values("importance", ascending=False)
+    con.register("feature_importance_df", feature_importance)
+    con.execute("create or replace table raw.feature_importance as select * from feature_importance_df")
     feature_importance.to_csv(TABLES_DIR / "feature_importance.csv", index=False)
 
     fpr, tpr, thresholds = roc_curve(y_valid, valid_pred)

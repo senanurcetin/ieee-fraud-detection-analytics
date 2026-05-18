@@ -26,13 +26,11 @@ if (-not (Test-Path -LiteralPath $dbt)) {
 
 & $python src\prepare_raw_and_ml.py
 & $python src\upload_to_bigquery.py --project-id $ProjectId --location $Location --credentials $env:GOOGLE_APPLICATION_CREDENTIALS
-& $dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
-& $dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+& $dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
 & $python src\export_powerbi_and_charts.py
 & $python src\create_powerbi_template.py
-& $python src\upload_reporting_tables_to_bigquery.py --project-id $ProjectId --location $Location --dataset $ReportingDataset --credentials $env:GOOGLE_APPLICATION_CREDENTIALS
 & $python src\create_powerbi_connection_files.py
-& $python src\build_fraud_project_pbix.py
+& $python src\build_fraud_project_v2_pbix.py
 
 Write-Host ""
 Write-Host "BigQuery deployment complete."
@@ -46,3 +44,6 @@ Write-Host "  - mart_amount_bands"
 Write-Host "  - mart_product_device_stats"
 Write-Host "  - mart_email_domain_stats"
 Write-Host "  - mart_risk_band_stats"
+Write-Host "  - pbi_executive_kpis"
+Write-Host "  - pbi_product_risk"
+Write-Host "  - pbi_identity_risk"

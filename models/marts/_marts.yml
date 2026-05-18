@@ -1,0 +1,118 @@
+version: 2
+
+models:
+  - name: mart_fraud_summary
+    description: "Üst yönetim için portföy geneli fraud, identity ve tutar özet metrikleri."
+    config:
+      tags: ["mart", "fraud", "executive"]
+    tests:
+      - row_count_equals:
+          arguments:
+            expected_count: 1
+    columns:
+      - name: fraud_rate
+        tests:
+          - fraud_rate_between:
+              arguments:
+                min_value: 0.03
+                max_value: 0.04
+
+  - name: mart_daily_stats
+    description: "Günlük hacim, fraud oranı, hareketli ortalama ve drift bayrağı."
+    config:
+      tags: ["mart", "fraud", "time"]
+    columns:
+      - name: transaction_day
+        tests:
+          - not_null
+          - unique
+      - name: fraud_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: mart_amount_bands
+    description: "Tutar bandı bazında fraud oranı, lift ve portföy payı."
+    config:
+      tags: ["mart", "fraud", "amount"]
+    columns:
+      - name: amount_band
+        tests:
+          - not_null
+          - unique
+      - name: lift
+        tests:
+          - not_negative
+
+  - name: mart_product_device_stats
+    description: "Ürün ve cihaz kırılımında risk yoğunlaşması."
+    config:
+      tags: ["mart", "fraud", "segment"]
+    columns:
+      - name: fraud_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: mart_email_domain_stats
+    description: "Purchaser email domain gruplarında hacim, fraud oranı ve lift."
+    config:
+      tags: ["mart", "fraud", "email"]
+    columns:
+      - name: purchaser_email_group
+        tests:
+          - not_null
+          - unique
+
+  - name: mart_feature_missingness
+    description: "Ham tablolardaki kolon eksiklik oranlarını raporlama seviyesinde sunar."
+    config:
+      tags: ["mart", "data_quality"]
+    columns:
+      - name: missing_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: mart_model_predictions
+    description: "Model skorları ve risk bantları."
+    config:
+      tags: ["mart", "model"]
+    columns:
+      - name: transaction_id
+        tests:
+          - not_null
+      - name: predicted_fraud_probability
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: risk_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Low", "Elevated", "High", "Critical"]
+
+  - name: mart_risk_band_stats
+    description: "Risk bandı bazında gözlenen fraud oranı, lift ve operasyon önceliği."
+    config:
+      tags: ["mart", "model", "executive"]
+    columns:
+      - name: risk_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Low", "Elevated", "High", "Critical"]
+      - name: band_rank
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 1
+                max_value: 4

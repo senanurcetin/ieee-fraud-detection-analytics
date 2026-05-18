@@ -90,6 +90,7 @@ def main() -> None:
         load_csv(client, "fraud_project_raw", table, path)
     load_duckdb_table(client, "fraud_project_raw", "feature_missingness", "raw.feature_missingness")
     load_duckdb_table(client, "fraud_project_raw", "ml_predictions", "raw.ml_predictions")
+    load_duckdb_table(client, "fraud_project_raw", "feature_importance", "raw.feature_importance")
     print("Next: dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod")
 
 

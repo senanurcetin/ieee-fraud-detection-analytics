@@ -7,11 +7,11 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE_PBIX = ROOT / "outputs" / "powerbi" / "fraud_project.pbix"
+BASE_PBIX = ROOT / "outputs" / "powerbi" / "fraud_project_v2.pbix"
 LAYOUT_TEMPLATE = ROOT / "outputs" / "powerbi" / "fraud_project_dashboard.pbit"
 POWERBI_DIR = ROOT / "powerbi"
 ASSET_DIR = POWERBI_DIR / "assets"
-FINAL_PBIX = POWERBI_DIR / "fraud_project.pbix"
+FINAL_PBIX = POWERBI_DIR / "fraud_project_v2.pbix"
 
 PAGE_ORDER = [
     ("Yonetici Ozeti", "Yönetici Özeti"),
@@ -23,7 +23,7 @@ PAGE_ORDER = [
 ]
 
 
-def read_layout_from_template() -> tuple[dict, dict[str, bytes]]:
+def read_layout_template() -> tuple[dict, dict[str, bytes]]:
     if not LAYOUT_TEMPLATE.exists():
         raise FileNotFoundError(f"Layout template not found: {LAYOUT_TEMPLATE}")
 
@@ -36,7 +36,7 @@ def read_layout_from_template() -> tuple[dict, dict[str, bytes]]:
     return layout, resources
 
 
-def update_page_order(layout: dict) -> dict:
+def normalize_layout(layout: dict) -> dict:
     source_sections = {section["displayName"]: section for section in layout["sections"]}
     sections = []
     for ordinal, (old_name, new_name) in enumerate(PAGE_ORDER):
@@ -46,20 +46,31 @@ def update_page_order(layout: dict) -> dict:
         section["name"] = f"ReportSection{ordinal}"
         sections.append(section)
     layout["sections"] = sections
+    layout["config"] = json.dumps(
+        {
+            "version": "5.72",
+            "themeCollection": {"baseTheme": {"name": "CY26SU04", "type": 2}},
+            "activeSectionIndex": 0,
+            "defaultDrillFilterOtherVisuals": True,
+            "settings": {
+                "useNewFilterPaneExperience": True,
+                "allowChangeFilterTypes": True,
+                "useStylableVisualContainerHeader": True,
+                "useEnhancedTooltips": True,
+                "exportDataMode": 1,
+            },
+        },
+        separators=(",", ":"),
+    )
     return layout
 
 
-def content_types_with_png(raw: bytes) -> bytes:
+def add_png_content_type(raw: bytes) -> bytes:
     text = raw.decode("utf-8-sig")
     if 'Extension="png"' not in text:
         text = text.replace(
-            "<Types ",
-            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types" ',
-            1,
-        ) if "xmlns=" not in text.split(">", 1)[0] else text
-        text = text.replace(
-            "<Default Extension=\"json\" ContentType=\"\" />",
-            "<Default Extension=\"png\" ContentType=\"\" /><Default Extension=\"json\" ContentType=\"\" />",
+            '<Default Extension="json" ContentType="" />',
+            '<Default Extension="png" ContentType="" /><Default Extension="json" ContentType="" />',
             1,
         )
     return ("\ufeff" + text.lstrip("\ufeff")).encode("utf-8")
@@ -77,28 +88,25 @@ def build_pbix() -> None:
         raise FileNotFoundError(f"Base PBIX not found: {BASE_PBIX}")
 
     POWERBI_DIR.mkdir(parents=True, exist_ok=True)
-    layout, resources = read_layout_from_template()
-    layout = update_page_order(layout)
+    layout, resources = read_layout_template()
+    layout = normalize_layout(layout)
     layout_bytes = json.dumps(layout, ensure_ascii=False, separators=(",", ":")).encode("utf-16le")
 
     with ZipFile(BASE_PBIX, "r") as source:
-        base_entries = {name: source.read(name) for name in source.namelist()}
+        entries = {name: source.read(name) for name in source.namelist()}
 
-    base_entries["Report/Layout"] = layout_bytes
+    entries["Report/Layout"] = layout_bytes
     for name, data in resources.items():
-        base_entries[name] = data
-    if "[Content_Types].xml" in base_entries:
-        base_entries["[Content_Types].xml"] = content_types_with_png(base_entries["[Content_Types].xml"])
+        entries[name] = data
+    entries["[Content_Types].xml"] = add_png_content_type(entries["[Content_Types].xml"])
 
     tmp = FINAL_PBIX.with_suffix(".pbix.tmp")
     with ZipFile(tmp, "w", compression=ZIP_DEFLATED) as target:
-        for name, data in base_entries.items():
+        for name, data in entries.items():
             target.writestr(name, data)
     shutil.move(str(tmp), str(FINAL_PBIX))
     copy_assets(resources)
-
-    print(f"Power BI report ready: {FINAL_PBIX}")
-    print(f"Power BI assets ready: {ASSET_DIR}")
+    print(f"Power BI v2 report ready: {FINAL_PBIX}")
 
 
 if __name__ == "__main__":
