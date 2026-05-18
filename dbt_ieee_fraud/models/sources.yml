@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: train_transaction
+      - name: train_identity
+      - name: test_transaction
+      - name: test_identity
+      - name: sample_submission
+      - name: ml_predictions
+      - name: feature_missingness

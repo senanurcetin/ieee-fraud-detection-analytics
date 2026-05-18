@@ -1,0 +1,7 @@
+ieee_fraud_detection:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "C:/Users/MONSTER/OneDrive/Belgeler/data analiz/data/processed/ieee_fraud.duckdb"
+      threads: 4

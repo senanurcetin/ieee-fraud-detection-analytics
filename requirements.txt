@@ -1,0 +1,13 @@
+pandas
+pyarrow
+duckdb
+dbt-core
+dbt-duckdb
+dbt-bigquery
+lightgbm
+scikit-learn
+matplotlib
+seaborn
+python-pptx
+google-cloud-bigquery
+pandas-gbq
