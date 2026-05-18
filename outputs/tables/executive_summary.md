@@ -1,16 +1,16 @@
-# IEEE-CIS Fraud Detection Executive Summary
+# IEEE-CIS Fraud Detection Yönetici Özeti
 
-## Core Metrics
+## Temel Metrikler
 
-- Total transactions: 590,540
-- Fraud transactions: 20,663
-- Fraud rate: 3.50%
-- Identity coverage: 24.42%
-- Median transaction amount: $68.77
-- P95 transaction amount: $445.00
-- Validation AUC: 0.917
-- Validation average precision: 0.531
+- Toplam işlem: 590,540
+- Sahtecilik etiketi taşıyan işlem: 20,663
+- Sahtecilik oranı: 3.50%
+- Identity kapsama oranı: 24.42%
+- Medyan işlem tutarı: $68.77
+- P95 işlem tutarı: $445.00
+- Doğrulama AUC: 0.917
+- Doğrulama average precision: 0.531
 
-## Board-Level Takeaway
+## Yönetici Çıkarımı
 
-The dataset is a rare-event fraud problem with strong engineered feature signal, structural missingness, and meaningful risk concentration by product, identity coverage, transaction amount, and model-derived risk band. The recommended analytics operating model is raw landing in BigQuery free tier, dbt Core transformations, Python/LightGBM scoring, and Power BI consumption from curated marts.
+Veri seti, nadir görülen ancak belirli segmentlerde yoğunlaşan bir sahtecilik problemidir. Risk; ürün ailesi, identity kaydı, ödeme tipi, email domain, işlem tutarı ve zaman penceresine göre belirgin biçimde ayrışır. Önerilen analitik model; ham veri katmanı, dbt dönüşümleri, LightGBM skorlaması ve Power BI için hazırlanmış mart tablolarından oluşur.

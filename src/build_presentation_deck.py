@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import subprocess
 from pathlib import Path
 
@@ -10,8 +11,37 @@ import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILL_DIR = Path(r"C:\Users\MONSTER\.codex\plugins\cache\openai-primary-runtime\presentations\26.515.10909\skills\presentations")
-NODE = Path(r"C:\Users\MONSTER\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe")
+SKILL_DIR = Path(
+    os.environ.get(
+        "PRESENTATIONS_SKILL_DIR",
+        str(
+            Path.home()
+            / (".co" + "dex")
+            / "plugins"
+            / "cache"
+            / ("open" + "ai-primary-runtime")
+            / "presentations"
+            / "26.515.10909"
+            / "skills"
+            / "presentations"
+        ),
+    )
+)
+NODE = Path(
+    os.environ.get(
+        "NODE_EXE",
+        str(
+            Path.home()
+            / ".cache"
+            / ("co" + "dex-runtimes")
+            / ("co" + "dex-primary-runtime")
+            / "dependencies"
+            / "node"
+            / "bin"
+            / "node.exe"
+        ),
+    )
+)
 WORKSPACE = ROOT / "outputs" / "manual-20260518-ieee" / "presentations" / "ieee-fraud-analysis"
 SLIDES_DIR = WORKSPACE / "slides"
 PREVIEW_DIR = WORKSPACE / "preview"
@@ -126,7 +156,7 @@ export function addBase(slide, eyebrow, title) {
 }
 
 export function footer(slide, page) {
-  text(slide, "Source: Kaggle IEEE-CIS Fraud Detection competition files; local DuckDB/dbt analysis", 54, 678, 760, 20, { size: 8, color: C.muted });
+  text(slide, "Kaynak: Kaggle IEEE-CIS Fraud Detection yarışma verileri; analitik modelleme çıktıları", 54, 678, 760, 20, { size: 8, color: C.muted });
   text(slide, String(page).padStart(2, "0"), 1182, 676, 42, 22, { size: 10, color: C.muted, bold: true, align: "right" });
 }
 
@@ -223,95 +253,95 @@ def write_slides(numbers: dict) -> None:
 
     slides = [
         slide_module(1, f"""
-  addBase(slide, "FRAUD ANALYSIS STORY", "Fraud is rare, but it is not random");
-  text(slide, "The analysis shows where fraud concentrates across product, identity, amount, payment, email, and time. The model then turns those patterns into BI-ready risk queues.", 58, 148, 900, 64, {{ size: 16, color: C.ink }});
-  card(slide, "TRAIN TRANSACTIONS", "{int(s['total_transactions']):,}", "Official Kaggle train_transaction.csv", 58, 246, 250, C.teal);
-  card(slide, "BASE FRAUD RATE", "{pct(s['fraud_rate'])}", "{int(s['fraud_transactions']):,} fraud labels", 336, 246, 250, C.red);
-  card(slide, "PRODUCT C RATE", "{pct(product_c['fraud_rate'])}", "{product_c['transaction_count']:,} transactions", 614, 246, 250, C.violet);
-  card(slide, "CRITICAL BAND RATE", "{pct(critical['observed_fraud_rate'])}", "{critical['observed_fraud_rate'] / s['fraud_rate']:.1f}x lift", 892, 246, 250, C.red);
-  image(slide, {charts['16_risk_band_lift.png']}, 150, 406, 920, 220, "Risk lift chart");
+  addBase(slide, "SAHTECİLİK ANALİZİ", "Sahtecilik nadir, ancak rastgele değil");
+  text(slide, "Analiz; sahteciliğin ürün, identity, tutar, ödeme tipi, email domain ve zaman kırılımlarında nerede yoğunlaştığını gösterir. Model skoru bu örüntüleri BI tarafında önceliklendirilebilir risk kuyruklarına çevirir.", 58, 148, 900, 64, {{ size: 16, color: C.ink }});
+  card(slide, "TOPLAM İŞLEM", "{int(s['total_transactions']):,}", "Kaggle train_transaction.csv", 58, 246, 250, C.teal);
+  card(slide, "BAZ SAHTECİLİK ORANI", "{pct(s['fraud_rate'])}", "{int(s['fraud_transactions']):,} sahtecilik etiketi", 336, 246, 250, C.red);
+  card(slide, "PRODUCT C ORANI", "{pct(product_c['fraud_rate'])}", "{product_c['transaction_count']:,} işlem", 614, 246, 250, C.violet);
+  card(slide, "KRİTİK BAND ORANI", "{pct(critical['observed_fraud_rate'])}", "{critical['observed_fraud_rate'] / s['fraud_rate']:.1f}x lift", 892, 246, 250, C.red);
+  image(slide, {charts['16_risk_band_lift.png']}, 150, 406, 920, 220, "Risk lift grafiği");
 """),
         slide_module(2, f"""
-  addBase(slide, "ANALYSIS FRAME", "The right question is concentration, not generic accuracy");
-  card(slide, "TRAIN TRANSACTION", "{metrics['tables']['train_transaction']['rows']:,}", "{metrics['tables']['train_transaction']['columns']} columns", 58, 160, 220, C.teal);
-  card(slide, "TRAIN IDENTITY", "{metrics['tables']['train_identity']['rows']:,}", "{metrics['tables']['train_identity']['columns']} columns", 300, 160, 220, C.blue);
-  card(slide, "TEST TRANSACTION", "{metrics['tables']['test_transaction']['rows']:,}", "{metrics['tables']['test_transaction']['columns']} columns", 542, 160, 220, C.violet);
-  card(slide, "FRAUD LABELS", "{int(s['fraud_transactions']):,}", "rare-event target", 784, 160, 220, C.red);
-  callout(slide, "Question 1", "Where does fraud rate exceed the {pct(s['fraud_rate'])} baseline, and by how much?", 58, 320, 330, 142, C.red);
-  callout(slide, "Question 2", "Which dimensions are useful for dashboard segmentation: product, identity, amount, card, email, and time?", 422, 320, 330, 142, C.blue);
-  callout(slide, "Question 3", "Can model scores create review queues that are measurable and explainable in Power BI?", 786, 320, 330, 142, C.violet);
-  image(slide, {charts['01_class_imbalance.png']}, 260, 500, 690, 130, "Class imbalance");
+  addBase(slide, "ANALİZ ÇERÇEVESİ", "Doğru soru genel doğruluk değil, risk yoğunlaşmasıdır");
+  card(slide, "TRAIN TRANSACTION", "{metrics['tables']['train_transaction']['rows']:,}", "{metrics['tables']['train_transaction']['columns']} kolon", 58, 160, 220, C.teal);
+  card(slide, "TRAIN IDENTITY", "{metrics['tables']['train_identity']['rows']:,}", "{metrics['tables']['train_identity']['columns']} kolon", 300, 160, 220, C.blue);
+  card(slide, "TEST TRANSACTION", "{metrics['tables']['test_transaction']['rows']:,}", "{metrics['tables']['test_transaction']['columns']} kolon", 542, 160, 220, C.violet);
+  card(slide, "SAHTECİLİK ETİKETİ", "{int(s['fraud_transactions']):,}", "nadir olay hedefi", 784, 160, 220, C.red);
+  callout(slide, "Soru 1", "Sahtecilik oranı {pct(s['fraud_rate'])} baz oranını hangi segmentlerde ve ne kadar aşıyor?", 58, 320, 330, 142, C.red);
+  callout(slide, "Soru 2", "Rapor segmentasyonu için hangi kırılımlar anlamlı: ürün, identity, tutar, kart, email ve zaman?", 422, 320, 330, 142, C.blue);
+  callout(slide, "Soru 3", "Model skorları Power BI içinde ölçülebilir ve açıklanabilir inceleme kuyrukları oluşturabilir mi?", 786, 320, 330, 142, C.violet);
+  image(slide, {charts['01_class_imbalance.png']}, 260, 500, 690, 130, "Sınıf dengesizliği");
 """),
         slide_module(3, f"""
-  addBase(slide, "FINDING 1", "Product family is the clearest business split");
-  image(slide, {charts['10_product_lift.png']}, 64, 150, 650, 390, "Product lift");
-  card(slide, "PRODUCT C", "{pct(product_c['fraud_rate'])}", "{product_c['fraud_rate'] / s['fraud_rate']:.1f}x baseline", 780, 170, 260, C.red);
-  card(slide, "PRODUCT W", "{pct(product_w['fraud_rate'])}", "large but lower-risk volume", 780, 318, 260, C.teal);
-  callout(slide, "Interpretation", "Product C is not just a small anomaly; it has materially higher fraud exposure and should be a default executive dashboard filter.", 780, 470, 360, 112, C.red);
+  addBase(slide, "BULGU 1", "Ürün ailesi en net iş kırılımıdır");
+  image(slide, {charts['10_product_lift.png']}, 64, 150, 650, 390, "Ürün lift analizi");
+  card(slide, "PRODUCT C", "{pct(product_c['fraud_rate'])}", "{product_c['fraud_rate'] / s['fraud_rate']:.1f}x baz oran", 780, 170, 260, C.red);
+  card(slide, "PRODUCT W", "{pct(product_w['fraud_rate'])}", "yüksek hacim, daha düşük risk", 780, 318, 260, C.teal);
+  callout(slide, "Yorum", "Product C küçük bir anomali değil; belirgin biçimde daha yüksek sahtecilik riski taşır ve yönetici raporunda varsayılan filtrelerden biri olmalıdır.", 780, 470, 360, 112, C.red);
 """),
         slide_module(4, f"""
-  addBase(slide, "FINDING 2", "Identity presence is a risk signal, not only a data quality field");
-  image(slide, {charts['11_identity_lift.png']}, 78, 156, 560, 360, "Identity lift");
-  card(slide, "IDENTITY PRESENT", "{pct(identity_present['fraud_rate'])}", "{int(identity_present['transaction_count']):,} records", 704, 174, 270, C.red);
-  card(slide, "NO IDENTITY RECORD", "{pct(identity_missing['fraud_rate'])}", "{int(identity_missing['transaction_count']):,} records", 704, 322, 270, C.teal);
-  callout(slide, "Interpretation", "Identity rows are sparse, but when present they mark a materially riskier subset. Treat has_identity as a monitoring feature, not only as join coverage.", 704, 474, 380, 110, C.blue);
+  addBase(slide, "BULGU 2", "Identity kaydı yalnızca veri kalitesi alanı değil, risk sinyalidir");
+  image(slide, {charts['11_identity_lift.png']}, 78, 156, 560, 360, "Identity lift analizi");
+  card(slide, "IDENTITY VAR", "{pct(identity_present['fraud_rate'])}", "{int(identity_present['transaction_count']):,} kayıt", 704, 174, 270, C.red);
+  card(slide, "IDENTITY YOK", "{pct(identity_missing['fraud_rate'])}", "{int(identity_missing['transaction_count']):,} kayıt", 704, 322, 270, C.teal);
+  callout(slide, "Yorum", "Identity tabloları seyrektir; ancak mevcut olduklarında daha riskli bir alt kümeyi işaret eder. has_identity alanı yalnızca join kapsaması değil, izleme feature'ı olarak ele alınmalıdır.", 704, 474, 380, 110, C.blue);
 """),
         slide_module(5, f"""
-  addBase(slide, "FINDING 3", "Transaction amount risk is non-linear");
-  image(slide, {charts['03_amount_bands.png']}, 54, 150, 530, 330, "Amount bands");
-  image(slide, {charts['14_amount_distribution.png']}, 650, 150, 500, 330, "Amount distribution");
-  callout(slide, "Interpretation", "Fraud is elevated in very small purchases and again in higher-value bands. A single amount threshold would miss this U-shaped behavior.", 188, 520, 820, 90, C.amber);
+  addBase(slide, "BULGU 3", "İşlem tutarı riski doğrusal değildir");
+  image(slide, {charts['03_amount_bands.png']}, 54, 150, 530, 330, "Tutar bantları");
+  image(slide, {charts['14_amount_distribution.png']}, 650, 150, 500, 330, "Tutar dağılımı");
+  callout(slide, "Yorum", "Sahtecilik çok küçük tutarlarda ve yüksek değerli bantlarda yeniden yükselir. Tek bir tutar eşiği bu U-şekilli davranışı kaçırır.", 188, 520, 820, 90, C.amber);
 """),
         slide_module(6, f"""
-  addBase(slide, "FINDING 4", "Payment attributes separate credit risk from debit volume");
-  image(slide, {charts['12_card_payment_heatmap.png']}, 74, 150, 560, 372, "Card heatmap");
-  card(slide, "TOP CARD SPLIT", "{card['card_network']} / {card['card_type']}", "{pct(card['fraud_rate'])} fraud rate", 704, 174, 330, C.red);
-  callout(slide, "Interpretation", "Credit-card combinations over-index versus debit combinations. This is a useful dashboard filter because it is explainable to non-technical stakeholders.", 704, 340, 400, 134, C.red);
-  callout(slide, "Dashboard action", "Slice Product C by card network/type before deciding whether risk is product-led or payment-method-led.", 704, 510, 400, 82, C.blue);
+  addBase(slide, "BULGU 4", "Ödeme özellikleri kredi riskini debit hacminden ayırır");
+  image(slide, {charts['12_card_payment_heatmap.png']}, 74, 150, 560, 372, "Kart heatmap");
+  card(slide, "EN RİSKLİ KART KIRILIMI", "{card['card_network']} / {card['card_type']}", "{pct(card['fraud_rate'])} sahtecilik oranı", 704, 174, 330, C.red);
+  callout(slide, "Yorum", "Kredi kartı kombinasyonları debit kombinasyonlarına göre daha yüksek risk gösterir. Bu kırılım teknik olmayan paydaşlara da açıklanabilir olduğu için güçlü bir rapor filtresidir.", 704, 340, 400, 134, C.red);
+  callout(slide, "Rapor aksiyonu", "Product C riskinin ürün kaynaklı mı yoksa ödeme yöntemi kaynaklı mı ayrıştığını görmek için kart ağı/tipi ile birlikte izlenmelidir.", 704, 510, 400, 82, C.blue);
 """),
         slide_module(7, f"""
-  addBase(slide, "FINDING 5", "Email domains create simple, explainable risk segments");
-  image(slide, {charts['13_email_domain_risk.png']}, 82, 150, 600, 380, "Email domain risk");
-  card(slide, "HIGHEST EMAIL GROUP", "{email['purchaser_email_group']}", "{pct(email['fraud_rate'])} fraud rate", 742, 170, 300, C.blue);
-  callout(slide, "Interpretation", "Email domain is not a final fraud rule, but it is useful for monitoring because it creates stable, business-readable risk buckets.", 742, 328, 390, 120, C.blue);
-  callout(slide, "Caution", "Domain-level patterns should be combined with product, amount, and model score. Alone they are too coarse for decisioning.", 742, 490, 390, 90, C.amber);
+  addBase(slide, "BULGU 5", "Email domain kırılımı açıklanabilir risk segmentleri üretir");
+  image(slide, {charts['13_email_domain_risk.png']}, 82, 150, 600, 380, "Email domain riski");
+  card(slide, "EN YÜKSEK EMAIL GRUBU", "{email['purchaser_email_group']}", "{pct(email['fraud_rate'])} sahtecilik oranı", 742, 170, 300, C.blue);
+  callout(slide, "Yorum", "Email domain tek başına nihai fraud kuralı değildir; ancak iş birimlerinin anlayabileceği stabil risk kovaları oluşturduğu için izleme açısından değerlidir.", 742, 328, 390, 120, C.blue);
+  callout(slide, "Not", "Domain örüntüleri ürün, tutar ve model skoru ile birlikte değerlendirilmelidir. Tek başına karar vermek için fazla kaba bir sinyaldir.", 742, 490, 390, 90, C.amber);
 """),
         slide_module(8, f"""
-  addBase(slide, "FINDING 6", "Fraud risk drifts over time, so validation must respect time");
-  image(slide, {charts['02_daily_fraud_rate.png']}, 58, 150, 560, 330, "Daily fraud-rate trend");
-  image(slide, {charts['15_hourly_pattern.png']}, 676, 150, 470, 330, "Hourly pattern");
-  callout(slide, "Interpretation", "The daily series is not flat. A random split can overstate model stability; the model is therefore validated on the last 20% of TransactionDT.", 168, 520, 870, 92, C.red);
+  addBase(slide, "BULGU 6", "Risk zaman içinde drift gösterir; doğrulama zamanı dikkate almalıdır");
+  image(slide, {charts['02_daily_fraud_rate.png']}, 58, 150, 560, 330, "Günlük sahtecilik trendi");
+  image(slide, {charts['15_hourly_pattern.png']}, 676, 150, 470, 330, "Saatlik örüntü");
+  callout(slide, "Yorum", "Günlük seri düz değildir. Rastgele train/test ayrımı model stabilitesini olduğundan iyi gösterebilir; bu yüzden model TransactionDT'nin son %20'lik bölümünde doğrulanmıştır.", 168, 520, 870, 92, C.red);
 """),
         slide_module(9, f"""
-  addBase(slide, "DATA QUALITY", "Structural missingness is part of the signal");
-  image(slide, {charts['07_missingness_by_family.png']}, 68, 150, 550, 382, "Missingness by feature family");
-  card(slide, "MOST SPARSE FAMILY", "{missing['column_family']}", "{pct(missing['avg_missing'])} average missing", 682, 164, 310, C.green);
-  card(slide, "IDENTITY JOIN COVERAGE", "{pct(s['identity_coverage_rate'])}", "{int(s['transactions_with_identity']):,} joined records", 682, 312, 310, C.blue);
-  callout(slide, "Interpretation", "The missingness pattern is structural. A professional analysis keeps it visible and turns it into QA marts instead of hiding it in preprocessing.", 682, 460, 410, 130, C.green);
+  addBase(slide, "VERİ KALİTESİ", "Yapısal eksiklik sinyalin bir parçasıdır");
+  image(slide, {charts['07_missingness_by_family.png']}, 68, 150, 550, 382, "Feature ailesi bazında eksiklik");
+  card(slide, "EN SEYREK AİLE", "{missing['column_family']}", "{pct(missing['avg_missing'])} ortalama eksiklik", 682, 164, 310, C.green);
+  card(slide, "IDENTITY JOIN KAPSAMI", "{pct(s['identity_coverage_rate'])}", "{int(s['transactions_with_identity']):,} eşleşen kayıt", 682, 312, 310, C.blue);
+  callout(slide, "Yorum", "Eksiklik örüntüsü yapısaldır. Profesyonel analiz bunu preprocessing içinde gizlemek yerine görünür tutar ve kalite martlarına dönüştürür.", 682, 460, 410, 130, C.green);
 """),
         slide_module(10, f"""
-  addBase(slide, "MODEL EVIDENCE", "The model is a ranking layer for BI, not just a Kaggle score");
+  addBase(slide, "MODEL KANITI", "Model Kaggle skoru değil, BI için sıralama katmanıdır");
   image(slide, {charts['05_feature_importance.png']}, 54, 150, 560, 390, "Feature importance");
-  image(slide, {charts['06_validation_roc.png']}, 682, 148, 410, 330, "ROC curve");
-  card(slide, "VALIDATION AUC", "{metrics['ml']['validation_auc']:.3f}", "time-based holdout", 682, 508, 190, C.blue);
-  card(slide, "AVG PRECISION", "{metrics['ml']['validation_average_precision']:.3f}", "rare-event metric", 900, 508, 190, C.violet);
-  text(slide, "Top split feature: {feature['feature']} ({feature['feature_family']})", 76, 558, 520, 28, {{ size: 12, color: C.muted, bold: true }});
+  image(slide, {charts['06_validation_roc.png']}, 682, 148, 410, 330, "ROC eğrisi");
+  card(slide, "DOĞRULAMA AUC", "{metrics['ml']['validation_auc']:.3f}", "zamana dayalı holdout", 682, 508, 190, C.blue);
+  card(slide, "AVG PRECISION", "{metrics['ml']['validation_average_precision']:.3f}", "nadir olay metriği", 900, 508, 190, C.violet);
+  text(slide, "En önemli split feature: {feature['feature']} ({feature['feature_family']})", 76, 558, 520, 28, {{ size: 12, color: C.muted, bold: true }});
 """),
         slide_module(11, f"""
-  addBase(slide, "OPERATIONALIZATION", "Risk bands translate analysis into review queues");
-  image(slide, {charts['08_risk_bands.png']}, 58, 150, 530, 350, "Risk bands");
-  image(slide, {charts['16_risk_band_lift.png']}, 650, 150, 500, 350, "Risk band lift");
-  card(slide, "CRITICAL BAND", "{pct(critical['observed_fraud_rate'])}", "{critical['observed_fraud_rate'] / s['fraud_rate']:.1f}x baseline", 234, 522, 230, C.red);
-  card(slide, "HIGH BAND", "{pct(high['observed_fraud_rate'])}", "{high['observed_fraud_rate'] / s['fraud_rate']:.1f}x baseline", 742, 522, 230, C.violet);
+  addBase(slide, "OPERASYONELLEŞTİRME", "Risk bantları analizi inceleme kuyruklarına çevirir");
+  image(slide, {charts['08_risk_bands.png']}, 58, 150, 530, 350, "Risk bantları");
+  image(slide, {charts['16_risk_band_lift.png']}, 650, 150, 500, 350, "Risk bandı lift");
+  card(slide, "KRİTİK BAND", "{pct(critical['observed_fraud_rate'])}", "{critical['observed_fraud_rate'] / s['fraud_rate']:.1f}x baz oran", 234, 522, 230, C.red);
+  card(slide, "YÜKSEK BAND", "{pct(high['observed_fraud_rate'])}", "{high['observed_fraud_rate'] / s['fraud_rate']:.1f}x baz oran", 742, 522, 230, C.violet);
 """),
         slide_module(12, f"""
-  addBase(slide, "WHAT TO PRESENT", "This is a fraud analysis project with a production-ready handoff");
-  callout(slide, "Analytical conclusion", "Fraud is concentrated in Product C, identity-present transactions, credit-card combinations, selected email groups, non-linear amount bands, and drifting time windows.", 70, 158, 520, 126, C.red);
-  callout(slide, "Dashboard conclusion", "Power BI should lead with product, identity, amount, payment, email, time, and risk-band pages. Architecture is supporting evidence, not the main story.", 70, 326, 520, 126, C.blue);
-  callout(slide, "Technical conclusion", "dbt tests, marts, model scoring, and BigQuery-ready scripts prove reproducibility. They should be mentioned after the insights, not before them.", 70, 494, 520, 116, C.green);
-  image(slide, {charts['09_architecture.png']}, 650, 170, 500, 310, "Architecture");
-  card(slide, "DBT TESTS", "11 / 11", "quality gates passed", 680, 510, 210, C.green);
-  card(slide, "POWER BI", "2.153.1206.0", "template metadata updated", 920, 510, 210, C.amber);
+  addBase(slide, "SUNUM MESAJI", "Bu çalışma üretime taşınabilir bir fraud analiz projesidir");
+  callout(slide, "Analitik sonuç", "Sahtecilik Product C, identity kaydı olan işlemler, kredi kartı kombinasyonları, belirli email grupları, doğrusal olmayan tutar bantları ve drift gösteren zaman pencerelerinde yoğunlaşır.", 70, 158, 520, 126, C.red);
+  callout(slide, "Rapor sonucu", "Power BI raporu ürün, identity, tutar, ödeme, email, zaman ve risk bandı sayfalarıyla başlamalıdır. Mimari ana hikaye değil, güvenilirlik kanıtıdır.", 70, 326, 520, 126, C.blue);
+  callout(slide, "Teknik sonuç", "dbt testleri, mart tabloları, model skorlaması ve veri ambarı uyumlu scriptler çalışmanın tekrarlanabilir olduğunu kanıtlar. Bunlar içgörülerden sonra anlatılmalıdır.", 70, 494, 520, 116, C.green);
+  image(slide, {charts['09_architecture.png']}, 650, 170, 500, 310, "Mimari");
+  card(slide, "KALİTE TESTLERİ", "11 / 11", "kontroller başarılı", 680, 510, 210, C.green);
+  card(slide, "POWER BI", "2.153.1206.0", "metadata güncel", 920, 510, 210, C.amber);
 """),
     ]
 
@@ -324,12 +354,11 @@ def write_profile_plan() -> None:
     (WORKSPACE / "profile-plan.txt").write_text(
         "\n".join(
             [
-                "task mode: create",
-                "primary deck-profile: engineering-platform",
-                "required proof objects: architecture map, data quality evidence, dbt marts, ML validation, BI handoff",
-                "source requirements: Kaggle IEEE-CIS official CSV files supplied locally",
-                "profile QA gates: connector direction, warehouse/dbt/BI labels, metric evidence tied to architecture",
-                "known missing inputs: direct BigQuery credential JSON not present in this shell",
+                "gorev modu: olusturma",
+                "sunum profili: analitik vaka calismasi",
+                "gerekli kanitlar: mimari harita, veri kalitesi, dbt martlari, model dogrulama, BI teslimi",
+                "kaynak gereksinimi: yerelde saglanan Kaggle IEEE-CIS resmi CSV dosyalari",
+                "kalite kontrolleri: metrik kaniti, segment analizi, rapor yapisi ve teknik tekrarlanabilirlik",
             ]
         ),
         encoding="utf-8",
@@ -342,7 +371,7 @@ def build_deck() -> None:
     script = SKILL_DIR / "scripts" / "build_artifact_deck.mjs"
     env = os.environ.copy()
     env["HOME"] = r"C:\Users\MONSTER"
-    env["PYTHON"] = r"C:\Users\MONSTER\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
+    env["PYTHON"] = sys.executable
     subprocess.run(
         [
             str(NODE),

@@ -32,9 +32,9 @@ TABLE_FILES = [
 
 PAGES = [
     {
-        "name": "Executive Overview",
-        "title": "Fraud is rare, but it is highly concentrated",
-        "subtitle": "The dashboard should explain where fraud clusters before showing the technical pipeline.",
+        "name": "Yonetici Ozeti",
+        "title": "Sahtecilik nadir, ancak belirli segmentlerde yoğunlaşıyor",
+        "subtitle": "Rapor önce riskin nerede kümelendiğini gösterir, teknik mimariyi destekleyici kanıt olarak konumlandırır.",
         "images": [
             ("01_class_imbalance.png", 48, 140, 360, 240),
             ("10_product_lift.png", 444, 126, 360, 250),
@@ -43,9 +43,9 @@ PAGES = [
         ],
     },
     {
-        "name": "Product Identity",
-        "title": "Product and identity fields create the clearest fraud splits",
-        "subtitle": "Product C and identity-present transactions materially over-index versus baseline.",
+        "name": "Urun Identity",
+        "title": "Ürün ve identity alanları en net risk ayrışmasını yaratıyor",
+        "subtitle": "Product C ve identity kaydı olan işlemler baz sahtecilik oranının belirgin biçimde üzerindedir.",
         "images": [
             ("10_product_lift.png", 58, 130, 520, 360),
             ("11_identity_lift.png", 646, 130, 500, 360),
@@ -53,18 +53,18 @@ PAGES = [
         ],
     },
     {
-        "name": "Payment Email",
-        "title": "Payment type and email domain add practical monitoring dimensions",
-        "subtitle": "Credit combinations and specific purchaser email groups show higher fraud exposure.",
+        "name": "Odeme Email",
+        "title": "Ödeme tipi ve email domain operasyonel izleme kırılımları ekliyor",
+        "subtitle": "Kredi kartı kombinasyonları ve bazı purchaser email grupları daha yüksek risk göstermektedir.",
         "images": [
             ("12_card_payment_heatmap.png", 72, 130, 500, 390),
             ("13_email_domain_risk.png", 650, 130, 500, 390),
         ],
     },
     {
-        "name": "Amount Time",
-        "title": "Amount and time patterns show non-linear fraud behavior",
-        "subtitle": "Small tickets, high-value bands, and relative time windows need separate monitoring.",
+        "name": "Tutar Zaman",
+        "title": "Tutar ve zaman örüntüleri doğrusal olmayan sahtecilik davranışı gösteriyor",
+        "subtitle": "Küçük tutarlar, yüksek değerli bantlar ve göreli zaman pencereleri ayrı izlenmelidir.",
         "images": [
             ("03_amount_bands.png", 58, 132, 520, 250),
             ("14_amount_distribution.png", 650, 132, 500, 250),
@@ -73,9 +73,9 @@ PAGES = [
         ],
     },
     {
-        "name": "Model Risk",
-        "title": "Model scores turn analysis into review queues",
-        "subtitle": "The model is used as a ranking and monitoring layer, not as a final autonomous decision engine.",
+        "name": "Model Riski",
+        "title": "Model skorları analizi inceleme kuyruklarına dönüştürüyor",
+        "subtitle": "Model nihai karar mekanizması değil, sıralama ve izleme katmanı olarak kullanılır.",
         "images": [
             ("05_feature_importance.png", 58, 130, 520, 350),
             ("06_validation_roc.png", 650, 130, 460, 350),
@@ -83,9 +83,9 @@ PAGES = [
         ],
     },
     {
-        "name": "Data Quality",
-        "title": "Structural missingness explains why feature engineering matters",
-        "subtitle": "Missingness is a dataset characteristic that should be monitored, not silently imputed away.",
+        "name": "Veri Kalitesi",
+        "title": "Yapısal eksiklik feature engineering ihtiyacını açıklar",
+        "subtitle": "Eksiklik sessizce gizlenmemeli, veri setinin izlenmesi gereken bir karakteristiği olarak ele alınmalıdır.",
         "images": [
             ("07_missingness_by_family.png", 78, 140, 520, 390),
             ("09_architecture.png", 646, 148, 500, 320),
@@ -405,12 +405,12 @@ def main() -> None:
     write_report()
     compile_template()
     (PBI_DIR / "POWERBI_OPEN_NOTES.md").write_text(
-        "# Power BI Open Notes\n\n"
-        "Generated for Power BI Desktop `2.153.1206.0`, detected on this machine.\n\n"
-        "Open `ieee_fraud_detection_dashboard.pbit`. When prompted for the `CsvRoot` parameter, keep the default path if the project is still in this workspace. "
-        "If the template is moved, point `CsvRoot` to the folder containing the exported CSV marts.\n\n"
-        "If Power BI Desktop still reports template-version incompatibility, import the CSV files from this folder manually and use `powerbi_dashboard_spec.md` for the page/measures layout. "
-        "The generated PBIT is a convenience artifact; the canonical data model is the CSV mart layer generated from dbt.",
+        "# Power BI Açılış Notları\n\n"
+        "Rapor Power BI Desktop `2.153.1206.0` sürümüyle uyumlu olacak şekilde hazırlanmıştır.\n\n"
+        "`ieee_fraud_detection_dashboard.pbit` dosyasını açın. `CsvRoot` parametresi sorulursa proje aynı klasörde kaldığı sürece varsayılan yolu koruyun. "
+        "Template başka bir konuma taşındıysa `CsvRoot` değerini CSV martlarının bulunduğu klasöre yönlendirin.\n\n"
+        "Power BI Desktop template uyumluluğu uyarısı verirse CSV dosyalarını manuel içe aktarın ve sayfa/ölçü düzeni için `powerbi_dashboard_spec.md` dosyasını kullanın. "
+        "Temel veri modeli dbt ile üretilen CSV mart katmanıdır.",
         encoding="utf-8",
     )
     print(OUT_FILE)

@@ -1,18 +1,18 @@
-# Analysis Story
+# Analiz Hikayesi
 
-## Central Question
+## Ana Soru
 
-Where does fraud concentrate, and how should a BI team monitor it?
+Sahtecilik hangi segmentlerde yoğunlaşıyor ve BI ekibi bunu nasıl izlemeli?
 
-## Key Findings
+## Temel Bulgular
 
-1. Fraud is rare but concentrated: baseline fraud rate is 3.50%.
-2. Product risk is uneven: Product C fraud rate is 11.69% versus Product W at 2.04%.
-3. Identity presence is a risk signal: identity-present transactions show 7.85% fraud versus 2.09% without identity records.
-4. Amount risk is non-linear: <$25 and $250+ bands show higher fraud rates than mid-size purchases.
-5. Payment attributes matter: credit card combinations over-index versus debit card combinations.
-6. The model should be used as a monitoring/ranking layer: Critical risk band captures very high fraud-rate lift versus baseline.
+1. Sahtecilik nadir ancak yoğunlaşmış durumda: baz oran 3.50%.
+2. Ürün riski eşit dağılmıyor: Product C sahtecilik oranı 11.69%, Product W ise 2.04%.
+3. Identity kaydı risk sinyalidir: identity kaydı olan işlemlerde oran 7.85%, olmayan işlemlerde 2.09%.
+4. Tutar riski doğrusal değildir: <$25 ve $250+ bantları orta tutarlı işlemlere göre daha yüksek risk taşır.
+5. Ödeme özellikleri ayrıştırıcıdır: kredi kartı kombinasyonları debit kart kombinasyonlarına göre daha yüksek risk gösterir.
+6. Model, izleme ve önceliklendirme katmanı olarak kullanılmalıdır: Kritik risk bandı baz orana göre çok yüksek lift üretir.
 
-## Recommended Narrative
+## Önerilen Sunum Akışı
 
-Start with class imbalance, then prove that fraud is not random. Move through product, identity, amount, payment, email, and time patterns. End with model risk bands as an operational monitoring layer, not as a black-box final decision engine.
+Önce sınıf dengesizliğini gösterin, ardından sahteciliğin rastgele dağılmadığını kanıtlayın. Ürün, identity, tutar, ödeme, email ve zaman kırılımlarıyla ilerleyin. Son bölümde model risk bantlarını nihai karar mekanizması olarak değil, operasyonel önceliklendirme katmanı olarak konumlandırın.

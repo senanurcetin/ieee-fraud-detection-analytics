@@ -1,8 +1,8 @@
-# BigQuery Free-Tier Deployment
+# BigQuery Deployment
 
-This project is BigQuery-ready but does not assume credentials are present in the shell.
+Bu proje BigQuery üzerinde çalışacak şekilde hazırlanmıştır. Komutları çalıştırmadan önce kimlik bilgileri ve proje ayarları yapılandırılmalıdır.
 
-## Required Environment
+## Gerekli Ortam Değişkenleri
 
 ```powershell
 $env:GCP_PROJECT_ID="workintech-working"
@@ -10,14 +10,13 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\service-account.json"
 $env:BIGQUERY_LOCATION="US"
 ```
 
-## Load Raw Tables
+## Ham Tabloları Yükleme
 
 ```powershell
-$PY="C:\Users\MONSTER\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe"
-& $PY src\upload_to_bigquery.py
+python src\upload_to_bigquery.py
 ```
 
-The loader creates these datasets:
+Loader aşağıdaki datasetleri oluşturur:
 
 - `raw`
 - `staging`
@@ -25,16 +24,16 @@ The loader creates these datasets:
 - `mart`
 - `dbt_default`
 
-Then run dbt against BigQuery:
+Ardından dbt modelleri BigQuery hedefiyle çalıştırılabilir:
 
 ```powershell
 & "$env:APPDATA\Python\Python312\Scripts\dbt.exe" run --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod
 & "$env:APPDATA\Python\Python312\Scripts\dbt.exe" test --project-dir dbt_ieee_fraud --profiles-dir profiles --profile ieee_fraud_detection --target prod
 ```
 
-## Free-Tier Guardrails
+## Operasyonel Notlar
 
-- Keep `maximum_bytes_billed` enabled in `profiles/profiles_bigquery.yml`.
-- Query marts first; avoid scanning raw 400-column transaction tables in BI.
-- Use clustered/partitioned marts only after the free-tier query pattern is understood.
-- Do not upload Kaggle raw files to GitHub.
+- `maximum_bytes_billed` değeri profil dosyasında açık tutulmalıdır.
+- BI raporlamasında önce mart tabloları kullanılmalıdır.
+- Ham transaction tabloları çok geniş kolon yapısına sahip olduğu için doğrudan rapor katmanında taranmamalıdır.
+- Kaggle ham veri dosyaları GitHub'a yüklenmemelidir.

@@ -4,6 +4,9 @@ import json
 from pathlib import Path
 
 import duckdb
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -89,17 +92,17 @@ def export_powerbi_tables(con: duckdb.DuckDBPyConnection) -> None:
 def chart_class_imbalance(summary: pd.DataFrame) -> None:
     row = summary.iloc[0]
     values = [row["legitimate_transactions"], row["fraud_transactions"]]
-    labels = ["Legitimate", "Fraud"]
+    labels = ["Normal", "Sahtecilik"]
     fig, ax = plt.subplots(figsize=(7.5, 4.2))
     bars = ax.bar(labels, values, color=[COLORS["teal"], COLORS["red"]], width=0.52)
-    ax.set_title("Fraud is a rare-event classification problem", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_ylabel("Transaction count")
+    ax.set_title("Sahtecilik nadir görülür, ancak belirgin şekilde ayrışır", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("İşlem sayısı")
     ax.grid(axis="y", color=COLORS["grid"], linewidth=0.8)
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="x", length=0)
     for bar, value in zip(bars, values):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f"{int(value):,}", ha="center", va="bottom", fontsize=11)
-    ax.text(0.02, 0.88, f"Observed fraud rate: {pct(row['fraud_rate'])}", transform=ax.transAxes, color=COLORS["red"], fontsize=12, weight="bold")
+    ax.text(0.02, 0.88, f"Gözlenen sahtecilik oranı: {pct(row['fraud_rate'])}", transform=ax.transAxes, color=COLORS["red"], fontsize=12, weight="bold")
     savefig(CHART_DIR / "01_class_imbalance.png")
 
 
@@ -107,16 +110,16 @@ def chart_daily(daily: pd.DataFrame) -> None:
     daily = daily.sort_values("transaction_day")
     daily["fraud_rate_ma7"] = daily["fraud_rate"].rolling(7, min_periods=1).mean()
     fig, ax1 = plt.subplots(figsize=(10, 4.8))
-    ax1.plot(daily["transaction_day"], daily["fraud_rate_ma7"] * 100, color=COLORS["red"], linewidth=2.4, label="Fraud rate, 7-day MA")
-    ax1.set_ylabel("Fraud rate (%)", color=COLORS["red"])
+    ax1.plot(daily["transaction_day"], daily["fraud_rate_ma7"] * 100, color=COLORS["red"], linewidth=2.4, label="Sahtecilik oranı, 7 günlük HO")
+    ax1.set_ylabel("Sahtecilik oranı (%)", color=COLORS["red"])
     ax1.tick_params(axis="y", labelcolor=COLORS["red"])
     ax1.grid(axis="y", color=COLORS["grid"])
     ax2 = ax1.twinx()
-    ax2.fill_between(daily["transaction_day"], daily["transaction_count"], color=COLORS["blue"], alpha=0.16, label="Volume")
-    ax2.set_ylabel("Transaction volume", color=COLORS["blue"])
+    ax2.fill_between(daily["transaction_day"], daily["transaction_count"], color=COLORS["blue"], alpha=0.16, label="Hacim")
+    ax2.set_ylabel("İşlem hacmi", color=COLORS["blue"])
     ax2.tick_params(axis="y", labelcolor=COLORS["blue"])
-    ax1.set_title("Fraud risk moves across the observation window", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax1.set_xlabel("Relative transaction day")
+    ax1.set_title("Sahtecilik riski gözlem penceresi boyunca değişiyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax1.set_xlabel("Göreli işlem günü")
     ax1.spines[["top", "right"]].set_visible(False)
     ax2.spines[["top", "left"]].set_visible(False)
     savefig(CHART_DIR / "02_daily_fraud_rate.png")
@@ -125,8 +128,8 @@ def chart_daily(daily: pd.DataFrame) -> None:
 def chart_amount_bands(amount: pd.DataFrame) -> None:
     fig, ax = plt.subplots(figsize=(8, 4.6))
     ax.bar(amount["amount_band"], amount["fraud_rate"] * 100, color=COLORS["amber"], width=0.58)
-    ax.set_title("High-value bands carry materially different fraud exposure", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_ylabel("Fraud rate (%)")
+    ax.set_title("Tutar bantları sahtecilik riskini farklılaştırıyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Sahtecilik oranı (%)")
     ax.set_xlabel("")
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
@@ -141,8 +144,8 @@ def chart_product_device(product_device: pd.DataFrame) -> None:
     df["segment"] = df["product_cd"].astype(str) + " / " + df["device_type"].astype(str)
     fig, ax = plt.subplots(figsize=(9.5, 5.6))
     ax.barh(df["segment"][::-1], df["fraud_rate"][::-1] * 100, color=COLORS["violet"])
-    ax.set_title("Risk concentrates by product and identity coverage", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_xlabel("Fraud rate (%)")
+    ax.set_title("Risk ürün ve identity kapsamına göre yoğunlaşıyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("Sahtecilik oranı (%)")
     ax.grid(axis="x", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="y", length=0)
@@ -153,8 +156,8 @@ def chart_feature_importance() -> None:
     fi = pd.read_csv(TABLES_DIR / "feature_importance.csv").head(18)
     fig, ax = plt.subplots(figsize=(9.5, 6.0))
     ax.barh(fi["feature"][::-1], fi["importance"][::-1], color=COLORS["teal"])
-    ax.set_title("Model signal is driven by engineered V/C/D families and identity fields", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_xlabel("LightGBM split importance")
+    ax.set_title("Model sinyali V/C/D aileleri ve identity alanlarından güç alıyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("LightGBM bölünme önemi")
     ax.grid(axis="x", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="y", length=0)
@@ -166,10 +169,10 @@ def chart_roc(metrics: dict) -> None:
     fig, ax = plt.subplots(figsize=(6.5, 5.2))
     ax.plot(roc["fpr"], roc["tpr"], color=COLORS["blue"], linewidth=2.6)
     ax.plot([0, 1], [0, 1], color=COLORS["muted"], linestyle="--", linewidth=1)
-    ax.set_title("Time-based validation confirms usable ranking power", loc="left", fontsize=14, weight="bold", color=COLORS["ink"])
+    ax.set_title("Zamana dayalı doğrulama sıralama gücünü doğruluyor", loc="left", fontsize=14, weight="bold", color=COLORS["ink"])
     ax.text(0.58, 0.16, f"AUC {metrics['ml']['validation_auc']:.3f}", transform=ax.transAxes, fontsize=18, weight="bold", color=COLORS["blue"])
-    ax.set_xlabel("False positive rate")
-    ax.set_ylabel("True positive rate")
+    ax.set_xlabel("Yanlış pozitif oranı")
+    ax.set_ylabel("Doğru pozitif oranı")
     ax.grid(color=COLORS["grid"])
     ax.spines[["top", "right"]].set_visible(False)
     savefig(CHART_DIR / "06_validation_roc.png")
@@ -184,8 +187,8 @@ def chart_missingness(missingness: pd.DataFrame) -> None:
     )
     fig, ax = plt.subplots(figsize=(9, 5.2))
     ax.barh(df["column_family"][::-1], df["avg_missing_rate"][::-1] * 100, color=COLORS["green"])
-    ax.set_title("Missingness is structural, not random noise", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_xlabel("Average missing rate by feature family (%)")
+    ax.set_title("Eksiklik yapısal; rastgele gürültü değil", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("Feature ailesi bazında ortalama eksiklik oranı (%)")
     ax.grid(axis="x", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="y", length=0)
@@ -197,10 +200,12 @@ def chart_risk_band(risk: pd.DataFrame) -> None:
     order = ["Low", "Elevated", "High", "Critical"]
     df["risk_band"] = pd.Categorical(df["risk_band"], categories=order, ordered=True)
     df = df.sort_values("risk_band")
+    label_map = {"Low": "Düşük", "Elevated": "Yükselen", "High": "Yüksek", "Critical": "Kritik"}
+    df["risk_band_tr"] = df["risk_band"].astype(str).map(label_map)
     fig, ax = plt.subplots(figsize=(8, 4.8))
-    ax.bar(df["risk_band"].astype(str), df["observed_fraud_rate"] * 100, color=[COLORS["teal"], COLORS["amber"], COLORS["violet"], COLORS["red"]])
-    ax.set_title("Risk bands convert model scores into BI-ready monitoring", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_ylabel("Observed fraud rate (%)")
+    ax.bar(df["risk_band_tr"], df["observed_fraud_rate"] * 100, color=[COLORS["teal"], COLORS["amber"], COLORS["violet"], COLORS["red"]])
+    ax.set_title("Risk bantları model skorlarını izleme katmanına çeviriyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Gözlenen sahtecilik oranı (%)")
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="x", length=0)
@@ -223,9 +228,9 @@ def chart_product_lift(con: duckdb.DuckDBPyConnection, baseline: float) -> None:
     fig, ax = plt.subplots(figsize=(8.5, 4.8))
     bars = ax.bar(df["product_cd"], df["fraud_rate"] * 100, color=[COLORS["red"], COLORS["amber"], COLORS["violet"], COLORS["blue"], COLORS["teal"]])
     ax.axhline(baseline * 100, color=COLORS["ink"], linestyle="--", linewidth=1.2)
-    ax.text(0.02, baseline * 100 + 0.25, f"Baseline {baseline * 100:.2f}%", color=COLORS["ink"], fontsize=9)
-    ax.set_title("Product C is the primary risk outlier", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_ylabel("Fraud rate (%)")
+    ax.text(0.02, baseline * 100 + 0.25, f"Baz oran {baseline * 100:.2f}%", color=COLORS["ink"], fontsize=9)
+    ax.set_title("Product C ana risk ayrışmasıdır", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Sahtecilik oranı (%)")
     ax.set_ylim(0, df["fraud_rate"].max() * 100 * 1.22)
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
@@ -240,7 +245,7 @@ def chart_identity_lift(con: duckdb.DuckDBPyConnection, baseline: float) -> None
         con,
         """
         select
-            case when has_identity = 1 then 'Identity present' else 'No identity record' end as identity_status,
+            case when has_identity = 1 then 'Identity var' else 'Identity kaydı yok' end as identity_status,
             count(*) as transaction_count,
             avg(is_fraud::double) as fraud_rate
         from intermediate.int_features
@@ -251,8 +256,8 @@ def chart_identity_lift(con: duckdb.DuckDBPyConnection, baseline: float) -> None
     fig, ax = plt.subplots(figsize=(7.6, 4.6))
     ax.bar(df["identity_status"], df["fraud_rate"] * 100, color=[COLORS["teal"], COLORS["red"]], width=0.5)
     ax.axhline(baseline * 100, color=COLORS["ink"], linestyle="--", linewidth=1)
-    ax.set_title("Identity coverage is a risk signal, not just data completeness", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_ylabel("Fraud rate (%)")
+    ax.set_title("Identity kaydı risk sinyalidir; yalnızca veri tamlığı değildir", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Sahtecilik oranı (%)")
     ax.set_ylim(0, df["fraud_rate"].max() * 100 * 1.28)
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
@@ -285,8 +290,8 @@ def chart_card_heatmap(con: duckdb.DuckDBPyConnection) -> None:
         for j in range(len(matrix.columns)):
             value = matrix.iloc[i, j]
             ax.text(j, i, f"{value:.1f}%", ha="center", va="center", fontsize=10, color=COLORS["ink"])
-    ax.set_title("Credit card combinations show higher fraud exposure", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02, label="Fraud rate (%)")
+    ax.set_title("Kredi kartı kombinasyonlarında risk daha yüksek", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02, label="Sahtecilik oranı (%)")
     ax.spines[:].set_visible(False)
     savefig(CHART_DIR / "12_card_payment_heatmap.png")
 
@@ -296,8 +301,8 @@ def chart_email_risk(con: duckdb.DuckDBPyConnection, baseline: float) -> None:
     fig, ax = plt.subplots(figsize=(8.4, 4.8))
     ax.barh(df["purchaser_email_group"][::-1], df["fraud_rate"][::-1] * 100, color=COLORS["blue"])
     ax.axvline(baseline * 100, color=COLORS["ink"], linestyle="--", linewidth=1)
-    ax.set_title("Email domain groups split risk into practical BI segments", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_xlabel("Fraud rate (%)")
+    ax.set_title("Email domain grupları operasyonel risk segmentleri oluşturuyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("Sahtecilik oranı (%)")
     ax.grid(axis="x", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="y", length=0)
@@ -309,20 +314,20 @@ def chart_amount_distribution(con: duckdb.DuckDBPyConnection) -> None:
         con,
         """
         select
-            case when is_fraud = 1 then 'Fraud' else 'Legitimate' end as label,
+            case when is_fraud = 1 then 'Sahtecilik' else 'Normal' end as label,
             transaction_amount
         from intermediate.int_features
         where transaction_amount between 0 and 1500
         """,
     )
     fig, ax = plt.subplots(figsize=(8.4, 4.8))
-    legit = df[df["label"].eq("Legitimate")]["transaction_amount"]
-    fraud = df[df["label"].eq("Fraud")]["transaction_amount"]
-    ax.hist(legit, bins=80, alpha=0.45, density=True, color=COLORS["teal"], label="Legitimate")
-    ax.hist(fraud, bins=80, alpha=0.55, density=True, color=COLORS["red"], label="Fraud")
-    ax.set_title("Fraud amount distribution over-indexes at both small and high values", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_xlabel("Transaction amount, capped at $1,500")
-    ax.set_ylabel("Density")
+    legit = df[df["label"].eq("Normal")]["transaction_amount"]
+    fraud = df[df["label"].eq("Sahtecilik")]["transaction_amount"]
+    ax.hist(legit, bins=80, alpha=0.45, density=True, color=COLORS["teal"], label="Normal")
+    ax.hist(fraud, bins=80, alpha=0.55, density=True, color=COLORS["red"], label="Sahtecilik")
+    ax.set_title("Sahtecilik tutar dağılımı uçlarda yoğunlaşıyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_xlabel("İşlem tutarı, $1.500 üst sınır")
+    ax.set_ylabel("Yoğunluk")
     ax.legend(frameon=False)
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
@@ -344,16 +349,16 @@ def chart_hourly_pattern(con: duckdb.DuckDBPyConnection) -> None:
     )
     fig, ax1 = plt.subplots(figsize=(9, 4.8))
     ax1.plot(df["transaction_hour"], df["fraud_rate"] * 100, color=COLORS["red"], linewidth=2.5, marker="o")
-    ax1.set_ylabel("Fraud rate (%)", color=COLORS["red"])
+    ax1.set_ylabel("Sahtecilik oranı (%)", color=COLORS["red"])
     ax1.tick_params(axis="y", labelcolor=COLORS["red"])
     ax1.set_xticks(range(0, 24, 2))
     ax1.grid(axis="y", color=COLORS["grid"])
     ax2 = ax1.twinx()
     ax2.bar(df["transaction_hour"], df["transaction_count"], color=COLORS["blue"], alpha=0.18, width=0.8)
-    ax2.set_ylabel("Transaction count", color=COLORS["blue"])
+    ax2.set_ylabel("İşlem sayısı", color=COLORS["blue"])
     ax2.tick_params(axis="y", labelcolor=COLORS["blue"])
-    ax1.set_title("Within-day risk pattern adds monitoring context", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax1.set_xlabel("Relative hour of day from TransactionDT")
+    ax1.set_title("Gün içi örüntü izleme bağlamı sağlar", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax1.set_xlabel("TransactionDT'ye göre göreli saat")
     ax1.spines[["top", "right"]].set_visible(False)
     ax2.spines[["top", "left"]].set_visible(False)
     savefig(CHART_DIR / "15_hourly_pattern.png")
@@ -365,11 +370,13 @@ def chart_risk_lift(risk: pd.DataFrame, baseline: float) -> None:
     df["risk_band"] = pd.Categorical(df["risk_band"], categories=order, ordered=True)
     df = df.sort_values("risk_band")
     df["lift"] = df["observed_fraud_rate"] / baseline
+    label_map = {"Low": "Düşük", "Elevated": "Yükselen", "High": "Yüksek", "Critical": "Kritik"}
+    df["risk_band_tr"] = df["risk_band"].astype(str).map(label_map)
     fig, ax = plt.subplots(figsize=(8.2, 4.8))
-    ax.bar(df["risk_band"].astype(str), df["lift"], color=[COLORS["teal"], COLORS["amber"], COLORS["violet"], COLORS["red"]])
+    ax.bar(df["risk_band_tr"], df["lift"], color=[COLORS["teal"], COLORS["amber"], COLORS["violet"], COLORS["red"]])
     ax.axhline(1, color=COLORS["ink"], linestyle="--", linewidth=1)
-    ax.set_title("Model risk bands create review queues with measurable lift", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
-    ax.set_ylabel("Fraud-rate lift vs baseline")
+    ax.set_title("Model risk bantları ölçülebilir inceleme kuyrukları oluşturuyor", loc="left", fontsize=15, weight="bold", color=COLORS["ink"])
+    ax.set_ylabel("Baz orana göre risk çarpanı")
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     for idx, (_, row) in enumerate(df.iterrows()):
@@ -394,75 +401,75 @@ def chart_architecture() -> None:
     def arrow(x1, y1, x2, y2, dashed=False):
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="->", mutation_scale=14, linewidth=1.5, color=COLORS["muted"], linestyle="--" if dashed else "-"))
 
-    headers = [("INGEST", 1.0), ("STORAGE", 3.6), ("TRANSFORM", 6.1), ("ML", 3.6), ("VISUALIZE", 9.2)]
+    headers = [("VERİ ALIMI", 1.0), ("DEPOLAMA", 3.6), ("DÖNÜŞÜM", 6.1), ("MODEL", 3.6), ("GÖRSELLEŞTİRME", 9.2)]
     for text, x in headers:
         ax.text(x, 6.45, text, fontsize=10.5, weight="bold", color=COLORS["muted"], ha="center")
     ax.plot([0.5, 11.5], [6.25, 6.25], color=COLORS["grid"], linewidth=1)
 
-    box(0.5, 5.0, 2.1, 0.75, "Kaggle CSV", "train/test transaction + identity", COLORS["teal"])
-    box(3.1, 5.0, 2.1, 0.75, "BigQuery Free Tier", "raw landing tables", COLORS["blue"])
-    box(5.8, 5.0, 2.1, 0.75, "dbt Core", "staging + intermediate + marts", COLORS["violet"])
-    box(8.9, 5.0, 2.1, 0.75, "Power BI", "executive dashboard", COLORS["amber"])
+    box(0.5, 5.0, 2.1, 0.75, "Kaggle CSV", "train/test işlem + identity", COLORS["teal"])
+    box(3.1, 5.0, 2.1, 0.75, "BigQuery", "ham veri tabloları", COLORS["blue"])
+    box(5.8, 5.0, 2.1, 0.75, "dbt Core", "staging + intermediate + mart", COLORS["violet"])
+    box(8.9, 5.0, 2.1, 0.75, "Power BI", "yönetici raporu", COLORS["amber"])
     arrow(2.6, 5.38, 3.1, 5.38)
     arrow(5.2, 5.38, 5.8, 5.38)
     arrow(7.9, 5.38, 8.9, 5.38)
 
-    box(3.1, 3.6, 2.1, 0.75, "DuckDB Local", "zero-cost reproducible warehouse", COLORS["green"])
-    box(5.8, 3.6, 2.1, 0.75, "Mart Layer", "daily, segment, risk, model tables", COLORS["violet"])
-    box(8.9, 3.6, 2.1, 0.75, "Looker Studio", "optional BigQuery view", COLORS["red"])
+    box(3.1, 3.6, 2.1, 0.75, "DuckDB", "tekrarlanabilir analitik depo", COLORS["green"])
+    box(5.8, 3.6, 2.1, 0.75, "Mart Katmanı", "günlük, segment, risk, model tabloları", COLORS["violet"])
+    box(8.9, 3.6, 2.1, 0.75, "Looker Studio", "alternatif raporlama görünümü", COLORS["red"])
     arrow(1.55, 5.0, 4.15, 4.35, dashed=True)
     arrow(5.2, 3.98, 5.8, 3.98)
     arrow(7.9, 3.98, 8.9, 3.98)
 
-    box(0.5, 2.0, 2.1, 0.75, "Python / ML", "LightGBM + sklearn validation", "#3F3F46")
-    box(3.1, 2.0, 2.1, 0.75, "ML Predictions", "probability + risk bands", COLORS["blue"])
+    box(0.5, 2.0, 2.1, 0.75, "Python / Model", "LightGBM + doğrulama", "#3F3F46")
+    box(3.1, 2.0, 2.1, 0.75, "Model Skorları", "olasılık + risk bantları", COLORS["blue"])
     arrow(2.6, 2.38, 3.1, 2.38)
     arrow(5.2, 2.38, 6.5, 3.6, dashed=True)
 
-    box(0.6, 0.55, 2.35, 0.65, "staging", "typed cleaning", COLORS["teal"])
-    box(3.55, 0.55, 2.35, 0.65, "intermediate", "joins + features", COLORS["blue"])
-    box(6.5, 0.55, 2.35, 0.65, "mart", "fraud metrics", COLORS["violet"])
-    box(9.45, 0.55, 1.6, 0.65, "test", "QA gates", COLORS["amber"])
+    box(0.6, 0.55, 2.35, 0.65, "staging", "tip dönüşümü + temizlik", COLORS["teal"])
+    box(3.55, 0.55, 2.35, 0.65, "intermediate", "join + feature üretimi", COLORS["blue"])
+    box(6.5, 0.55, 2.35, 0.65, "mart", "sahtecilik metrikleri", COLORS["violet"])
+    box(9.45, 0.55, 1.6, 0.65, "test", "kalite kontrolleri", COLORS["amber"])
     arrow(2.95, 0.88, 3.55, 0.88)
     arrow(5.9, 0.88, 6.5, 0.88)
     arrow(8.85, 0.88, 9.45, 0.88)
-    ax.text(6, 1.55, "DBT LAYERS", fontsize=10.5, weight="bold", color=COLORS["muted"], ha="center")
+    ax.text(6, 1.55, "DBT KATMANLARI", fontsize=10.5, weight="bold", color=COLORS["muted"], ha="center")
     savefig(CHART_DIR / "09_architecture.png")
 
 
 def write_docs(summary: pd.DataFrame, metrics: dict) -> None:
     row = summary.iloc[0]
-    executive = f"""# IEEE-CIS Fraud Detection Executive Summary
+    executive = f"""# IEEE-CIS Fraud Detection Yönetici Özeti
 
-## Core Metrics
+## Temel Metrikler
 
-- Total transactions: {int(row['total_transactions']):,}
-- Fraud transactions: {int(row['fraud_transactions']):,}
-- Fraud rate: {pct(row['fraud_rate'])}
-- Identity coverage: {pct(row['identity_coverage_rate'])}
-- Median transaction amount: ${row['median_transaction_amount']:,.2f}
-- P95 transaction amount: ${row['p95_transaction_amount']:,.2f}
-- Validation AUC: {metrics['ml']['validation_auc']:.3f}
-- Validation average precision: {metrics['ml']['validation_average_precision']:.3f}
+- Toplam işlem: {int(row['total_transactions']):,}
+- Sahtecilik etiketi taşıyan işlem: {int(row['fraud_transactions']):,}
+- Sahtecilik oranı: {pct(row['fraud_rate'])}
+- Identity kapsama oranı: {pct(row['identity_coverage_rate'])}
+- Medyan işlem tutarı: ${row['median_transaction_amount']:,.2f}
+- P95 işlem tutarı: ${row['p95_transaction_amount']:,.2f}
+- Doğrulama AUC: {metrics['ml']['validation_auc']:.3f}
+- Doğrulama average precision: {metrics['ml']['validation_average_precision']:.3f}
 
-## Board-Level Takeaway
+## Yönetici Çıkarımı
 
-The dataset is a rare-event fraud problem with strong engineered feature signal, structural missingness, and meaningful risk concentration by product, identity coverage, transaction amount, and model-derived risk band. The recommended analytics operating model is raw landing in BigQuery free tier, dbt Core transformations, Python/LightGBM scoring, and Power BI consumption from curated marts.
+Veri seti, nadir görülen ancak belirli segmentlerde yoğunlaşan bir sahtecilik problemidir. Risk; ürün ailesi, identity kaydı, ödeme tipi, email domain, işlem tutarı ve zaman penceresine göre belirgin biçimde ayrışır. Önerilen analitik model; ham veri katmanı, dbt dönüşümleri, LightGBM skorlaması ve Power BI için hazırlanmış mart tablolarından oluşur.
 """
     (TABLES_DIR / "executive_summary.md").write_text(executive, encoding="utf-8")
 
-    dashboard = """# Power BI Dashboard Specification
+    dashboard = """# Power BI Rapor Spesifikasyonu
 
-## Data Sources
+## Veri Kaynakları
 
-Import all CSV files from `outputs/powerbi/`.
+`outputs/powerbi/` klasöründeki tüm CSV dosyalarını içe aktarın.
 
-## Relationships
+## İlişkiler
 
-- `fact_train_transactions[transaction_id]` to `mart_model_predictions[transaction_id]`
-- Use `mart_daily_stats`, `mart_amount_bands`, `mart_product_device_stats`, and `mart_risk_band_stats` as aggregated pages when performance matters.
+- `fact_train_transactions[transaction_id]` alanını `mart_model_predictions[transaction_id]` alanına bağlayın.
+- Performans ihtiyacında `mart_daily_stats`, `mart_amount_bands`, `mart_product_device_stats` ve `mart_risk_band_stats` tablolarını özet sayfalarda kullanın.
 
-## Measures
+## Ölçüler
 
 ```DAX
 Transactions = COUNTROWS(fact_train_transactions)
@@ -474,18 +481,18 @@ High Risk Transactions =
 CALCULATE([Transactions], fact_train_transactions[risk_band] IN {"High", "Critical"})
 ```
 
-## Pages
+## Sayfalar
 
-1. Executive Overview: baseline fraud rate, Product C lift, identity lift, and model risk-band lift.
-2. Product Identity: product-level fraud concentration and identity-present versus no-identity behavior.
-3. Payment Email: card network/type heatmap and purchaser email-domain risk groups.
-4. Amount Time: amount-band fraud rate, amount distribution, daily fraud drift, and relative-hour pattern.
-5. Model Risk: feature importance, time-based ROC, risk bands, and observed fraud by score band.
-6. Data Quality: structural missingness, identity coverage, dbt test status, and architecture context.
+1. Yönetici Özeti: baz sahtecilik oranı, Product C lift, identity lift ve risk bandı lift analizi.
+2. Ürün ve Identity: ürün seviyesinde risk yoğunlaşması ve identity kaydı olan/olmayan işlemler.
+3. Ödeme ve Email: kart ağı/tipi heatmap'i ve email domain risk grupları.
+4. Tutar ve Zaman: tutar bandı riski, tutar dağılımı, günlük drift ve saatlik örüntü.
+5. Model Riski: feature importance, zamana dayalı ROC, risk bantları ve bant bazında gözlenen sahtecilik.
+6. Veri Kalitesi: yapısal eksiklik, identity kapsama oranı, dbt test durumu ve mimari bağlam.
 
-## Narrative
+## Anlatı
 
-Start the presentation with the business question: where does fraud concentrate? Use the dashboard to prove that fraud is not random across product, identity, payment, email, amount, and time. Show the model only after the segment analysis, as the operational layer that turns those patterns into review queues.
+Sunumu "sahtecilik nerede yoğunlaşıyor?" sorusuyla başlatın. Rapor; ürün, identity, ödeme, email, tutar ve zaman kırılımlarında sahteciliğin rastgele dağılmadığını göstermelidir. Model skorları, segment analizinden sonra gelen operasyonel önceliklendirme katmanı olarak konumlandırılmalıdır.
 """
     (PBI_DIR / "powerbi_dashboard_spec.md").write_text(dashboard, encoding="utf-8")
 
@@ -508,24 +515,24 @@ Start the presentation with the business question: where does fraud concentrate?
         order by has_identity
         """,
     )
-    story = f"""# Analysis Story
+    story = f"""# Analiz Hikayesi
 
-## Central Question
+## Ana Soru
 
-Where does fraud concentrate, and how should a BI team monitor it?
+Sahtecilik hangi segmentlerde yoğunlaşıyor ve BI ekibi bunu nasıl izlemeli?
 
-## Key Findings
+## Temel Bulgular
 
-1. Fraud is rare but concentrated: baseline fraud rate is {pct(row['fraud_rate'])}.
-2. Product risk is uneven: Product C fraud rate is {product.iloc[0]['fraud_rate'] * 100:.2f}% versus Product W at {product[product['product_cd'].eq('W')].iloc[0]['fraud_rate'] * 100:.2f}%.
-3. Identity presence is a risk signal: identity-present transactions show {identity[identity['has_identity'].eq(1)].iloc[0]['fraud_rate'] * 100:.2f}% fraud versus {identity[identity['has_identity'].eq(0)].iloc[0]['fraud_rate'] * 100:.2f}% without identity records.
-4. Amount risk is non-linear: <$25 and $250+ bands show higher fraud rates than mid-size purchases.
-5. Payment attributes matter: credit card combinations over-index versus debit card combinations.
-6. The model should be used as a monitoring/ranking layer: Critical risk band captures very high fraud-rate lift versus baseline.
+1. Sahtecilik nadir ancak yoğunlaşmış durumda: baz oran {pct(row['fraud_rate'])}.
+2. Ürün riski eşit dağılmıyor: Product C sahtecilik oranı {product.iloc[0]['fraud_rate'] * 100:.2f}%, Product W ise {product[product['product_cd'].eq('W')].iloc[0]['fraud_rate'] * 100:.2f}%.
+3. Identity kaydı risk sinyalidir: identity kaydı olan işlemlerde oran {identity[identity['has_identity'].eq(1)].iloc[0]['fraud_rate'] * 100:.2f}%, olmayan işlemlerde {identity[identity['has_identity'].eq(0)].iloc[0]['fraud_rate'] * 100:.2f}%.
+4. Tutar riski doğrusal değildir: <$25 ve $250+ bantları orta tutarlı işlemlere göre daha yüksek risk taşır.
+5. Ödeme özellikleri ayrıştırıcıdır: kredi kartı kombinasyonları debit kart kombinasyonlarına göre daha yüksek risk gösterir.
+6. Model, izleme ve önceliklendirme katmanı olarak kullanılmalıdır: Kritik risk bandı baz orana göre çok yüksek lift üretir.
 
-## Recommended Narrative
+## Önerilen Sunum Akışı
 
-Start with class imbalance, then prove that fraud is not random. Move through product, identity, amount, payment, email, and time patterns. End with model risk bands as an operational monitoring layer, not as a black-box final decision engine.
+Önce sınıf dengesizliğini gösterin, ardından sahteciliğin rastgele dağılmadığını kanıtlayın. Ürün, identity, tutar, ödeme, email ve zaman kırılımlarıyla ilerleyin. Son bölümde model risk bantlarını nihai karar mekanizması olarak değil, operasyonel önceliklendirme katmanı olarak konumlandırın.
 """
     (TABLES_DIR / "analysis_story.md").write_text(story, encoding="utf-8")
 

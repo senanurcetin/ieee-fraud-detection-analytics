@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import argparse
 from pathlib import Path
 
 import duckdb
@@ -22,6 +23,14 @@ RAW_FILES = {
     "test_identity": RAW_DIR / "test_identity.csv",
     "sample_submission": RAW_DIR / "sample_submission.csv",
 }
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Upload raw IEEE-CIS files and model support tables to BigQuery.")
+    parser.add_argument("--project-id", default=PROJECT_ID)
+    parser.add_argument("--location", default=LOCATION)
+    parser.add_argument("--credentials", default=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"))
+    return parser.parse_args()
 
 
 def create_dataset(client: bigquery.Client, dataset_id: str) -> None:
@@ -56,8 +65,17 @@ def load_duckdb_table(client: bigquery.Client, dataset: str, table: str, duckdb_
 
 
 def main() -> None:
-    if not os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
-        raise EnvironmentError("Set GOOGLE_APPLICATION_CREDENTIALS to the service-account JSON path before uploading.")
+    args = parse_args()
+    global PROJECT_ID, LOCATION
+    PROJECT_ID = args.project_id
+    LOCATION = args.location
+    if not args.credentials:
+        raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
+    credential_path = Path(args.credentials)
+    if not credential_path.exists():
+        raise FileNotFoundError(f"Credential file not found: {credential_path}")
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(credential_path)
+
     client = bigquery.Client(project=PROJECT_ID, location=LOCATION)
     for dataset in ["raw", "staging", "intermediate", "mart", "dbt_default"]:
         create_dataset(client, dataset)
