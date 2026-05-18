@@ -1,6 +1,6 @@
 # 06 - Sonraki Geliştirme Backlog'u
 
-Bu liste, son geliştirme iterasyonundan sonra kalan işleri ve öncelikleri gösterir. Mevcut durum artık boş rapor değildir; `fraud_project_v2.pbix` içinde 6 sayfa, 34 visual container ve yeni yönetici analiz görselleri vardır.
+Bu liste, son geliştirme iterasyonundan sonra kalan işleri ve öncelikleri gösterir. Mevcut durum artık boş rapor değildir; `fraud_project_v2.pbix` içinde 6 sayfa, 35 visual container ve yeni yönetici analiz görselleri vardır.
 
 ## Bu Iterasyonda Tamamlananlar
 
@@ -21,6 +21,10 @@ Bu liste, son geliştirme iterasyonundan sonra kalan işleri ve öncelikleri gö
    - `18_segment_watchlist.png`: operasyonel segment izleme listesi.
    - `19_model_threshold_simulation.png`: model eşik simülasyonu.
    - `20_qa_readiness_scorecard.png`: sunum öncesi kalite ve hazırlık skor kartı.
+   - `21_executive_decision_matrix.png`: üst yönetim aksiyon matrisi.
+   - `22_review_strategy_matrix.png`: model skorundan operasyon kuyruğuna geçiş stratejisi.
+   - `24_risk_funnel.png`: inceleme hacmi ve fraud yakalama hunisi.
+   - `25_dbt_quality_gate.png`: dbt ve BigQuery kalite kapısı.
    - `fraud_project_v2.pbix` bu görsellerle yeniden üretildi.
 
 4. Rapor sayfa yapısı güncellendi

@@ -28,7 +28,7 @@
 - [ ] DirectQuery bağlantısı `workintech-working.fraud_project_powerbi` datasetine bağlı.
 - [ ] 6 rapor sayfası var.
 - [ ] Boş sayfa yok.
-- [ ] En az 34 visual container var.
+- [ ] En az 35 visual container var.
 - [ ] Yeni yönetici görselleri raporda görünüyor: KPI kontrol paneli, segment izleme listesi, eşik simülasyonu, hazırlık skor kartı.
 - [ ] Her sayfada en az 3 native visual var.
 - [ ] Her visual veri gösteriyor.

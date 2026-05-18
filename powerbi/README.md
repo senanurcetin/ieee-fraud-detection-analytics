@@ -29,5 +29,9 @@ Ek yönetici görselleri:
 - `18_segment_watchlist.png`
 - `19_model_threshold_simulation.png`
 - `20_qa_readiness_scorecard.png`
+- `21_executive_decision_matrix.png`
+- `22_review_strategy_matrix.png`
+- `24_risk_funnel.png`
+- `25_dbt_quality_gate.png`
 
 Bu görseller BigQuery `fraud_project_powerbi` datasetindeki raporlama tablolarından üretilir ve `fraud_project_v2.pbix` içine gömülüdür.

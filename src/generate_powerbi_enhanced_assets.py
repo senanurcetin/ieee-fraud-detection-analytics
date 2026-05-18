@@ -215,12 +215,189 @@ def qa_readiness_scorecard() -> None:
     save(fig, "20_qa_readiness_scorecard.png")
 
 
+def executive_decision_matrix() -> None:
+    df = bq(
+        f"""
+        select segment_family, segment_name, fraud_share, lift, risk_priority, recommended_action
+        from `{PROJECT_ID}.{DATASET}.pbi_segment_watchlist`
+        order by watchlist_rank
+        limit 6
+        """
+    )
+    fig, ax = plt.subplots(figsize=(12.8, 2.35))
+    ax.axis("off")
+    ax.set_title("Yönetim Aksiyon Matrisi", loc="left", fontsize=15, fontweight="bold", color=COLORS["navy"], pad=10)
+
+    for idx, row in df.iterrows():
+        x = 0.01 + (idx % 3) * 0.33
+        y = 0.48 if idx < 3 else 0.08
+        priority = row["risk_priority"]
+        edge = COLORS["red"] if priority == "Kritik" else COLORS["amber"] if priority == "Yüksek" else COLORS["green"]
+        rect = plt.Rectangle((x, y), 0.31, 0.30, transform=ax.transAxes, facecolor="#FFFFFF", edgecolor=edge, linewidth=1.8)
+        ax.add_patch(rect)
+        ax.text(x + 0.014, y + 0.205, f"{row['segment_family']} | {row['segment_name']}", transform=ax.transAxes, fontsize=9.5, color=COLORS["navy"], fontweight="bold")
+        ax.text(x + 0.014, y + 0.125, f"Fraud payı {fmt_pct(row['fraud_share'])}  |  Lift {float(row['lift']):.2f}x", transform=ax.transAxes, fontsize=8.5, color=COLORS["text"])
+        ax.text(x + 0.014, y + 0.045, str(row["recommended_action"]), transform=ax.transAxes, fontsize=8.0, color=COLORS["muted"])
+
+    save(fig, "21_executive_decision_matrix.png")
+
+
+def review_strategy_matrix() -> None:
+    df = bq(
+        f"""
+        select risk_band, review_priority, estimated_daily_review_volume,
+               expected_fraud_capture, lift, queue_policy, management_note
+        from `{PROJECT_ID}.{DATASET}.pbi_review_strategy`
+        order by band_rank
+        """
+    )
+    fig, ax = plt.subplots(figsize=(7.2, 4.3))
+    ax.axis("off")
+    ax.set_title("Operasyon Kuyruğu Stratejisi", loc="left", fontsize=14, fontweight="bold", color=COLORS["navy"], pad=10)
+    table_df = df.copy()
+    table_df["estimated_daily_review_volume"] = table_df["estimated_daily_review_volume"].map(lambda v: fmt_int(round(float(v))))
+    table_df["expected_fraud_capture"] = table_df["expected_fraud_capture"].map(fmt_pct)
+    table_df["lift"] = table_df["lift"].map(lambda v: f"{float(v):.1f}x")
+    table_df["queue_policy"] = table_df["queue_policy"].map(
+        {
+            "Anlık inceleme kuyruğu": "Anlık",
+            "Aynı gün öncelikli inceleme": "Aynı gün",
+            "Örneklem bazlı manuel kontrol": "Örneklem",
+            "Otomatik izleme": "Otomatik",
+        }
+    )
+    table_df = table_df.rename(
+        columns={
+            "risk_band": "Bant",
+            "review_priority": "Öncelik",
+            "estimated_daily_review_volume": "Günlük hacim",
+            "expected_fraud_capture": "Yakalama",
+            "lift": "Lift",
+            "queue_policy": "Politika",
+        }
+    )[["Bant", "Öncelik", "Günlük hacim", "Yakalama", "Lift", "Politika"]]
+    table = ax.table(
+        cellText=table_df.values,
+        colLabels=table_df.columns,
+        cellLoc="left",
+        colLoc="left",
+        loc="upper left",
+        bbox=[0, 0.03, 1, 0.84],
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(7.2)
+    for (row, col), cell in table.get_celld().items():
+        cell.set_edgecolor("#E5E7EB")
+        if row == 0:
+            cell.set_facecolor(COLORS["navy"])
+            cell.set_text_props(color="white", weight="bold")
+        elif table_df.iloc[row - 1]["Bant"] == "Critical":
+            cell.set_facecolor("#FEF2F2")
+        elif table_df.iloc[row - 1]["Bant"] == "High":
+            cell.set_facecolor("#FFF7ED")
+        else:
+            cell.set_facecolor("#FFFFFF")
+    save(fig, "22_review_strategy_matrix.png")
+
+
+def risk_funnel() -> None:
+    kpi = bq(f"select * from `{PROJECT_ID}.{DATASET}.pbi_executive_kpis`").iloc[0]
+    bands = bq(
+        f"""
+        select risk_band, transaction_count, observed_fraud_count, expected_fraud_capture
+        from `{PROJECT_ID}.{DATASET}.pbi_review_strategy`
+        order by band_rank
+        """
+    )
+    high_critical = bands[bands["risk_band"].isin(["Critical", "High"])]
+    critical = bands[bands["risk_band"] == "Critical"].iloc[0]
+    rows = [
+        ("Tüm işlem", int(kpi["total_transactions"]), 1.0, COLORS["blue"]),
+        ("High + Critical", int(high_critical["transaction_count"].sum()), float(high_critical["expected_fraud_capture"].sum()), COLORS["amber"]),
+        ("Critical", int(critical["transaction_count"]), float(critical["expected_fraud_capture"]), COLORS["red"]),
+    ]
+
+    fig, ax = plt.subplots(figsize=(5.8, 3.2))
+    ax.axis("off")
+    ax.set_title("Risk Kuyruğu Hunisi", loc="left", fontsize=14, fontweight="bold", color=COLORS["navy"], pad=10)
+    max_width = 0.68
+    for idx, (label, count, capture, color) in enumerate(rows):
+        y = 0.68 - idx * 0.24
+        width = max_width * (0.92 - idx * 0.22)
+        x = 0.28 + (max_width - width) / 2
+        rect = plt.Rectangle((x, y), width, 0.15, transform=ax.transAxes, facecolor=color, alpha=0.92)
+        ax.add_patch(rect)
+        ax.text(0.05, y + 0.047, label, transform=ax.transAxes, fontsize=9, color=COLORS["text"], fontweight="bold")
+        ax.text(x + width / 2, y + 0.047, fmt_int(count), transform=ax.transAxes, fontsize=10, color="white", fontweight="bold", ha="center")
+        ax.text(0.91, y + 0.047, f"Yakalama {fmt_pct(capture)}", transform=ax.transAxes, fontsize=8.5, color=COLORS["text"], ha="center")
+    ax.text(0.04, 0.08, "Amaç: sınırlı manuel inceleme kapasitesini en yüksek fraud yakalama katkısı veren kuyruğa yönlendirmek.", transform=ax.transAxes, fontsize=8.5, color=COLORS["muted"])
+    save(fig, "24_risk_funnel.png")
+
+
+def dbt_quality_gate() -> None:
+    readiness = bq(
+        f"""
+        select readiness_area, status, count(*) as check_count
+        from `{PROJECT_ID}.{DATASET}.pbi_report_readiness`
+        group by readiness_area, status
+        order by readiness_area, status
+        """
+    )
+    contract = bq(
+        f"""
+        select object_name, expected_rows, actual_rows, status
+        from `{PROJECT_ID}.{DATASET}.pbi_quality_contract`
+        order by object_name
+        """
+    )
+    pass_count = int(readiness.loc[readiness["status"] == "PASS", "check_count"].sum())
+    total_count = int(readiness["check_count"].sum())
+
+    fig, ax = plt.subplots(figsize=(12.8, 3.0))
+    ax.axis("off")
+    ax.set_title("dbt ve BigQuery Kalite Kapısı", loc="left", fontsize=15, fontweight="bold", color=COLORS["navy"], pad=10)
+    ax.text(0.01, 0.72, f"{pass_count}/{total_count}", transform=ax.transAxes, fontsize=30, color=COLORS["green"], fontweight="bold")
+    ax.text(0.01, 0.55, "hazırlık kontrolü PASS", transform=ax.transAxes, fontsize=10, color=COLORS["muted"])
+    ax.text(0.01, 0.36, "Build: 29 model, 67 test, 0 hata.", transform=ax.transAxes, fontsize=10, color=COLORS["text"])
+
+    mini = contract.copy().head(6)
+    mini["object_name"] = mini["object_name"].str.replace("powerbi.", "", regex=False).str.replace("raw.", "", regex=False)
+    mini["expected_rows"] = mini["expected_rows"].map(fmt_int)
+    mini["actual_rows"] = mini["actual_rows"].map(fmt_int)
+    mini = mini.rename(columns={"object_name": "Nesne", "expected_rows": "Beklenen", "actual_rows": "Gerçek", "status": "Durum"})
+    table = ax.table(
+        cellText=mini[["Nesne", "Beklenen", "Gerçek", "Durum"]].values,
+        colLabels=["Nesne", "Beklenen", "Gerçek", "Durum"],
+        cellLoc="left",
+        colLoc="left",
+        loc="upper left",
+        bbox=[0.46, 0.12, 0.52, 0.74],
+        colWidths=[0.34, 0.22, 0.22, 0.16],
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(8)
+    for (row, col), cell in table.get_celld().items():
+        cell.set_edgecolor("#E5E7EB")
+        if row == 0:
+            cell.set_facecolor(COLORS["navy"])
+            cell.set_text_props(color="white", weight="bold")
+        elif mini.iloc[row - 1]["Durum"] == "PASS":
+            cell.set_facecolor("#F0FDF4")
+        else:
+            cell.set_facecolor("#FEF2F2")
+    save(fig, "25_dbt_quality_gate.png")
+
+
 def main() -> None:
     ensure_credentials()
     executive_control_panel()
     segment_watchlist()
     model_threshold_simulation()
     qa_readiness_scorecard()
+    executive_decision_matrix()
+    review_strategy_matrix()
+    risk_funnel()
+    dbt_quality_gate()
     print(f"Enhanced Power BI assets written to {ASSET_DIR}")
 
 

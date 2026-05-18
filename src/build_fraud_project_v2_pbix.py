@@ -28,11 +28,11 @@ PAGE_IMAGE_LAYOUTS = {
         ("17_executive_control_panel.png", 44, 124, 1138, 168),
         ("10_product_lift.png", 52, 316, 352, 198),
         ("11_identity_lift.png", 464, 316, 352, 198),
-        ("16_risk_band_lift.png", 876, 316, 352, 198),
-        ("18_segment_watchlist.png", 138, 532, 1004, 150),
+        ("24_risk_funnel.png", 876, 316, 352, 198),
+        ("21_executive_decision_matrix.png", 138, 532, 1004, 150),
     ],
     "Risk Konsantrasyonu": [
-        ("18_segment_watchlist.png", 54, 126, 1110, 315),
+        ("18_segment_watchlist.png", 54, 126, 1110, 300),
         ("10_product_lift.png", 58, 462, 360, 205),
         ("11_identity_lift.png", 460, 462, 360, 205),
         ("04_product_device_risk.png", 862, 462, 330, 205),
@@ -46,19 +46,22 @@ PAGE_IMAGE_LAYOUTS = {
     "Ödeme ve Email Segmentleri": [
         ("12_card_payment_heatmap.png", 72, 130, 500, 390),
         ("13_email_domain_risk.png", 650, 130, 500, 390),
-        ("18_segment_watchlist.png", 134, 540, 1010, 130),
+        ("21_executive_decision_matrix.png", 134, 540, 1010, 130),
     ],
     "Model Skorlama ve Risk Bantları": [
-        ("19_model_threshold_simulation.png", 60, 128, 1090, 260),
+        ("19_model_threshold_simulation.png", 60, 128, 680, 260),
+        ("22_review_strategy_matrix.png", 780, 128, 390, 260),
         ("05_feature_importance.png", 58, 414, 520, 245),
         ("08_risk_bands.png", 650, 414, 500, 245),
     ],
     "Veri Kalitesi ve Mimari": [
-        ("20_qa_readiness_scorecard.png", 70, 130, 1060, 210),
+        ("25_dbt_quality_gate.png", 70, 130, 1060, 210),
         ("07_missingness_by_family.png", 78, 362, 520, 300),
         ("09_architecture.png", 646, 372, 500, 270),
     ],
 }
+
+REQUIRED_RESOURCE_ITEMS = sorted({asset for placements in PAGE_IMAGE_LAYOUTS.values() for asset, *_ in placements})
 
 
 def read_layout_template() -> tuple[dict, dict[str, bytes]]:
@@ -157,6 +160,36 @@ def apply_enhanced_page_layouts(layout: dict) -> dict:
     return layout
 
 
+def update_registered_resource_manifest(layout: dict, resources: dict[str, bytes]) -> dict:
+    resource_packages = layout.setdefault("resourcePackages", [])
+    registered_package = None
+    for package in resource_packages:
+        resource_package = package.get("resourcePackage", {})
+        if resource_package.get("name") == "RegisteredResources":
+            registered_package = resource_package
+            break
+
+    if registered_package is None:
+        registered_package = {
+            "disabled": False,
+            "items": [],
+            "name": "RegisteredResources",
+            "type": 1,
+        }
+        resource_packages.append({"resourcePackage": registered_package})
+
+    items = registered_package.setdefault("items", [])
+    known = {item.get("name") for item in items}
+    for path in sorted(resources):
+        if not path.startswith("Report/StaticResources/RegisteredResources/") or not path.endswith(".png"):
+            continue
+        asset_name = Path(path).name
+        if asset_name not in known:
+            items.append({"name": asset_name, "path": asset_name, "type": 100})
+            known.add(asset_name)
+    return layout
+
+
 def add_png_content_type(raw: bytes) -> bytes:
     namespace = "http://schemas.openxmlformats.org/package/2006/content-types"
     ET.register_namespace("", namespace)
@@ -198,6 +231,7 @@ def build_pbix() -> None:
     layout, resources = read_layout_template()
     resources.update(collect_local_assets())
     layout = normalize_layout(layout)
+    layout = update_registered_resource_manifest(layout, resources)
     layout = apply_enhanced_page_layouts(layout)
     layout_bytes = json.dumps(layout, ensure_ascii=False, separators=(",", ":")).encode("utf-16le")
 
