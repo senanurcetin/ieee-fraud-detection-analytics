@@ -13,13 +13,15 @@ powerbi/fraud_project_v2.pbix
 Son paket doğrulaması:
 
 - Sayfa sayısı: 6
-- Visual container sayısı: 236
-- Query-bound native visual sayısı: 29
+- Visual container sayısı: 262
+- Query-bound native visual sayısı: 33
 - Slicer sayısı: 6
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
 - PBIX zip bütünlüğü: PASS
-- Stil verilen container sayısı: 112
+- Tooltip destekli analiz görseli sayısı: 6
+- Kontrollü native kanıt tablosu sayısı: 4
+- Stil verilen container sayısı: 124
 - Tema: kurumsal fraud-risk paleti
 - Tasarım kabuğu: sol rail, header panel, alt sayfa navigasyonu, filtre kontrol alanı
 
@@ -48,6 +50,8 @@ Ana mesaj: Risk ürün, cihaz ve risk bandı segmentlerinde homojen dağılmaz.
 - Ürün bazlı risk ayrışması.
 - Cihaz tipine göre risk.
 - Risk bandı öncelik sırası.
+- Ürün ve risk bandı kanıt tablosu.
+- Risk renk standardı.
 - Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.
 - Bulgu, öncelik ve kontrol karar panelleri.
 
@@ -61,6 +65,7 @@ Ana mesaj: Fraud davranışı tutar ve işlem saati ekseninde doğrusal değildi
 - Tutar bandı fraud oranı.
 - Gün içi sahte işlem adedi.
 - Tutar bandı işlem hacmi.
+- Tutar bandı kanıt tablosu.
 - Zaman ve tutar yorum metni.
 - Bulgu, zaman ve aksiyon karar panelleri.
 
@@ -74,6 +79,7 @@ Ana mesaj: Ödeme tipi ve email domain grupları operasyonel izleme segmentleri 
 - Kart ağına göre sahte işlem adedi.
 - Kart tipine göre sahte işlem adedi.
 - Email domain fraud oranı.
+- Ödeme segmenti kanıt tablosu.
 - Segment karar mesajı.
 - Bulgu, segment ve aksiyon karar panelleri.
 
@@ -87,6 +93,8 @@ Ana mesaj: Model skoru kararın kendisi değil, operasyonel önceliklendirme kat
 - Risk bandı gözlenen fraud oranı.
 - Risk bandı sahte işlem hacmi.
 - Risk bandı işlem tutarı.
+- Risk bandı inceleme kanıt tablosu.
+- Risk renk standardı.
 - Modelin inceleme kuyruğu oluşturma rolünü açıklayan metinler.
 - Amaç, operasyon ve yönetim karar panelleri.
 
@@ -110,7 +118,8 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 - Başlıklar: kısa, yönetici seviyesinde, tek mesajlı.
 - Renkler: koyu lacivert, kırmızı risk, petrol yeşili, nötr gri.
 - Sayfa düzeni: üstte ana mesaj, ortada analiz, altta aksiyon veya kanıt.
-- Görseller: yalnızca card, slicer, clusteredColumnChart, clusteredBarChart ve textbox.
+- Görseller: card, slicer, clusteredColumnChart, clusteredBarChart, kontrollü native tablo ve textbox.
+- Tooltip: hacim, tutar ve sahte işlem sayısı gibi bağlam alanları önemli chart görsellerinde destekleyici bilgi olarak kullanılır.
 - Karar panelleri: gerçek mart sonuçlarından türetilmiş kısa yönetici bulguları.
 - Sayfa yapısı: filtre kontrol alanı, analiz kanıtı, yönetim kararı ve alt navigasyon düzeni.
 

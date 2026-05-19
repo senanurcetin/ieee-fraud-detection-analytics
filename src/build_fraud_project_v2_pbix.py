@@ -455,10 +455,24 @@ def bar_visual(
     order_by: str | None = None,
     value_type: str = "decimal",
     color: str = "#1B7F79",
+    tooltip_fields: list[tuple[str, str, str]] | None = None,
 ) -> list[dict]:
     alias = f"{name}_src"
     category_ref = f"{table}.{category_column}"
     value_ref = f"Sum({table}.{value_column})"
+    selects = [column_select(alias, table, category_column), sum_select(alias, table, value_column)]
+    projections = {"Category": [category_ref], "Y": [value_ref]}
+    transform_selects = [
+        (category_label, category_ref, "Category", "category"),
+        (value_label, value_ref, "Y", value_type),
+    ]
+    if tooltip_fields:
+        projections["Tooltips"] = []
+        for tooltip_column, tooltip_label, tooltip_type in tooltip_fields:
+            tooltip_ref = f"Sum({table}.{tooltip_column})"
+            selects.append(sum_select(alias, table, tooltip_column))
+            projections["Tooltips"].append(tooltip_ref)
+            transform_selects.append((tooltip_label, tooltip_ref, "Tooltips", tooltip_type))
     return [
         textbox_visual(f"{name}_title", title, x, y - 24, width, 22, z, 11, True, "#17212B"),
         native_visual(
@@ -466,12 +480,9 @@ def bar_visual(
             visual_type=visual_type,
             table=table,
             alias=alias,
-            projections={"Category": [category_ref], "Y": [value_ref]},
-            selects=[column_select(alias, table, category_column), sum_select(alias, table, value_column)],
-            transform_selects=[
-                (category_label, category_ref, "Category", "category"),
-                (value_label, value_ref, "Y", value_type),
-            ],
+            projections=projections,
+            selects=selects,
+            transform_selects=transform_selects,
             x=x,
             y=y,
             width=width,
@@ -479,6 +490,53 @@ def bar_visual(
             z=z + 1,
             order_by=order_by or category_column,
             color=color,
+        ),
+    ]
+
+
+def table_visual(
+    name: str,
+    table: str,
+    columns: list[tuple[str, str, str]],
+    title: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+    order_by: str | None = None,
+) -> list[dict]:
+    alias = f"{name}_src"
+    selects = []
+    projections = []
+    transform_selects = []
+    for column, label, value_type in columns:
+        if value_type == "category":
+            query_ref = f"{table}.{column}"
+            selects.append(column_select(alias, table, column))
+        else:
+            query_ref = f"Sum({table}.{column})"
+            selects.append(sum_select(alias, table, column))
+        projections.append(query_ref)
+        transform_selects.append((label, query_ref, "Values", value_type))
+
+    return [
+        textbox_visual(f"{name}_title", title, x, y - 24, width, 22, z, 11, True, "#17212B"),
+        native_visual(
+            name=name,
+            visual_type="tableEx",
+            table=table,
+            alias=alias,
+            projections={"Values": projections},
+            selects=selects,
+            transform_selects=transform_selects,
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            z=z + 1,
+            order_by=order_by,
+            color="#1B7F79",
         ),
     ]
 
@@ -591,6 +649,23 @@ def filter_panel(name: str, title: str, x: float, y: float, width: float, height
 
 def section_label(name: str, text: str, x: float, y: float, width: float, z: int = 18) -> dict:
     return textbox_visual(name, text, x, y, width, 20, z, 9, True, "#5E6872")
+
+
+def risk_legend(name: str, x: float, y: float, z: int = 20) -> list[dict]:
+    bands = [
+        ("Critical", "#C6251A"),
+        ("High", "#B66D12"),
+        ("Elevated", "#6D2BD4"),
+        ("Low", "#1B7F79"),
+    ]
+    visuals = [
+        textbox_visual(f"{name}_title", "Risk renk standardı", x, y, 230, 20, z, 9, True, "#5E6872")
+    ]
+    for index, (label, color) in enumerate(bands):
+        item_x = x + index * 104
+        visuals.append(textbox_visual(f"{name}_{label}_swatch", " ", item_x, y + 24, 14, 14, z + 1 + index, 8, False, "#FFFFFF", color, color))
+        visuals.append(textbox_visual(f"{name}_{label}_label", label, item_x + 20, y + 20, 76, 22, z + 10 + index, 8, True, "#37414C"))
+    return visuals
 
 
 def lineage_visuals() -> list[dict]:
@@ -714,6 +789,23 @@ def page_native_visuals(display_name: str) -> list[dict]:
         for visual in [
             slicer_visual("risk_product_slicer", "fact_train_transactions", "product_cd", "Ürün", 74, 150, 150, 92, 10),
             slicer_visual("risk_band_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 254, 150, 170, 92, 12),
+            table_visual(
+                "risk_evidence_table",
+                "fact_train_transactions",
+                [
+                    ("product_cd", "Ürün", "category"),
+                    ("risk_band", "Risk bandı", "category"),
+                    ("is_fraud", "Sahte işlem", "whole"),
+                    ("transaction_amount", "İşlem tutarı", "decimal"),
+                ],
+                "Ürün ve risk bandı kanıt tablosu",
+                474,
+                150,
+                690,
+                110,
+                18,
+                "product_cd",
+            ),
             bar_visual(
                 "risk_product_rate",
                 "mart_product_device_stats",
@@ -796,6 +888,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 "#1B7F79",
             )
         )
+        visuals.extend(risk_legend("risk_color_legend", 474, 266, 44))
 
     elif display_name == "Tutar ve Zaman Analizi":
         visuals.extend(filter_panel("amount_filter_panel", "Filtre kontrolü", 54, 132, 246, 126))
@@ -803,6 +896,22 @@ def page_native_visuals(display_name: str) -> list[dict]:
         visuals.append(section_label("amount_decision_label", "TAKİP STRATEJİSİ", 74, 546, 360))
         for visual in [
             slicer_visual("amount_band_slicer", "fact_train_transactions", "amount_band", "Tutar bandı", 74, 150, 190, 92, 10),
+            table_visual(
+                "amount_evidence_table",
+                "fact_train_transactions",
+                [
+                    ("amount_band", "Tutar bandı", "category"),
+                    ("is_fraud", "Sahte işlem", "whole"),
+                    ("transaction_amount", "İşlem tutarı", "decimal"),
+                ],
+                "Tutar bandı kanıt tablosu",
+                330,
+                150,
+                834,
+                110,
+                18,
+                "amount_band",
+            ),
             bar_visual(
                 "amount_band_rate",
                 "mart_amount_bands",
@@ -834,6 +943,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 32,
                 value_type="whole",
                 color="#C6251A",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "amount_band_volume",
@@ -850,6 +960,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 34,
                 value_type="decimal",
                 color="#2854A3",
+                tooltip_fields=[("is_fraud", "Sahte işlem", "whole")],
             ),
         ]:
             visuals.extend(visual)
@@ -902,6 +1013,23 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 92,
                 10,
             ),
+            table_visual(
+                "payment_evidence_table",
+                "fact_train_transactions",
+                [
+                    ("card_network", "Kart ağı", "category"),
+                    ("card_type", "Kart tipi", "category"),
+                    ("is_fraud", "Sahte işlem", "whole"),
+                    ("transaction_amount", "İşlem tutarı", "decimal"),
+                ],
+                "Ödeme segmenti kanıt tablosu",
+                354,
+                150,
+                810,
+                110,
+                18,
+                "card_network",
+            ),
             bar_visual(
                 "payment_network_fraud",
                 "fact_train_transactions",
@@ -917,6 +1045,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 30,
                 value_type="whole",
                 color="#2854A3",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "payment_type_fraud",
@@ -933,6 +1062,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 32,
                 value_type="whole",
                 color="#1B7F79",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "email_domain_rate",
@@ -992,6 +1122,22 @@ def page_native_visuals(display_name: str) -> list[dict]:
         visuals.append(section_label("model_decision_label", "İNCELEME KUYRUĞU STRATEJİSİ", 74, 546, 460))
         for visual in [
             slicer_visual("model_risk_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 74, 150, 180, 92, 10),
+            table_visual(
+                "model_queue_table",
+                "fact_train_transactions",
+                [
+                    ("risk_band", "Risk bandı", "category"),
+                    ("is_fraud", "Sahte işlem", "whole"),
+                    ("transaction_amount", "İşlem tutarı", "decimal"),
+                ],
+                "Risk bandı inceleme kanıt tablosu",
+                314,
+                150,
+                850,
+                110,
+                18,
+                "risk_band",
+            ),
             bar_visual(
                 "model_observed_rate",
                 "mart_risk_band_stats",
@@ -1023,6 +1169,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 32,
                 value_type="whole",
                 color="#C6251A",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "model_amount_by_band",
@@ -1039,6 +1186,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 34,
                 value_type="decimal",
                 color="#2854A3",
+                tooltip_fields=[("is_fraud", "Sahte işlem", "whole")],
             ),
         ]:
             visuals.extend(visual)
@@ -1074,6 +1222,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 "#1B7F79",
             )
         )
+        visuals.extend(risk_legend("model_color_legend", 314, 266, 44))
 
     elif display_name == "Veri Kalitesi ve Mimari":
         visuals.append(section_label("quality_gate_label", "KALİTE KAPISI", 74, 132, 300))

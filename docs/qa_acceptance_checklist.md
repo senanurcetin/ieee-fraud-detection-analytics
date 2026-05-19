@@ -1,6 +1,6 @@
 # QA Kabul Checklist
 
-Son doğrulama tarihi: 19 Mayıs 2026
+Son doğrulama tarihi: 20 Mayıs 2026
 
 ## dbt
 
@@ -39,15 +39,17 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Final rapor 6 sunum sayfasından oluşuyor.
 - [x] Ek teknik kontrol sayfası final rapordan kaldırıldı.
 - [x] Boş sayfa yok.
-- [x] 236 visual container var.
-- [x] 29 query-bound native visual var.
+- [x] 262 visual container var.
+- [x] 33 query-bound native visual var.
 - [x] Her sayfada en az 4 veri modeline bağlı native visual var.
 - [x] 6 slicer var.
 - [x] Gömülü görüntü visual sayısı 0.
 - [x] Kayıtlı görsel kaynağı sayısı 0.
-- [x] Kırılgan çizgi grafik ve tablo görseli kullanılmıyor.
+- [x] Kırılgan çizgi grafik kullanılmıyor.
+- [x] Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor.
+- [x] 6 chart görselinde ek bağlam sağlayan tooltip alanları var.
 - [x] Kullanılan veri alanlarının tamamı güvenli Power BI model allowlist'i içinde.
-- [x] 112 görsel container kurumsal arka plan/bordür stiliyle yapılandırıldı.
+- [x] 124 görsel container kurumsal arka plan/bordür stiliyle yapılandırıldı.
 - [x] Rapor teması kurumsal fraud-risk paletine göre güncellendi.
 - [x] Her sayfada sol kurumsal rail, header panel, alt sayfa navigasyonu ve filtre kontrol alanı var.
 - [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
@@ -61,6 +63,8 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Ödeme ve Email sayfası operasyonel segmentleri native chart ve slicer yapısıyla gösteriyor.
 - [x] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
 - [x] Veri Kalitesi sayfası missingness, kalite kontrolü ve lineage anlatımını native metin ve görsellerle veriyor.
+- [x] Risk Konsantrasyonu, Tutar ve Zaman, Ödeme ve Email, Model sayfalarına üst bölümde kanıt tablosu eklendi.
+- [x] Risk Konsantrasyonu ve Model sayfalarında risk renk standardı görünür hale getirildi.
 - [x] Her sayfada bulgu, risk, aksiyon veya kalite kapısı mesajları kısa karar panelleriyle görünür hale getirildi.
 - [x] Karar panellerinde Product C, identity, ödeme, tutar ve risk bandı bulguları gerçek mart sonuçlarıyla sayısallaştırıldı.
 - [x] Görünür rapor içinde proje dışı üretim izi, geçici not veya sunum dışı teknik dil bulunmuyor.

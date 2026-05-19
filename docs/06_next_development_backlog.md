@@ -8,13 +8,14 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Final rapor 6 sayfadan oluşuyor.
    - Ek teknik kontrol sayfası kaldırıldı.
    - Gömülü görüntü visual kullanılmıyor.
-   - Kırılgan çizgi grafik ve tablo görseli kullanılmıyor.
-   - Kullanılan görsel tipleri card, slicer, clustered column chart, clustered bar chart ve textbox ile sınırlandı.
+   - Kırılgan çizgi grafik kullanılmıyor.
+   - Kullanılan görsel tipleri card, slicer, clustered column chart, clustered bar chart, kontrollü native tablo ve textbox ile sınırlandı.
 
 2. Hata üreten alan bağımlılıkları temizlendi
    - Rapor yalnızca mevcut Power BI model metadata'sında güvenli alanları kullanıyor.
    - Yeni dbt kolonları rapor görsellerinden çıkarıldı; BigQuery/dbt tarafında kalmaya devam ediyor.
    - Tüm query-bound alanlar allowlist kontrolünden geçti.
+   - Kontrollü kanıt tabloları yalnızca mevcut model metadata'sındaki güvenli alanlarla kuruldu.
 
 3. Sayfa anlatısı yeniden yapılandırıldı
    - Yönetici Özeti: KPI, ürün riski, risk bandı ve tutar bandı aksiyon mesajı.
@@ -27,6 +28,8 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Karar panelleri gerçek mart sonuçlarından türetilmiş oran, pay ve yoğunlaşma cümleleriyle güçlendirildi.
    - Rapor teması ve visual container stilleri kurumsal fraud-risk paletine taşındı.
    - Sayfa tasarım kabuğu sol rail, header panel, alt navigasyon ve filtre kontrol alanlarıyla tamamlandı.
+   - Önemli chart görsellerine tooltip bağlamı eklendi.
+   - Risk renk standardı Risk Konsantrasyonu ve Model sayfalarında görünür hale getirildi.
 
 4. dbt kalite kapsamı korundu
    - Data test sayısı 73.
@@ -44,7 +47,7 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
 1. Power BI Desktop görsel açılış kontrolü
    - `powerbi/fraud_project_v2.pbix` dosyasını Power BI Desktop içinde aç.
    - 6 sayfanın tamamını sırayla kontrol et.
-   - Card, slicer ve chart görsellerinin veri döndürdüğünü kontrol et.
+   - Card, slicer, chart ve kanıt tablosu görsellerinin veri döndürdüğünü kontrol et.
 
 2. DirectQuery yenileme kontrolü
    - Rapor açıldıktan sonra BigQuery bağlantı yetkisini onayla.
@@ -64,8 +67,8 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Yeni kolonlar eklendiğinde rapor allowlist'i kontrollü şekilde genişletilmelidir.
 
 3. Conditional formatting
-   - Risk bandı ve fraud oranı alanlarında eşik bazlı renk vurgusu.
-   - PASS/FAIL kalite alanlarında durum rengi.
+   - Risk bandı ve fraud oranı alanlarında eşik bazlı renk vurgusu için Desktop tarafında son biçim kontrolü yapılmalı.
+   - PASS/FAIL kalite alanlarında durum rengi için Desktop tarafında son biçim kontrolü yapılmalı.
 
 ## Kabul Eşiği
 

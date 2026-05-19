@@ -19,7 +19,7 @@ Rapor 6 sunum sayfasından oluşur:
 
 PBIX dosyası BigQuery DirectQuery veri modelini korur. Final raporlama katmanı `workintech-working.fraud_project_powerbi` datasetidir.
 
-Rapor yalnızca native Power BI görselleriyle yapılandırılmıştır. Kullanılan görsel tipleri card, slicer, clustered column chart, clustered bar chart ve textbox ile sınırlıdır.
+Rapor yalnızca native Power BI görselleriyle yapılandırılmıştır. Kullanılan görsel tipleri card, slicer, clustered column chart, clustered bar chart, kontrollü native tablo ve textbox ile sınırlıdır.
 
 ## Sunum Akışı
 
@@ -36,12 +36,14 @@ Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede 
 
 - PBIX paket bütünlüğü: PASS
 - Sayfa sayısı: 6
-- Visual container sayısı: 236
-- Query-bound native visual sayısı: 29
+- Visual container sayısı: 262
+- Query-bound native visual sayısı: 33
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
-- Kırılgan çizgi grafik ve tablo görseli kullanılmıyor
-- Kurumsal fraud-risk teması ve 112 stillendirilmiş container var
+- Kırılgan çizgi grafik kullanılmıyor
+- Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor
+- Tooltip destekli analiz görseli sayısı: 6
+- Kurumsal fraud-risk teması ve 124 stillendirilmiş container var
 - Sol rail, header panel, alt sayfa navigasyonu ve filtre kontrol alanları eklendi
 - dbt prod build: PASS, 102 PASS / 0 ERROR / 1 exposure NO-OP
 - dbt docs generate: PASS
