@@ -36,26 +36,29 @@ Son doğrulama tarihi: 19 Mayıs 2026
 
 - [x] `powerbi/fraud_project_v2.pbix` paket bütünlüğü PASS.
 - [x] `SecurityBindings` paketten kaldırıldı.
-- [x] 7 rapor sayfası var: 6 ana sunum sayfası + 1 canlı analitik kontrol sayfası.
+- [x] Final rapor 6 sunum sayfasından oluşuyor.
+- [x] Ek teknik kontrol sayfası final rapordan kaldırıldı.
 - [x] Boş sayfa yok.
-- [x] 63 visual container var.
-- [x] 40 query-bound native visual var.
-- [x] Her ana sunum sayfasında en az 4 query-bound native visual var.
-- [x] 6 slicer eklendi.
-- [x] Native visual alanları dbt catalog kolonlarıyla eşleşiyor.
-- [x] 24 kayıtlı PNG analiz varlığı var.
+- [x] 94 visual container var.
+- [x] 29 query-bound native visual var.
+- [x] Her sayfada en az 4 veri modeline bağlı native visual var.
+- [x] 6 slicer var.
+- [x] Gömülü görüntü visual sayısı 0.
+- [x] Kayıtlı görsel kaynağı sayısı 0.
+- [x] Kırılgan çizgi grafik ve tablo görseli kullanılmıyor.
+- [x] Kullanılan veri alanlarının tamamı güvenli Power BI model allowlist'i içinde.
 - [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
-- [ ] DirectQuery yenilemesi sonrası native görsellerin veri döndürdüğü ekranda kontrol edilmeli.
+- [ ] DirectQuery yenilemesi sonrasında tüm görsellerin veri döndürdüğü ekranda kontrol edilmeli.
 
 ## Sunum
 
 - [x] Yönetici Özeti problemi ilk 30 saniyede anlatacak şekilde yapılandırıldı.
 - [x] Risk Konsantrasyonu sayfası product, device ve risk bandı kırılımlarını native görsellerle destekliyor.
-- [x] Tutar ve Zaman sayfası drift anlatısını native line chart ve drift table ile destekliyor.
-- [x] Ödeme ve Email sayfası operasyonel segmentleri native chart/table yapısıyla gösteriyor.
+- [x] Tutar ve Zaman sayfası tutar bandı, saat ve hacim analizini native görsellerle veriyor.
+- [x] Ödeme ve Email sayfası operasyonel segmentleri native chart ve slicer yapısıyla gösteriyor.
 - [x] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
-- [x] Veri Kalitesi sayfası BigQuery/dbt lineage güvenini ve missingness izlemesini veriyor.
-- [x] Canlı Analitik Katmanı sayfası veri modeline bağlı kanıt sayfası olarak eklendi.
+- [x] Veri Kalitesi sayfası missingness, kalite kontrolü ve lineage anlatımını native metin ve görsellerle veriyor.
+- [x] Görünür rapor içinde proje dışı üretim izi, geçici not veya sunum dışı teknik dil bulunmuyor.
 
 ## Repo
 

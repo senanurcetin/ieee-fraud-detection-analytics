@@ -6,17 +6,18 @@ Ana dosya:
 powerbi/fraud_project_v2.pbix
 ```
 
-## Mevcut Teknik Durum
+## Final Durum
 
-`fraud_project_v2.pbix` BigQuery DirectQuery veri modelini koruyan açılabilir ana teslim dosyasıdır. Rapor 6 ana Türkçe sunum sayfası ve 1 canlı analitik kontrol sayfasından oluşur.
+`fraud_project_v2.pbix` BigQuery DirectQuery veri modelini koruyan ana teslim dosyasıdır. Rapor 6 Türkçe sunum sayfasından oluşur ve yalnızca native Power BI görselleriyle yapılandırılmıştır.
 
 Son paket doğrulaması:
 
-- Sayfa sayısı: 7
-- Visual container sayısı: 63
-- Native query-bound visual sayısı: 40
+- Sayfa sayısı: 6
+- Visual container sayısı: 94
+- Query-bound native visual sayısı: 29
 - Slicer sayısı: 6
-- Kayıtlı analiz görseli: 24
+- Gömülü görüntü visual sayısı: 0
+- Kayıtlı görsel kaynağı: 0
 - PBIX zip bütünlüğü: PASS
 
 ## Sayfa 1 - Yönetici Özeti
@@ -25,38 +26,37 @@ Ana mesaj: Fraud düşük frekanslıdır fakat belirli segmentlerde yoğunlaşı
 
 İçerik:
 
-- Native KPI kartları: toplam işlem, sahte işlem, baz sahtecilik oranı, identity kapsama.
-- Native slicer: ürün filtresi.
-- Native chart: ürün bazlı fraud oranı.
-- Native chart: risk bandı lift.
-- Native table: risk bandı inceleme kuyruğu.
-- Destek görseli: üst yönetim aksiyon matrisi.
+- KPI kartları: toplam işlem, sahte işlem, baz fraud oranı, identity kapsama.
+- Ürün filtresi.
+- Ürün kırılımında fraud oranı.
+- Risk bandı gözlenen fraud oranı.
+- Tutar bandına göre risk.
+- Yönetim aksiyon metinleri.
 
 ## Sayfa 2 - Risk Konsantrasyonu
 
-Ana mesaj: Risk ürün, cihaz ve identity segmentlerinde homojen dağılmaz.
+Ana mesaj: Risk ürün, cihaz ve risk bandı segmentlerinde homojen dağılmaz.
 
 İçerik:
 
-- Native slicer: ürün.
-- Native slicer: risk bandı.
-- Native table: product/device risk kırılımı.
-- Native chart: product/device lift.
-- Native chart: cihaz kırılımı fraud oranı.
-- Native table: risk bandı yakalama payı.
-- Destek görseli: segment watchlist.
+- Ürün filtresi.
+- Risk bandı filtresi.
+- Ürün bazlı risk ayrışması.
+- Cihaz tipine göre risk.
+- Risk bandı öncelik sırası.
+- Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.
 
 ## Sayfa 3 - Tutar ve Zaman Analizi
 
-Ana mesaj: Fraud davranışı tutar ve zaman ekseninde doğrusal değildir.
+Ana mesaj: Fraud davranışı tutar ve işlem saati ekseninde doğrusal değildir.
 
 İçerik:
 
-- Native slicer: tutar bandı.
-- Native chart: amount band fraud oranı.
-- Native line chart: 7 günlük fraud trendi.
-- Native table: günlük drift izleme.
-- Destek görseli: fraud tutar dağılımı.
+- Tutar bandı filtresi.
+- Tutar bandı fraud oranı.
+- Gün içi sahte işlem adedi.
+- Tutar bandı işlem hacmi.
+- Zaman ve tutar yorum metni.
 
 ## Sayfa 4 - Ödeme ve Email Segmentleri
 
@@ -64,12 +64,11 @@ Ana mesaj: Ödeme tipi ve email domain grupları operasyonel izleme segmentleri 
 
 İçerik:
 
-- Native slicer: email domain grubu.
-- Native chart: kart ağı sahte işlem adedi.
-- Native chart: kart tipi sahte işlem adedi.
-- Native bar chart: email domain fraud oranı.
-- Native table: email domain risk ve lift.
-- Destek görselleri: ödeme heatmap ve karar matrisi.
+- Email grubu filtresi.
+- Kart ağına göre sahte işlem adedi.
+- Kart tipine göre sahte işlem adedi.
+- Email domain fraud oranı.
+- Segment karar mesajı.
 
 ## Sayfa 5 - Model Skorlama ve Risk Bantları
 
@@ -77,11 +76,11 @@ Ana mesaj: Model skoru kararın kendisi değil, operasyonel önceliklendirme kat
 
 İçerik:
 
-- Native slicer: risk bandı.
-- Native chart: risk bandı gözlenen fraud oranı.
-- Native chart: risk bandı yakalama payı.
-- Native table: model inceleme kuyruğu.
-- Destek görselleri: feature importance ve review strategy.
+- Risk bandı filtresi.
+- Risk bandı gözlenen fraud oranı.
+- Risk bandı sahte işlem hacmi.
+- Risk bandı işlem tutarı.
+- Modelin inceleme kuyruğu oluşturma rolünü açıklayan metinler.
 
 ## Sayfa 6 - Veri Kalitesi ve Mimari
 
@@ -89,40 +88,25 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 
 İçerik:
 
-- Native table: feature missingness izleme.
-- Native bar chart: feature ailesi eksiklik skoru.
-- Native KPI kartları: profil edilen satır ve eksik değer sinyali.
-- Destek görselleri: dbt kalite kapısı ve mimari akış.
-
-## Sayfa 7 - Canlı Analitik Katmanı
-
-Ana mesaj: Raporun veri modeli Power BI içinde çalışan native görsellerle doğrulanır.
-
-İçerik:
-
-- Native card: toplam işlem.
-- Native card: sahte işlem.
-- Native card: baz sahtecilik oranı.
-- Native card: identity kapsama oranı.
-- Native column chart: tutar bandı sahtecilik oranı.
-- Native line chart: 7 günlük sahtecilik oranı.
-- Native bar chart: email domain sahtecilik oranı.
-- Native table: risk bandı inceleme kuyruğu.
-- Native table: feature eksiklik izleme listesi.
+- Feature ailesi eksiklik oranı.
+- Eksik değer hacmi.
+- Profil edilen satır KPI'ı.
+- Eksik değer sinyali KPI'ı.
+- Lineage: `Kaggle CSV -> BigQuery Raw -> dbt Staging -> dbt Mart -> Power BI DirectQuery`.
+- Kalite mesajı: dbt build ve BigQuery row-count kontrolleri PASS.
 
 ## Format Standardı
 
-- Dil: Türkçe
-- Başlıklar: kısa, yönetici seviyesinde, tek mesajlı
-- Renkler: koyu lacivert, kırmızı risk, petrol yeşili, nötr gri
-- Sayfa düzeni: üstte ana mesaj, ortada analiz, altta aksiyon veya kanıt
-- Yüzdeler yüzde formatında, işlem sayıları binlik ayraçla, tutarlar para formatında gösterilmelidir.
+- Dil: Türkçe.
+- Başlıklar: kısa, yönetici seviyesinde, tek mesajlı.
+- Renkler: koyu lacivert, kırmızı risk, petrol yeşili, nötr gri.
+- Sayfa düzeni: üstte ana mesaj, ortada analiz, altta aksiyon veya kanıt.
+- Görseller: yalnızca card, slicer, clusteredColumnChart, clusteredBarChart ve textbox.
 
 ## Kabul Kriteri
 
 - Rapor Power BI Desktop içinde açılır.
 - DirectQuery modeli `workintech-working.fraud_project_powerbi` veri katmanını kullanır.
-- 6 ana sayfa sunum anlatısını eksiksiz verir.
-- Her ana sayfada veri modeline bağlı native visual vardır.
-- 7. sayfadaki native görseller veri döndürür.
-- Rapor içinde proje dışı üretim izi veya demo dili bulunmaz.
+- 6 sayfanın tamamı sunum anlatısını eksiksiz verir.
+- Her sayfada veri modeline bağlı native visual vardır.
+- Rapor içinde proje dışı üretim izi veya sunum dışı teknik not bulunmaz.

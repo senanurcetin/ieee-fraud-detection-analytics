@@ -6,7 +6,7 @@ Ana teslim dosyası:
 powerbi/fraud_project_v2.pbix
 ```
 
-Bu dosya 6 ana sunum sayfası, 1 canlı analitik kontrol sayfası ve mevcut Power BI DirectQuery veri modelini içerir.
+Bu dosya 6 sunum sayfası ve mevcut Power BI DirectQuery veri modelini içerir.
 
 ## BigQuery Üzerinden Yenileme
 
@@ -29,6 +29,17 @@ workintech-working.fraud_project_powerbi
 ## Ana Rapor Tabloları
 
 - `fact_train_transactions`
+- `mart_fraud_summary`
+- `mart_amount_bands`
+- `mart_email_domain_stats`
+- `mart_product_device_stats`
+- `mart_risk_band_stats`
+- `mart_feature_missingness`
+
+## BigQuery Raporlama Katmanı
+
+dbt tarafında aşağıdaki Power BI destek tabloları da üretilir. Power BI model metadata'sı yenilendiğinde bu tablolar rapora kontrollü şekilde eklenebilir:
+
 - `pbi_executive_kpis`
 - `pbi_product_risk`
 - `pbi_identity_risk`
@@ -46,17 +57,6 @@ workintech-working.fraud_project_powerbi
 - `pbi_threshold_simulation`
 - `pbi_report_readiness`
 
-## Mevcut PBIX Modelinde Görünen Mart Tabloları
-
-`Canlı Analitik Katmanı` sayfasındaki native görseller aşağıdaki mevcut model tablolarını kullanır:
-
-- `mart_fraud_summary`
-- `mart_amount_bands`
-- `mart_daily_stats`
-- `mart_email_domain_stats`
-- `mart_risk_band_stats`
-- `mart_feature_missingness`
-
 ## Önerilen İlişki
 
 ```text
@@ -71,7 +71,6 @@ Transactions = COUNTROWS(fact_train_transactions)
 Fraud Transactions = SUM(fact_train_transactions[is_fraud])
 Fraud Rate = DIVIDE([Fraud Transactions], [Transactions])
 Average Amount = AVERAGE(fact_train_transactions[transaction_amount])
-Predicted Risk = AVERAGE(fact_train_transactions[predicted_fraud_probability])
 High Risk Transactions =
 CALCULATE([Transactions], fact_train_transactions[risk_band] IN {"High", "Critical"})
 ```

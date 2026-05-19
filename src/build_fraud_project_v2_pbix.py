@@ -11,7 +11,6 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE_PBIX = ROOT / "outputs" / "powerbi" / "fraud_project_v2.pbix"
 LAYOUT_TEMPLATE = ROOT / "outputs" / "powerbi" / "fraud_project_dashboard.pbit"
 POWERBI_DIR = ROOT / "powerbi"
-ASSET_DIR = POWERBI_DIR / "assets"
 FINAL_PBIX = POWERBI_DIR / "fraud_project_v2.pbix"
 
 PAGE_ORDER = [
@@ -23,44 +22,39 @@ PAGE_ORDER = [
     ("Veri Kalitesi", "Veri Kalitesi ve Mimari"),
 ]
 
-PAGE_IMAGE_LAYOUTS = {
-    "Yönetici Özeti": [
-        ("21_executive_decision_matrix.png", 78, 544, 1080, 130),
-    ],
-    "Risk Konsantrasyonu": [
-        ("18_segment_watchlist.png", 648, 398, 520, 244),
-    ],
-    "Tutar ve Zaman Analizi": [
-        ("14_amount_distribution.png", 686, 398, 470, 242),
-    ],
-    "Ödeme ve Email Segmentleri": [
-        ("12_card_payment_heatmap.png", 58, 360, 500, 282),
-        ("21_executive_decision_matrix.png", 628, 526, 520, 120),
-    ],
-    "Model Skorlama ve Risk Bantları": [
-        ("05_feature_importance.png", 58, 404, 520, 244),
-        ("22_review_strategy_matrix.png", 650, 404, 500, 244),
-    ],
-    "Veri Kalitesi ve Mimari": [
-        ("25_dbt_quality_gate.png", 62, 128, 1090, 168),
-        ("09_architecture.png", 654, 392, 500, 250),
-    ],
+PAGE_COPY = {
+    "Yönetici Özeti": (
+        "Sahtecilik nadir, ancak belirli segmentlerde yoğunlaşıyor",
+        "Yönetim odağı genel hacimden çok riskin kümelendiği ürün, tutar ve risk bandı kesitlerine çevrilmelidir.",
+    ),
+    "Risk Konsantrasyonu": (
+        "Ürün ve cihaz kırılımları risk ayrışmasını netleştiriyor",
+        "Product C, mobil işlem davranışı ve yüksek risk bandı birlikte izlendiğinde operasyon kuyruğu daha hedefli yönetilir.",
+    ),
+    "Tutar ve Zaman Analizi": (
+        "Tutar ve işlem saati örüntüleri doğrusal olmayan davranış gösteriyor",
+        "Düşük tutar, yüksek tutar ve gün içi pencereler ayrı izlenmediğinde segment riski ortalamada kaybolur.",
+    ),
+    "Ödeme ve Email Segmentleri": (
+        "Ödeme tipi ve email domain operasyonel izleme kırılımları ekliyor",
+        "Kart ağı, kart tipi ve purchaser email grubu fraud riskini iş birimleri için okunabilir segmentlere dönüştürür.",
+    ),
+    "Model Skorlama ve Risk Bantları": (
+        "Model skorları karar değil, inceleme önceliği üretir",
+        "Risk bantları fraud inceleme kapasitesini yüksek olasılıklı işlem gruplarına yönlendiren bir sıralama katmanıdır.",
+    ),
+    "Veri Kalitesi ve Mimari": (
+        "Veri kalitesi ölçülür ve mimari akış rapor güvenini destekler",
+        "Eksiklik yapısal bir veri karakteristiği olarak izlenir; dbt ve BigQuery kontrolleri rapor katmanını doğrular.",
+    ),
 }
 
-REQUIRED_RESOURCE_ITEMS = sorted({asset for placements in PAGE_IMAGE_LAYOUTS.values() for asset, *_ in placements})
 
-
-def read_layout_template() -> tuple[dict, dict[str, bytes]]:
+def read_layout_template() -> dict:
     if not LAYOUT_TEMPLATE.exists():
         raise FileNotFoundError(f"Layout template not found: {LAYOUT_TEMPLATE}")
-
-    resources: dict[str, bytes] = {}
     with ZipFile(LAYOUT_TEMPLATE, "r") as zf:
-        layout = json.loads(zf.read("Report/Layout").decode("utf-16le"))
-        for name in zf.namelist():
-            if name.startswith("Report/StaticResources/"):
-                resources[name] = zf.read(name)
-    return layout, resources
+        return json.loads(zf.read("Report/Layout").decode("utf-16le"))
 
 
 def normalize_layout(layout: dict) -> dict:
@@ -71,8 +65,17 @@ def normalize_layout(layout: dict) -> dict:
         section["displayName"] = new_name
         section["ordinal"] = ordinal
         section["name"] = f"ReportSection{ordinal}"
+        section["width"] = 1280
+        section["height"] = 720
+        section["visualContainers"] = []
         sections.append(section)
+
     layout["sections"] = sections
+    layout["resourcePackages"] = [
+        package
+        for package in layout.get("resourcePackages", [])
+        if package.get("resourcePackage", {}).get("name") != "RegisteredResources"
+    ]
     layout["config"] = json.dumps(
         {
             "version": "5.72",
@@ -90,43 +93,6 @@ def normalize_layout(layout: dict) -> dict:
         separators=(",", ":"),
     )
     return layout
-
-
-def image_visual(name: str, item_name: str, x: float, y: float, width: float, height: float, z: int) -> dict:
-    config = {
-        "name": name,
-        "layouts": [{"id": 0, "position": {"x": x, "y": y, "z": z, "width": width, "height": height}}],
-        "singleVisual": {
-            "visualType": "image",
-            "drillFilterOtherVisuals": True,
-            "objects": {
-                "general": [
-                    {
-                        "properties": {
-                            "imageUrl": {
-                                "expr": {
-                                    "ResourcePackageItem": {
-                                        "PackageName": "RegisteredResources",
-                                        "PackageType": 1,
-                                        "ItemName": item_name,
-                                    }
-                                }
-                            }
-                        }
-                    }
-                ]
-            },
-        },
-    }
-    return {
-        "x": x,
-        "y": y,
-        "z": z,
-        "width": width,
-        "height": height,
-        "config": json.dumps(config, ensure_ascii=False, separators=(",", ":")),
-        "filters": "[]",
-    }
 
 
 def textbox_visual(
@@ -237,20 +203,35 @@ def semantic_query_payload(query: dict, projection_count: int, window_count: int
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
+def format_for(value_type: str) -> str | None:
+    if value_type == "percent":
+        return "0.0%"
+    if value_type == "whole":
+        return "#,0"
+    if value_type == "decimal":
+        return "#,0.0"
+    return None
+
+
 def data_transforms(selects: list[tuple[str, str, str, str]], projection_ordering: dict[str, list[int]]) -> str:
     metadata = []
     select_payload = []
     for display_name, query_name, role, value_type in selects:
         type_code = 2048 if value_type == "category" else 259
-        metadata.append({"Restatement": display_name, "Name": query_name, "Type": type_code})
-        select_payload.append(
-            {
-                "displayName": display_name,
-                "queryName": query_name,
-                "roles": {role: True},
-                "type": {"category": None} if value_type == "category" else {"numeric": True},
-            }
-        )
+        metadata_item = {"Restatement": display_name, "Name": query_name, "Type": type_code}
+        select_item = {
+            "displayName": display_name,
+            "queryName": query_name,
+            "roles": {role: True},
+            "type": {"category": None} if value_type == "category" else {"numeric": True},
+        }
+        format_string = format_for(value_type)
+        if format_string:
+            metadata_item["Format"] = format_string
+            select_item["format"] = format_string
+        metadata.append(metadata_item)
+        select_payload.append(select_item)
+
     payload = {
         "selects": select_payload,
         "projectionOrdering": projection_ordering,
@@ -258,6 +239,67 @@ def data_transforms(selects: list[tuple[str, str, str, str]], projection_orderin
         "visualElements": [],
     }
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+
+
+def visual_objects(visual_type: str, color: str, show_title: bool) -> dict:
+    title = {
+        "show": {"expr": {"Literal": {"Value": "true" if show_title else "false"}}},
+        "fontColor": {"solid": {"color": "#17212B"}},
+        "fontSize": {"expr": {"Literal": {"Value": "10D"}}},
+    }
+    objects = {
+        "title": [{"properties": title}],
+        "labels": [
+            {
+                "properties": {
+                    "show": {"expr": {"Literal": {"Value": "true"}}},
+                    "labelDisplayUnits": {"expr": {"Literal": {"Value": "0D"}}},
+                    "labelPrecision": {"expr": {"Literal": {"Value": "1D"}}},
+                    "color": {"solid": {"color": "#17212B"}},
+                }
+            }
+        ],
+        "dataPoint": [{"properties": {"defaultColor": {"solid": {"color": color}}}}],
+    }
+    if visual_type == "card":
+        objects.update(
+            {
+                "categoryLabels": [{"properties": {"show": {"expr": {"Literal": {"Value": "false"}}}}}],
+                "calloutValue": [
+                    {
+                        "properties": {
+                            "labelDisplayUnits": {"expr": {"Literal": {"Value": "0D"}}},
+                            "fontColor": {"solid": {"color": "#17212B"}},
+                        }
+                    }
+                ],
+            }
+        )
+    elif visual_type in {"clusteredColumnChart", "clusteredBarChart"}:
+        objects.update(
+            {
+                "categoryAxis": [
+                    {
+                        "properties": {
+                            "show": {"expr": {"Literal": {"Value": "true"}}},
+                            "showAxisTitle": {"expr": {"Literal": {"Value": "false"}}},
+                            "fontColor": {"solid": {"color": "#5E6872"}},
+                        }
+                    }
+                ],
+                "valueAxis": [
+                    {
+                        "properties": {
+                            "show": {"expr": {"Literal": {"Value": "true"}}},
+                            "showAxisTitle": {"expr": {"Literal": {"Value": "false"}}},
+                            "labelDisplayUnits": {"expr": {"Literal": {"Value": "0D"}}},
+                            "fontColor": {"solid": {"color": "#5E6872"}},
+                        }
+                    }
+                ],
+            }
+        )
+    return objects
 
 
 def native_visual(
@@ -274,7 +316,8 @@ def native_visual(
     height: float,
     z: int,
     order_by: str | None = None,
-    title: str | None = None,
+    color: str = "#1B7F79",
+    show_title: bool = False,
 ) -> dict:
     query = query_from_selects(table, alias, selects, order_by)
     config = {
@@ -288,26 +331,16 @@ def native_visual(
             },
             "prototypeQuery": query,
             "drillFilterOtherVisuals": True,
-            "objects": {
-                "title": [
-                    {
-                        "properties": {
-                            "show": {"expr": {"Literal": {"Value": "true"}}},
-                            "text": {"expr": {"Literal": {"Value": f"'{title or name}'"}}},
-                            "fontColor": {"solid": {"color": "#17212B"}},
-                            "fontSize": {"expr": {"Literal": {"Value": "11D"}}},
-                        }
-                    }
-                ],
-                "categoryAxis": [{"properties": {"show": {"expr": {"Literal": {"Value": "true"}}}}}],
-                "valueAxis": [{"properties": {"show": {"expr": {"Literal": {"Value": "true"}}}}}],
-                "labels": [{"properties": {"show": {"expr": {"Literal": {"Value": "true"}}}}}],
-            },
+            "objects": visual_objects(visual_type, color, show_title),
         },
     }
     projection_ordering = {
         role: [
-            next(index for index, (_display, query_ref, transform_role, _value_type) in enumerate(transform_selects) if query_ref == query_name and transform_role == role)
+            next(
+                index
+                for index, (_display, query_ref, transform_role, _value_type) in enumerate(transform_selects)
+                if query_ref == query_name and transform_role == role
+            )
             for query_name in query_refs
         ]
         for role, query_refs in projections.items()
@@ -335,24 +368,28 @@ def card_visual(
     width: float,
     height: float,
     z: int,
-) -> dict:
+    value_type: str = "whole",
+) -> list[dict]:
     alias = f"{name}_src"
     query_ref = f"Sum({table}.{column})"
-    return native_visual(
-        name=name,
-        visual_type="card",
-        table=table,
-        alias=alias,
-        projections={"Values": [query_ref]},
-        selects=[sum_select(alias, table, column)],
-        transform_selects=[(label, query_ref, "Values", "numeric")],
-        x=x,
-        y=y,
-        width=width,
-        height=height,
-        z=z,
-        title=label,
-    )
+    return [
+        textbox_visual(f"{name}_label", label, x, y - 20, width, 22, z, 10, True, "#5E6872"),
+        native_visual(
+            name=name,
+            visual_type="card",
+            table=table,
+            alias=alias,
+            projections={"Values": [query_ref]},
+            selects=[sum_select(alias, table, column)],
+            transform_selects=[(label, query_ref, "Values", value_type)],
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            z=z + 1,
+            color="#FFFFFF",
+        ),
+    ]
 
 
 def bar_visual(
@@ -360,6 +397,7 @@ def bar_visual(
     table: str,
     category_column: str,
     value_column: str,
+    title: str,
     category_label: str,
     value_label: str,
     x: float,
@@ -369,98 +407,34 @@ def bar_visual(
     z: int,
     visual_type: str = "clusteredColumnChart",
     order_by: str | None = None,
-) -> dict:
+    value_type: str = "decimal",
+    color: str = "#1B7F79",
+) -> list[dict]:
     alias = f"{name}_src"
     category_ref = f"{table}.{category_column}"
     value_ref = f"Sum({table}.{value_column})"
-    return native_visual(
-        name=name,
-        visual_type=visual_type,
-        table=table,
-        alias=alias,
-        projections={"Category": [category_ref], "Y": [value_ref]},
-        selects=[column_select(alias, table, category_column), sum_select(alias, table, value_column)],
-        transform_selects=[(category_label, category_ref, "Category", "category"), (value_label, value_ref, "Y", "numeric")],
-        x=x,
-        y=y,
-        width=width,
-        height=height,
-        z=z,
-        order_by=order_by or category_column,
-        title=value_label,
-    )
-
-
-def line_visual(
-    name: str,
-    table: str,
-    category_column: str,
-    value_column: str,
-    category_label: str,
-    value_label: str,
-    x: float,
-    y: float,
-    width: float,
-    height: float,
-    z: int,
-) -> dict:
-    return bar_visual(
-        name=name,
-        table=table,
-        category_column=category_column,
-        value_column=value_column,
-        category_label=category_label,
-        value_label=value_label,
-        x=x,
-        y=y,
-        width=width,
-        height=height,
-        z=z,
-        visual_type="lineChart",
-        order_by=category_column,
-    )
-
-
-def table_visual(
-    name: str,
-    table: str,
-    columns: list[tuple[str, str, str]],
-    x: float,
-    y: float,
-    width: float,
-    height: float,
-    z: int,
-    order_by: str | None = None,
-) -> dict:
-    alias = f"{name}_src"
-    selects = []
-    projections = []
-    transform_selects = []
-    for column, label, value_type in columns:
-        if value_type == "numeric":
-            query_ref = f"Sum({table}.{column})"
-            selects.append(sum_select(alias, table, column))
-        else:
-            query_ref = f"{table}.{column}"
-            selects.append(column_select(alias, table, column))
-        projections.append(query_ref)
-        transform_selects.append((label, query_ref, "Values", value_type))
-    return native_visual(
-        name=name,
-        visual_type="tableEx",
-        table=table,
-        alias=alias,
-        projections={"Values": projections},
-        selects=selects,
-        transform_selects=transform_selects,
-        x=x,
-        y=y,
-        width=width,
-        height=height,
-        z=z,
-        order_by=order_by,
-        title=name,
-    )
+    return [
+        textbox_visual(f"{name}_title", title, x, y - 24, width, 22, z, 11, True, "#17212B"),
+        native_visual(
+            name=name,
+            visual_type=visual_type,
+            table=table,
+            alias=alias,
+            projections={"Category": [category_ref], "Y": [value_ref]},
+            selects=[column_select(alias, table, category_column), sum_select(alias, table, value_column)],
+            transform_selects=[
+                (category_label, category_ref, "Category", "category"),
+                (value_label, value_ref, "Y", value_type),
+            ],
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            z=z + 1,
+            order_by=order_by or category_column,
+            color=color,
+        ),
+    ]
 
 
 def slicer_visual(
@@ -473,517 +447,498 @@ def slicer_visual(
     width: float,
     height: float,
     z: int,
-) -> dict:
+) -> list[dict]:
     alias = f"{name}_src"
     query_ref = f"{table}.{column}"
-    return native_visual(
-        name=name,
-        visual_type="slicer",
-        table=table,
-        alias=alias,
-        projections={"Values": [query_ref]},
-        selects=[column_select(alias, table, column)],
-        transform_selects=[(label, query_ref, "Values", "category")],
-        x=x,
-        y=y,
-        width=width,
-        height=height,
-        z=z,
-        order_by=column,
-        title=label,
-    )
+    return [
+        textbox_visual(f"{name}_label", label, x, y - 20, width, 22, z, 10, True, "#5E6872"),
+        native_visual(
+            name=name,
+            visual_type="slicer",
+            table=table,
+            alias=alias,
+            projections={"Values": [query_ref]},
+            selects=[column_select(alias, table, column)],
+            transform_selects=[(label, query_ref, "Values", "category")],
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            z=z + 1,
+            order_by=column,
+            color="#FFFFFF",
+        ),
+    ]
 
 
-def main_page_native_visuals(display_name: str) -> list[dict]:
+def header_visuals(display_name: str) -> list[dict]:
+    title, subtitle = PAGE_COPY[display_name]
+    return [
+        textbox_visual(f"{display_name}_title", title, 54, 34, 1080, 48, 1, 23, True, "#17212B"),
+        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 86, 1088, 36, 2, 12, False, "#37414C"),
+        textbox_visual(f"{display_name}_accent", "|", 1138, 30, 30, 52, 3, 30, True, "#C5C9CD"),
+    ]
+
+
+def insight_text(name: str, text: str, x: float, y: float, width: float, height: float, z: int, color: str) -> dict:
+    return textbox_visual(name, text, x, y, width, height, z, 12, True, color)
+
+
+def lineage_visuals() -> list[dict]:
+    steps = [
+        ("Kaggle CSV", 74, "#1B7F79"),
+        ("BigQuery Raw", 254, "#2854A3"),
+        ("dbt Staging", 434, "#2854A3"),
+        ("dbt Mart", 614, "#6D2BD4"),
+        ("Power BI DirectQuery", 794, "#B66D12"),
+    ]
+    visuals: list[dict] = [
+        textbox_visual("lineage_title", "Analitik veri akışı", 74, 478, 980, 24, 70, 13, True, "#17212B")
+    ]
+    for index, (label, x, color) in enumerate(steps, start=1):
+        visuals.append(textbox_visual(f"lineage_step_{index}", label, x, 516, 150, 30, 70 + index, 11, True, color))
+        if index < len(steps):
+            visuals.append(textbox_visual(f"lineage_arrow_{index}", "->", x + 142, 516, 38, 30, 80 + index, 12, True, "#5E6872"))
+    return visuals
+
+
+def page_native_visuals(display_name: str) -> list[dict]:
+    visuals = header_visuals(display_name)
+
     if display_name == "Yönetici Özeti":
-        return [
-            card_visual("exec_total_txn", "mart_fraud_summary", "total_transactions", "Toplam işlem", 54, 120, 230, 78, 110),
-            card_visual("exec_fraud_txn", "mart_fraud_summary", "fraud_transactions", "Sahte işlem", 304, 120, 230, 78, 111),
-            card_visual("exec_fraud_rate", "mart_fraud_summary", "fraud_rate", "Baz sahtecilik oranı", 554, 120, 230, 78, 112),
-            card_visual("exec_identity_rate", "mart_fraud_summary", "identity_coverage_rate", "Identity kapsama", 804, 120, 230, 78, 113),
-            slicer_visual("exec_product_slicer", "fact_train_transactions", "product_cd", "Ürün filtresi", 1054, 120, 130, 78, 114),
+        for visual in [
+            card_visual("exec_total_txn", "mart_fraud_summary", "total_transactions", "Toplam işlem", 64, 154, 218, 72, 10),
+            card_visual("exec_fraud_txn", "mart_fraud_summary", "fraud_transactions", "Sahte işlem", 314, 154, 218, 72, 12),
+            card_visual("exec_fraud_rate", "mart_fraud_summary", "fraud_rate", "Baz fraud oranı", 564, 154, 218, 72, 14, "percent"),
+            card_visual("exec_identity_rate", "mart_fraud_summary", "identity_coverage_rate", "Identity kapsama", 814, 154, 218, 72, 16, "percent"),
+            slicer_visual("exec_product_slicer", "fact_train_transactions", "product_cd", "Ürün filtresi", 1062, 150, 142, 92, 18),
             bar_visual(
                 "exec_product_risk",
                 "mart_product_device_stats",
                 "product_cd",
                 "fraud_rate",
+                "Ürün kırılımında fraud oranı",
                 "Ürün",
-                "Ürün bazlı fraud oranı",
-                54,
-                228,
-                330,
-                230,
-                115,
+                "Fraud oranı",
+                74,
+                300,
+                324,
+                210,
+                30,
+                value_type="percent",
+                color="#C6251A",
             ),
             bar_visual(
-                "exec_risk_band_lift",
+                "exec_risk_band_rate",
                 "mart_risk_band_stats",
                 "risk_band",
-                "lift",
+                "observed_fraud_rate",
+                "Risk bandı gözlenen fraud oranı",
                 "Risk bandı",
-                "Risk bandı lift",
-                430,
-                228,
-                330,
-                230,
-                116,
-            ),
-            table_visual(
-                "exec_risk_queue",
-                "mart_risk_band_stats",
-                [
-                    ("risk_band", "Risk bandı", "category"),
-                    ("review_priority", "Öncelik", "category"),
-                    ("transaction_count", "İşlem", "numeric"),
-                    ("observed_fraud_rate", "Fraud oranı", "numeric"),
-                    ("expected_fraud_capture", "Yakalama payı", "numeric"),
-                ],
-                806,
-                228,
-                372,
-                230,
-                117,
-                "band_rank",
-            ),
-        ]
-
-    if display_name == "Risk Konsantrasyonu":
-        return [
-            slicer_visual("risk_product_slicer", "fact_train_transactions", "product_cd", "Ürün", 54, 118, 130, 72, 110),
-            slicer_visual("risk_band_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 204, 118, 150, 72, 111),
-            table_visual(
-                "risk_product_device_table",
-                "mart_product_device_stats",
-                [
-                    ("product_cd", "Ürün", "category"),
-                    ("device_type", "Cihaz", "category"),
-                    ("transaction_count", "İşlem", "numeric"),
-                    ("fraud_rate", "Fraud oranı", "numeric"),
-                    ("lift", "Lift", "numeric"),
-                    ("fraud_share", "Fraud payı", "numeric"),
-                ],
-                54,
+                "Gözlenen fraud oranı",
+                456,
+                300,
+                324,
                 210,
-                560,
-                180,
-                112,
-                "product_cd",
+                32,
+                value_type="percent",
+                color="#6D2BD4",
             ),
             bar_visual(
-                "risk_product_lift",
+                "exec_amount_risk",
+                "mart_amount_bands",
+                "amount_band",
+                "fraud_rate",
+                "Tutar bandına göre risk",
+                "Tutar bandı",
+                "Fraud oranı",
+                838,
+                300,
+                324,
+                210,
+                34,
+                value_type="percent",
+                color="#B66D12",
+            ),
+        ]:
+            visuals.extend(visual)
+        visuals.extend(
+            [
+                insight_text(
+                    "exec_message_1",
+                    "Yönetim aksiyonu: Product C, yüksek risk bandı ve uç tutar bantları ilk izleme kuyruğuna alınmalıdır.",
+                    84,
+                    570,
+                    500,
+                    42,
+                    60,
+                    "#C6251A",
+                ),
+                insight_text(
+                    "exec_message_2",
+                    "Operasyon prensibi: model çıktısı nihai karar değil, fraud ekibinin inceleme sırasını belirleyen öncelik sinyalidir.",
+                    640,
+                    570,
+                    500,
+                    42,
+                    61,
+                    "#1B7F79",
+                ),
+            ]
+        )
+
+    elif display_name == "Risk Konsantrasyonu":
+        for visual in [
+            slicer_visual("risk_product_slicer", "fact_train_transactions", "product_cd", "Ürün", 74, 150, 150, 92, 10),
+            slicer_visual("risk_band_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 254, 150, 170, 92, 12),
+            bar_visual(
+                "risk_product_rate",
                 "mart_product_device_stats",
                 "product_cd",
-                "lift",
+                "fraud_rate",
+                "Ürün bazlı risk ayrışması",
                 "Ürün",
-                "Ürün ve cihaz birleşik lift",
-                654,
-                118,
-                250,
-                250,
-                113,
+                "Fraud oranı",
+                74,
+                320,
+                320,
+                220,
+                30,
+                value_type="percent",
+                color="#C6251A",
             ),
             bar_visual(
                 "risk_device_rate",
                 "mart_product_device_stats",
                 "device_type",
                 "fraud_rate",
-                "Cihaz",
-                "Cihaz kırılımı fraud oranı",
-                930,
-                118,
-                250,
-                250,
-                114,
+                "Cihaz tipine göre risk",
+                "Cihaz tipi",
+                "Fraud oranı",
+                454,
+                320,
+                320,
+                220,
+                32,
+                value_type="percent",
+                color="#1B7F79",
             ),
-            table_visual(
-                "risk_band_capture_table",
+            bar_visual(
+                "risk_band_rate",
                 "mart_risk_band_stats",
-                [
-                    ("risk_band", "Risk bandı", "category"),
-                    ("transaction_count", "İşlem", "numeric"),
-                    ("observed_fraud_rate", "Fraud oranı", "numeric"),
-                    ("lift", "Lift", "numeric"),
-                    ("expected_fraud_capture", "Yakalama payı", "numeric"),
-                ],
-                54,
-                410,
-                560,
-                210,
-                115,
-                "band_rank",
+                "risk_band",
+                "observed_fraud_rate",
+                "Risk bandı öncelik sırası",
+                "Risk bandı",
+                "Gözlenen fraud oranı",
+                834,
+                320,
+                320,
+                220,
+                34,
+                value_type="percent",
+                color="#6D2BD4",
             ),
-        ]
+        ]:
+            visuals.extend(visual)
+        visuals.append(
+            insight_text(
+                "risk_decision_message",
+                "Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.",
+                76,
+                590,
+                960,
+                38,
+                60,
+                "#17212B",
+            )
+        )
 
-    if display_name == "Tutar ve Zaman Analizi":
-        return [
-            slicer_visual("amount_band_slicer", "fact_train_transactions", "amount_band", "Tutar bandı", 54, 118, 170, 72, 110),
+    elif display_name == "Tutar ve Zaman Analizi":
+        for visual in [
+            slicer_visual("amount_band_slicer", "fact_train_transactions", "amount_band", "Tutar bandı", 74, 150, 190, 92, 10),
             bar_visual(
                 "amount_band_rate",
                 "mart_amount_bands",
                 "amount_band",
                 "fraud_rate",
-                "Tutar bandı",
                 "Tutar bandı fraud oranı",
-                54,
-                214,
-                340,
-                170,
-                111,
+                "Tutar bandı",
+                "Fraud oranı",
+                74,
+                320,
+                330,
+                220,
+                30,
+                value_type="percent",
+                color="#B66D12",
             ),
-            line_visual(
-                "daily_ma7_rate",
-                "mart_daily_stats",
-                "transaction_day",
-                "fraud_rate_ma7",
-                "Gün",
-                "7 günlük fraud trendi",
-                430,
-                118,
-                728,
-                266,
-                112,
-            ),
-            table_visual(
-                "daily_drift_table",
-                "mart_daily_stats",
-                [
-                    ("transaction_day", "Gün", "category"),
-                    ("transaction_count", "İşlem", "numeric"),
-                    ("fraud_rate", "Fraud oranı", "numeric"),
-                    ("fraud_rate_ma7", "7g ortalama", "numeric"),
-                    ("drift_flag", "Drift durumu", "category"),
-                ],
-                54,
-                416,
-                590,
-                214,
-                113,
-                "transaction_day",
-            ),
-        ]
-
-    if display_name == "Ödeme ve Email Segmentleri":
-        return [
-            slicer_visual("email_domain_slicer", "fact_train_transactions", "purchaser_email_group", "Email grubu", 58, 118, 190, 72, 110),
             bar_visual(
-                "payment_card_network_fraud",
+                "amount_hour_fraud",
+                "fact_train_transactions",
+                "transaction_hour",
+                "is_fraud",
+                "Gün içi sahte işlem adedi",
+                "İşlem saati",
+                "Sahte işlem adedi",
+                464,
+                320,
+                330,
+                220,
+                32,
+                value_type="whole",
+                color="#C6251A",
+            ),
+            bar_visual(
+                "amount_band_volume",
+                "fact_train_transactions",
+                "amount_band",
+                "transaction_amount",
+                "Tutar bandı işlem hacmi",
+                "Tutar bandı",
+                "İşlem tutarı",
+                854,
+                320,
+                330,
+                220,
+                34,
+                value_type="decimal",
+                color="#2854A3",
+            ),
+        ]:
+            visuals.extend(visual)
+        visuals.append(
+            insight_text(
+                "amount_decision_message",
+                "Yorum: risk yalnızca yüksek tutarlarda artmıyor; düşük tutar bandı ve belirli saat pencereleri ayrı operasyon kuralı gerektiriyor.",
+                76,
+                590,
+                1010,
+                38,
+                60,
+                "#17212B",
+            )
+        )
+
+    elif display_name == "Ödeme ve Email Segmentleri":
+        for visual in [
+            slicer_visual(
+                "email_domain_slicer",
+                "fact_train_transactions",
+                "purchaser_email_group",
+                "Email grubu",
+                74,
+                150,
+                210,
+                92,
+                10,
+            ),
+            bar_visual(
+                "payment_network_fraud",
                 "fact_train_transactions",
                 "card_network",
                 "is_fraud",
+                "Kart ağına göre sahte işlem",
                 "Kart ağı",
-                "Kart ağı sahte işlem adedi",
-                58,
-                214,
-                240,
-                126,
-                111,
+                "Sahte işlem adedi",
+                74,
+                320,
+                320,
+                220,
+                30,
+                value_type="whole",
+                color="#2854A3",
             ),
             bar_visual(
-                "payment_card_type_fraud",
+                "payment_type_fraud",
                 "fact_train_transactions",
                 "card_type",
                 "is_fraud",
+                "Kart tipine göre sahte işlem",
                 "Kart tipi",
-                "Kart tipi sahte işlem adedi",
-                324,
-                214,
-                234,
-                126,
-                112,
+                "Sahte işlem adedi",
+                454,
+                320,
+                320,
+                220,
+                32,
+                value_type="whole",
+                color="#1B7F79",
             ),
             bar_visual(
                 "email_domain_rate",
                 "mart_email_domain_stats",
                 "purchaser_email_group",
                 "fraud_rate",
-                "Email domain",
                 "Email domain fraud oranı",
-                628,
-                118,
-                520,
-                190,
-                113,
+                "Email grubu",
+                "Fraud oranı",
+                834,
+                320,
+                320,
+                220,
+                34,
                 "clusteredBarChart",
+                value_type="percent",
+                color="#C6251A",
             ),
-            table_visual(
-                "email_domain_table",
-                "mart_email_domain_stats",
-                [
-                    ("purchaser_email_group", "Email grubu", "category"),
-                    ("transaction_count", "İşlem", "numeric"),
-                    ("fraud_rate", "Fraud oranı", "numeric"),
-                    ("lift", "Lift", "numeric"),
-                    ("fraud_share", "Fraud payı", "numeric"),
-                ],
-                628,
-                330,
-                520,
-                176,
-                114,
-                "purchaser_email_group",
-            ),
-        ]
+        ]:
+            visuals.extend(visual)
+        visuals.append(
+            insight_text(
+                "payment_decision_message",
+                "Segment kararı: kredi kartı ve belirli email domain grupları, product ve tutar segmentleriyle birlikte izlenmelidir.",
+                76,
+                590,
+                1000,
+                38,
+                60,
+                "#17212B",
+            )
+        )
 
-    if display_name == "Model Skorlama ve Risk Bantları":
-        return [
-            slicer_visual("model_risk_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 58, 118, 160, 72, 110),
+    elif display_name == "Model Skorlama ve Risk Bantları":
+        for visual in [
+            slicer_visual("model_risk_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 74, 150, 180, 92, 10),
             bar_visual(
                 "model_observed_rate",
                 "mart_risk_band_stats",
                 "risk_band",
                 "observed_fraud_rate",
-                "Risk bandı",
                 "Risk bandı gözlenen fraud oranı",
-                58,
-                214,
-                330,
-                166,
-                111,
-            ),
-            bar_visual(
-                "model_capture_rate",
-                "mart_risk_band_stats",
-                "risk_band",
-                "expected_fraud_capture",
                 "Risk bandı",
-                "Risk bandı yakalama payı",
-                424,
-                118,
+                "Gözlenen fraud oranı",
+                74,
+                320,
                 330,
-                262,
-                112,
-            ),
-            table_visual(
-                "model_review_queue",
-                "mart_risk_band_stats",
-                [
-                    ("risk_band", "Risk bandı", "category"),
-                    ("review_priority", "Öncelik", "category"),
-                    ("transaction_count", "İşlem", "numeric"),
-                    ("observed_fraud_rate", "Fraud oranı", "numeric"),
-                    ("expected_fraud_capture", "Yakalama payı", "numeric"),
-                ],
-                790,
-                118,
-                360,
-                262,
-                113,
-                "band_rank",
-            ),
-        ]
-
-    if display_name == "Veri Kalitesi ve Mimari":
-        return [
-            table_visual(
-                "quality_missingness_table",
-                "mart_feature_missingness",
-                [
-                    ("column_family", "Feature ailesi", "category"),
-                    ("column_name", "Kolon", "category"),
-                    ("missing_rate", "Eksiklik oranı", "numeric"),
-                    ("missing_count", "Eksik kayıt", "numeric"),
-                ],
-                62,
-                326,
-                550,
-                298,
-                110,
-                "column_family",
+                220,
+                30,
+                value_type="percent",
+                color="#6D2BD4",
             ),
             bar_visual(
-                "quality_missingness_bar",
+                "model_fraud_count",
+                "fact_train_transactions",
+                "risk_band",
+                "is_fraud",
+                "Risk bandı sahte işlem hacmi",
+                "Risk bandı",
+                "Sahte işlem adedi",
+                464,
+                320,
+                330,
+                220,
+                32,
+                value_type="whole",
+                color="#C6251A",
+            ),
+            bar_visual(
+                "model_amount_by_band",
+                "fact_train_transactions",
+                "risk_band",
+                "transaction_amount",
+                "Risk bandı işlem tutarı",
+                "Risk bandı",
+                "İşlem tutarı",
+                854,
+                320,
+                330,
+                220,
+                34,
+                value_type="decimal",
+                color="#2854A3",
+            ),
+        ]:
+            visuals.extend(visual)
+        visuals.extend(
+            [
+                insight_text(
+                    "model_message_1",
+                    "Model yorumu: skor bandı nihai karar değildir; inceleme kapasitesini ölçülebilir kuyruklara böler.",
+                    76,
+                    585,
+                    520,
+                    42,
+                    60,
+                    "#17212B",
+                ),
+                insight_text(
+                    "model_message_2",
+                    "Operasyon kullanımı: yüksek ve kritik bantlar hızlı inceleme, düşük bantlar otomatik izleme adayıdır.",
+                    650,
+                    585,
+                    500,
+                    42,
+                    61,
+                    "#1B7F79",
+                ),
+            ]
+        )
+
+    elif display_name == "Veri Kalitesi ve Mimari":
+        for visual in [
+            bar_visual(
+                "quality_missing_rate",
                 "mart_feature_missingness",
                 "column_family",
                 "missing_rate",
+                "Feature ailesi eksiklik oranı",
                 "Feature ailesi",
-                "Feature ailesi eksiklik skoru",
-                654,
-                318,
-                500,
-                190,
-                111,
+                "Eksiklik oranı",
+                74,
+                266,
+                350,
+                200,
+                30,
                 "clusteredBarChart",
-            ),
-            card_visual("quality_row_count", "mart_feature_missingness", "row_count", "Profil edilen satır", 654, 526, 230, 86, 112),
-            card_visual("quality_missing_count", "mart_feature_missingness", "missing_count", "Eksik değer sinyali", 922, 526, 230, 86, 113),
-        ]
-
-    return []
-
-
-def add_native_analytics_page(layout: dict) -> dict:
-    section = {
-        "config": "{}",
-        "displayName": "Canlı Analitik Katmanı",
-        "displayOption": 1,
-        "filters": "[]",
-        "height": 720,
-        "name": f"ReportSection{len(layout['sections'])}",
-        "ordinal": len(layout["sections"]),
-        "width": 1280,
-        "visualContainers": [
-            textbox_visual(
-                "native_title",
-                "Canlı Analitik Katmanı: DirectQuery model alanlarıyla çalışan doğrulama sayfası",
-                44,
-                28,
-                1120,
-                48,
-                1000,
-                20,
-                True,
-            ),
-            textbox_visual(
-                "native_subtitle",
-                "Bu sayfadaki görseller Power BI modelindeki mart tablolarına bağlıdır; statik anlatım sayfalarının veri modeline bağlandığını kontrol etmek için kullanılır.",
-                46,
-                76,
-                1120,
-                40,
-                1001,
-                12,
-            ),
-            card_visual("native_total_txn", "mart_fraud_summary", "total_transactions", "Toplam işlem", 54, 128, 250, 88, 1),
-            card_visual("native_fraud_txn", "mart_fraud_summary", "fraud_transactions", "Sahte işlem", 326, 128, 250, 88, 2),
-            card_visual("native_fraud_rate", "mart_fraud_summary", "fraud_rate", "Baz sahtecilik oranı", 598, 128, 250, 88, 3),
-            card_visual("native_identity_rate", "mart_fraud_summary", "identity_coverage_rate", "Identity kapsama", 870, 128, 250, 88, 4),
-            bar_visual(
-                "native_amount_band_risk",
-                "mart_amount_bands",
-                "amount_band",
-                "fraud_rate",
-                "Tutar bandı",
-                "Tutar bandı sahtecilik oranı",
-                54,
-                246,
-                360,
-                190,
-                5,
-            ),
-            line_visual(
-                "native_daily_fraud_rate",
-                "mart_daily_stats",
-                "transaction_day",
-                "fraud_rate_ma7",
-                "Gün",
-                "7 günlük sahtecilik oranı",
-                452,
-                246,
-                380,
-                190,
-                6,
+                value_type="percent",
+                color="#1B7F79",
             ),
             bar_visual(
-                "native_email_domain_risk",
-                "mart_email_domain_stats",
-                "purchaser_email_group",
-                "fraud_rate",
-                "Email domain",
-                "Email domain sahtecilik oranı",
-                868,
-                246,
-                330,
-                190,
-                7,
-                "clusteredBarChart",
-            ),
-            table_visual(
-                "native_risk_band_queue",
-                "mart_risk_band_stats",
-                [
-                    ("split", "Veri kesiti", "category"),
-                    ("risk_band", "Risk bandı", "category"),
-                    ("review_priority", "İnceleme önceliği", "category"),
-                    ("transaction_count", "İşlem adedi", "numeric"),
-                    ("observed_fraud_rate", "Gözlenen sahtecilik oranı", "numeric"),
-                    ("lift", "Lift", "numeric"),
-                    ("expected_fraud_capture", "Yakalanan risk payı", "numeric"),
-                ],
-                54,
-                470,
-                544,
-                178,
-                8,
-                "band_rank",
-            ),
-            table_visual(
-                "native_quality_watch",
+                "quality_missing_count",
                 "mart_feature_missingness",
-                [
-                    ("column_family", "Feature ailesi", "category"),
-                    ("column_name", "Kolon", "category"),
-                    ("missing_rate", "Eksiklik oranı", "numeric"),
-                    ("missing_count", "Eksik kayıt", "numeric"),
-                ],
-                634,
-                470,
-                430,
-                178,
-                9,
                 "column_family",
+                "missing_count",
+                "Eksik değer hacmi",
+                "Feature ailesi",
+                "Eksik değer",
+                474,
+                266,
+                350,
+                200,
+                32,
+                "clusteredBarChart",
+                value_type="whole",
+                color="#B66D12",
             ),
-        ],
-    }
-    layout["sections"].append(section)
-    layout["config"] = json.dumps(
-        {
-            **json.loads(layout["config"]),
-            "activeSectionIndex": 0,
-        },
-        separators=(",", ":"),
-    )
-    return layout
+            card_visual("quality_row_count", "mart_fraud_summary", "total_transactions", "Profil edilen satır", 874, 296, 220, 74, 40),
+            card_visual("quality_missing_total", "mart_feature_missingness", "missing_count", "Eksik değer sinyali", 874, 414, 220, 74, 42),
+        ]:
+            visuals.extend(visual)
+        visuals.extend(lineage_visuals())
+        visuals.append(
+            insight_text(
+                "quality_pass_message",
+                "Kalite mesajı: dbt build ve BigQuery row-count kontrolleri PASS; rapor katmanı DirectQuery ile mart tablolarına bağlıdır.",
+                76,
+                604,
+                980,
+                38,
+                90,
+                "#17212B",
+            )
+        )
+
+    return visuals
 
 
-def apply_enhanced_page_layouts(layout: dict) -> dict:
+def apply_final_report_layout(layout: dict) -> dict:
     for section in layout["sections"]:
-        placements = PAGE_IMAGE_LAYOUTS.get(section["displayName"])
-        if not placements:
-            continue
-        text_containers = []
-        for container in section["visualContainers"]:
-            config = json.loads(container.get("config", "{}"))
-            if config.get("singleVisual", {}).get("visualType") == "textbox":
-                text_containers.append(container)
-        visuals = list(text_containers)
-        for index, (asset_name, x, y, width, height) in enumerate(placements, start=20):
-            visuals.append(image_visual(f"enhanced_{section['ordinal']}_{index}", asset_name, x, y, width, height, index))
-        visuals.extend(main_page_native_visuals(section["displayName"]))
-        section["visualContainers"] = visuals
+        section["visualContainers"] = page_native_visuals(section["displayName"])
     return layout
 
 
-def update_registered_resource_manifest(layout: dict, resources: dict[str, bytes]) -> dict:
-    resource_packages = layout.setdefault("resourcePackages", [])
-    registered_package = None
-    for package in resource_packages:
-        resource_package = package.get("resourcePackage", {})
-        if resource_package.get("name") == "RegisteredResources":
-            registered_package = resource_package
-            break
-
-    if registered_package is None:
-        registered_package = {
-            "disabled": False,
-            "items": [],
-            "name": "RegisteredResources",
-            "type": 1,
-        }
-        resource_packages.append({"resourcePackage": registered_package})
-
-    items = registered_package.setdefault("items", [])
-    known = {item.get("name") for item in items}
-    for path in sorted(resources):
-        if not path.startswith("Report/StaticResources/RegisteredResources/") or not path.endswith(".png"):
-            continue
-        asset_name = Path(path).name
-        if asset_name not in known:
-            items.append({"name": asset_name, "path": asset_name, "type": 100})
-            known.add(asset_name)
-    return layout
-
-
-def add_png_content_type(raw: bytes) -> bytes:
+def clean_content_types(raw: bytes) -> bytes:
     namespace = "http://schemas.openxmlformats.org/package/2006/content-types"
     ET.register_namespace("", namespace)
     root = ET.fromstring(raw.decode("utf-8-sig"))
@@ -991,29 +946,10 @@ def add_png_content_type(raw: bytes) -> bytes:
     for child in list(root):
         if child.attrib.get("PartName") == "/SecurityBindings":
             root.remove(child)
-
-    has_png = any(child.attrib.get("Extension") == "png" for child in root)
-    if not has_png:
-        png = ET.Element(f"{{{namespace}}}Default", {"Extension": "png", "ContentType": ""})
-        root.insert(0, png)
+        if child.attrib.get("Extension") == "png":
+            root.remove(child)
 
     return ("\ufeff" + ET.tostring(root, encoding="unicode")).encode("utf-8")
-
-
-def copy_assets(resources: dict[str, bytes]) -> None:
-    ASSET_DIR.mkdir(parents=True, exist_ok=True)
-    for name, data in resources.items():
-        if name.startswith("Report/StaticResources/RegisteredResources/") and name.endswith(".png"):
-            (ASSET_DIR / Path(name).name).write_bytes(data)
-
-
-def collect_local_assets() -> dict[str, bytes]:
-    resources: dict[str, bytes] = {}
-    if not ASSET_DIR.exists():
-        return resources
-    for path in ASSET_DIR.glob("*.png"):
-        resources[f"Report/StaticResources/RegisteredResources/{path.name}"] = path.read_bytes()
-    return resources
 
 
 def build_pbix() -> None:
@@ -1021,29 +957,28 @@ def build_pbix() -> None:
         raise FileNotFoundError(f"Base PBIX not found: {BASE_PBIX}")
 
     POWERBI_DIR.mkdir(parents=True, exist_ok=True)
-    layout, resources = read_layout_template()
-    resources.update(collect_local_assets())
+    layout = read_layout_template()
     layout = normalize_layout(layout)
-    layout = update_registered_resource_manifest(layout, resources)
-    layout = apply_enhanced_page_layouts(layout)
-    layout = add_native_analytics_page(layout)
+    layout = apply_final_report_layout(layout)
     layout_bytes = json.dumps(layout, ensure_ascii=False, separators=(",", ":")).encode("utf-16le")
 
     with ZipFile(BASE_PBIX, "r") as source:
-        entries = {name: source.read(name) for name in source.namelist()}
+        entries = {}
+        for name in source.namelist():
+            if name == "SecurityBindings":
+                continue
+            if name.startswith("Report/StaticResources/RegisteredResources/") and name.endswith(".png"):
+                continue
+            entries[name] = source.read(name)
 
-    entries.pop("SecurityBindings", None)
     entries["Report/Layout"] = layout_bytes
-    for name, data in resources.items():
-        entries[name] = data
-    entries["[Content_Types].xml"] = add_png_content_type(entries["[Content_Types].xml"])
+    entries["[Content_Types].xml"] = clean_content_types(entries["[Content_Types].xml"])
 
     tmp = FINAL_PBIX.with_suffix(".pbix.tmp")
     with ZipFile(tmp, "w", compression=ZIP_DEFLATED) as target:
         for name, data in entries.items():
             target.writestr(name, data)
     shutil.move(str(tmp), str(FINAL_PBIX))
-    copy_assets(resources)
     print(f"Power BI v2 report ready: {FINAL_PBIX}")
 
 
