@@ -39,7 +39,7 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Final rapor 6 sunum sayfasından oluşuyor.
 - [x] Ek teknik kontrol sayfası final rapordan kaldırıldı.
 - [x] Boş sayfa yok.
-- [x] 123 visual container var.
+- [x] 159 visual container var.
 - [x] 29 query-bound native visual var.
 - [x] Her sayfada en az 4 veri modeline bağlı native visual var.
 - [x] 6 slicer var.
@@ -47,6 +47,8 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Kayıtlı görsel kaynağı sayısı 0.
 - [x] Kırılgan çizgi grafik ve tablo görseli kullanılmıyor.
 - [x] Kullanılan veri alanlarının tamamı güvenli Power BI model allowlist'i içinde.
+- [x] 53 görsel container kurumsal arka plan/bordür stiliyle yapılandırıldı.
+- [x] Rapor teması kurumsal fraud-risk paletine göre güncellendi.
 - [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
 - [ ] DirectQuery yenilemesi sonrasında tüm görsellerin veri döndürdüğü ekranda kontrol edilmeli.
 
@@ -59,6 +61,7 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
 - [x] Veri Kalitesi sayfası missingness, kalite kontrolü ve lineage anlatımını native metin ve görsellerle veriyor.
 - [x] Her sayfada bulgu, risk, aksiyon veya kalite kapısı mesajları kısa karar panelleriyle görünür hale getirildi.
+- [x] Karar panellerinde Product C, identity, ödeme, tutar ve risk bandı bulguları gerçek mart sonuçlarıyla sayısallaştırıldı.
 - [x] Görünür rapor içinde proje dışı üretim izi, geçici not veya sunum dışı teknik dil bulunmuyor.
 
 ## Repo

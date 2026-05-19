@@ -24,6 +24,8 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Model Skorlama ve Risk Bantları: skorların operasyon kuyruğu olarak kullanımı.
    - Veri Kalitesi ve Mimari: missingness, kalite kanıtı ve lineage.
    - Her sayfaya üst yönetim okumasını hızlandıran kısa karar panelleri eklendi.
+   - Karar panelleri gerçek mart sonuçlarından türetilmiş oran, pay ve yoğunlaşma cümleleriyle güçlendirildi.
+   - Rapor teması ve visual container stilleri kurumsal fraud-risk paletine taşındı.
 
 4. dbt kalite kapsamı korundu
    - Data test sayısı 73.

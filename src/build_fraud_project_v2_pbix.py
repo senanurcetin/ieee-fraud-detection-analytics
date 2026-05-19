@@ -12,6 +12,7 @@ BASE_PBIX = ROOT / "outputs" / "powerbi" / "fraud_project_v2.pbix"
 LAYOUT_TEMPLATE = ROOT / "outputs" / "powerbi" / "fraud_project_dashboard.pbit"
 POWERBI_DIR = ROOT / "powerbi"
 FINAL_PBIX = POWERBI_DIR / "fraud_project_v2.pbix"
+THEME_PATH = "Report/StaticResources/SharedResources/BaseThemes/CY26SU04.json"
 
 PAGE_ORDER = [
     ("Yonetici Ozeti", "Yönetici Özeti"),
@@ -106,7 +107,10 @@ def textbox_visual(
     font_size: int = 14,
     bold: bool = False,
     color: str = "#17212B",
+    fill: str | None = None,
+    border: str | None = None,
 ) -> dict:
+    vc_objects = visual_container_objects(fill, border)
     config = {
         "name": name,
         "layouts": [{"id": 0, "position": {"x": x, "y": y, "z": z, "width": width, "height": height}}],
@@ -137,6 +141,8 @@ def textbox_visual(
             },
         },
     }
+    if vc_objects:
+        config["vcObjects"] = vc_objects
     return {
         "x": x,
         "y": y,
@@ -150,6 +156,43 @@ def textbox_visual(
 
 def source_ref(alias: str) -> dict:
     return {"SourceRef": {"Source": alias}}
+
+
+def literal(value: str | int | float | bool) -> dict:
+    if isinstance(value, bool):
+        literal_value = "true" if value else "false"
+    elif isinstance(value, int):
+        literal_value = f"{value}D"
+    elif isinstance(value, float):
+        literal_value = f"{value}D"
+    else:
+        literal_value = f"'{value}'"
+    return {"expr": {"Literal": {"Value": literal_value}}}
+
+
+def visual_container_objects(fill: str | None = None, border: str | None = None) -> dict:
+    objects: dict[str, list[dict]] = {}
+    if fill:
+        objects["background"] = [
+            {
+                "properties": {
+                    "show": literal(True),
+                    "color": {"solid": {"color": fill}},
+                    "transparency": literal(0),
+                }
+            }
+        ]
+    if border:
+        objects["border"] = [
+            {
+                "properties": {
+                    "show": literal(True),
+                    "color": {"solid": {"color": border}},
+                    "radius": literal(4),
+                }
+            }
+        ]
+    return objects
 
 
 def column_expr(alias: str, column: str) -> dict:
@@ -318,6 +361,8 @@ def native_visual(
     order_by: str | None = None,
     color: str = "#1B7F79",
     show_title: bool = False,
+    fill: str = "#FFFFFF",
+    border: str = "#E3E8EE",
 ) -> dict:
     query = query_from_selects(table, alias, selects, order_by)
     config = {
@@ -333,6 +378,7 @@ def native_visual(
             "drillFilterOtherVisuals": True,
             "objects": visual_objects(visual_type, color, show_title),
         },
+        "vcObjects": visual_container_objects(fill, border),
     }
     projection_ordering = {
         role: [
@@ -473,10 +519,14 @@ def slicer_visual(
 
 def header_visuals(display_name: str) -> list[dict]:
     title, subtitle = PAGE_COPY[display_name]
+    page_index = [new_name for _old_name, new_name in PAGE_ORDER].index(display_name) + 1
     return [
-        textbox_visual(f"{display_name}_title", title, 54, 34, 1080, 48, 1, 23, True, "#17212B"),
-        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 86, 1088, 36, 2, 12, False, "#37414C"),
-        textbox_visual(f"{display_name}_accent", "|", 1138, 30, 30, 52, 3, 30, True, "#C5C9CD"),
+        textbox_visual(f"{display_name}_header_bg", " ", 34, 20, 1170, 106, 0, 8, False, "#FFFFFF", "#FFFFFF", "#E7ECF2"),
+        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 56, 28, 260, 20, 1, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1046, 28, 90, 20, 1, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_title", title, 54, 50, 1080, 40, 2, 21, True, "#17212B"),
+        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 92, 1088, 26, 3, 11, False, "#37414C"),
+        textbox_visual(f"{display_name}_accent", "|", 1138, 42, 30, 52, 4, 30, True, "#C5C9CD"),
     ]
 
 
@@ -495,8 +545,9 @@ def insight_panel(
     color: str,
 ) -> list[dict]:
     return [
-        textbox_visual(f"{name}_title", title, x, y, width, 22, z, 11, True, color),
-        textbox_visual(f"{name}_body", body, x, y + 24, width, 54, z + 1, 9, False, "#37414C"),
+        textbox_visual(f"{name}_box", " ", x - 8, y - 8, width + 16, 88, z, 8, False, "#FFFFFF", "#F8FAFC", "#D9E1EA"),
+        textbox_visual(f"{name}_title", title, x, y, width, 22, z + 1, 11, True, color),
+        textbox_visual(f"{name}_body", body, x, y + 24, width, 54, z + 2, 9, False, "#37414C"),
     ]
 
 
@@ -582,7 +633,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             insight_panel(
                 "exec_panel_1",
                 "Bulgu",
-                "Fraud oranı düşük görünse de risk belirli ürün ve tutar bantlarında toplanıyor.",
+                "590.540 işlem içinde fraud oranı %3,5; Product C ise tek başına fraud hacminin %38,8'ini taşıyor.",
                 74,
                 560,
                 320,
@@ -592,21 +643,21 @@ def page_native_visuals(display_name: str) -> list[dict]:
             + insight_panel(
                 "exec_panel_2",
                 "Risk",
-                "Genel ortalama tek başına kullanılırsa Product C ve kritik banttaki yoğunlaşma kaçırılır.",
+                "Product C baz oranın 3,34 katı risk taşıyor; genel ortalama ile yönetilirse bu yoğunlaşma görünmez.",
                 456,
                 560,
                 320,
-                62,
+                70,
                 "#6D2BD4",
             )
             + insight_panel(
                 "exec_panel_3",
                 "Aksiyon",
-                "İlk izleme kuyruğu ürün, tutar bandı ve risk bandı kesitleriyle yönetilmelidir.",
+                "Ürün, risk bandı ve tutar kesitleri haftalık risk komitesinde standart takip kırılımı olmalıdır.",
                 838,
                 560,
                 320,
-                64,
+                80,
                 "#1B7F79",
             )
         )
@@ -669,7 +720,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             insight_panel(
                 "risk_panel_1",
                 "Bulgu",
-                "Ürün ve cihaz ekseninde risk homojen dağılmıyor; bazı kombinasyonlar açıkça ayrışıyor.",
+                "Identity kaydı olan işlemler hacmin %24,4'ü iken fraud'un %54,8'ini oluşturuyor.",
                 74,
                 574,
                 320,
@@ -679,21 +730,21 @@ def page_native_visuals(display_name: str) -> list[dict]:
             + insight_panel(
                 "risk_panel_2",
                 "Öncelik",
-                "Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.",
+                "Product C ve identity sinyali beraber izlendiğinde operasyon kuyruğu daha isabetli daralır.",
                 456,
                 574,
                 320,
-                62,
+                70,
                 "#6D2BD4",
             )
             + insight_panel(
                 "risk_panel_3",
                 "Kontrol",
-                "Slicer kontrolleri ürün ve risk bandı perspektifini operasyon toplantısında hızla daraltır.",
+                "Ürün ve risk bandı filtreleri yönetim toplantısında aynı bulgunun farklı segmentlerde test edilmesini sağlar.",
                 838,
                 574,
                 320,
-                64,
+                80,
                 "#1B7F79",
             )
         )
@@ -755,7 +806,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             insight_panel(
                 "amount_panel_1",
                 "Bulgu",
-                "Risk tek yönlü bir tutar eşiğiyle açıklanmıyor; uç bantlar ayrı izlenmelidir.",
+                "<$25 bandı %7,0 fraud oranıyla baz oranın yaklaşık 2 katına çıkıyor.",
                 74,
                 574,
                 320,
@@ -765,21 +816,21 @@ def page_native_visuals(display_name: str) -> list[dict]:
             + insight_panel(
                 "amount_panel_2",
                 "Zaman",
-                "Saat bazlı sahte işlem adedi, operasyon vardiya planı için ek sinyal sağlar.",
+                "Gün içi kırılım, fraud ekibi vardiya kapasitesinin saatlik hacme göre ayarlanmasını sağlar.",
                 456,
                 574,
                 320,
-                62,
+                70,
                 "#C6251A",
             )
             + insight_panel(
                 "amount_panel_3",
                 "Aksiyon",
-                "Düşük tutar bandı ve yüksek hacimli saatler ayrı kural setiyle takip edilmelidir.",
+                "Düşük tutar bandı, yüksek tutar bandı ve yoğun saatler ayrı izleme eşiğiyle ele alınmalıdır.",
                 838,
                 574,
                 320,
-                64,
+                80,
                 "#1B7F79",
             )
         )
@@ -852,7 +903,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             insight_panel(
                 "payment_panel_1",
                 "Bulgu",
-                "Kart ağı ve kart tipi sahte işlem hacmini iş birimleri için okunabilir hale getirir.",
+                "Visa/credit segmenti fraud hacminin %27,6'sını taşıyor; ödeme kırılımı aksiyon aldıran bir segmenttir.",
                 74,
                 574,
                 320,
@@ -862,21 +913,21 @@ def page_native_visuals(display_name: str) -> list[dict]:
             + insight_panel(
                 "payment_panel_2",
                 "Segment",
-                "Email domain grupları tek başına karar değil, izleme kovası olarak kullanılmalıdır.",
+                "Gmail hacmin %38,7'si ve fraud'un %48,1'i; hotmail.com ise daha yüksek oranlı takip segmentidir.",
                 456,
                 574,
                 320,
-                62,
+                70,
                 "#C6251A",
             )
             + insight_panel(
                 "payment_panel_3",
                 "Aksiyon",
-                "Ödeme segmentleri product ve tutar bandı ile birlikte izlenirse yanlış alarm riski azalır.",
+                "Kart tipi, email domain ve ürün kesişimi birlikte izlenerek operasyon önceliği netleştirilmelidir.",
                 838,
                 574,
                 320,
-                64,
+                80,
                 "#1B7F79",
             )
         )
@@ -938,7 +989,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             insight_panel(
                 "model_panel_1",
                 "Amaç",
-                "Skor bandı nihai karar değildir; inceleme kapasitesini ölçülebilir kuyruklara böler.",
+                "Critical band hacmin yalnızca %1,0'ı; buna rağmen fraud yakalama payı %27,5 seviyesindedir.",
                 74,
                 574,
                 320,
@@ -948,21 +999,21 @@ def page_native_visuals(display_name: str) -> list[dict]:
             + insight_panel(
                 "model_panel_2",
                 "Operasyon",
-                "Yüksek ve kritik bantlar hızlı inceleme, düşük bantlar otomatik izleme adayıdır.",
+                "Critical + High bantları yaklaşık %5 iş yüküyle fraud'un %78,3'ünü yakalar.",
                 456,
                 574,
                 320,
-                62,
+                70,
                 "#C6251A",
             )
             + insight_panel(
                 "model_panel_3",
                 "Yönetim",
-                "Risk bandı hacmi ve fraud adedi birlikte okunarak kapasite planı yapılmalıdır.",
+                "Skorlar ret kararı değil; aynı gün inceleme, örneklem ve otomatik izleme ayrımı için kullanılır.",
                 838,
                 574,
                 320,
-                64,
+                80,
                 "#1B7F79",
             )
         )
@@ -986,7 +1037,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 456,
                 152,
                 320,
-                22,
+                30,
                 "#2854A3",
             )
             + insight_panel(
@@ -996,7 +1047,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 838,
                 152,
                 320,
-                24,
+                40,
                 "#B66D12",
             )
         )
@@ -1076,6 +1127,71 @@ def clean_content_types(raw: bytes) -> bytes:
     return ("\ufeff" + ET.tostring(root, encoding="unicode")).encode("utf-8")
 
 
+def corporate_theme_bytes() -> bytes:
+    theme = {
+        "name": "CY26SU04",
+        "dataColors": [
+            "#C6251A",
+            "#1B7F79",
+            "#2854A3",
+            "#B66D12",
+            "#6D2BD4",
+            "#17212B",
+            "#7A8793",
+            "#D9E1EA",
+        ],
+        "foreground": "#17212B",
+        "foregroundNeutralSecondary": "#5E6872",
+        "foregroundNeutralTertiary": "#9AA4AF",
+        "background": "#F5F7FA",
+        "backgroundLight": "#FFFFFF",
+        "backgroundNeutral": "#D9E1EA",
+        "tableAccent": "#1B7F79",
+        "good": "#1B7F79",
+        "neutral": "#B66D12",
+        "bad": "#C6251A",
+        "maximum": "#C6251A",
+        "center": "#B66D12",
+        "minimum": "#1B7F79",
+        "null": "#D9E1EA",
+        "hyperlink": "#2854A3",
+        "visitedHyperlink": "#2854A3",
+        "textClasses": {
+            "callout": {"fontSize": 25, "fontFace": "DIN", "color": "#17212B"},
+            "title": {"fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#17212B"},
+            "header": {"fontSize": 12, "fontFace": "Segoe UI Semibold", "color": "#17212B"},
+            "label": {"fontSize": 10, "fontFace": "Segoe UI", "color": "#37414C"},
+        },
+        "visualStyles": {
+            "*": {
+                "*": {
+                    "background": [{"show": True, "color": {"solid": {"color": "#FFFFFF"}}, "transparency": 0}],
+                    "border": [{"show": True, "color": {"solid": {"color": "#E3E8EE"}}, "radius": 4}],
+                    "title": [{"show": False, "fontColor": {"solid": {"color": "#17212B"}}, "fontSize": 11}],
+                    "categoryAxis": [
+                        {
+                            "show": True,
+                            "showAxisTitle": False,
+                            "labelColor": {"solid": {"color": "#5E6872"}},
+                            "gridlineColor": {"solid": {"color": "#E7ECF2"}},
+                        }
+                    ],
+                    "valueAxis": [
+                        {
+                            "show": True,
+                            "showAxisTitle": False,
+                            "labelColor": {"solid": {"color": "#5E6872"}},
+                            "gridlineColor": {"solid": {"color": "#E7ECF2"}},
+                        }
+                    ],
+                    "labels": [{"show": True, "color": {"solid": {"color": "#37414C"}}, "labelDisplayUnits": 0}],
+                }
+            }
+        },
+    }
+    return json.dumps(theme, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+
 def build_pbix() -> None:
     if not BASE_PBIX.exists():
         raise FileNotFoundError(f"Base PBIX not found: {BASE_PBIX}")
@@ -1097,6 +1213,7 @@ def build_pbix() -> None:
 
     entries["Report/Layout"] = layout_bytes
     entries["[Content_Types].xml"] = clean_content_types(entries["[Content_Types].xml"])
+    entries[THEME_PATH] = corporate_theme_bytes()
 
     tmp = FINAL_PBIX.with_suffix(".pbix.tmp")
     with ZipFile(tmp, "w", compression=ZIP_DEFLATED) as target:
