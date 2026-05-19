@@ -520,14 +520,45 @@ def slicer_visual(
 def header_visuals(display_name: str) -> list[dict]:
     title, subtitle = PAGE_COPY[display_name]
     page_index = [new_name for _old_name, new_name in PAGE_ORDER].index(display_name) + 1
-    return [
-        textbox_visual(f"{display_name}_header_bg", " ", 34, 20, 1170, 106, 0, 8, False, "#FFFFFF", "#FFFFFF", "#E7ECF2"),
-        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 56, 28, 260, 20, 1, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1046, 28, 90, 20, 1, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_title", title, 54, 50, 1080, 40, 2, 21, True, "#17212B"),
-        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 92, 1088, 26, 3, 11, False, "#37414C"),
-        textbox_visual(f"{display_name}_accent", "|", 1138, 42, 30, 52, 4, 30, True, "#C5C9CD"),
+    nav_items = [
+        ("01", "Özet"),
+        ("02", "Risk"),
+        ("03", "Tutar"),
+        ("04", "Ödeme"),
+        ("05", "Model"),
+        ("06", "Kalite"),
     ]
+    visuals = [
+        textbox_visual(f"{display_name}_page_bg", " ", 0, 0, 1280, 720, 0, 8, False, "#F5F7FA", "#F5F7FA", None),
+        textbox_visual(f"{display_name}_rail", " ", 0, 0, 22, 720, 1, 8, False, "#17212B", "#17212B", None),
+        textbox_visual(f"{display_name}_rail_accent", " ", 22, 0, 4, 720, 2, 8, False, "#1B7F79", "#1B7F79", None),
+        textbox_visual(f"{display_name}_header_bg", " ", 34, 20, 1170, 106, 3, 8, False, "#FFFFFF", "#FFFFFF", "#E7ECF2"),
+        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 56, 28, 260, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1046, 28, 90, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_title", title, 54, 50, 1080, 40, 5, 21, True, "#17212B"),
+        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 92, 1088, 26, 6, 11, False, "#37414C"),
+        textbox_visual(f"{display_name}_accent", "|", 1138, 42, 30, 52, 7, 30, True, "#C5C9CD"),
+    ]
+    for index, (number, label) in enumerate(nav_items, start=1):
+        x = 54 + (index - 1) * 188
+        is_active = index == page_index
+        visuals.append(
+            textbox_visual(
+                f"{display_name}_nav_{index}",
+                f"{number}  {label}",
+                x,
+                682,
+                178,
+                24,
+                8 + index,
+                9,
+                True,
+                "#FFFFFF" if is_active else "#5E6872",
+                "#17212B" if is_active else "#FFFFFF",
+                "#17212B" if is_active else "#D9E1EA",
+            )
+        )
+    return visuals
 
 
 def insight_text(name: str, text: str, x: float, y: float, width: float, height: float, z: int, color: str) -> dict:
@@ -549,6 +580,17 @@ def insight_panel(
         textbox_visual(f"{name}_title", title, x, y, width, 22, z + 1, 11, True, color),
         textbox_visual(f"{name}_body", body, x, y + 24, width, 54, z + 2, 9, False, "#37414C"),
     ]
+
+
+def filter_panel(name: str, title: str, x: float, y: float, width: float, height: float, z: int = 8) -> list[dict]:
+    return [
+        textbox_visual(f"{name}_filter_box", " ", x, y, width, height, z, 8, False, "#FFFFFF", "#FFFFFF", "#D9E1EA"),
+        textbox_visual(f"{name}_filter_title", title, x + 14, y + 10, width - 28, 20, z + 1, 10, True, "#17212B"),
+    ]
+
+
+def section_label(name: str, text: str, x: float, y: float, width: float, z: int = 18) -> dict:
+    return textbox_visual(name, text, x, y, width, 20, z, 9, True, "#5E6872")
 
 
 def lineage_visuals() -> list[dict]:
@@ -573,6 +615,9 @@ def page_native_visuals(display_name: str) -> list[dict]:
     visuals = header_visuals(display_name)
 
     if display_name == "Yönetici Özeti":
+        visuals.extend(filter_panel("exec_filter_panel", "Filtre kontrolü", 1044, 132, 174, 126))
+        visuals.append(section_label("exec_analysis_label", "ANA RİSK GÖSTERGELERİ", 74, 264, 360))
+        visuals.append(section_label("exec_decision_label", "YÖNETİM KARARI", 74, 532, 360))
         for visual in [
             card_visual("exec_total_txn", "mart_fraud_summary", "total_transactions", "Toplam işlem", 64, 154, 218, 72, 10),
             card_visual("exec_fraud_txn", "mart_fraud_summary", "fraud_transactions", "Sahte işlem", 314, 154, 218, 72, 12),
@@ -663,6 +708,9 @@ def page_native_visuals(display_name: str) -> list[dict]:
         )
 
     elif display_name == "Risk Konsantrasyonu":
+        visuals.extend(filter_panel("risk_filter_panel", "Filtre kontrolü", 54, 132, 390, 126))
+        visuals.append(section_label("risk_analysis_label", "SEGMENT RİSK AYRIŞMASI", 74, 284, 360))
+        visuals.append(section_label("risk_decision_label", "OPERASYONEL ÖNCELİK", 74, 546, 360))
         for visual in [
             slicer_visual("risk_product_slicer", "fact_train_transactions", "product_cd", "Ürün", 74, 150, 150, 92, 10),
             slicer_visual("risk_band_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 254, 150, 170, 92, 12),
@@ -750,6 +798,9 @@ def page_native_visuals(display_name: str) -> list[dict]:
         )
 
     elif display_name == "Tutar ve Zaman Analizi":
+        visuals.extend(filter_panel("amount_filter_panel", "Filtre kontrolü", 54, 132, 246, 126))
+        visuals.append(section_label("amount_analysis_label", "TUTAR VE ZAMAN SİNYALLERİ", 74, 284, 360))
+        visuals.append(section_label("amount_decision_label", "TAKİP STRATEJİSİ", 74, 546, 360))
         for visual in [
             slicer_visual("amount_band_slicer", "fact_train_transactions", "amount_band", "Tutar bandı", 74, 150, 190, 92, 10),
             bar_visual(
@@ -836,6 +887,9 @@ def page_native_visuals(display_name: str) -> list[dict]:
         )
 
     elif display_name == "Ödeme ve Email Segmentleri":
+        visuals.extend(filter_panel("payment_filter_panel", "Filtre kontrolü", 54, 132, 270, 126))
+        visuals.append(section_label("payment_analysis_label", "ÖDEME VE EMAIL KIRILIMLARI", 74, 284, 400))
+        visuals.append(section_label("payment_decision_label", "SEGMENT AKSİYONU", 74, 546, 360))
         for visual in [
             slicer_visual(
                 "email_domain_slicer",
@@ -933,6 +987,9 @@ def page_native_visuals(display_name: str) -> list[dict]:
         )
 
     elif display_name == "Model Skorlama ve Risk Bantları":
+        visuals.extend(filter_panel("model_filter_panel", "Filtre kontrolü", 54, 132, 238, 126))
+        visuals.append(section_label("model_analysis_label", "SKOR BANTI VE İNCELEME HACMİ", 74, 284, 440))
+        visuals.append(section_label("model_decision_label", "İNCELEME KUYRUĞU STRATEJİSİ", 74, 546, 460))
         for visual in [
             slicer_visual("model_risk_slicer", "fact_train_transactions", "risk_band", "Risk bandı", 74, 150, 180, 92, 10),
             bar_visual(
@@ -1019,6 +1076,9 @@ def page_native_visuals(display_name: str) -> list[dict]:
         )
 
     elif display_name == "Veri Kalitesi ve Mimari":
+        visuals.append(section_label("quality_gate_label", "KALİTE KAPISI", 74, 132, 300))
+        visuals.append(section_label("quality_analysis_label", "EKSİKLİK PROFİLİ", 74, 230, 300))
+        visuals.append(section_label("quality_lineage_label", "VERİ AKIŞI", 74, 458, 300))
         visuals.extend(
             insight_panel(
                 "quality_gate_1",

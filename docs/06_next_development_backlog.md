@@ -26,6 +26,7 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Her sayfaya üst yönetim okumasını hızlandıran kısa karar panelleri eklendi.
    - Karar panelleri gerçek mart sonuçlarından türetilmiş oran, pay ve yoğunlaşma cümleleriyle güçlendirildi.
    - Rapor teması ve visual container stilleri kurumsal fraud-risk paletine taşındı.
+   - Sayfa tasarım kabuğu sol rail, header panel, alt navigasyon ve filtre kontrol alanlarıyla tamamlandı.
 
 4. dbt kalite kapsamı korundu
    - Data test sayısı 73.

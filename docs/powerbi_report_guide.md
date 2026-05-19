@@ -13,14 +13,15 @@ powerbi/fraud_project_v2.pbix
 Son paket doğrulaması:
 
 - Sayfa sayısı: 6
-- Visual container sayısı: 159
+- Visual container sayısı: 236
 - Query-bound native visual sayısı: 29
 - Slicer sayısı: 6
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
 - PBIX zip bütünlüğü: PASS
-- Stil verilen container sayısı: 53
+- Stil verilen container sayısı: 112
 - Tema: kurumsal fraud-risk paleti
+- Tasarım kabuğu: sol rail, header panel, alt sayfa navigasyonu, filtre kontrol alanı
 
 ## Sayfa 1 - Yönetici Özeti
 
@@ -111,6 +112,7 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 - Sayfa düzeni: üstte ana mesaj, ortada analiz, altta aksiyon veya kanıt.
 - Görseller: yalnızca card, slicer, clusteredColumnChart, clusteredBarChart ve textbox.
 - Karar panelleri: gerçek mart sonuçlarından türetilmiş kısa yönetici bulguları.
+- Sayfa yapısı: filtre kontrol alanı, analiz kanıtı, yönetim kararı ve alt navigasyon düzeni.
 
 ## Kabul Kriteri
 

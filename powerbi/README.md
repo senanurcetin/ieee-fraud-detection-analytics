@@ -36,11 +36,12 @@ Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede 
 
 - PBIX paket bütünlüğü: PASS
 - Sayfa sayısı: 6
-- Visual container sayısı: 159
+- Visual container sayısı: 236
 - Query-bound native visual sayısı: 29
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
 - Kırılgan çizgi grafik ve tablo görseli kullanılmıyor
-- Kurumsal fraud-risk teması ve 53 stillendirilmiş container var
+- Kurumsal fraud-risk teması ve 112 stillendirilmiş container var
+- Sol rail, header panel, alt sayfa navigasyonu ve filtre kontrol alanları eklendi
 - dbt prod build: PASS, 102 PASS / 0 ERROR / 1 exposure NO-OP
 - dbt docs generate: PASS
