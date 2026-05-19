@@ -13,7 +13,7 @@ powerbi/fraud_project_v2.pbix
 Son paket doğrulaması:
 
 - Sayfa sayısı: 6
-- Visual container sayısı: 94
+- Visual container sayısı: 123
 - Query-bound native visual sayısı: 29
 - Slicer sayısı: 6
 - Gömülü görüntü visual sayısı: 0
@@ -32,6 +32,7 @@ Ana mesaj: Fraud düşük frekanslıdır fakat belirli segmentlerde yoğunlaşı
 - Risk bandı gözlenen fraud oranı.
 - Tutar bandına göre risk.
 - Yönetim aksiyon metinleri.
+- Bulgu, risk ve aksiyon karar panelleri.
 
 ## Sayfa 2 - Risk Konsantrasyonu
 
@@ -45,6 +46,7 @@ Ana mesaj: Risk ürün, cihaz ve risk bandı segmentlerinde homojen dağılmaz.
 - Cihaz tipine göre risk.
 - Risk bandı öncelik sırası.
 - Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.
+- Bulgu, öncelik ve kontrol karar panelleri.
 
 ## Sayfa 3 - Tutar ve Zaman Analizi
 
@@ -57,6 +59,7 @@ Ana mesaj: Fraud davranışı tutar ve işlem saati ekseninde doğrusal değildi
 - Gün içi sahte işlem adedi.
 - Tutar bandı işlem hacmi.
 - Zaman ve tutar yorum metni.
+- Bulgu, zaman ve aksiyon karar panelleri.
 
 ## Sayfa 4 - Ödeme ve Email Segmentleri
 
@@ -69,6 +72,7 @@ Ana mesaj: Ödeme tipi ve email domain grupları operasyonel izleme segmentleri 
 - Kart tipine göre sahte işlem adedi.
 - Email domain fraud oranı.
 - Segment karar mesajı.
+- Bulgu, segment ve aksiyon karar panelleri.
 
 ## Sayfa 5 - Model Skorlama ve Risk Bantları
 
@@ -81,6 +85,7 @@ Ana mesaj: Model skoru kararın kendisi değil, operasyonel önceliklendirme kat
 - Risk bandı sahte işlem hacmi.
 - Risk bandı işlem tutarı.
 - Modelin inceleme kuyruğu oluşturma rolünü açıklayan metinler.
+- Amaç, operasyon ve yönetim karar panelleri.
 
 ## Sayfa 6 - Veri Kalitesi ve Mimari
 
@@ -94,6 +99,7 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 - Eksik değer sinyali KPI'ı.
 - Lineage: `Kaggle CSV -> BigQuery Raw -> dbt Staging -> dbt Mart -> Power BI DirectQuery`.
 - Kalite mesajı: dbt build ve BigQuery row-count kontrolleri PASS.
+- Build, reconciliation ve lineage kalite kapısı panelleri.
 
 ## Format Standardı
 

@@ -39,7 +39,7 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Final rapor 6 sunum sayfasından oluşuyor.
 - [x] Ek teknik kontrol sayfası final rapordan kaldırıldı.
 - [x] Boş sayfa yok.
-- [x] 94 visual container var.
+- [x] 123 visual container var.
 - [x] 29 query-bound native visual var.
 - [x] Her sayfada en az 4 veri modeline bağlı native visual var.
 - [x] 6 slicer var.
@@ -58,6 +58,7 @@ Son doğrulama tarihi: 19 Mayıs 2026
 - [x] Ödeme ve Email sayfası operasyonel segmentleri native chart ve slicer yapısıyla gösteriyor.
 - [x] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
 - [x] Veri Kalitesi sayfası missingness, kalite kontrolü ve lineage anlatımını native metin ve görsellerle veriyor.
+- [x] Her sayfada bulgu, risk, aksiyon veya kalite kapısı mesajları kısa karar panelleriyle görünür hale getirildi.
 - [x] Görünür rapor içinde proje dışı üretim izi, geçici not veya sunum dışı teknik dil bulunmuyor.
 
 ## Repo

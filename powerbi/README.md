@@ -36,7 +36,7 @@ Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede 
 
 - PBIX paket bütünlüğü: PASS
 - Sayfa sayısı: 6
-- Visual container sayısı: 94
+- Visual container sayısı: 123
 - Query-bound native visual sayısı: 29
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0

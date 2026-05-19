@@ -23,6 +23,7 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Ödeme ve Email Segmentleri: kart ağı, kart tipi ve email domain riskleri.
    - Model Skorlama ve Risk Bantları: skorların operasyon kuyruğu olarak kullanımı.
    - Veri Kalitesi ve Mimari: missingness, kalite kanıtı ve lineage.
+   - Her sayfaya üst yönetim okumasını hızlandıran kısa karar panelleri eklendi.
 
 4. dbt kalite kapsamı korundu
    - Data test sayısı 73.

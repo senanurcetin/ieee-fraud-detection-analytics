@@ -484,6 +484,22 @@ def insight_text(name: str, text: str, x: float, y: float, width: float, height:
     return textbox_visual(name, text, x, y, width, height, z, 12, True, color)
 
 
+def insight_panel(
+    name: str,
+    title: str,
+    body: str,
+    x: float,
+    y: float,
+    width: float,
+    z: int,
+    color: str,
+) -> list[dict]:
+    return [
+        textbox_visual(f"{name}_title", title, x, y, width, 22, z, 11, True, color),
+        textbox_visual(f"{name}_body", body, x, y + 24, width, 54, z + 1, 9, False, "#37414C"),
+    ]
+
+
 def lineage_visuals() -> list[dict]:
     steps = [
         ("Kaggle CSV", 74, "#1B7F79"),
@@ -563,28 +579,36 @@ def page_native_visuals(display_name: str) -> list[dict]:
         ]:
             visuals.extend(visual)
         visuals.extend(
-            [
-                insight_text(
-                    "exec_message_1",
-                    "Yönetim aksiyonu: Product C, yüksek risk bandı ve uç tutar bantları ilk izleme kuyruğuna alınmalıdır.",
-                    84,
-                    570,
-                    500,
-                    42,
-                    60,
-                    "#C6251A",
-                ),
-                insight_text(
-                    "exec_message_2",
-                    "Operasyon prensibi: model çıktısı nihai karar değil, fraud ekibinin inceleme sırasını belirleyen öncelik sinyalidir.",
-                    640,
-                    570,
-                    500,
-                    42,
-                    61,
-                    "#1B7F79",
-                ),
-            ]
+            insight_panel(
+                "exec_panel_1",
+                "Bulgu",
+                "Fraud oranı düşük görünse de risk belirli ürün ve tutar bantlarında toplanıyor.",
+                74,
+                560,
+                320,
+                60,
+                "#C6251A",
+            )
+            + insight_panel(
+                "exec_panel_2",
+                "Risk",
+                "Genel ortalama tek başına kullanılırsa Product C ve kritik banttaki yoğunlaşma kaçırılır.",
+                456,
+                560,
+                320,
+                62,
+                "#6D2BD4",
+            )
+            + insight_panel(
+                "exec_panel_3",
+                "Aksiyon",
+                "İlk izleme kuyruğu ürün, tutar bandı ve risk bandı kesitleriyle yönetilmelidir.",
+                838,
+                560,
+                320,
+                64,
+                "#1B7F79",
+            )
         )
 
     elif display_name == "Risk Konsantrasyonu":
@@ -641,16 +665,36 @@ def page_native_visuals(display_name: str) -> list[dict]:
             ),
         ]:
             visuals.extend(visual)
-        visuals.append(
-            insight_text(
-                "risk_decision_message",
-                "Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.",
-                76,
-                590,
-                960,
-                38,
+        visuals.extend(
+            insight_panel(
+                "risk_panel_1",
+                "Bulgu",
+                "Ürün ve cihaz ekseninde risk homojen dağılmıyor; bazı kombinasyonlar açıkça ayrışıyor.",
+                74,
+                574,
+                320,
                 60,
-                "#17212B",
+                "#C6251A",
+            )
+            + insight_panel(
+                "risk_panel_2",
+                "Öncelik",
+                "Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.",
+                456,
+                574,
+                320,
+                62,
+                "#6D2BD4",
+            )
+            + insight_panel(
+                "risk_panel_3",
+                "Kontrol",
+                "Slicer kontrolleri ürün ve risk bandı perspektifini operasyon toplantısında hızla daraltır.",
+                838,
+                574,
+                320,
+                64,
+                "#1B7F79",
             )
         )
 
@@ -707,16 +751,36 @@ def page_native_visuals(display_name: str) -> list[dict]:
             ),
         ]:
             visuals.extend(visual)
-        visuals.append(
-            insight_text(
-                "amount_decision_message",
-                "Yorum: risk yalnızca yüksek tutarlarda artmıyor; düşük tutar bandı ve belirli saat pencereleri ayrı operasyon kuralı gerektiriyor.",
-                76,
-                590,
-                1010,
-                38,
+        visuals.extend(
+            insight_panel(
+                "amount_panel_1",
+                "Bulgu",
+                "Risk tek yönlü bir tutar eşiğiyle açıklanmıyor; uç bantlar ayrı izlenmelidir.",
+                74,
+                574,
+                320,
                 60,
-                "#17212B",
+                "#B66D12",
+            )
+            + insight_panel(
+                "amount_panel_2",
+                "Zaman",
+                "Saat bazlı sahte işlem adedi, operasyon vardiya planı için ek sinyal sağlar.",
+                456,
+                574,
+                320,
+                62,
+                "#C6251A",
+            )
+            + insight_panel(
+                "amount_panel_3",
+                "Aksiyon",
+                "Düşük tutar bandı ve yüksek hacimli saatler ayrı kural setiyle takip edilmelidir.",
+                838,
+                574,
+                320,
+                64,
+                "#1B7F79",
             )
         )
 
@@ -784,16 +848,36 @@ def page_native_visuals(display_name: str) -> list[dict]:
             ),
         ]:
             visuals.extend(visual)
-        visuals.append(
-            insight_text(
-                "payment_decision_message",
-                "Segment kararı: kredi kartı ve belirli email domain grupları, product ve tutar segmentleriyle birlikte izlenmelidir.",
-                76,
-                590,
-                1000,
-                38,
+        visuals.extend(
+            insight_panel(
+                "payment_panel_1",
+                "Bulgu",
+                "Kart ağı ve kart tipi sahte işlem hacmini iş birimleri için okunabilir hale getirir.",
+                74,
+                574,
+                320,
                 60,
-                "#17212B",
+                "#2854A3",
+            )
+            + insight_panel(
+                "payment_panel_2",
+                "Segment",
+                "Email domain grupları tek başına karar değil, izleme kovası olarak kullanılmalıdır.",
+                456,
+                574,
+                320,
+                62,
+                "#C6251A",
+            )
+            + insight_panel(
+                "payment_panel_3",
+                "Aksiyon",
+                "Ödeme segmentleri product ve tutar bandı ile birlikte izlenirse yanlış alarm riski azalır.",
+                838,
+                574,
+                320,
+                64,
+                "#1B7F79",
             )
         )
 
@@ -851,31 +935,71 @@ def page_native_visuals(display_name: str) -> list[dict]:
         ]:
             visuals.extend(visual)
         visuals.extend(
-            [
-                insight_text(
-                    "model_message_1",
-                    "Model yorumu: skor bandı nihai karar değildir; inceleme kapasitesini ölçülebilir kuyruklara böler.",
-                    76,
-                    585,
-                    520,
-                    42,
-                    60,
-                    "#17212B",
-                ),
-                insight_text(
-                    "model_message_2",
-                    "Operasyon kullanımı: yüksek ve kritik bantlar hızlı inceleme, düşük bantlar otomatik izleme adayıdır.",
-                    650,
-                    585,
-                    500,
-                    42,
-                    61,
-                    "#1B7F79",
-                ),
-            ]
+            insight_panel(
+                "model_panel_1",
+                "Amaç",
+                "Skor bandı nihai karar değildir; inceleme kapasitesini ölçülebilir kuyruklara böler.",
+                74,
+                574,
+                320,
+                60,
+                "#6D2BD4",
+            )
+            + insight_panel(
+                "model_panel_2",
+                "Operasyon",
+                "Yüksek ve kritik bantlar hızlı inceleme, düşük bantlar otomatik izleme adayıdır.",
+                456,
+                574,
+                320,
+                62,
+                "#C6251A",
+            )
+            + insight_panel(
+                "model_panel_3",
+                "Yönetim",
+                "Risk bandı hacmi ve fraud adedi birlikte okunarak kapasite planı yapılmalıdır.",
+                838,
+                574,
+                320,
+                64,
+                "#1B7F79",
+            )
         )
 
     elif display_name == "Veri Kalitesi ve Mimari":
+        visuals.extend(
+            insight_panel(
+                "quality_gate_1",
+                "Build",
+                "dbt prod build sonucu PASS; model, test ve exposure adımları hata vermeden tamamlandı.",
+                74,
+                152,
+                320,
+                20,
+                "#1B7F79",
+            )
+            + insight_panel(
+                "quality_gate_2",
+                "Reconciliation",
+                "Raw, staging, mart ve Power BI katmanları row-count kontrolleriyle uzlaştırıldı.",
+                456,
+                152,
+                320,
+                22,
+                "#2854A3",
+            )
+            + insight_panel(
+                "quality_gate_3",
+                "Lineage",
+                "Rapor akışı ham Kaggle verisinden DirectQuery tüketim katmanına kadar izlenebilir.",
+                838,
+                152,
+                320,
+                24,
+                "#B66D12",
+            )
+        )
         for visual in [
             bar_visual(
                 "quality_missing_rate",
