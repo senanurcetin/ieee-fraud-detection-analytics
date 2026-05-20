@@ -13,7 +13,7 @@ powerbi/fraud_project_v2.pbix
 Son paket doğrulaması:
 
 - Sayfa sayısı: 6
-- Visual container sayısı: 169
+- Visual container sayısı: 316
 - Query-bound native visual sayısı: 27
 - Slicer sayısı: 6
 - Gömülü görüntü visual sayısı: 0
@@ -22,8 +22,11 @@ Son paket doğrulaması:
 - Tooltip destekli analiz görseli sayısı: 14
 - Kontrollü native kanıt tablosu sayısı: 4
 - Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
+- DAX measure dosyası: `powerbi/dax/fraud_project_measures.dax` içinde 25 hazır ölçü
 - Tema: kurumsal fraud-risk paleti
-- Tasarım kabuğu: sade header, Türkçe visual başlıkları, alt sayfa yönlendirme metni
+- Tasarım kabuğu: sade header, profesyonel panel sistemi, Türkçe panel başlıkları, özel slicer çerçevesi, alt sayfa yönlendirme metni
+- Başlık kırpılma kontrolü: PASS
+- Native visual başlığı sızma kontrolü: PASS
 
 ## Sayfa 1 - Yönetici Özeti
 

@@ -21,6 +21,8 @@ PBIX dosyası BigQuery DirectQuery veri modelini korur. Final raporlama katmanı
 
 Rapor yalnızca Power BI içinde açılabilen görsellerle yapılandırılmıştır. Kullanılan görsel tipleri slicer, clustered column chart, clustered bar chart, kontrollü native tablo ve textbox ile sınırlıdır; KPI alanları otomatik sayı kısaltması üretmeyecek şekilde metin tabanlı formatlanmıştır.
 
+DAX ölçü katmanı için 25 hazır ölçü [fraud_project_measures.dax](dax/fraud_project_measures.dax) dosyasındadır. PBIX içindeki model binary olduğu için ölçüler Power BI Desktop modelleme ekranında uygulanmak üzere ayrı teslim edilmiştir.
+
 ## Sunum Akışı
 
 Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede yoğunlaştığını, ardından operasyonel izleme ve veri güvenilirliğini anlatır.
@@ -36,7 +38,7 @@ Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede 
 
 - PBIX paket bütünlüğü: PASS
 - Sayfa sayısı: 6
-- Visual container sayısı: 169
+- Visual container sayısı: 316
 - Query-bound native visual sayısı: 27
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
@@ -44,7 +46,10 @@ Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede 
 - Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor
 - Ham alan adları yerine Türkçe query/visual başlıkları kullanılıyor
 - Tooltip destekli analiz görseli sayısı: 14
+- Native visual başlıkları kapalı; başlıklar Türkçe panel başlığı olarak veriliyor
+- Başlık ve açıklama kırpılma riski otomatik kontrol edildi
 - Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
-- Gereksiz dekoratif container'lar kaldırıldı; rapor sade yönetici sunumu gridine indirildi
+- Chart, slicer, KPI ve karar metinleri profesyonel panel yapısına taşındı
+- 25 ölçülük hazır DAX measure dosyası eklendi
 - dbt prod build: PASS, 102 PASS / 0 ERROR / 1 exposure NO-OP
 - dbt docs generate: PASS

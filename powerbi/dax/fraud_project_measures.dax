@@ -1,0 +1,157 @@
+-- fraud_project_v2 Power BI measure layer
+-- Power BI Desktop > Modeling > New measure ile eklenmek üzere hazırlanmıştır.
+
+İşlem Adedi =
+COUNTROWS('fact_train_transactions')
+
+Sahte İşlem Adedi =
+SUM('fact_train_transactions'[is_fraud])
+
+Sahtecilik Oranı =
+DIVIDE([Sahte İşlem Adedi], [İşlem Adedi])
+
+Ortalama İşlem Tutarı =
+AVERAGE('fact_train_transactions'[transaction_amount])
+
+Toplam İşlem Tutarı =
+SUM('fact_train_transactions'[transaction_amount])
+
+Identity Kapsama Oranı =
+DIVIDE(
+    CALCULATE(
+        [İşlem Adedi],
+        'fact_train_transactions'[has_identity] = TRUE()
+    ),
+    [İşlem Adedi]
+)
+
+Kritik Risk İşlem Adedi =
+CALCULATE(
+    [İşlem Adedi],
+    'fact_train_transactions'[risk_band] = "Critical"
+)
+
+Yüksek ve Kritik İşlem Adedi =
+CALCULATE(
+    [İşlem Adedi],
+    'fact_train_transactions'[risk_band] IN {"High", "Critical"}
+)
+
+Yüksek ve Kritik İş Yükü Payı =
+DIVIDE([Yüksek ve Kritik İşlem Adedi], [İşlem Adedi])
+
+Yüksek ve Kritik Fraud Yakalama Payı =
+DIVIDE(
+    CALCULATE(
+        [Sahte İşlem Adedi],
+        'fact_train_transactions'[risk_band] IN {"High", "Critical"}
+    ),
+    [Sahte İşlem Adedi]
+)
+
+Ortalama Model Skoru =
+AVERAGE('fact_train_transactions'[predicted_fraud_probability])
+
+Product C Fraud Payı =
+DIVIDE(
+    CALCULATE(
+        [Sahte İşlem Adedi],
+        'fact_train_transactions'[product_cd] = "C"
+    ),
+    [Sahte İşlem Adedi]
+)
+
+Düşük Tutar Fraud Payı =
+DIVIDE(
+    CALCULATE(
+        [Sahte İşlem Adedi],
+        'fact_train_transactions'[amount_band] = "01. <$25"
+    ),
+    [Sahte İşlem Adedi]
+)
+
+Saatlik Fraud Yoğunluğu =
+DIVIDE(
+    [Sahte İşlem Adedi],
+    CALCULATE(
+        [Sahte İşlem Adedi],
+        ALL('fact_train_transactions'[transaction_hour])
+    )
+)
+
+Baz Fraud Oranı =
+CALCULATE(
+    [Sahtecilik Oranı],
+    ALL('fact_train_transactions')
+)
+
+Segment Fraud Lift =
+DIVIDE([Sahtecilik Oranı], [Baz Fraud Oranı])
+
+Seçili Segment İşlem Payı =
+DIVIDE(
+    [İşlem Adedi],
+    CALCULATE(
+        [İşlem Adedi],
+        ALL('fact_train_transactions')
+    )
+)
+
+Seçili Segment Fraud Payı =
+DIVIDE(
+    [Sahte İşlem Adedi],
+    CALCULATE(
+        [Sahte İşlem Adedi],
+        ALL('fact_train_transactions')
+    )
+)
+
+Kritik Risk Fraud Yakalama Payı =
+DIVIDE(
+    CALCULATE(
+        [Sahte İşlem Adedi],
+        'fact_train_transactions'[risk_band] = "Critical"
+    ),
+    [Sahte İşlem Adedi]
+)
+
+Model İnceleme İş Yükü =
+DIVIDE(
+    CALCULATE(
+        [İşlem Adedi],
+        'fact_train_transactions'[is_high_or_critical_risk] = 1
+    ),
+    [İşlem Adedi]
+)
+
+Sahtecilik Oranı Metni =
+FORMAT([Sahtecilik Oranı], "0.00%")
+
+Segment Lift Metni =
+FORMAT([Segment Fraud Lift], "0.0x")
+
+Fraud Payı Metni =
+FORMAT([Seçili Segment Fraud Payı], "0.0%")
+
+İnceleme Önceliği =
+VAR SelectedBand = SELECTEDVALUE('fact_train_transactions'[risk_band], "Tüm bantlar")
+RETURN
+    SWITCH(
+        SelectedBand,
+        "Critical", "Anlık inceleme kuyruğu",
+        "High", "Aynı gün öncelikli inceleme",
+        "Elevated", "Örneklem bazlı manuel kontrol",
+        "Low", "Standart otomatik izleme",
+        "Risk bandı seçimi yapılmadı"
+    )
+
+Yönetici Karar Mesajı =
+VAR LiftValue = [Segment Fraud Lift]
+RETURN
+    SWITCH(
+        TRUE(),
+        LiftValue >= 3, "Acil segment inceleme ve kural seti kalibrasyonu gerekir.",
+        LiftValue >= 1.5, "Öncelikli takip listesine alınmalıdır.",
+        LiftValue >= 1, "Haftalık trend ve hacim izleme yeterlidir.",
+        "Standart izleme kapsamında tutulabilir."
+    )

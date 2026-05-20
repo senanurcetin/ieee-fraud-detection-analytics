@@ -29,8 +29,12 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Her sayfaya üst yönetim okumasını hızlandıran kısa karar panelleri eklendi.
    - Karar panelleri gerçek mart sonuçlarından türetilmiş oran, pay ve yoğunlaşma cümleleriyle güçlendirildi.
    - Rapor teması ve visual container stilleri kurumsal fraud-risk paletine taşındı.
-   - Gereksiz dekoratif container'lar kaldırıldı; sayfa tasarımı sade yönetici sunumu gridine indirildi.
+   - Chart, slicer, KPI ve karar metinleri profesyonel panel yapısına taşındı.
+   - Native visual başlıkları kapatıldı; başlıklar Türkçe panel başlığı olarak yeniden verildi.
+   - Slicer alanları koyu başlık şeridi, iç panel ve vurgu çizgisiyle özel tasarım yapısına alındı.
    - 14 chart görseline tooltip bağlamı eklendi.
+   - Başlık ve açıklama kırpılma riski otomatik validation kapsamına alındı.
+   - Power BI modelleme ekranı için 25 ölçülük DAX katmanı hazırlandı.
    - Risk renk standardı Risk Konsantrasyonu ve Model sayfalarında görünür hale getirildi.
    - Power BI paket kontrolü `python scripts/validate_powerbi_report.py` komutuyla otomatik hale getirildi.
 

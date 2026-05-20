@@ -25,27 +25,27 @@ PAGE_ORDER = [
 
 PAGE_COPY = {
     "Yönetici Özeti": (
-        "Sahtecilik nadir, ancak belirli segmentlerde yoğunlaşıyor",
+        "Sahtecilik belirli segmentlerde yoğunlaşıyor",
         "Yönetim odağı genel hacimden çok riskin kümelendiği ürün, tutar ve risk bandı kesitlerine çevrilmelidir.",
     ),
     "Risk Konsantrasyonu": (
-        "Ürün ve cihaz kırılımları risk ayrışmasını netleştiriyor",
+        "Ürün ve cihaz kırılımı riski netleştiriyor",
         "Product C, mobil işlem davranışı ve yüksek risk bandı birlikte izlendiğinde operasyon kuyruğu daha hedefli yönetilir.",
     ),
     "Tutar ve Zaman Analizi": (
-        "Tutar ve işlem saati örüntüleri doğrusal olmayan davranış gösteriyor",
+        "Tutar ve saat örüntüleri risk sinyali üretiyor",
         "Düşük tutar, yüksek tutar ve gün içi pencereler ayrı izlenmediğinde segment riski ortalamada kaybolur.",
     ),
     "Ödeme ve Email Segmentleri": (
-        "Ödeme tipi ve email domain operasyonel izleme kırılımları ekliyor",
+        "Ödeme ve email segmentleri izleme kırılımı ekliyor",
         "Kart ağı, kart tipi ve purchaser email grubu fraud riskini iş birimleri için okunabilir segmentlere dönüştürür.",
     ),
     "Model Skorlama ve Risk Bantları": (
-        "Model skorları karar değil, inceleme önceliği üretir",
+        "Model skorları inceleme önceliği üretir",
         "Risk bantları fraud inceleme kapasitesini yüksek olasılıklı işlem gruplarına yönlendiren bir sıralama katmanıdır.",
     ),
     "Veri Kalitesi ve Mimari": (
-        "Veri kalitesi ölçülür ve mimari akış rapor güvenini destekler",
+        "Veri kalitesi rapor güvenini destekler",
         "Eksiklik yapısal bir veri karakteristiği olarak izlenir; dbt ve BigQuery kontrolleri rapor katmanını doğrular.",
     ),
 }
@@ -355,6 +355,27 @@ def visual_objects(visual_type: str, color: str, show_title: bool, title_text: s
     return objects
 
 
+def panel_visual(
+    name: str,
+    x: float,
+    y: float,
+    width: float,
+    height: float,
+    z: int,
+    fill: str = "#FFFFFF",
+    border: str = "#DCE3EA",
+) -> dict:
+    return textbox_visual(name, " ", x, y, width, height, z, 8, False, fill, fill, border)
+
+
+def panel_title(name: str, text: str, x: float, y: float, width: float, z: int, color: str = "#17212B") -> dict:
+    return textbox_visual(name, text, x, y, width, 34, z, 10, True, color)
+
+
+def accent_rule(name: str, x: float, y: float, height: float, z: int, color: str) -> dict:
+    return textbox_visual(name, " ", x, y, 4, height, z, 8, False, color, color, None)
+
+
 def native_visual(
     name: str,
     visual_type: str,
@@ -429,8 +450,10 @@ def card_visual(
 ) -> list[dict]:
     value = KPI_VALUES.get((table, column), "590.540")
     return [
-        textbox_visual(f"{name}_label", label, x, y, width, 20, z, 10, True, "#5E6872"),
-        textbox_visual(f"{name}_value", value, x, y + 22, width, height - 18, z + 1, 22, True, "#17212B"),
+        panel_visual(f"{name}_panel", x, y, width, height, z, "#FFFFFF", "#DCE3EA"),
+        accent_rule(f"{name}_accent", x, y + 10, height - 20, z + 1, "#1B7F79"),
+        textbox_visual(f"{name}_label", label, x + 18, y + 10, width - 28, 20, z + 2, 9, True, "#5E6872"),
+        textbox_visual(f"{name}_value", value, x + 18, y + 32, width - 28, height - 36, z + 3, 20, True, "#17212B"),
     ]
 
 
@@ -473,6 +496,9 @@ def bar_visual(
             projections["Tooltips"].append(tooltip_ref)
             transform_selects.append((tooltip_label, tooltip_ref, "Tooltips", tooltip_type))
     return [
+        panel_visual(f"{name}_panel", x, y, width, height, z, "#FFFFFF", "#DCE3EA"),
+        accent_rule(f"{name}_accent", x, y + 12, height - 24, z + 1, color),
+        panel_title(f"{name}_title", title, x + 24, y + 10, width - 38, z + 2),
         native_visual(
             name=name,
             visual_type=visual_type,
@@ -481,15 +507,14 @@ def bar_visual(
             projections=projections,
             selects=selects,
             transform_selects=transform_selects,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            z=z + 1,
+            x=x + 12,
+            y=y + 44,
+            width=width - 24,
+            height=height - 56,
+            z=z + 3,
             order_by=order_by or category_column,
             color=color,
-            show_title=True,
-            title_text=title,
+            show_title=False,
         ),
     ]
 
@@ -520,6 +545,9 @@ def table_visual(
         transform_selects.append((label, query_ref, "Values", value_type))
 
     return [
+        panel_visual(f"{name}_panel", x, y, width, height, z, "#FFFFFF", "#DCE3EA"),
+        accent_rule(f"{name}_accent", x, y + 12, height - 24, z + 1, "#2854A3"),
+        panel_title(f"{name}_title", title, x + 24, y + 10, width - 38, z + 2),
         native_visual(
             name=name,
             visual_type="tableEx",
@@ -528,15 +556,14 @@ def table_visual(
             projections={"Values": projections},
             selects=selects,
             transform_selects=transform_selects,
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            z=z + 1,
+            x=x + 12,
+            y=y + 44,
+            width=width - 24,
+            height=height - 56,
+            z=z + 3,
             order_by=order_by,
             color="#1B7F79",
-            show_title=True,
-            title_text=title,
+            show_title=False,
         ),
     ]
 
@@ -555,6 +582,10 @@ def slicer_visual(
     alias = f"{name}_src"
     query_ref = label
     return [
+        panel_visual(f"{name}_panel", x, y, width, height, z, "#EEF3F8", "#B8C6D6"),
+        textbox_visual(f"{name}_header", label, x, y, width, 24, z + 1, 8, True, "#FFFFFF", "#17212B", None),
+        accent_rule(f"{name}_accent", x, y + 24, height - 24, z + 2, "#1B7F79"),
+        panel_visual(f"{name}_body", x + 8, y + 30, width - 16, height - 38, z + 3, "#FFFFFF", "#DCE3EA"),
         native_visual(
             name=name,
             visual_type="slicer",
@@ -563,15 +594,14 @@ def slicer_visual(
             projections={"Values": [query_ref]},
             selects=[column_select(alias, table, column, query_ref)],
             transform_selects=[(label, query_ref, "Values", "category")],
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            z=z + 1,
+            x=x + 14,
+            y=y + 36,
+            width=width - 28,
+            height=height - 48,
+            z=z + 4,
             order_by=column,
             color="#FFFFFF",
-            show_title=True,
-            title_text=label,
+            show_title=False,
         ),
     ]
 
@@ -588,10 +618,12 @@ def header_visuals(display_name: str) -> list[dict]:
         ("06", "Kalite"),
     ]
     visuals = [
-        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 54, 28, 260, 20, 4, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1092, 28, 90, 20, 4, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_title", title, 54, 54, 1088, 38, 5, 19, True, "#17212B"),
-        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 98, 1088, 28, 6, 10, False, "#37414C"),
+        textbox_visual(f"{display_name}_bg", " ", 0, 0, 1280, 720, 0, 8, False, "#F6F8FB", "#F6F8FB", None),
+        textbox_visual(f"{display_name}_top_rule", " ", 54, 22, 1088, 3, 2, 8, False, "#17212B", "#17212B", None),
+        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 54, 34, 280, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1092, 34, 90, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_title", title, 54, 62, 1088, 50, 5, 16, True, "#17212B"),
+        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 114, 1088, 30, 6, 9, False, "#37414C"),
     ]
     for index, (number, label) in enumerate(nav_items, start=1):
         x = 54 + (index - 1) * 188
@@ -628,8 +660,10 @@ def insight_panel(
     color: str,
 ) -> list[dict]:
     return [
-        textbox_visual(f"{name}_title", title, x, y, width, 22, z + 1, 11, True, color),
-        textbox_visual(f"{name}_body", body, x, y + 24, width, 54, z + 2, 9, False, "#37414C"),
+        panel_visual(f"{name}_panel", x - 8, y - 8, width + 16, 86, z, "#FFFFFF", "#DCE3EA"),
+        accent_rule(f"{name}_accent", x - 8, y - 8, 86, z + 1, color),
+        textbox_visual(f"{name}_title", title, x + 8, y, width - 8, 22, z + 2, 10, True, color),
+        textbox_visual(f"{name}_body", body, x + 8, y + 24, width - 8, 54, z + 3, 8, False, "#37414C"),
     ]
 
 
