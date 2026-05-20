@@ -47,12 +47,13 @@ Son doğrulama tarihi: 20 Mayıs 2026
 - [x] Kayıtlı görsel kaynağı sayısı 0.
 - [x] Kırılgan çizgi grafik kullanılmıyor.
 - [x] Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor.
-- [x] 6 chart görselinde ek bağlam sağlayan tooltip alanları var.
+- [x] 14 chart görselinde ek bağlam sağlayan tooltip alanları var.
 - [x] Ham alan adları yerine Türkçe query/visual başlıkları kullanılıyor.
 - [x] KPI alanları otomatik sayı kısaltması üretmeyecek şekilde metin tabanlı formatlandı.
 - [x] Kullanılan veri alanlarının tamamı güvenli Power BI model allowlist'i içinde.
 - [x] Rapor teması kurumsal fraud-risk paletine göre güncellendi.
 - [x] Gereksiz dekoratif container'lar kaldırıldı; sayfa düzeni sade yönetici sunumu gridine indirildi.
+- [x] `python scripts/validate_powerbi_report.py` otomatik Power BI paket kontrolü PASS.
 - [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
 - [ ] DirectQuery yenilemesi sonrasında tüm görsellerin veri döndürdüğü ekranda kontrol edilmeli.
 

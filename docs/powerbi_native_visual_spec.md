@@ -31,6 +31,14 @@ Final rapor şu görsel tipleriyle sınırlıdır:
 
 Native card kullanılmaz. KPI alanları Power BI otomatik sayı kısaltmasına düşmemesi için metin tabanlı sunum formatıyla gösterilir.
 
+Otomatik paket kontrolü:
+
+```powershell
+python scripts\validate_powerbi_report.py
+```
+
+Bu kontrol sayfa sayısını, görsel tiplerini, PNG kaynaklarını, ham alan adı referanslarını, tooltip kapsamını ve güvenli alan allowlist'ini doğrular.
+
 ## Sayfa Bazlı Kurgu
 
 ### Yönetici Özeti
@@ -94,4 +102,5 @@ Native card kullanılmaz. KPI alanları Power BI otomatik sayı kısaltmasına d
 - KPI değerlerinde otomatik `B`, `K`, `M` kısaltması görünmemelidir.
 - Gereksiz dekoratif container kullanılmamalıdır.
 - Renk standardı: kırmızı kritik risk, petrol yeşili kontrol/aksiyon, koyu lacivert ana metin, nötr gri ikincil metin.
+- Önemli chart görsellerinde işlem tutarı veya sahte işlem adedi gibi tooltip bağlamı bulunmalıdır.
 - Her sayfa tek ana mesaj taşımalıdır.

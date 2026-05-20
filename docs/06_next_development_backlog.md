@@ -30,8 +30,9 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Karar panelleri gerçek mart sonuçlarından türetilmiş oran, pay ve yoğunlaşma cümleleriyle güçlendirildi.
    - Rapor teması ve visual container stilleri kurumsal fraud-risk paletine taşındı.
    - Gereksiz dekoratif container'lar kaldırıldı; sayfa tasarımı sade yönetici sunumu gridine indirildi.
-   - Önemli chart görsellerine tooltip bağlamı eklendi.
+   - 14 chart görseline tooltip bağlamı eklendi.
    - Risk renk standardı Risk Konsantrasyonu ve Model sayfalarında görünür hale getirildi.
+   - Power BI paket kontrolü `python scripts/validate_powerbi_report.py` komutuyla otomatik hale getirildi.
 
 4. dbt kalite kapsamı korundu
    - Data test sayısı 73.
@@ -54,7 +55,7 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
 2. DirectQuery yenileme kontrolü
    - Rapor açıldıktan sonra BigQuery bağlantı yetkisini onayla.
    - Slicer seçimi yapıldığında ilgili görsellerin bozulmadığını kontrol et.
-   - Kart değerlerinde otomatik kısaltma görünürse Power BI Desktop içindeki format panelinden display unit ayarını `None` yap.
+   - KPI değerlerinde otomatik kısaltma görünmediğini kontrol et.
 
 ## Kalan P1 İyileştirmeler
 

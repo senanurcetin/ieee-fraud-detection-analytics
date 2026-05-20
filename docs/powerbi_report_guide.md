@@ -19,8 +19,9 @@ Son paket doğrulaması:
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
 - PBIX zip bütünlüğü: PASS
-- Tooltip destekli analiz görseli sayısı: 6
+- Tooltip destekli analiz görseli sayısı: 14
 - Kontrollü native kanıt tablosu sayısı: 4
+- Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
 - Tema: kurumsal fraud-risk paleti
 - Tasarım kabuğu: sade header, Türkçe visual başlıkları, alt sayfa yönlendirme metni
 

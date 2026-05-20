@@ -703,6 +703,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 30,
                 value_type="whole",
                 color="#C6251A",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "exec_risk_band_rate",
@@ -719,6 +720,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 32,
                 value_type="whole",
                 color="#6D2BD4",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "exec_amount_risk",
@@ -735,6 +737,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 34,
                 value_type="whole",
                 color="#B66D12",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
         ]:
             visuals.extend(visual)
@@ -810,6 +813,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 30,
                 value_type="whole",
                 color="#C6251A",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "risk_device_rate",
@@ -826,6 +830,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 32,
                 value_type="whole",
                 color="#1B7F79",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "risk_band_rate",
@@ -842,6 +847,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 34,
                 value_type="whole",
                 color="#6D2BD4",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
         ]:
             visuals.extend(visual)
@@ -916,6 +922,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 30,
                 value_type="whole",
                 color="#B66D12",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
             bar_visual(
                 "amount_hour_fraud",
@@ -1069,6 +1076,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 "clusteredBarChart",
                 value_type="whole",
                 color="#C6251A",
+                tooltip_fields=[("transaction_amount", "İşlem tutarı", "decimal")],
             ),
         ]:
             visuals.extend(visual)

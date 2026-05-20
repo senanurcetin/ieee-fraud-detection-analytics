@@ -8,6 +8,7 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde korunması için
    - `powerbi/fraud_project_v2.pbix` Power BI Desktop'ta açılmalı.
    - 6 sayfanın tamamında hata placeholder'ı olmadığı kontrol edilmeli.
    - KPI metinleri, slicer, clustered column chart, clustered bar chart ve kanıt tabloları doğru görünmeli.
+   - Açılış öncesi `python scripts/validate_powerbi_report.py` PASS vermeli.
 
 2. DirectQuery veri modeli kontrolü
    - Rapor `workintech-working.fraud_project_powerbi` veri katmanına bağlı kalmalı.

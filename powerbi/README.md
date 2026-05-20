@@ -43,7 +43,8 @@ Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede 
 - Kırılgan çizgi grafik kullanılmıyor
 - Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor
 - Ham alan adları yerine Türkçe query/visual başlıkları kullanılıyor
-- Tooltip destekli analiz görseli sayısı: 6
+- Tooltip destekli analiz görseli sayısı: 14
+- Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
 - Gereksiz dekoratif container'lar kaldırıldı; rapor sade yönetici sunumu gridine indirildi
 - dbt prod build: PASS, 102 PASS / 0 ERROR / 1 exposure NO-OP
 - dbt docs generate: PASS
