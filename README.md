@@ -54,18 +54,18 @@ BigQuery datasets used by the production target:
 
 ```text
 fraud_project/
-├── .github/workflows/        # CI, dbt validation, docs workflow
-├── analyses/                 # dbt ad-hoc analysis area
-├── bigquery/                 # BigQuery deployment notes
-├── docs/                     # project documentation and business narrative
-├── infra/bigquery/           # Terraform dataset definitions
-├── macros/                   # dbt macros and generic tests
-├── models/                   # staging, intermediate, marts, powerbi dbt models
-├── powerbi/                  # PBIX, DAX layer, report assets, report guide
-├── config/dbt/               # sanitized dbt profile templates
-├── scripts/                  # local deployment and validation commands
-├── src/                      # ingestion, ML, exports, PBIX build scripts
-└── tests/                    # dbt singular tests and Python tests
+|-- .github/workflows/        # CI, dbt validation, docs workflow
+|-- analyses/                 # dbt ad-hoc analysis area
+|-- bigquery/                 # BigQuery deployment notes
+|-- config/dbt/               # sanitized dbt profile templates
+|-- docs/                     # project documentation and business narrative
+|-- infra/bigquery/           # Terraform dataset definitions
+|-- macros/                   # dbt macros and generic tests
+|-- models/                   # staging, intermediate, marts, powerbi dbt models
+|-- powerbi/                  # PBIX, DAX layer, report assets, report guide
+|-- scripts/                  # local deployment and validation commands
+|-- src/                      # ingestion, ML, exports, PBIX build scripts
+`-- tests/                    # dbt singular tests and Python tests
 ```
 
 ## Data Setup
@@ -193,14 +193,14 @@ Main deliverable:
 powerbi/fraud_project_v2.pbix
 ```
 
-The report uses BigQuery DirectQuery and contains six Turkish executive pages:
+The report uses BigQuery DirectQuery and contains six executive pages:
 
-1. Yönetici Özeti
-2. Risk Konsantrasyonu
-3. Tutar ve Zaman Analizi
-4. Ödeme ve Email Segmentleri
-5. Model Skorlama ve Risk Bantları
-6. Veri Kalitesi ve Mimari
+1. Executive summary
+2. Risk concentration
+3. Amount and time analysis
+4. Payment and email segments
+5. Model scoring and risk bands
+6. Data quality and architecture
 
 Report exports and supporting visuals are stored in `powerbi/assets/`. DAX measures are documented in `powerbi/dax/fraud_project_measures.dax`.
 
