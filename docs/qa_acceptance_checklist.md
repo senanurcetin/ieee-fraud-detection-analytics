@@ -39,8 +39,8 @@ Son doğrulama tarihi: 20 Mayıs 2026
 - [x] Final rapor 6 sunum sayfasından oluşuyor.
 - [x] Ek teknik kontrol sayfası final rapordan kaldırıldı.
 - [x] Boş sayfa yok.
-- [x] 262 visual container var.
-- [x] 33 query-bound native visual var.
+- [x] 169 visual container var.
+- [x] 27 query-bound native visual var.
 - [x] Her sayfada en az 4 veri modeline bağlı native visual var.
 - [x] 6 slicer var.
 - [x] Gömülü görüntü visual sayısı 0.
@@ -48,10 +48,11 @@ Son doğrulama tarihi: 20 Mayıs 2026
 - [x] Kırılgan çizgi grafik kullanılmıyor.
 - [x] Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor.
 - [x] 6 chart görselinde ek bağlam sağlayan tooltip alanları var.
+- [x] Ham alan adları yerine Türkçe query/visual başlıkları kullanılıyor.
+- [x] KPI alanları otomatik sayı kısaltması üretmeyecek şekilde metin tabanlı formatlandı.
 - [x] Kullanılan veri alanlarının tamamı güvenli Power BI model allowlist'i içinde.
-- [x] 124 görsel container kurumsal arka plan/bordür stiliyle yapılandırıldı.
 - [x] Rapor teması kurumsal fraud-risk paletine göre güncellendi.
-- [x] Her sayfada sol kurumsal rail, header panel, alt sayfa navigasyonu ve filtre kontrol alanı var.
+- [x] Gereksiz dekoratif container'lar kaldırıldı; sayfa düzeni sade yönetici sunumu gridine indirildi.
 - [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
 - [ ] DirectQuery yenilemesi sonrasında tüm görsellerin veri döndürdüğü ekranda kontrol edilmeli.
 

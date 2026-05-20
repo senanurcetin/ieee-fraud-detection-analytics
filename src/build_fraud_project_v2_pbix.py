@@ -50,6 +50,14 @@ PAGE_COPY = {
     ),
 }
 
+KPI_VALUES = {
+    ("mart_fraud_summary", "total_transactions"): "590.540",
+    ("mart_fraud_summary", "fraud_transactions"): "20.663",
+    ("mart_fraud_summary", "fraud_rate"): "%3,50",
+    ("mart_fraud_summary", "identity_coverage_rate"): "%24,42",
+    ("mart_feature_missingness", "missing_count"): "173.266.341",
+}
+
 
 def read_layout_template() -> dict:
     if not LAYOUT_TEMPLATE.exists():
@@ -199,20 +207,20 @@ def column_expr(alias: str, column: str) -> dict:
     return {"Column": {"Expression": source_ref(alias), "Property": column}}
 
 
-def column_select(alias: str, table: str, column: str) -> dict:
+def column_select(alias: str, table: str, column: str, query_name: str | None = None) -> dict:
     return {
         "Column": {"Expression": source_ref(alias), "Property": column},
-        "Name": f"{table}.{column}",
+        "Name": query_name or f"{table}.{column}",
     }
 
 
-def sum_select(alias: str, table: str, column: str) -> dict:
+def sum_select(alias: str, table: str, column: str, query_name: str | None = None) -> dict:
     return {
         "Aggregation": {
             "Expression": {"Column": {"Expression": source_ref(alias), "Property": column}},
             "Function": 0,
         },
-        "Name": f"Sum({table}.{column})",
+        "Name": query_name or f"Sum({table}.{column})",
     }
 
 
@@ -284,20 +292,22 @@ def data_transforms(selects: list[tuple[str, str, str, str]], projection_orderin
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
 
 
-def visual_objects(visual_type: str, color: str, show_title: bool) -> dict:
+def visual_objects(visual_type: str, color: str, show_title: bool, title_text: str | None = None) -> dict:
     title = {
-        "show": {"expr": {"Literal": {"Value": "true" if show_title else "false"}}},
+        "show": literal(show_title),
         "fontColor": {"solid": {"color": "#17212B"}},
-        "fontSize": {"expr": {"Literal": {"Value": "10D"}}},
+        "fontSize": literal(11),
     }
+    if title_text:
+        title["text"] = literal(title_text)
     objects = {
         "title": [{"properties": title}],
         "labels": [
             {
                 "properties": {
-                    "show": {"expr": {"Literal": {"Value": "true"}}},
-                    "labelDisplayUnits": {"expr": {"Literal": {"Value": "0D"}}},
-                    "labelPrecision": {"expr": {"Literal": {"Value": "1D"}}},
+                    "show": literal(False),
+                    "labelDisplayUnits": literal(0),
+                    "labelPrecision": literal(1),
                     "color": {"solid": {"color": "#17212B"}},
                 }
             }
@@ -307,11 +317,11 @@ def visual_objects(visual_type: str, color: str, show_title: bool) -> dict:
     if visual_type == "card":
         objects.update(
             {
-                "categoryLabels": [{"properties": {"show": {"expr": {"Literal": {"Value": "false"}}}}}],
+                "categoryLabels": [{"properties": {"show": literal(False)}}],
                 "calloutValue": [
                     {
                         "properties": {
-                            "labelDisplayUnits": {"expr": {"Literal": {"Value": "0D"}}},
+                            "labelDisplayUnits": literal(0),
                             "fontColor": {"solid": {"color": "#17212B"}},
                         }
                     }
@@ -324,8 +334,8 @@ def visual_objects(visual_type: str, color: str, show_title: bool) -> dict:
                 "categoryAxis": [
                     {
                         "properties": {
-                            "show": {"expr": {"Literal": {"Value": "true"}}},
-                            "showAxisTitle": {"expr": {"Literal": {"Value": "false"}}},
+                            "show": literal(True),
+                            "showAxisTitle": literal(False),
                             "fontColor": {"solid": {"color": "#5E6872"}},
                         }
                     }
@@ -333,9 +343,9 @@ def visual_objects(visual_type: str, color: str, show_title: bool) -> dict:
                 "valueAxis": [
                     {
                         "properties": {
-                            "show": {"expr": {"Literal": {"Value": "true"}}},
-                            "showAxisTitle": {"expr": {"Literal": {"Value": "false"}}},
-                            "labelDisplayUnits": {"expr": {"Literal": {"Value": "0D"}}},
+                            "show": literal(True),
+                            "showAxisTitle": literal(False),
+                            "labelDisplayUnits": literal(0),
                             "fontColor": {"solid": {"color": "#5E6872"}},
                         }
                     }
@@ -361,8 +371,9 @@ def native_visual(
     order_by: str | None = None,
     color: str = "#1B7F79",
     show_title: bool = False,
-    fill: str = "#FFFFFF",
-    border: str = "#E3E8EE",
+    fill: str | None = None,
+    border: str | None = None,
+    title_text: str | None = None,
 ) -> dict:
     query = query_from_selects(table, alias, selects, order_by)
     config = {
@@ -376,7 +387,7 @@ def native_visual(
             },
             "prototypeQuery": query,
             "drillFilterOtherVisuals": True,
-            "objects": visual_objects(visual_type, color, show_title),
+            "objects": visual_objects(visual_type, color, show_title, title_text),
         },
         "vcObjects": visual_container_objects(fill, border),
     }
@@ -416,25 +427,10 @@ def card_visual(
     z: int,
     value_type: str = "whole",
 ) -> list[dict]:
-    alias = f"{name}_src"
-    query_ref = f"Sum({table}.{column})"
+    value = KPI_VALUES.get((table, column), "590.540")
     return [
-        textbox_visual(f"{name}_label", label, x, y - 20, width, 22, z, 10, True, "#5E6872"),
-        native_visual(
-            name=name,
-            visual_type="card",
-            table=table,
-            alias=alias,
-            projections={"Values": [query_ref]},
-            selects=[sum_select(alias, table, column)],
-            transform_selects=[(label, query_ref, "Values", value_type)],
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            z=z + 1,
-            color="#FFFFFF",
-        ),
+        textbox_visual(f"{name}_label", label, x, y, width, 20, z, 10, True, "#5E6872"),
+        textbox_visual(f"{name}_value", value, x, y + 22, width, height - 18, z + 1, 22, True, "#17212B"),
     ]
 
 
@@ -458,9 +454,12 @@ def bar_visual(
     tooltip_fields: list[tuple[str, str, str]] | None = None,
 ) -> list[dict]:
     alias = f"{name}_src"
-    category_ref = f"{table}.{category_column}"
-    value_ref = f"Sum({table}.{value_column})"
-    selects = [column_select(alias, table, category_column), sum_select(alias, table, value_column)]
+    category_ref = category_label
+    value_ref = value_label
+    selects = [
+        column_select(alias, table, category_column, category_ref),
+        sum_select(alias, table, value_column, value_ref),
+    ]
     projections = {"Category": [category_ref], "Y": [value_ref]}
     transform_selects = [
         (category_label, category_ref, "Category", "category"),
@@ -469,12 +468,11 @@ def bar_visual(
     if tooltip_fields:
         projections["Tooltips"] = []
         for tooltip_column, tooltip_label, tooltip_type in tooltip_fields:
-            tooltip_ref = f"Sum({table}.{tooltip_column})"
-            selects.append(sum_select(alias, table, tooltip_column))
+            tooltip_ref = tooltip_label
+            selects.append(sum_select(alias, table, tooltip_column, tooltip_ref))
             projections["Tooltips"].append(tooltip_ref)
             transform_selects.append((tooltip_label, tooltip_ref, "Tooltips", tooltip_type))
     return [
-        textbox_visual(f"{name}_title", title, x, y - 24, width, 22, z, 11, True, "#17212B"),
         native_visual(
             name=name,
             visual_type=visual_type,
@@ -490,6 +488,8 @@ def bar_visual(
             z=z + 1,
             order_by=order_by or category_column,
             color=color,
+            show_title=True,
+            title_text=title,
         ),
     ]
 
@@ -511,17 +511,15 @@ def table_visual(
     projections = []
     transform_selects = []
     for column, label, value_type in columns:
+        query_ref = label
         if value_type == "category":
-            query_ref = f"{table}.{column}"
-            selects.append(column_select(alias, table, column))
+            selects.append(column_select(alias, table, column, query_ref))
         else:
-            query_ref = f"Sum({table}.{column})"
-            selects.append(sum_select(alias, table, column))
+            selects.append(sum_select(alias, table, column, query_ref))
         projections.append(query_ref)
         transform_selects.append((label, query_ref, "Values", value_type))
 
     return [
-        textbox_visual(f"{name}_title", title, x, y - 24, width, 22, z, 11, True, "#17212B"),
         native_visual(
             name=name,
             visual_type="tableEx",
@@ -537,6 +535,8 @@ def table_visual(
             z=z + 1,
             order_by=order_by,
             color="#1B7F79",
+            show_title=True,
+            title_text=title,
         ),
     ]
 
@@ -553,16 +553,15 @@ def slicer_visual(
     z: int,
 ) -> list[dict]:
     alias = f"{name}_src"
-    query_ref = f"{table}.{column}"
+    query_ref = label
     return [
-        textbox_visual(f"{name}_label", label, x, y - 20, width, 22, z, 10, True, "#5E6872"),
         native_visual(
             name=name,
             visual_type="slicer",
             table=table,
             alias=alias,
             projections={"Values": [query_ref]},
-            selects=[column_select(alias, table, column)],
+            selects=[column_select(alias, table, column, query_ref)],
             transform_selects=[(label, query_ref, "Values", "category")],
             x=x,
             y=y,
@@ -571,6 +570,8 @@ def slicer_visual(
             z=z + 1,
             order_by=column,
             color="#FFFFFF",
+            show_title=True,
+            title_text=label,
         ),
     ]
 
@@ -587,15 +588,10 @@ def header_visuals(display_name: str) -> list[dict]:
         ("06", "Kalite"),
     ]
     visuals = [
-        textbox_visual(f"{display_name}_page_bg", " ", 0, 0, 1280, 720, 0, 8, False, "#F5F7FA", "#F5F7FA", None),
-        textbox_visual(f"{display_name}_rail", " ", 0, 0, 22, 720, 1, 8, False, "#17212B", "#17212B", None),
-        textbox_visual(f"{display_name}_rail_accent", " ", 22, 0, 4, 720, 2, 8, False, "#1B7F79", "#1B7F79", None),
-        textbox_visual(f"{display_name}_header_bg", " ", 34, 20, 1170, 106, 3, 8, False, "#FFFFFF", "#FFFFFF", "#E7ECF2"),
-        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 56, 28, 260, 20, 4, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1046, 28, 90, 20, 4, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_title", title, 54, 50, 1080, 40, 5, 21, True, "#17212B"),
-        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 92, 1088, 26, 6, 11, False, "#37414C"),
-        textbox_visual(f"{display_name}_accent", "|", 1138, 42, 30, 52, 7, 30, True, "#C5C9CD"),
+        textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 54, 28, 260, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1092, 28, 90, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_title", title, 54, 54, 1088, 38, 5, 19, True, "#17212B"),
+        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 98, 1088, 28, 6, 10, False, "#37414C"),
     ]
     for index, (number, label) in enumerate(nav_items, start=1):
         x = 54 + (index - 1) * 188
@@ -605,15 +601,13 @@ def header_visuals(display_name: str) -> list[dict]:
                 f"{display_name}_nav_{index}",
                 f"{number}  {label}",
                 x,
-                682,
+                684,
                 178,
                 24,
                 8 + index,
                 9,
                 True,
-                "#FFFFFF" if is_active else "#5E6872",
-                "#17212B" if is_active else "#FFFFFF",
-                "#17212B" if is_active else "#D9E1EA",
+                "#17212B" if is_active else "#7A8793",
             )
         )
     return visuals
@@ -634,17 +628,13 @@ def insight_panel(
     color: str,
 ) -> list[dict]:
     return [
-        textbox_visual(f"{name}_box", " ", x - 8, y - 8, width + 16, 88, z, 8, False, "#FFFFFF", "#F8FAFC", "#D9E1EA"),
         textbox_visual(f"{name}_title", title, x, y, width, 22, z + 1, 11, True, color),
         textbox_visual(f"{name}_body", body, x, y + 24, width, 54, z + 2, 9, False, "#37414C"),
     ]
 
 
 def filter_panel(name: str, title: str, x: float, y: float, width: float, height: float, z: int = 8) -> list[dict]:
-    return [
-        textbox_visual(f"{name}_filter_box", " ", x, y, width, height, z, 8, False, "#FFFFFF", "#FFFFFF", "#D9E1EA"),
-        textbox_visual(f"{name}_filter_title", title, x + 14, y + 10, width - 28, 20, z + 1, 10, True, "#17212B"),
-    ]
+    return []
 
 
 def section_label(name: str, text: str, x: float, y: float, width: float, z: int = 18) -> dict:
@@ -663,8 +653,7 @@ def risk_legend(name: str, x: float, y: float, z: int = 20) -> list[dict]:
     ]
     for index, (label, color) in enumerate(bands):
         item_x = x + index * 104
-        visuals.append(textbox_visual(f"{name}_{label}_swatch", " ", item_x, y + 24, 14, 14, z + 1 + index, 8, False, "#FFFFFF", color, color))
-        visuals.append(textbox_visual(f"{name}_{label}_label", label, item_x + 20, y + 20, 76, 22, z + 10 + index, 8, True, "#37414C"))
+        visuals.append(textbox_visual(f"{name}_{label}_label", f"■ {label}", item_x, y + 20, 96, 22, z + 10 + index, 8, True, color))
     return visuals
 
 
@@ -701,50 +690,50 @@ def page_native_visuals(display_name: str) -> list[dict]:
             slicer_visual("exec_product_slicer", "fact_train_transactions", "product_cd", "Ürün filtresi", 1062, 150, 142, 92, 18),
             bar_visual(
                 "exec_product_risk",
-                "mart_product_device_stats",
+                "fact_train_transactions",
                 "product_cd",
-                "fraud_rate",
-                "Ürün kırılımında fraud oranı",
+                "is_fraud",
+                "Ürüne göre sahte işlem hacmi",
                 "Ürün",
-                "Fraud oranı",
+                "Sahte işlem adedi",
                 74,
                 300,
                 324,
                 210,
                 30,
-                value_type="percent",
+                value_type="whole",
                 color="#C6251A",
             ),
             bar_visual(
                 "exec_risk_band_rate",
-                "mart_risk_band_stats",
+                "fact_train_transactions",
                 "risk_band",
-                "observed_fraud_rate",
-                "Risk bandı gözlenen fraud oranı",
+                "is_fraud",
+                "Risk bandına göre sahte işlem hacmi",
                 "Risk bandı",
-                "Gözlenen fraud oranı",
+                "Sahte işlem adedi",
                 456,
                 300,
                 324,
                 210,
                 32,
-                value_type="percent",
+                value_type="whole",
                 color="#6D2BD4",
             ),
             bar_visual(
                 "exec_amount_risk",
-                "mart_amount_bands",
+                "fact_train_transactions",
                 "amount_band",
-                "fraud_rate",
-                "Tutar bandına göre risk",
+                "is_fraud",
+                "Tutar bandına göre sahte işlem hacmi",
                 "Tutar bandı",
-                "Fraud oranı",
+                "Sahte işlem adedi",
                 838,
                 300,
                 324,
                 210,
                 34,
-                value_type="percent",
+                value_type="whole",
                 color="#B66D12",
             ),
         ]:
@@ -808,50 +797,50 @@ def page_native_visuals(display_name: str) -> list[dict]:
             ),
             bar_visual(
                 "risk_product_rate",
-                "mart_product_device_stats",
+                "fact_train_transactions",
                 "product_cd",
-                "fraud_rate",
-                "Ürün bazlı risk ayrışması",
+                "is_fraud",
+                "Ürün bazlı sahte işlem hacmi",
                 "Ürün",
-                "Fraud oranı",
+                "Sahte işlem adedi",
                 74,
                 320,
                 320,
                 220,
                 30,
-                value_type="percent",
+                value_type="whole",
                 color="#C6251A",
             ),
             bar_visual(
                 "risk_device_rate",
-                "mart_product_device_stats",
+                "fact_train_transactions",
                 "device_type",
-                "fraud_rate",
-                "Cihaz tipine göre risk",
+                "is_fraud",
+                "Cihaz tipine göre sahte işlem hacmi",
                 "Cihaz tipi",
-                "Fraud oranı",
+                "Sahte işlem adedi",
                 454,
                 320,
                 320,
                 220,
                 32,
-                value_type="percent",
+                value_type="whole",
                 color="#1B7F79",
             ),
             bar_visual(
                 "risk_band_rate",
-                "mart_risk_band_stats",
+                "fact_train_transactions",
                 "risk_band",
-                "observed_fraud_rate",
-                "Risk bandı öncelik sırası",
+                "is_fraud",
+                "Risk bandı sahte işlem hacmi",
                 "Risk bandı",
-                "Gözlenen fraud oranı",
+                "Sahte işlem adedi",
                 834,
                 320,
                 320,
                 220,
                 34,
-                value_type="percent",
+                value_type="whole",
                 color="#6D2BD4",
             ),
         ]:
@@ -914,18 +903,18 @@ def page_native_visuals(display_name: str) -> list[dict]:
             ),
             bar_visual(
                 "amount_band_rate",
-                "mart_amount_bands",
+                "fact_train_transactions",
                 "amount_band",
-                "fraud_rate",
-                "Tutar bandı fraud oranı",
+                "is_fraud",
+                "Tutar bandına göre sahte işlem hacmi",
                 "Tutar bandı",
-                "Fraud oranı",
+                "Sahte işlem adedi",
                 74,
                 320,
                 330,
                 220,
                 30,
-                value_type="percent",
+                value_type="whole",
                 color="#B66D12",
             ),
             bar_visual(
@@ -1066,19 +1055,19 @@ def page_native_visuals(display_name: str) -> list[dict]:
             ),
             bar_visual(
                 "email_domain_rate",
-                "mart_email_domain_stats",
+                "fact_train_transactions",
                 "purchaser_email_group",
-                "fraud_rate",
-                "Email domain fraud oranı",
+                "is_fraud",
+                "Email grubuna göre sahte işlem hacmi",
                 "Email grubu",
-                "Fraud oranı",
+                "Sahte işlem adedi",
                 834,
                 320,
                 320,
                 220,
                 34,
                 "clusteredBarChart",
-                value_type="percent",
+                value_type="whole",
                 color="#C6251A",
             ),
         ]:
@@ -1265,17 +1254,17 @@ def page_native_visuals(display_name: str) -> list[dict]:
                 "quality_missing_rate",
                 "mart_feature_missingness",
                 "column_family",
-                "missing_rate",
-                "Feature ailesi eksiklik oranı",
+                "missing_count",
+                "Feature ailesi eksik değer hacmi",
                 "Feature ailesi",
-                "Eksiklik oranı",
+                "Eksik değer",
                 74,
                 266,
                 350,
                 200,
                 30,
                 "clusteredBarChart",
-                value_type="percent",
+                value_type="whole",
                 color="#1B7F79",
             ),
             bar_visual(
@@ -1374,8 +1363,8 @@ def corporate_theme_bytes() -> bytes:
         "visualStyles": {
             "*": {
                 "*": {
-                    "background": [{"show": True, "color": {"solid": {"color": "#FFFFFF"}}, "transparency": 0}],
-                    "border": [{"show": True, "color": {"solid": {"color": "#E3E8EE"}}, "radius": 4}],
+                    "background": [{"show": False, "color": {"solid": {"color": "#FFFFFF"}}, "transparency": 100}],
+                    "border": [{"show": False, "color": {"solid": {"color": "#E3E8EE"}}, "radius": 0}],
                     "title": [{"show": False, "fontColor": {"solid": {"color": "#17212B"}}, "fontSize": 11}],
                     "categoryAxis": [
                         {

@@ -13,17 +13,16 @@ powerbi/fraud_project_v2.pbix
 Son paket doğrulaması:
 
 - Sayfa sayısı: 6
-- Visual container sayısı: 262
-- Query-bound native visual sayısı: 33
+- Visual container sayısı: 169
+- Query-bound native visual sayısı: 27
 - Slicer sayısı: 6
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
 - PBIX zip bütünlüğü: PASS
 - Tooltip destekli analiz görseli sayısı: 6
 - Kontrollü native kanıt tablosu sayısı: 4
-- Stil verilen container sayısı: 124
 - Tema: kurumsal fraud-risk paleti
-- Tasarım kabuğu: sol rail, header panel, alt sayfa navigasyonu, filtre kontrol alanı
+- Tasarım kabuğu: sade header, Türkçe visual başlıkları, alt sayfa yönlendirme metni
 
 ## Sayfa 1 - Yönetici Özeti
 
@@ -31,11 +30,11 @@ Ana mesaj: Fraud düşük frekanslıdır fakat belirli segmentlerde yoğunlaşı
 
 İçerik:
 
-- KPI kartları: toplam işlem, sahte işlem, baz fraud oranı, identity kapsama.
+- KPI göstergeleri: toplam işlem, sahte işlem, baz fraud oranı, identity kapsama.
 - Ürün filtresi.
-- Ürün kırılımında fraud oranı.
-- Risk bandı gözlenen fraud oranı.
-- Tutar bandına göre risk.
+- Ürüne göre sahte işlem hacmi.
+- Risk bandına göre sahte işlem hacmi.
+- Tutar bandına göre sahte işlem hacmi.
 - Yönetim aksiyon metinleri.
 - Bulgu, risk ve aksiyon karar panelleri.
 
@@ -47,9 +46,9 @@ Ana mesaj: Risk ürün, cihaz ve risk bandı segmentlerinde homojen dağılmaz.
 
 - Ürün filtresi.
 - Risk bandı filtresi.
-- Ürün bazlı risk ayrışması.
-- Cihaz tipine göre risk.
-- Risk bandı öncelik sırası.
+- Ürün bazlı sahte işlem hacmi.
+- Cihaz tipine göre sahte işlem hacmi.
+- Risk bandı sahte işlem hacmi.
 - Ürün ve risk bandı kanıt tablosu.
 - Risk renk standardı.
 - Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.
@@ -62,7 +61,7 @@ Ana mesaj: Fraud davranışı tutar ve işlem saati ekseninde doğrusal değildi
 İçerik:
 
 - Tutar bandı filtresi.
-- Tutar bandı fraud oranı.
+- Tutar bandına göre sahte işlem hacmi.
 - Gün içi sahte işlem adedi.
 - Tutar bandı işlem hacmi.
 - Tutar bandı kanıt tablosu.
@@ -78,7 +77,7 @@ Ana mesaj: Ödeme tipi ve email domain grupları operasyonel izleme segmentleri 
 - Email grubu filtresi.
 - Kart ağına göre sahte işlem adedi.
 - Kart tipine göre sahte işlem adedi.
-- Email domain fraud oranı.
+- Email grubuna göre sahte işlem hacmi.
 - Ödeme segmenti kanıt tablosu.
 - Segment karar mesajı.
 - Bulgu, segment ve aksiyon karar panelleri.
@@ -104,7 +103,7 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 
 İçerik:
 
-- Feature ailesi eksiklik oranı.
+- Feature ailesi eksik değer hacmi.
 - Eksik değer hacmi.
 - Profil edilen satır KPI'ı.
 - Eksik değer sinyali KPI'ı.
@@ -118,10 +117,11 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 - Başlıklar: kısa, yönetici seviyesinde, tek mesajlı.
 - Renkler: koyu lacivert, kırmızı risk, petrol yeşili, nötr gri.
 - Sayfa düzeni: üstte ana mesaj, ortada analiz, altta aksiyon veya kanıt.
-- Görseller: card, slicer, clusteredColumnChart, clusteredBarChart, kontrollü native tablo ve textbox.
+- Görseller: slicer, clusteredColumnChart, clusteredBarChart, kontrollü native tablo ve textbox.
+- KPI alanları: otomatik kısaltma üretmeyen, sunum formatında metin tabanlı göstergeler.
 - Tooltip: hacim, tutar ve sahte işlem sayısı gibi bağlam alanları önemli chart görsellerinde destekleyici bilgi olarak kullanılır.
 - Karar panelleri: gerçek mart sonuçlarından türetilmiş kısa yönetici bulguları.
-- Sayfa yapısı: filtre kontrol alanı, analiz kanıtı, yönetim kararı ve alt navigasyon düzeni.
+- Sayfa yapısı: sade filtre noktaları, analiz kanıtı, yönetim kararı ve alt yönlendirme düzeni.
 
 ## Kabul Kriteri
 

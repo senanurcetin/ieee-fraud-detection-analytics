@@ -9,13 +9,15 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Ek teknik kontrol sayfası kaldırıldı.
    - Gömülü görüntü visual kullanılmıyor.
    - Kırılgan çizgi grafik kullanılmıyor.
-   - Kullanılan görsel tipleri card, slicer, clustered column chart, clustered bar chart, kontrollü native tablo ve textbox ile sınırlandı.
+   - Kullanılan görsel tipleri slicer, clustered column chart, clustered bar chart, kontrollü native tablo ve textbox ile sınırlandı.
+   - KPI alanları otomatik sayı kısaltması üretmeyecek şekilde metin tabanlı formatlandı.
 
 2. Hata üreten alan bağımlılıkları temizlendi
    - Rapor yalnızca mevcut Power BI model metadata'sında güvenli alanları kullanıyor.
    - Yeni dbt kolonları rapor görsellerinden çıkarıldı; BigQuery/dbt tarafında kalmaya devam ediyor.
    - Tüm query-bound alanlar allowlist kontrolünden geçti.
    - Kontrollü kanıt tabloları yalnızca mevcut model metadata'sındaki güvenli alanlarla kuruldu.
+   - Ham query referansları Türkçe visual/query başlıklarına çevrildi.
 
 3. Sayfa anlatısı yeniden yapılandırıldı
    - Yönetici Özeti: KPI, ürün riski, risk bandı ve tutar bandı aksiyon mesajı.
@@ -27,7 +29,7 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
    - Her sayfaya üst yönetim okumasını hızlandıran kısa karar panelleri eklendi.
    - Karar panelleri gerçek mart sonuçlarından türetilmiş oran, pay ve yoğunlaşma cümleleriyle güçlendirildi.
    - Rapor teması ve visual container stilleri kurumsal fraud-risk paletine taşındı.
-   - Sayfa tasarım kabuğu sol rail, header panel, alt navigasyon ve filtre kontrol alanlarıyla tamamlandı.
+   - Gereksiz dekoratif container'lar kaldırıldı; sayfa tasarımı sade yönetici sunumu gridine indirildi.
    - Önemli chart görsellerine tooltip bağlamı eklendi.
    - Risk renk standardı Risk Konsantrasyonu ve Model sayfalarında görünür hale getirildi.
 
@@ -47,7 +49,7 @@ Bu doküman, son geliştirme iterasyonundan sonra projenin gerçek durumunu ve k
 1. Power BI Desktop görsel açılış kontrolü
    - `powerbi/fraud_project_v2.pbix` dosyasını Power BI Desktop içinde aç.
    - 6 sayfanın tamamını sırayla kontrol et.
-   - Card, slicer, chart ve kanıt tablosu görsellerinin veri döndürdüğünü kontrol et.
+   - KPI metinleri, slicer, chart ve kanıt tablosu görsellerinin doğru göründüğünü kontrol et.
 
 2. DirectQuery yenileme kontrolü
    - Rapor açıldıktan sonra BigQuery bağlantı yetkisini onayla.

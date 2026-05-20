@@ -7,7 +7,7 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde korunması için
 1. Power BI Desktop açılış testi
    - `powerbi/fraud_project_v2.pbix` Power BI Desktop'ta açılmalı.
    - 6 sayfanın tamamında hata placeholder'ı olmadığı kontrol edilmeli.
-   - Card, slicer, clustered column chart ve clustered bar chart görselleri veri döndürmeli.
+   - KPI metinleri, slicer, clustered column chart, clustered bar chart ve kanıt tabloları doğru görünmeli.
 
 2. DirectQuery veri modeli kontrolü
    - Rapor `workintech-working.fraud_project_powerbi` veri katmanına bağlı kalmalı.
@@ -15,8 +15,8 @@ Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde korunması için
    - BigQuery bağlantı yetkisi onaylandıktan sonra görseller boş dönmemeli.
 
 3. Format kontrolü
-   - Kartlarda otomatik kısaltma görünürse Power BI Desktop format panelinde display unit `None` yapılmalı.
-   - Fraud oranları yüzde formatında, işlem adetleri binlik ayraçla gösterilmeli.
+   - KPI alanlarında otomatik kısaltma görünmemeli; değerler sunum formatında kalmalı.
+   - Grafik başlıklarında ham alan adı görünmemeli.
    - Grafik başlıkları Türkçe ve yönetici seviyesinde kalmalı.
 
 ## P1 - Güçlü Analitik

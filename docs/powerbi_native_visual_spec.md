@@ -1,114 +1,97 @@
 # Power BI Native Visual Spesifikasyonu
 
-Bu doküman, `fraud_project_v2.pbix` dosyasının Power BI Desktop içinde native visual seviyesine taşınması için kesin uygulama tarifidir.
+Bu doküman, `fraud_project_v2.pbix` dosyasının güncel final rapor standardını tanımlar. Rapor BigQuery DirectQuery modelini korur ve Power BI Desktop içinde açılabilir, sade, Türkçe yönetici sunumu düzeniyle hazırlanır.
 
-## Model Tabloları
+## Model Katmanı
 
-Rapor yalnız şu dataset üzerinden çalışmalıdır:
+Rapor şu BigQuery raporlama katmanına bağlıdır:
 
 ```text
 workintech-working.fraud_project_powerbi
 ```
 
-Kullanılacak ana tablolar:
+Final PBIX içinde güvenli şekilde kullanılan ana tablolar:
 
 - `fact_train_transactions`
-- `pbi_executive_kpis`
-- `pbi_product_risk`
-- `pbi_identity_risk`
-- `pbi_amount_bands`
-- `pbi_daily_drift`
-- `pbi_payment_heatmap`
-- `pbi_email_domain_risk`
-- `pbi_model_risk_bands`
-- `pbi_feature_importance`
-- `pbi_data_quality_scorecard`
-- `pbi_report_narrative`
-- `pbi_quality_contract`
-- `pbi_segment_watchlist`
-- `pbi_review_strategy`
-- `pbi_threshold_simulation`
-- `pbi_report_readiness`
+- `mart_fraud_summary`
+- `mart_risk_band_stats`
+- `mart_feature_missingness`
 
-## DAX Ölçüleri
+`pbi_*` tabloları BigQuery/dbt tarafında korunur. Power BI model metadata'sı yenilendikten sonra bu tablolar ek görseller için kontrollü biçimde devreye alınabilir.
 
-```DAX
-Transactions = COUNTROWS(fact_train_transactions)
+## Güncel Visual Standardı
 
-Fraud Transactions = SUM(fact_train_transactions[is_fraud])
+Final rapor şu görsel tipleriyle sınırlıdır:
 
-Fraud Rate = DIVIDE([Fraud Transactions], [Transactions])
+- `textbox`
+- `slicer`
+- `clusteredColumnChart`
+- `clusteredBarChart`
+- kontrollü native tablo
 
-Average Amount = AVERAGE(fact_train_transactions[transaction_amount])
+Native card kullanılmaz. KPI alanları Power BI otomatik sayı kısaltmasına düşmemesi için metin tabanlı sunum formatıyla gösterilir.
 
-Critical Risk Transactions =
-CALCULATE(
-    [Transactions],
-    fact_train_transactions[risk_band] = "Critical"
-)
-
-High Critical Transactions =
-CALCULATE(
-    [Transactions],
-    fact_train_transactions[risk_band] IN {"High", "Critical"}
-)
-
-High Critical Share =
-DIVIDE([High Critical Transactions], [Transactions])
-
-Predicted Risk = AVERAGE(fact_train_transactions[predicted_fraud_probability])
-```
-
-## Sayfa Bazlı Visual Kurulumu
+## Sayfa Bazlı Kurgu
 
 ### Yönetici Özeti
 
-- Card: `pbi_executive_kpis[total_transactions]`
-- Card: `pbi_executive_kpis[fraud_rate]`
-- Card: `pbi_executive_kpis[fraud_transactions]`
-- Card: `pbi_executive_kpis[critical_risk_fraud_rate]`
-- Clustered column chart: Axis `pbi_product_risk[product_cd]`, Values `pbi_product_risk[fraud_rate]`
-- Clustered column chart: Axis `pbi_identity_risk[identity_segment]`, Values `pbi_identity_risk[fraud_rate]`
-- Table: `pbi_segment_watchlist[segment_family]`, `segment_name`, `fraud_rate`, `lift`, `fraud_share`, `risk_priority`
+- KPI göstergeleri: toplam işlem, sahte işlem, baz fraud oranı, identity kapsama.
+- Ürün filtresi.
+- Ürüne göre sahte işlem hacmi.
+- Risk bandına göre sahte işlem hacmi.
+- Tutar bandına göre sahte işlem hacmi.
+- Bulgu, risk ve aksiyon karar metinleri.
 
 ### Risk Konsantrasyonu
 
-- Bar chart: Axis `pbi_product_risk[product_cd]`, Values `pbi_product_risk[lift]`
-- Matrix: Rows `mart_product_device_stats[product_cd]`, Columns `mart_product_device_stats[device_type]`, Values `mart_product_device_stats[fraud_rate]`
-- Table: `pbi_segment_watchlist[watchlist_rank]`, `segment_family`, `segment_name`, `recommended_action`
-- Table: `pbi_report_narrative[executive_message]`, `pbi_report_narrative[recommended_action]`, page filter `page_name = Risk Konsantrasyonu`
+- Ürün filtresi.
+- Risk bandı filtresi.
+- Ürün bazlı sahte işlem hacmi.
+- Cihaz tipine göre sahte işlem hacmi.
+- Risk bandı sahte işlem hacmi.
+- Ürün ve risk bandı kanıt tablosu.
+- Risk renk standardı.
 
 ### Tutar ve Zaman Analizi
 
-- Combo chart: Axis `pbi_daily_drift[transaction_day]`, Column `pbi_daily_drift[transaction_count]`, Line `pbi_daily_drift[fraud_rate_ma7]`
-- Bar chart: Axis `pbi_amount_bands[amount_band]`, Values `pbi_amount_bands[fraud_rate]`
-- Table: `pbi_daily_drift[transaction_day]`, `pbi_daily_drift[drift_flag]`, `pbi_daily_drift[fraud_rate_ma7]`
+- Tutar bandı filtresi.
+- Tutar bandına göre sahte işlem hacmi.
+- Gün içi sahte işlem adedi.
+- Tutar bandı işlem hacmi.
+- Tutar bandı kanıt tablosu.
+- Zaman ve tutar karar metinleri.
 
 ### Ödeme ve Email Segmentleri
 
-- Matrix heatmap: Rows `pbi_payment_heatmap[card_network]`, Columns `pbi_payment_heatmap[card_type]`, Values `pbi_payment_heatmap[fraud_rate]`
-- Bar chart: Axis `pbi_email_domain_risk[purchaser_email_group]`, Values `pbi_email_domain_risk[fraud_rate]`
-- Bar chart: Axis `pbi_email_domain_risk[purchaser_email_group]`, Values `pbi_email_domain_risk[fraud_share]`
+- Email grubu filtresi.
+- Kart ağına göre sahte işlem adedi.
+- Kart tipine göre sahte işlem adedi.
+- Email grubuna göre sahte işlem hacmi.
+- Ödeme segmenti kanıt tablosu.
 
 ### Model Skorlama ve Risk Bantları
 
-- Bar chart: Axis `pbi_model_risk_bands[risk_band]`, Values `pbi_model_risk_bands[observed_fraud_rate]`, Sort by `band_rank`
-- Bar chart: Axis `pbi_model_risk_bands[risk_band]`, Values `pbi_model_risk_bands[lift]`, Sort by `band_rank`
-- Bar chart: Axis `pbi_feature_importance[feature]`, Values `pbi_feature_importance[importance]`, Top N 15 by `importance`
-- Line chart: Axis `pbi_threshold_simulation[score_threshold]`, Values `fraud_capture_rate`, `workload_share`, `precision_rate`
-- Table: `pbi_review_strategy[risk_band]`, `queue_policy`, `estimated_daily_review_volume`, `management_note`
+- Risk bandı filtresi.
+- Risk bandı gözlenen fraud oranı.
+- Risk bandı sahte işlem hacmi.
+- Risk bandı işlem tutarı.
+- Risk bandı inceleme kanıt tablosu.
+- Modelin karar değil önceliklendirme katmanı olduğunu anlatan karar metinleri.
 
 ### Veri Kalitesi ve Mimari
 
-- Table: `pbi_quality_contract[object_name]`, `expected_rows`, `actual_rows`, `status`
-- Table: `pbi_report_readiness[check_name]`, `expected_value`, `actual_value`, `status`
-- Bar chart: Axis `pbi_data_quality_scorecard[column_family]`, Values `avg_missing_rate`
-- Table: `pbi_report_narrative[executive_message]`, `pbi_report_narrative[recommended_action]`, page filter `page_name = Veri Kalitesi ve Mimari`
+- Feature ailesi eksik değer hacmi.
+- Eksik değer hacmi.
+- Profil edilen satır KPI'ı.
+- Eksik değer sinyali KPI'ı.
+- Lineage: `Kaggle CSV -> BigQuery Raw -> dbt Staging -> dbt Mart -> Power BI DirectQuery`.
+- dbt build ve BigQuery row-count kalite mesajı.
 
 ## Format Kuralları
 
-- `fraud_rate`, `lift`, `transaction_share`, `fraud_share`, `avg_missing_rate`: yüzde veya 2 ondalıklı sayı formatı.
-- `transaction_count`, `fraud_count`, `total_transactions`: binlik ayracı.
-- Kritik risk rengi: kırmızı.
-- Normal/low risk rengi: yeşil veya nötr gri.
-- Başlıklar Türkçe ve yönetici dilinde olmalı.
+- Görünen başlıklar Türkçe ve yönetici dilinde olmalıdır.
+- Ham alan adları rapor yüzeyinde görünmemelidir.
+- KPI değerlerinde otomatik `B`, `K`, `M` kısaltması görünmemelidir.
+- Gereksiz dekoratif container kullanılmamalıdır.
+- Renk standardı: kırmızı kritik risk, petrol yeşili kontrol/aksiyon, koyu lacivert ana metin, nötr gri ikincil metin.
+- Her sayfa tek ana mesaj taşımalıdır.
