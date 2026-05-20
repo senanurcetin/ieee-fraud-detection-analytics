@@ -14,7 +14,7 @@ from sklearn.metrics import average_precision_score, roc_auc_score, roc_curve
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw" / "kaggle_ieee_fraud"
-ZIP_PATH = Path(r"C:\Users\MONSTER\Downloads\ieee-fraud-detection.zip")
+ZIP_PATH = Path(r"C:\Users\cinar\Downloads\ieee-fraud-detection.zip")
 DB_PATH = ROOT / "data" / "processed" / "ieee_fraud.duckdb"
 TABLES_DIR = ROOT / "outputs" / "tables"
 
@@ -327,6 +327,29 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
     con.register("feature_importance_df", feature_importance)
     con.execute("create or replace table raw.feature_importance as select * from feature_importance_df")
     feature_importance.to_csv(TABLES_DIR / "feature_importance.csv", index=False)
+
+    # --- SHAP: modelin neden bu karari verdigi ---
+    import shap
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    explainer = shap.TreeExplainer(model)
+    shap_values = explainer.shap_values(X_valid)
+    if isinstance(shap_values, list):
+        shap_values = shap_values[1]
+    shap_df = pd.DataFrame({
+        "feature": features,
+        "mean_abs_shap": np.abs(shap_values).mean(axis=0),
+        "feature_family": [column_family(col) for col in features],
+    }).sort_values("mean_abs_shap", ascending=False)
+    con.register("shap_importance_df", shap_df)
+    con.execute("create or replace table raw.shap_importance as select * from shap_importance_df")
+    shap_df.to_csv(TABLES_DIR / "shap_importance.csv", index=False)
+    shap.summary_plot(shap_values, X_valid, feature_names=features, show=False)
+    plt.savefig(TABLES_DIR / "shap_summary.png", bbox_inches="tight", dpi=150)
+    plt.close()
+    print("SHAP tamamlandi.")
+    # --- SHAP sonu ---
 
     fpr, tpr, thresholds = roc_curve(y_valid, valid_pred)
     pd.DataFrame({"fpr": fpr, "tpr": tpr, "threshold": thresholds}).to_csv(

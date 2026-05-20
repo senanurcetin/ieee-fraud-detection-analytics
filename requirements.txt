@@ -11,3 +11,4 @@ seaborn
 python-pptx
 google-cloud-bigquery
 pandas-gbq
+shap
