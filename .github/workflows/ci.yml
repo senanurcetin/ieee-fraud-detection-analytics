@@ -63,9 +63,6 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install kaggle
 
-      - name: Prepare dbt profile
-        run: cp profiles/profiles.example.yml profiles/profiles.yml
-
       - name: Check Kaggle secrets
         id: kaggle
         run: |
@@ -92,12 +89,12 @@ jobs:
 
       - name: dbt parse
         if: steps.kaggle.outputs.enabled != 'true'
-        run: dbt parse --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+        run: dbt parse --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 
       - name: dbt run
         if: steps.kaggle.outputs.enabled == 'true'
-        run: dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+        run: dbt run --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 
       - name: dbt test
         if: steps.kaggle.outputs.enabled == 'true'
-        run: dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+        run: dbt test --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev

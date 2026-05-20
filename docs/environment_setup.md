@@ -38,14 +38,12 @@ unzip -o data/raw/kaggle_ieee_fraud/ieee-fraud-detection.zip -d data/raw/kaggle_
 
 ## dbt Profile
 
-```bash
-cp profiles/profiles.example.yml profiles/profiles.yml
-```
+The committed dbt profile under `config/dbt/` is a sanitized template. It does not contain credential values and resolves local paths, project IDs, and service-account locations from environment variables.
 
 Local target:
 
 ```bash
-dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 ```
 
 BigQuery target:
@@ -54,7 +52,7 @@ BigQuery target:
 export GCP_PROJECT_ID="your-gcp-project"
 export BIGQUERY_LOCATION="US"
 export GOOGLE_APPLICATION_CREDENTIALS="/secure/path/service-account.json"
-dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 ```
 
 ## Validation

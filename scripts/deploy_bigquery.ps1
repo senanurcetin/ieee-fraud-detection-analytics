@@ -18,12 +18,6 @@ $env:BIGQUERY_LOCATION = $Location
 $env:BIGQUERY_REPORTING_DATASET = $ReportingDataset
 $env:GOOGLE_APPLICATION_CREDENTIALS = (Resolve-Path -LiteralPath $Credentials).Path
 
-$profilePath = Join-Path $PSScriptRoot "..\profiles\profiles.yml"
-$profileExamplePath = Join-Path $PSScriptRoot "..\profiles\profiles_bigquery.example.yml"
-if (-not (Test-Path -LiteralPath $profilePath)) {
-    Copy-Item -LiteralPath $profileExamplePath -Destination $profilePath
-}
-
 $python = "python"
 $dbt = Join-Path $env:APPDATA "Python\Python312\Scripts\dbt.exe"
 if (-not (Test-Path -LiteralPath $dbt)) {
@@ -32,7 +26,7 @@ if (-not (Test-Path -LiteralPath $dbt)) {
 
 & $python src\prepare_raw_and_ml.py
 & $python src\upload_to_bigquery.py --project-id $ProjectId --location $Location --credentials $env:GOOGLE_APPLICATION_CREDENTIALS
-& $dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+& $dbt build --project-dir . --profiles-dir config\dbt --profile ieee_fraud_detection --target prod
 & $python src\export_powerbi_and_charts.py
 & $python src\create_powerbi_template.py
 & $python src\create_powerbi_connection_files.py

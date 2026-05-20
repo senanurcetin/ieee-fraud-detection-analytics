@@ -5,6 +5,7 @@
 - Description: configured on GitHub.
 - Topics: configured on GitHub.
 - Homepage: configured on GitHub.
+- Default branch: `main`.
 - License: MIT.
 - Release tag: `v1.0.0`.
 
@@ -21,6 +22,11 @@
 
 - English-first root README.
 - Architecture diagram.
+- Dashboard preview images.
+- Executive summary.
+- Banking business impact analysis.
+- Regulatory context.
+- Operational playbook.
 - Data dictionary.
 - Environment setup.
 - Security and secrets guide.
@@ -33,8 +39,8 @@
 - Raw Kaggle files are ignored.
 - DuckDB files are ignored.
 - Service-account files are ignored.
-- Local dbt profile is ignored.
-- Sanitized profile templates are committed.
+- Root `profiles/` directory is not tracked.
+- Sanitized dbt profile templates are committed under `config/dbt/`.
 
 ## Report Assets
 

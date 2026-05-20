@@ -8,6 +8,15 @@ The business question is simple: where does fraud concentrate, and how should an
 
 Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final Power BI report is structured as a senior banking fraud analyst presentation: first the portfolio risk, then concentration drivers, then amount/time behavior, then payment and email segments, then model-based review queues, and finally data quality evidence.
 
+Portfolio snapshot:
+
+- Total transactions profiled: 590,540
+- Fraud-labeled transactions: 20,663
+- Baseline fraud rate: 3.50%
+- Total transaction amount: $79.7M
+- Fraud-labeled amount: $3.08M
+- Recommended review policy: start with the High + Critical queue, covering 5.0% of transactions and 78.3% of fraud labels in the training window.
+
 ## Architecture
 
 ```mermaid
@@ -53,7 +62,7 @@ fraud_project/
 ├── macros/                   # dbt macros and generic tests
 ├── models/                   # staging, intermediate, marts, powerbi dbt models
 ├── powerbi/                  # PBIX, DAX layer, report assets, report guide
-├── profiles/                 # sanitized dbt profile templates
+├── config/dbt/               # sanitized dbt profile templates
 ├── scripts/                  # local deployment and validation commands
 ├── src/                      # ingestion, ML, exports, PBIX build scripts
 └── tests/                    # dbt singular tests and Python tests
@@ -98,13 +107,7 @@ python -m pip install -r requirements.txt
 python -m pip install -r requirements-dev.txt
 ```
 
-Create a local dbt profile from the sanitized template:
-
-```bash
-cp profiles/profiles.example.yml profiles/profiles.yml
-```
-
-For BigQuery, set credentials through environment variables. Do not commit service-account files.
+The dbt profile templates under `config/dbt/` are sanitized and use environment variables. For BigQuery, set credentials through environment variables. Do not commit service-account files.
 
 ```bash
 export GCP_PROJECT_ID="your-gcp-project"
@@ -119,7 +122,7 @@ Build the local analytical store and model scores:
 ```bash
 python src/prepare_raw_and_ml.py
 dbt deps
-dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 python src/export_powerbi_and_charts.py
 python src/build_fraud_project_v2_pbix.py
 python scripts/validate_powerbi_report.py
@@ -132,7 +135,7 @@ PowerShell deployment:
 ```powershell
 $env:GCP_PROJECT_ID = "your-gcp-project"
 $env:BIGQUERY_LOCATION = "US"
-$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\secure\path\service-account.json"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "/secure/path/service-account.json"
 
 .\scripts\deploy_bigquery.ps1 `
   -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
@@ -172,8 +175,15 @@ Latest local validation snapshot:
 
 - ROC-AUC: 0.9167
 - Average precision: 0.5308
+- High + Critical operating point: 54.8% precision, 78.3% recall, 0.645 F1, 5.0% review workload
 - Features used: 206
 - Categorical features: 26
+
+Model explainability artifacts:
+
+- [Feature importance](powerbi/assets/05_feature_importance.png)
+- [SHAP summary](powerbi/assets/26_shap_summary.png)
+- [Threshold simulation and business impact](docs/banking_business_impact.md)
 
 ## Power BI Report
 
@@ -194,13 +204,21 @@ The report uses BigQuery DirectQuery and contains six Turkish executive pages:
 
 Report exports and supporting visuals are stored in `powerbi/assets/`. DAX measures are documented in `powerbi/dax/fraud_project_measures.dax`.
 
+## Dashboard Preview
+
+![Executive control panel](powerbi/assets/17_executive_control_panel.png)
+
+![Segment watchlist](powerbi/assets/18_segment_watchlist.png)
+
+![Review strategy matrix](powerbi/assets/22_review_strategy_matrix.png)
+
 ## Quality Gates
 
 ```bash
 ruff check .
 pytest
 pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277
-dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 python scripts/validate_powerbi_report.py
 ```
 
@@ -214,6 +232,9 @@ The Power BI validator checks package integrity, page count, visual type allowli
 - [ML Ideas](docs/04_ml_ideas.md)
 - [Data Dictionary](docs/data_dictionary.md)
 - [Modeling Decisions](docs/modeling_decisions.md)
+- [Banking Business Impact](docs/banking_business_impact.md)
+- [Regulatory Context](docs/regulatory_context.md)
+- [Operational Playbook](docs/operational_playbook.md)
 - [Security and Secrets](docs/security_and_secrets.md)
 - [Power BI Report Guide](docs/powerbi_report_guide.md)
 - [QA Acceptance Checklist](docs/qa_acceptance_checklist.md)

@@ -14,8 +14,8 @@ outputs/tables/*.json
 outputs/tables/
 tools/
 .dbt/
-profiles/profiles.yml
-profiles/.user.yml
+profiles/
+config/dbt/.user.yml
 target/
 dbt_packages/
 logs/

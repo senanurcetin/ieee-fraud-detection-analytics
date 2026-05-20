@@ -1,16 +1,36 @@
-# IEEE-CIS Fraud Detection Yönetici Özeti
+# Executive Summary
 
-## Temel Metrikler
+## Core Finding
 
-- Toplam işlem: 590,540
-- Sahtecilik etiketi taşıyan işlem: 20,663
-- Sahtecilik oranı: 3.50%
-- Identity kapsama oranı: 24.42%
-- Medyan işlem tutarı: $68.77
-- P95 işlem tutarı: $445.00
-- Doğrulama AUC: 0.917
-- Doğrulama average precision: 0.531
+Fraud is rare in the IEEE-CIS portfolio, but it is highly concentrated. Product, identity coverage, card attributes, email domain, amount band, and model risk band produce materially different fraud rates. The project converts these patterns into a governed analytical pipeline and an executive Power BI report.
 
-## Yönetici Çıkarımı
+## Portfolio Metrics
 
-Veri seti, nadir görülen ancak belirli segmentlerde yoğunlaşan bir sahtecilik problemidir. Risk; ürün ailesi, identity kaydı, ödeme tipi, email domain, işlem tutarı ve zaman penceresine göre belirgin biçimde ayrışır. Önerilen analitik model; ham veri katmanı, dbt dönüşümleri, LightGBM skorlaması ve Power BI için hazırlanmış mart tablolarından oluşur.
+| Metric | Value |
+|---|---:|
+| Total transactions | 590,540 |
+| Fraud-labeled transactions | 20,663 |
+| Baseline fraud rate | 3.50% |
+| Total transaction amount | $79.7M |
+| Fraud-labeled amount | $3.08M |
+| Identity coverage rate | 24.42% |
+| Validation ROC-AUC | 0.9167 |
+| Validation average precision | 0.5308 |
+
+## Management Recommendation
+
+Use the model as a review-prioritization layer, not as an automated decline engine. The recommended operating point is `High + Critical`:
+
+- Reviews 5.0% of transactions.
+- Captures 78.3% of fraud-labeled transactions in the training window.
+- Delivers 54.8% precision and 0.645 F1.
+- Captures $2.38M of the $3.08M fraud-labeled amount in the dataset.
+
+## Business Action
+
+Start with a controlled fraud-operations pilot:
+
+1. Route `Critical` transactions to immediate review.
+2. Route `High` transactions to same-day analyst review.
+3. Monitor `Elevated` segments weekly for drift and emerging fraud patterns.
+4. Recalibrate thresholds after analyst decision outcomes are collected.

@@ -4,10 +4,10 @@ Son doğrulama tarihi: 20 Mayıs 2026
 
 ## dbt
 
-- [x] `dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod` başarılı.
+- [x] `dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod` başarılı.
 - [x] Son build sonucu: `PASS=102 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=103`.
 - [x] 29 model ve 73 data test bulundu.
-- [x] `dbt docs generate --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod` başarılı.
+- [x] `dbt docs generate --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod` başarılı.
 - [x] `fraud_project_raw` row-count testleri PASS.
 - [x] `fraud_project_mart` reconciliation testleri PASS.
 - [x] Risk bandı monotonluk testi PASS.

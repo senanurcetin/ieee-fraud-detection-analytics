@@ -43,11 +43,8 @@ jobs:
           mkdir -p .gcp
           printf '%s' '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > "$GOOGLE_APPLICATION_CREDENTIALS"
 
-      - name: Prepare dbt profile
-        run: cp profiles/profiles_bigquery.example.yml profiles/profiles.yml
-
       - name: Generate docs
-        run: dbt docs generate --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+        run: dbt docs generate --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

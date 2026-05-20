@@ -35,8 +35,8 @@ Bu ayrım, ham veri, dönüşüm katmanı, analitik mart ve raporlama katmanın�
 dbt projesi repo kökünde çalışır.
 
 ```powershell
-dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
-dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+dbt run --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
+dbt test --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 ```
 
 Model katmanları:

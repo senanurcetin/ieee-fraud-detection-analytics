@@ -41,7 +41,7 @@ The project includes:
 Run:
 
 ```bash
-dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 ```
 
 ## Macros

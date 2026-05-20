@@ -33,11 +33,7 @@ Recommended repository secrets:
 
 ## Local Profile Policy
 
-`profiles/profiles.yml` is ignored by Git. Start from:
-
-```bash
-cp profiles/profiles.example.yml profiles/profiles.yml
-```
+`config/dbt/profiles.yml` is committed as a sanitized template only. It must not be edited with machine-specific secrets or absolute credential paths. Use environment variables or a private dbt profile directory outside the repository for local overrides.
 
 Keep machine-specific paths outside committed files.
 

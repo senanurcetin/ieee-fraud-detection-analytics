@@ -46,6 +46,24 @@ Operational metrics:
 - Review workload share
 - Segment lift
 - Fraud share by segment
+- Precision, recall, and F1 at the selected review policy
+
+Latest validation snapshot:
+
+- ROC-AUC: 0.9167
+- Average precision: 0.5308
+- High + Critical queue: 54.8% precision, 78.3% recall, 0.645 F1, 5.0% review workload
+
+## Class Imbalance Strategy
+
+The dataset has a baseline fraud rate of 3.50%, so accuracy is not a useful model-quality measure. The project handles class imbalance through:
+
+- Probability-based ranking instead of hard class prediction.
+- Average precision as a secondary metric.
+- Quantile-based review bands that control analyst workload.
+- Business-facing threshold simulation rather than a fixed 0.50 classification threshold.
+
+Synthetic oversampling is not used because the validation design is time-based and the priority is preserving realistic transaction chronology and review workload behavior.
 
 ## Risk Bands
 
@@ -57,6 +75,13 @@ Model scores are converted into review bands using score quantiles:
 - `Critical`: p99 and above
 
 These bands support capacity planning: the operations team can decide how much review volume to allocate to each band.
+
+Recommended starting policy:
+
+- Review `High + Critical` first.
+- Expected workload: 5.0% of train transactions.
+- Expected fraud capture: 78.3% of train fraud labels.
+- Expected precision: 54.8% in the reviewed queue.
 
 ## Monitoring Gap
 
