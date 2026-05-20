@@ -11,8 +11,10 @@ outputs/presentation/artifact-build-manifest.json
 outputs/tables/*.csv
 outputs/tables/*.parquet
 outputs/tables/*.json
+outputs/tables/
 tools/
 .dbt/
+profiles/profiles.yml
 profiles/.user.yml
 target/
 dbt_packages/
@@ -22,3 +24,12 @@ __pycache__/
 *.duckdb
 *.duckdb.wal
 *.log
+*.json
+!.vscode/*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!Report/**
+.env
+.env.*
+!.env.example

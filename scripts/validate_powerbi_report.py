@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 from zipfile import ZipFile
 
-
 ROOT = Path(__file__).resolve().parents[1]
 PBIX = ROOT / "powerbi" / "fraud_project_v2.pbix"
 

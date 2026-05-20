@@ -8,124 +8,102 @@ powerbi/fraud_project_v2.pbix
 
 ## Final Durum
 
-`fraud_project_v2.pbix` BigQuery DirectQuery veri modelini koruyan ana teslim dosyasıdır. Rapor 6 Türkçe sunum sayfasından oluşur ve yalnızca native Power BI görselleriyle yapılandırılmıştır.
+`fraud_project_v2.pbix`, BigQuery DirectQuery veri modelini koruyan Türkçe yönetici sunumu raporudur. Rapor 6 sayfadan oluşur ve yalnızca native Power BI görselleriyle yapılandırılmıştır.
 
-Son paket doğrulaması:
+Son otomatik paket doğrulaması:
 
 - Sayfa sayısı: 6
-- Visual container sayısı: 316
+- Visual container sayısı: 349
 - Query-bound native visual sayısı: 27
 - Slicer sayısı: 6
+- Kontrollü native kanıt tablosu sayısı: 4
+- Tooltip destekli analiz görseli sayısı: 14
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
 - PBIX zip bütünlüğü: PASS
-- Tooltip destekli analiz görseli sayısı: 14
-- Kontrollü native kanıt tablosu sayısı: 4
-- Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
-- DAX measure dosyası: `powerbi/dax/fraud_project_measures.dax` içinde 25 hazır ölçü
-- Tema: kurumsal fraud-risk paleti
-- Tasarım kabuğu: sade header, profesyonel panel sistemi, Türkçe panel başlıkları, özel slicer çerçevesi, alt sayfa yönlendirme metni
 - Başlık kırpılma kontrolü: PASS
 - Native visual başlığı sızma kontrolü: PASS
+- Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
 
-## Sayfa 1 - Yönetici Özeti
+## Sayfa Akışı
 
-Ana mesaj: Fraud düşük frekanslıdır fakat belirli segmentlerde yoğunlaşır.
+### 1. Yönetici Özeti
 
-İçerik:
-
-- KPI göstergeleri: toplam işlem, sahte işlem, baz fraud oranı, identity kapsama.
-- Ürün filtresi.
-- Ürüne göre sahte işlem hacmi.
-- Risk bandına göre sahte işlem hacmi.
-- Tutar bandına göre sahte işlem hacmi.
-- Yönetim aksiyon metinleri.
-- Bulgu, risk ve aksiyon karar panelleri.
-
-## Sayfa 2 - Risk Konsantrasyonu
-
-Ana mesaj: Risk ürün, cihaz ve risk bandı segmentlerinde homojen dağılmaz.
+Ana mesaj: Fraud riski az sayıda segmentte yönetilebilir hale geliyor.
 
 İçerik:
 
+- Toplam işlem, sahte işlem, baz fraud oranı ve identity kapsama KPI'ları.
 - Ürün filtresi.
-- Risk bandı filtresi.
-- Ürün bazlı sahte işlem hacmi.
-- Cihaz tipine göre sahte işlem hacmi.
-- Risk bandı sahte işlem hacmi.
-- Ürün ve risk bandı kanıt tablosu.
+- Ürün, risk bandı ve tutar bandı bazında sahte işlem hacmi.
+- Bulgu, kanıt ve karar panelleri.
+
+### 2. Risk Konsantrasyonu
+
+Ana mesaj: Ürün, cihaz ve risk bandı operasyon önceliğini belirliyor.
+
+İçerik:
+
+- Ürün ve risk bandı filtreleri.
+- Ürün/risk bandı kanıt tablosu.
+- Ürün, cihaz tipi ve risk bandı bazında sahte işlem hacmi.
 - Risk renk standardı.
-- Karar mesajı: Product C ve mobil/identity sinyalleri öncelikli izlenmelidir.
-- Bulgu, öncelik ve kontrol karar panelleri.
+- Bulgu, kanıt ve aksiyon panelleri.
 
-## Sayfa 3 - Tutar ve Zaman Analizi
+### 3. Tutar ve Zaman Analizi
 
-Ana mesaj: Fraud davranışı tutar ve işlem saati ekseninde doğrusal değildir.
+Ana mesaj: Tutar ve saat pencereleri doğrusal olmayan risk sinyali veriyor.
 
 İçerik:
 
 - Tutar bandı filtresi.
-- Tutar bandına göre sahte işlem hacmi.
-- Gün içi sahte işlem adedi.
-- Tutar bandı işlem hacmi.
 - Tutar bandı kanıt tablosu.
-- Zaman ve tutar yorum metni.
-- Bulgu, zaman ve aksiyon karar panelleri.
+- Tutar bandı, işlem saati ve işlem hacmi grafikleri.
+- Bulgu, kanıt ve aksiyon panelleri.
 
-## Sayfa 4 - Ödeme ve Email Segmentleri
+### 4. Ödeme ve Email Segmentleri
 
-Ana mesaj: Ödeme tipi ve email domain grupları operasyonel izleme segmentleri üretir.
+Ana mesaj: Ödeme ve email kırılımları izlenebilir operasyon segmentleri üretiyor.
 
 İçerik:
 
 - Email grubu filtresi.
-- Kart ağına göre sahte işlem adedi.
-- Kart tipine göre sahte işlem adedi.
-- Email grubuna göre sahte işlem hacmi.
 - Ödeme segmenti kanıt tablosu.
-- Segment karar mesajı.
-- Bulgu, segment ve aksiyon karar panelleri.
+- Kart ağı, kart tipi ve email grubu bazında sahte işlem hacmi.
+- Bulgu, kanıt ve aksiyon panelleri.
 
-## Sayfa 5 - Model Skorlama ve Risk Bantları
+### 5. Model Skorlama ve Risk Bantları
 
-Ana mesaj: Model skoru kararın kendisi değil, operasyonel önceliklendirme katmanıdır.
+Ana mesaj: Model skoru karar değil, inceleme kuyruğu önceliğidir.
 
 İçerik:
 
 - Risk bandı filtresi.
-- Risk bandı gözlenen fraud oranı.
-- Risk bandı sahte işlem hacmi.
-- Risk bandı işlem tutarı.
 - Risk bandı inceleme kanıt tablosu.
+- Gözlenen fraud oranı, sahte işlem hacmi ve işlem tutarı grafikleri.
 - Risk renk standardı.
-- Modelin inceleme kuyruğu oluşturma rolünü açıklayan metinler.
-- Amaç, operasyon ve yönetim karar panelleri.
+- Bulgu, kanıt ve karar panelleri.
 
-## Sayfa 6 - Veri Kalitesi ve Mimari
+### 6. Veri Kalitesi ve Mimari
 
-Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelidir.
+Ana mesaj: Veri kalitesi ve lineage rapor güvenilirliğini kanıtlıyor.
 
 İçerik:
 
-- Feature ailesi eksik değer hacmi.
-- Eksik değer hacmi.
-- Profil edilen satır KPI'ı.
-- Eksik değer sinyali KPI'ı.
+- dbt build, reconciliation ve lineage kalite kapısı panelleri.
+- Feature ailesi bazında eksik değer hacmi.
+- Profil edilen satır ve eksik değer sinyali KPI'ları.
 - Lineage: `Kaggle CSV -> BigQuery Raw -> dbt Staging -> dbt Mart -> Power BI DirectQuery`.
-- Kalite mesajı: dbt build ve BigQuery row-count kontrolleri PASS.
-- Build, reconciliation ve lineage kalite kapısı panelleri.
 
 ## Format Standardı
 
-- Dil: Türkçe.
-- Başlıklar: kısa, yönetici seviyesinde, tek mesajlı.
-- Renkler: koyu lacivert, kırmızı risk, petrol yeşili, nötr gri.
-- Sayfa düzeni: üstte ana mesaj, ortada analiz, altta aksiyon veya kanıt.
-- Görseller: slicer, clusteredColumnChart, clusteredBarChart, kontrollü native tablo ve textbox.
-- KPI alanları: otomatik kısaltma üretmeyen, sunum formatında metin tabanlı göstergeler.
-- Tooltip: hacim, tutar ve sahte işlem sayısı gibi bağlam alanları önemli chart görsellerinde destekleyici bilgi olarak kullanılır.
-- Karar panelleri: gerçek mart sonuçlarından türetilmiş kısa yönetici bulguları.
-- Sayfa yapısı: sade filtre noktaları, analiz kanıtı, yönetim kararı ve alt yönlendirme düzeni.
+- Görünen başlıklar Türkçe ve yönetici seviyesinde olmalıdır.
+- Ham alan adları rapor yüzeyinde görünmemelidir.
+- Native visual başlıkları kapalı kalmalıdır; görünen başlıklar ayrı panel başlığıdır.
+- Slicer alanları çıplak checkbox görünümünde bırakılmamalıdır.
+- KPI değerleri otomatik sayı kısaltması üretmemelidir.
+- Her sayfa tek ana mesaj taşımalıdır.
+- Karar panelleri kısa, sayısal ve aksiyon odaklı olmalıdır.
 
 ## Kabul Kriteri
 
@@ -133,4 +111,5 @@ Ana mesaj: Veri kalitesi, test kapsamı ve lineage raporun güvenilirlik temelid
 - DirectQuery modeli `workintech-working.fraud_project_powerbi` veri katmanını kullanır.
 - 6 sayfanın tamamı sunum anlatısını eksiksiz verir.
 - Her sayfada veri modeline bağlı native visual vardır.
-- Rapor içinde proje dışı üretim izi veya sunum dışı teknik not bulunmaz.
+- Rapor içinde proje dışı üretim izi, geçici not veya sunum dışı teknik dil bulunmaz.
+- `python scripts\validate_powerbi_report.py` PASS döner.

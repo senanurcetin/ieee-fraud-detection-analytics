@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python-quality:
+    name: Python quality and report validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements-dev.txt
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Pytest
+        run: pytest
+
+      - name: Validate Power BI package
+        run: python scripts/validate_powerbi_report.py
+
+      - name: Dependency audit
+        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277
+
+  dbt-duckdb:
+    name: dbt build and test
+    runs-on: ubuntu-latest
+
+    env:
+      KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+      KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+      FRAUD_PROJECT_DUCKDB_PATH: data/processed/ieee_fraud.duckdb
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install kaggle
+
+      - name: Prepare dbt profile
+        run: cp profiles/profiles.example.yml profiles/profiles.yml
+
+      - name: Check Kaggle secrets
+        id: kaggle
+        run: |
+          if [ -n "$KAGGLE_USERNAME" ] && [ -n "$KAGGLE_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Kaggle secrets are not configured; running dbt parse only."
+          fi
+
+      - name: Download Kaggle data
+        if: steps.kaggle.outputs.enabled == 'true'
+        run: |
+          mkdir -p data/raw/kaggle_ieee_fraud
+          kaggle competitions download -c ieee-fraud-detection -p data/raw/kaggle_ieee_fraud
+          unzip -o data/raw/kaggle_ieee_fraud/ieee-fraud-detection.zip -d data/raw/kaggle_ieee_fraud
+
+      - name: Prepare local data and ML outputs
+        if: steps.kaggle.outputs.enabled == 'true'
+        run: python src/prepare_raw_and_ml.py
+
+      - name: dbt deps
+        run: dbt deps --project-dir .
+
+      - name: dbt parse
+        if: steps.kaggle.outputs.enabled != 'true'
+        run: dbt parse --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+
+      - name: dbt run
+        if: steps.kaggle.outputs.enabled == 'true'
+        run: dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev
+
+      - name: dbt test
+        if: steps.kaggle.outputs.enabled == 'true'
+        run: dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target dev

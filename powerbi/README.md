@@ -6,7 +6,11 @@ Ana teslim dosyası:
 powerbi/fraud_project_v2.pbix
 ```
 
-Rapor 6 sunum sayfasından oluşur:
+Bu dosya Türkçe, yönetici sunumuna hazır fraud-risk raporudur. Rapor BigQuery DirectQuery veri modelini korur ve final raporlama katmanı olarak `workintech-working.fraud_project_powerbi` datasetini kullanır.
+
+## Sunum Yapısı
+
+Rapor 6 sayfadan oluşur:
 
 1. Yönetici Özeti
 2. Risk Konsantrasyonu
@@ -15,41 +19,56 @@ Rapor 6 sunum sayfasından oluşur:
 5. Model Skorlama ve Risk Bantları
 6. Veri Kalitesi ve Mimari
 
-## Veri Modeli
+Her sayfa aynı karar akışını izler: üstte tek yönetici mesajı, ortada veri kanıtı, altta kısa bulgu/kanıt/karar veya kalite panelleri.
 
-PBIX dosyası BigQuery DirectQuery veri modelini korur. Final raporlama katmanı `workintech-working.fraud_project_powerbi` datasetidir.
+## Tasarım Standardı
 
-Rapor yalnızca Power BI içinde açılabilen görsellerle yapılandırılmıştır. Kullanılan görsel tipleri slicer, clustered column chart, clustered bar chart, kontrollü native tablo ve textbox ile sınırlıdır; KPI alanları otomatik sayı kısaltması üretmeyecek şekilde metin tabanlı formatlanmıştır.
+- Dil: Türkçe.
+- Teslim formatı: PBIX only.
+- Görsel tipi standardı: textbox, slicer, clustered column chart, clustered bar chart ve kontrollü native tablo.
+- KPI standardı: Power BI otomatik `K`, `M`, `B` kısaltmasına düşmeyen metin tabanlı sunum değerleri.
+- Slicer standardı: koyu başlık şeridi, iç panel ve filtre kontrol alanı ile rapor tasarımına bağlı görünüm.
+- Header standardı: sayfa numarası, sunuma hazır etiketi ve aktif sayfa vurgulu alt navigasyon.
+- Karar panelleri: gerçek mart sonuçlarından türetilmiş kısa yönetici bulguları.
 
-DAX ölçü katmanı için 25 hazır ölçü [fraud_project_measures.dax](dax/fraud_project_measures.dax) dosyasındadır. PBIX içindeki model binary olduğu için ölçüler Power BI Desktop modelleme ekranında uygulanmak üzere ayrı teslim edilmiştir.
+## DAX Ölçü Katmanı
 
-## Sunum Akışı
+25 hazır DAX ölçüsü şu dosyada tutulur:
 
-Rapor, üst yönetim görüşmesi için önce iş etkisini, sonra riskin nerede yoğunlaştığını, ardından operasyonel izleme ve veri güvenilirliğini anlatır.
+```text
+powerbi/dax/fraud_project_measures.dax
+```
 
-- Yönetici Özeti: toplam hacim, fraud oranı, identity kapsama ve ilk aksiyon alanları.
-- Risk Konsantrasyonu: ürün, cihaz ve risk bandı kırılımları.
-- Tutar ve Zaman Analizi: tutar bandı, saat ve işlem hacmi sinyalleri.
-- Ödeme ve Email Segmentleri: kart ağı, kart tipi ve email domain kırılımları.
-- Model Skorlama ve Risk Bantları: skorların inceleme kuyruğu olarak kullanımı.
-- Veri Kalitesi ve Mimari: missingness izleme, kalite kontrolü ve veri akışı.
+PBIX model metadata'sı binary olduğu için ölçüler Power BI Desktop modelleme ekranında uygulanmak üzere ayrı teslim edilir; PBIX içine zorla gömülmez.
 
-## Son Doğrulama
+## Son Otomatik Doğrulama
+
+Komut:
+
+```powershell
+python scripts\validate_powerbi_report.py
+```
+
+Sonuç:
 
 - PBIX paket bütünlüğü: PASS
 - Sayfa sayısı: 6
-- Visual container sayısı: 316
+- Visual container sayısı: 349
 - Query-bound native visual sayısı: 27
+- Slicer sayısı: 6
+- Kontrollü native tablo sayısı: 4
+- Tooltip destekli analiz görseli sayısı: 14
 - Gömülü görüntü visual sayısı: 0
 - Kayıtlı görsel kaynağı: 0
-- Kırılgan çizgi grafik kullanılmıyor
-- Kontrollü native kanıt tabloları yalnızca güvenli model alanlarıyla kullanılıyor
-- Ham alan adları yerine Türkçe query/visual başlıkları kullanılıyor
-- Tooltip destekli analiz görseli sayısı: 14
-- Native visual başlıkları kapalı; başlıklar Türkçe panel başlığı olarak veriliyor
-- Başlık ve açıklama kırpılma riski otomatik kontrol edildi
-- Otomatik Power BI paket kontrolü: `python scripts/validate_powerbi_report.py` PASS
-- Chart, slicer, KPI ve karar metinleri profesyonel panel yapısına taşındı
-- 25 ölçülük hazır DAX measure dosyası eklendi
-- dbt prod build: PASS, 102 PASS / 0 ERROR / 1 exposure NO-OP
-- dbt docs generate: PASS
+- Native card visual sayısı: 0
+- Native visual başlık sızıntısı: 0
+- Ham alan adı sızıntısı: 0
+- Güvenli alan ihlali: 0
+- Metin kırpılma riski: 0
+
+## Kalan Manuel Kontrol
+
+Power BI Desktop komut satırında bulunamadığı için otomatik açılış kontrolü yapılamadı. Desktop erişimi olduğunda şu iki kontrol tamamlanmalıdır:
+
+- `powerbi/fraud_project_v2.pbix` Power BI Desktop içinde açılır.
+- DirectQuery yenilemesi sonrasında tüm sayfalardaki veri bağlı görseller veri döndürür.

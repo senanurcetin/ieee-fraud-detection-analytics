@@ -34,15 +34,17 @@ Son doğrulama tarihi: 20 Mayıs 2026
 
 ## Power BI
 
+- [x] `powerbi/fraud_project_v2.pbix` yeniden üretildi.
 - [x] `powerbi/fraud_project_v2.pbix` paket bütünlüğü PASS.
 - [x] `SecurityBindings` paketten kaldırıldı.
 - [x] Final rapor 6 sunum sayfasından oluşuyor.
 - [x] Ek teknik kontrol sayfası final rapordan kaldırıldı.
 - [x] Boş sayfa yok.
-- [x] 316 visual container var.
+- [x] 349 visual container var.
 - [x] 27 query-bound native visual var.
-- [x] Her sayfada en az 4 veri modeline bağlı native visual var.
+- [x] Her sayfada veri modeline bağlı native visual var.
 - [x] 6 slicer var.
+- [x] 4 kontrollü native kanıt tablosu var.
 - [x] Gömülü görüntü visual sayısı 0.
 - [x] Kayıtlı görsel kaynağı sayısı 0.
 - [x] Kırılgan çizgi grafik kullanılmıyor.
@@ -54,9 +56,10 @@ Son doğrulama tarihi: 20 Mayıs 2026
 - [x] KPI alanları otomatik sayı kısaltması üretmeyecek şekilde metin tabanlı formatlandı.
 - [x] Kullanılan veri alanlarının tamamı güvenli Power BI model allowlist'i içinde.
 - [x] Rapor teması kurumsal fraud-risk paletine göre güncellendi.
-- [x] Chart, slicer, KPI ve karar metinleri profesyonel panel yapısına taşındı.
-- [x] Slicer alanları koyu başlık şeridi, iç panel ve vurgu çizgisiyle rapor tasarımına entegre edildi.
-- [x] `python scripts/validate_powerbi_report.py` otomatik Power BI paket kontrolü PASS.
+- [x] Header alanına sunuma hazır etiketi ve aktif sayfa vurgusu eklendi.
+- [x] Filtre alanları ayrı kontrol paneli, koyu slicer başlığı, iç panel ve vurgu çizgisiyle rapor tasarımına entegre edildi.
+- [x] Karar panelleri bulgu, kanıt ve karar/aksiyon akışına göre tutarlı hale getirildi.
+- [x] `python scripts\validate_powerbi_report.py` otomatik Power BI paket kontrolü PASS.
 - [ ] Power BI Desktop içinde son görsel açılış kontrolü yapılmalı.
 - [ ] DirectQuery yenilemesi sonrasında tüm görsellerin veri döndürdüğü ekranda kontrol edilmeli.
 
@@ -66,11 +69,11 @@ Son doğrulama tarihi: 20 Mayıs 2026
 - [x] Risk Konsantrasyonu sayfası product, device ve risk bandı kırılımlarını native görsellerle destekliyor.
 - [x] Tutar ve Zaman sayfası tutar bandı, saat ve hacim analizini native görsellerle veriyor.
 - [x] Ödeme ve Email sayfası operasyonel segmentleri native chart ve slicer yapısıyla gösteriyor.
-- [x] Model sayfası skorlamayı önceliklendirme katmanı olarak konumlandırıyor.
+- [x] Model sayfası skorlamayı karar değil, önceliklendirme katmanı olarak konumlandırıyor.
 - [x] Veri Kalitesi sayfası missingness, kalite kontrolü ve lineage anlatımını native metin ve görsellerle veriyor.
 - [x] Risk Konsantrasyonu, Tutar ve Zaman, Ödeme ve Email, Model sayfalarına üst bölümde kanıt tablosu eklendi.
-- [x] Risk Konsantrasyonu ve Model sayfalarında risk renk standardı görünür hale getirildi.
-- [x] Her sayfada bulgu, risk, aksiyon veya kalite kapısı mesajları kısa karar panelleriyle görünür hale getirildi.
+- [x] Risk Konsantrasyonu ve Model sayfalarında risk renk standardı görünür halde.
+- [x] Her sayfada bulgu, kanıt, karar, aksiyon veya kalite kapısı mesajları kısa panellerle görünür hale getirildi.
 - [x] Karar panellerinde Product C, identity, ödeme, tutar ve risk bandı bulguları gerçek mart sonuçlarıyla sayısallaştırıldı.
 - [x] Görünür rapor içinde proje dışı üretim izi, geçici not veya sunum dışı teknik dil bulunmuyor.
 

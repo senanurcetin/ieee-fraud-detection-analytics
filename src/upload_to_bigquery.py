@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import os
 import argparse
+import os
 from pathlib import Path
 
 import duckdb
 from google.cloud import bigquery
-
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw" / "kaggle_ieee_fraud"
@@ -77,7 +76,7 @@ def main() -> None:
     PROJECT_ID = args.project_id
     LOCATION = args.location
     if not args.credentials:
-        raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
+        raise OSError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
     credential_path = Path(args.credentials)
     if not credential_path.exists():
         raise FileNotFoundError(f"Credential file not found: {credential_path}")

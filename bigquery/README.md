@@ -14,8 +14,8 @@ Bu proje BigQuery üzerinde `fraud_project` adıyla katmanlı bir analitik mimar
 
 ```powershell
 .\scripts\deploy_bigquery.ps1 `
-  -Credentials "C:\Users\MONSTER\Downloads\workintech-working-2378ce4f85e2.json" `
-  -ProjectId "workintech-working" `
+  -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
+  -ProjectId $env:GCP_PROJECT_ID `
   -Location "US" `
   -ReportingDataset "fraud_project_powerbi"
 ```

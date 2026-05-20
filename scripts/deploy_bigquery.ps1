@@ -18,6 +18,12 @@ $env:BIGQUERY_LOCATION = $Location
 $env:BIGQUERY_REPORTING_DATASET = $ReportingDataset
 $env:GOOGLE_APPLICATION_CREDENTIALS = (Resolve-Path -LiteralPath $Credentials).Path
 
+$profilePath = Join-Path $PSScriptRoot "..\profiles\profiles.yml"
+$profileExamplePath = Join-Path $PSScriptRoot "..\profiles\profiles_bigquery.example.yml"
+if (-not (Test-Path -LiteralPath $profilePath)) {
+    Copy-Item -LiteralPath $profileExamplePath -Destination $profilePath
+}
+
 $python = "python"
 $dbt = Join-Path $env:APPDATA "Python\Python312\Scripts\dbt.exe"
 if (-not (Test-Path -LiteralPath $dbt)) {

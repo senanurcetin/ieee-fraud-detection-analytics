@@ -14,8 +14,8 @@ Bu dosya 6 sunum sayfası ve mevcut Power BI DirectQuery veri modelini içerir.
 
 ```powershell
 .\scripts\deploy_bigquery.ps1 `
-  -Credentials "C:\Users\MONSTER\Downloads\workintech-working-2378ce4f85e2.json" `
-  -ProjectId "workintech-working" `
+  -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
+  -ProjectId $env:GCP_PROJECT_ID `
   -Location "US" `
   -ReportingDataset "fraud_project_powerbi"
 ```
@@ -23,7 +23,7 @@ Bu dosya 6 sunum sayfası ve mevcut Power BI DirectQuery veri modelini içerir.
 Power BI Desktop içinde Google BigQuery bağlantısı kullanılırken hedef dataset:
 
 ```text
-workintech-working.fraud_project_powerbi
+<gcp-project-id>.fraud_project_powerbi
 ```
 
 ## Ana Rapor Tabloları

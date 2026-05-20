@@ -15,7 +15,6 @@ warnings.filterwarnings("ignore", message="BigQuery Storage module not found.*")
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET_DIR = ROOT / "powerbi" / "assets"
-DEFAULT_CREDENTIALS = Path(r"C:\Users\MONSTER\Downloads\workintech-working-2378ce4f85e2.json")
 PROJECT_ID = os.getenv("BIGQUERY_PROJECT_ID", "workintech-working")
 DATASET = os.getenv("BIGQUERY_REPORTING_DATASET", "fraud_project_powerbi")
 
@@ -35,8 +34,7 @@ COLORS = {
 def ensure_credentials() -> None:
     if os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
         return
-    if DEFAULT_CREDENTIALS.exists():
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(DEFAULT_CREDENTIALS)
+    raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS must point to a local service-account JSON file.")
 
 
 def bq(query: str) -> pd.DataFrame:
@@ -146,7 +144,7 @@ def segment_watchlist() -> None:
     )
     table.auto_set_font_size(False)
     table.set_fontsize(8.5)
-    for (row, col), cell in table.get_celld().items():
+    for (row, _col), cell in table.get_celld().items():
         cell.set_edgecolor("#E5E7EB")
         if row == 0:
             cell.set_facecolor(COLORS["navy"])
@@ -286,7 +284,7 @@ def review_strategy_matrix() -> None:
     )
     table.auto_set_font_size(False)
     table.set_fontsize(7.2)
-    for (row, col), cell in table.get_celld().items():
+    for (row, _col), cell in table.get_celld().items():
         cell.set_edgecolor("#E5E7EB")
         if row == 0:
             cell.set_facecolor(COLORS["navy"])
@@ -376,7 +374,7 @@ def dbt_quality_gate() -> None:
     )
     table.auto_set_font_size(False)
     table.set_fontsize(8)
-    for (row, col), cell in table.get_celld().items():
+    for (row, _col), cell in table.get_celld().items():
         cell.set_edgecolor("#E5E7EB")
         if row == 0:
             cell.set_facecolor(COLORS["navy"])

@@ -1,0 +1,13 @@
+ieee_fraud_detection:
+  target: prod
+  outputs:
+    prod:
+      type: bigquery
+      method: service-account
+      project: "{{ env_var('GCP_PROJECT_ID') }}"
+      dataset: "{{ env_var('DBT_DATASET', 'fraud_project_staging') }}"
+      threads: "{{ env_var('DBT_THREADS', 4) | int }}"
+      keyfile: "{{ env_var('GOOGLE_APPLICATION_CREDENTIALS') }}"
+      location: "{{ env_var('BIGQUERY_LOCATION', 'US') }}"
+      priority: interactive
+      maximum_bytes_billed: "{{ env_var('BIGQUERY_MAX_BYTES_BILLED', 10000000000) | int }}"

@@ -1,0 +1,56 @@
+name: dbt Docs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-docs:
+    name: Generate and publish dbt docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    env:
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+      BIGQUERY_LOCATION: ${{ secrets.BIGQUERY_LOCATION || 'US' }}
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/.gcp/service-account.json
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install dbt-core dbt-bigquery
+
+      - name: Write service account
+        run: |
+          mkdir -p .gcp
+          printf '%s' '${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}' > "$GOOGLE_APPLICATION_CREDENTIALS"
+
+      - name: Prepare dbt profile
+        run: cp profiles/profiles_bigquery.example.yml profiles/profiles.yml
+
+      - name: Generate docs
+        run: dbt docs generate --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

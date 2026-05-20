@@ -10,7 +10,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DB_PATH = ROOT / "data" / "processed" / "ieee_fraud.duckdb"
 CHART_DIR = ROOT / "outputs" / "charts"
@@ -100,7 +99,7 @@ def chart_class_imbalance(summary: pd.DataFrame) -> None:
     ax.grid(axis="y", color=COLORS["grid"], linewidth=0.8)
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="x", length=0)
-    for bar, value in zip(bars, values):
+    for bar, value in zip(bars, values, strict=False):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(), f"{int(value):,}", ha="center", va="bottom", fontsize=11)
     ax.text(0.02, 0.88, f"Gözlenen sahtecilik oranı: {pct(row['fraud_rate'])}", transform=ax.transAxes, color=COLORS["red"], fontsize=12, weight="bold")
     savefig(CHART_DIR / "01_class_imbalance.png")
@@ -235,7 +234,7 @@ def chart_product_lift(con: duckdb.DuckDBPyConnection, baseline: float) -> None:
     ax.grid(axis="y", color=COLORS["grid"])
     ax.spines[["top", "right", "left"]].set_visible(False)
     ax.tick_params(axis="x", length=0)
-    for bar, (_, row) in zip(bars, df.iterrows()):
+    for bar, (_, row) in zip(bars, df.iterrows(), strict=False):
         ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.25, f"{row['fraud_rate'] * 100:.1f}%\n{int(row['transaction_count'] / 1000)}k", ha="center", fontsize=9)
     savefig(CHART_DIR / "10_product_lift.png")
 

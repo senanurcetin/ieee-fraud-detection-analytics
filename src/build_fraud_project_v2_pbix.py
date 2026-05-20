@@ -3,9 +3,8 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
-from zipfile import ZIP_DEFLATED, ZipFile
 from xml.etree import ElementTree as ET
-
+from zipfile import ZIP_DEFLATED, ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_PBIX = ROOT / "outputs" / "powerbi" / "fraud_project_v2.pbix"
@@ -25,28 +24,28 @@ PAGE_ORDER = [
 
 PAGE_COPY = {
     "Yönetici Özeti": (
-        "Sahtecilik belirli segmentlerde yoğunlaşıyor",
-        "Yönetim odağı genel hacimden çok riskin kümelendiği ürün, tutar ve risk bandı kesitlerine çevrilmelidir.",
+        "Fraud riski az sayıda segmentte yönetilebilir hale geliyor",
+        "İlk 30 saniyede karar: genel hacim değil, Product C, risk bandı ve tutar kesitleri yönetim takibine alınmalıdır.",
     ),
     "Risk Konsantrasyonu": (
-        "Ürün ve cihaz kırılımı riski netleştiriyor",
-        "Product C, mobil işlem davranışı ve yüksek risk bandı birlikte izlendiğinde operasyon kuyruğu daha hedefli yönetilir.",
+        "Ürün, cihaz ve risk bandı operasyon önceliğini belirliyor",
+        "Product C, cihaz tipi ve yüksek risk bandı birlikte izlendiğinde inceleme kuyruğu geniş hacimden hedefli aksiyona iner.",
     ),
     "Tutar ve Zaman Analizi": (
-        "Tutar ve saat örüntüleri risk sinyali üretiyor",
-        "Düşük tutar, yüksek tutar ve gün içi pencereler ayrı izlenmediğinde segment riski ortalamada kaybolur.",
+        "Tutar ve saat pencereleri doğrusal olmayan risk sinyali veriyor",
+        "Düşük tutar, yüksek tutar ve yoğun saatler ayrı izlenmezse kritik davranışlar ortalama fraud oranında gizlenir.",
     ),
     "Ödeme ve Email Segmentleri": (
-        "Ödeme ve email segmentleri izleme kırılımı ekliyor",
-        "Kart ağı, kart tipi ve purchaser email grubu fraud riskini iş birimleri için okunabilir segmentlere dönüştürür.",
+        "Ödeme ve email kırılımları izlenebilir operasyon segmentleri üretiyor",
+        "Kart ağı, kart tipi ve email grubu fraud riskini teknik olmayan paydaşların da aksiyona çevirebileceği segmentlere ayırır.",
     ),
     "Model Skorlama ve Risk Bantları": (
-        "Model skorları inceleme önceliği üretir",
-        "Risk bantları fraud inceleme kapasitesini yüksek olasılıklı işlem gruplarına yönlendiren bir sıralama katmanıdır.",
+        "Model skoru karar değil, inceleme kuyruğu önceliğidir",
+        "Risk bantları otomatik ret kararı üretmez; sınırlı manuel kapasiteyi yüksek olasılıklı işlem gruplarına yönlendirir.",
     ),
     "Veri Kalitesi ve Mimari": (
-        "Veri kalitesi rapor güvenini destekler",
-        "Eksiklik yapısal bir veri karakteristiği olarak izlenir; dbt ve BigQuery kontrolleri rapor katmanını doğrular.",
+        "Veri kalitesi ve lineage rapor güvenilirliğini kanıtlıyor",
+        "Eksiklik profili, dbt testleri ve BigQuery reconciliation kontrolleri yönetim raporunun güven temelini oluşturur.",
     ),
 }
 
@@ -621,13 +620,32 @@ def header_visuals(display_name: str) -> list[dict]:
         textbox_visual(f"{display_name}_bg", " ", 0, 0, 1280, 720, 0, 8, False, "#F6F8FB", "#F6F8FB", None),
         textbox_visual(f"{display_name}_top_rule", " ", 54, 22, 1088, 3, 2, 8, False, "#17212B", "#17212B", None),
         textbox_visual(f"{display_name}_section_label", "FRAUD RISK INTELLIGENCE", 54, 34, 280, 20, 4, 8, True, "#5E6872"),
+        textbox_visual(f"{display_name}_status_chip", "SUNUMA HAZIR PBIX", 900, 31, 142, 22, 4, 7, True, "#FFFFFF", "#1B7F79", None),
         textbox_visual(f"{display_name}_page_no", f"Sayfa {page_index}/6", 1092, 34, 90, 20, 4, 8, True, "#5E6872"),
-        textbox_visual(f"{display_name}_title", title, 54, 62, 1088, 50, 5, 16, True, "#17212B"),
-        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 114, 1088, 30, 6, 9, False, "#37414C"),
+        textbox_visual(f"{display_name}_title", title, 54, 62, 1088, 46, 5, 15, True, "#17212B"),
+        textbox_visual(f"{display_name}_subtitle", subtitle, 56, 110, 1088, 34, 6, 9, False, "#37414C"),
+        textbox_visual(f"{display_name}_divider", " ", 54, 670, 1088, 1, 7, 8, False, "#D9E1EA", "#D9E1EA", None),
     ]
     for index, (number, label) in enumerate(nav_items, start=1):
         x = 54 + (index - 1) * 188
         is_active = index == page_index
+        if is_active:
+            visuals.append(
+                textbox_visual(
+                    f"{display_name}_nav_active_{index}",
+                    " ",
+                    x,
+                    678,
+                    88,
+                    3,
+                    8 + index,
+                    8,
+                    False,
+                    "#1B7F79",
+                    "#1B7F79",
+                    None,
+                )
+            )
         visuals.append(
             textbox_visual(
                 f"{display_name}_nav_{index}",
@@ -660,15 +678,19 @@ def insight_panel(
     color: str,
 ) -> list[dict]:
     return [
-        panel_visual(f"{name}_panel", x - 8, y - 8, width + 16, 86, z, "#FFFFFF", "#DCE3EA"),
-        accent_rule(f"{name}_accent", x - 8, y - 8, 86, z + 1, color),
-        textbox_visual(f"{name}_title", title, x + 8, y, width - 8, 22, z + 2, 10, True, color),
-        textbox_visual(f"{name}_body", body, x + 8, y + 24, width - 8, 54, z + 3, 8, False, "#37414C"),
+        panel_visual(f"{name}_panel", x - 8, y - 8, width + 16, 92, z, "#FFFFFF", "#DCE3EA"),
+        accent_rule(f"{name}_accent", x - 8, y - 8, 92, z + 1, color),
+        textbox_visual(f"{name}_title", title, x + 10, y, width - 10, 22, z + 2, 10, True, color),
+        textbox_visual(f"{name}_body", body, x + 10, y + 24, width - 10, 60, z + 3, 8, False, "#37414C"),
     ]
 
 
 def filter_panel(name: str, title: str, x: float, y: float, width: float, height: float, z: int = 8) -> list[dict]:
-    return []
+    return [
+        panel_visual(f"{name}_panel", x, y, width, height, z, "#EAF0F6", "#B8C6D6"),
+        textbox_visual(f"{name}_title", title.upper(), x + 12, y + 5, width - 24, 14, z + 1, 7, True, "#5E6872"),
+        textbox_visual(f"{name}_rule", " ", x + 12, y + 22, width - 24, 1, z + 1, 6, False, "#C9D6E3", "#C9D6E3", None),
+    ]
 
 
 def section_label(name: str, text: str, x: float, y: float, width: float, z: int = 18) -> dict:
@@ -788,7 +810,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "exec_panel_2",
-                "Risk",
+                "Kanıt",
                 "Product C baz oranın 3,34 katı risk taşıyor; genel ortalama ile yönetilirse bu yoğunlaşma görünmez.",
                 456,
                 560,
@@ -798,7 +820,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "exec_panel_3",
-                "Aksiyon",
+                "Karar",
                 "Ürün, risk bandı ve tutar kesitleri haftalık risk komitesinde standart takip kırılımı olmalıdır.",
                 838,
                 560,
@@ -898,7 +920,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "risk_panel_2",
-                "Öncelik",
+                "Kanıt",
                 "Product C ve identity sinyali beraber izlendiğinde operasyon kuyruğu daha isabetli daralır.",
                 456,
                 574,
@@ -908,7 +930,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "risk_panel_3",
-                "Kontrol",
+                "Aksiyon",
                 "Ürün ve risk bandı filtreleri yönetim toplantısında aynı bulgunun farklı segmentlerde test edilmesini sağlar.",
                 838,
                 574,
@@ -1007,7 +1029,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "amount_panel_2",
-                "Zaman",
+                "Kanıt",
                 "Gün içi kırılım, fraud ekibi vardiya kapasitesinin saatlik hacme göre ayarlanmasını sağlar.",
                 456,
                 574,
@@ -1127,7 +1149,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "payment_panel_2",
-                "Segment",
+                "Kanıt",
                 "Gmail hacmin %38,7'si ve fraud'un %48,1'i; hotmail.com ise daha yüksek oranlı takip segmentidir.",
                 456,
                 574,
@@ -1224,7 +1246,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
         visuals.extend(
             insight_panel(
                 "model_panel_1",
-                "Amaç",
+                "Bulgu",
                 "Critical band hacmin yalnızca %1,0'ı; buna rağmen fraud yakalama payı %27,5 seviyesindedir.",
                 74,
                 574,
@@ -1234,7 +1256,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "model_panel_2",
-                "Operasyon",
+                "Kanıt",
                 "Critical + High bantları yaklaşık %5 iş yüküyle fraud'un %78,3'ünü yakalar.",
                 456,
                 574,
@@ -1244,7 +1266,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "model_panel_3",
-                "Yönetim",
+                "Karar",
                 "Skorlar ret kararı değil; aynı gün inceleme, örneklem ve otomatik izleme ayrımı için kullanılır.",
                 838,
                 574,
@@ -1262,7 +1284,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
         visuals.extend(
             insight_panel(
                 "quality_gate_1",
-                "Build",
+                "Kontrol",
                 "dbt prod build sonucu PASS; model, test ve exposure adımları hata vermeden tamamlandı.",
                 74,
                 152,
@@ -1272,7 +1294,7 @@ def page_native_visuals(display_name: str) -> list[dict]:
             )
             + insight_panel(
                 "quality_gate_2",
-                "Reconciliation",
+                "Kanıt",
                 "Raw, staging, mart ve Power BI katmanları row-count kontrolleriyle uzlaştırıldı.",
                 456,
                 152,

@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 
 import duckdb
 import pandas as pd
-
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_DIR = Path(
@@ -219,7 +218,6 @@ def write_slides(numbers: dict) -> None:
 
     s = numbers["summary"]
     metrics = numbers["metrics"]
-    product = numbers["product"]
     product_rows = numbers["product_all"]
     product_c = next(row for row in product_rows if row["product_cd"] == "C")
     product_w = next(row for row in product_rows if row["product_cd"] == "W")
@@ -370,7 +368,7 @@ def build_deck() -> None:
     (WORKSPACE / "qa").mkdir(parents=True, exist_ok=True)
     script = SKILL_DIR / "scripts" / "build_artifact_deck.mjs"
     env = os.environ.copy()
-    env["HOME"] = r"C:\Users\MONSTER"
+    env["HOME"] = os.environ.get("HOME", str(Path.home()))
     env["PYTHON"] = sys.executable
     subprocess.run(
         [

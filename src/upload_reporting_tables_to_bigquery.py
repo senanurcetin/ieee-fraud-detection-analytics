@@ -6,7 +6,6 @@ from pathlib import Path
 
 from google.cloud import bigquery
 
-
 ROOT = Path(__file__).resolve().parents[1]
 PBI_DIR = ROOT / "outputs" / "powerbi"
 
@@ -61,7 +60,7 @@ def load_csv(client: bigquery.Client, project_id: str, dataset: str, path: Path)
 def main() -> None:
     args = parse_args()
     if not args.credentials:
-        raise EnvironmentError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
+        raise OSError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
     credential_path = Path(args.credentials)
     if not credential_path.exists():
         raise FileNotFoundError(f"Credential file not found: {credential_path}")
