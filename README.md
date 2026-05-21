@@ -4,6 +4,18 @@ End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset
 
 The business question is simple: where does fraud concentrate, and how should an operations team prioritize review capacity?
 
+## Problem Statement
+
+Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate is only 3.50%, so portfolio averages hide the segments that actually drive operational exposure. This project builds an analytics and scoring layer that identifies where fraud concentrates and converts model scores into review queues an operations team can act on.
+
+## Key Findings
+
+- Product risk is concentrated: Product C has an 11.7% fraud rate, 3.34x lift, and 38.8% of fraud labels while representing 68,519 transactions.
+- Identity availability is an analytical signal: only 144,233 of 590,540 train transactions have identity records, creating a 24.42% identity coverage rate; identity-present transactions show 7.85% fraud rate and 2.24x lift.
+- Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9167 and the average precision / AUC-PR proxy is 0.5308.
+- The top-score region is operationally valuable: the top 10% validation score band has 7.24x lift versus the validation fraud baseline.
+- The recommended High + Critical queue reviews about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision.
+
 ## Executive Summary
 
 Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final Power BI report is structured as a senior banking fraud analyst presentation: first the portfolio risk, then concentration drivers, then amount/time behavior, then payment and email segments, then model-based review queues, and finally data quality evidence.
@@ -15,9 +27,9 @@ Portfolio snapshot:
 - Baseline fraud rate: 3.50%
 - Total transaction amount: $79.7M
 - Fraud-labeled amount: $3.08M
-- Recommended review policy: start with the High + Critical queue, covering 5.0% of transactions and 78.3% of fraud labels in the training window.
+- Recommended review policy: start with the High + Critical queue, covering 5.06% of validation transactions and 59.4% of fraud labels in the validation holdout.
 
-## Architecture
+## Architecture Diagram
 
 ```mermaid
 flowchart LR
@@ -152,6 +164,35 @@ Minimum IAM roles:
 
 Terraform dataset definitions are available under `infra/bigquery/`.
 
+## Results and Visualizations
+
+The final report is designed for executive review, not exploratory notebook browsing. It focuses on six questions:
+
+| Question | Primary evidence |
+|---|---|
+| How large is the fraud problem? | `pbi_executive_kpis`, `mart_fraud_summary` |
+| Where does risk concentrate? | `pbi_product_risk`, `pbi_identity_risk`, `pbi_segment_watchlist` |
+| Do amount and time patterns matter? | `pbi_amount_bands`, `pbi_time_amount_signals`, `pbi_daily_drift` |
+| Which payment and email segments need monitoring? | `pbi_payment_heatmap`, `pbi_email_domain_risk` |
+| Can the model prioritize review queues? | `pbi_model_risk_bands`, `pbi_threshold_simulation`, `pbi_review_strategy` |
+| Is the data pipeline trustworthy? | `pbi_quality_contract`, `pbi_report_readiness`, dbt tests |
+
+Current validation snapshot:
+
+| Result | Value |
+|---|---:|
+| Total profiled train transactions | 590,540 |
+| Fraud-labeled train transactions | 20,663 |
+| Baseline fraud rate | 3.50% |
+| Identity coverage rate | 24.42% |
+| ROC-AUC | 0.9167 |
+| Average precision / AUC-PR proxy | 0.5308 |
+| Top 10% validation score lift | 7.24x |
+| High + Critical precision | 40.4% |
+| High + Critical recall | 59.4% |
+| High + Critical false-positive rate | 3.12% |
+| High + Critical review workload | 5.06% |
+
 ## ML Scoring Layer
 
 The scoring script trains a `LightGBMClassifier` with a time-based validation split using the last 20% of `TransactionDT` as holdout data. Outputs include:
@@ -175,7 +216,7 @@ Latest local validation snapshot:
 
 - ROC-AUC: 0.9167
 - Average precision: 0.5308
-- High + Critical operating point: 54.8% precision, 78.3% recall, 0.645 F1, 5.0% review workload
+- High + Critical operating point: 40.4% precision, 59.4% recall, 3.12% false-positive rate, 5.06% review workload
 - Features used: 206
 - Categorical features: 26
 
@@ -235,6 +276,13 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 python scripts/validate_powerbi_report.py
 ```
 
+Latest production verification:
+
+- dbt production build: `PASS=123 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=124`
+- dbt project scope: 33 models, 90 data tests, 8 sources, 1 exposure
+- Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; Power BI fact 590,540
+- GitHub Actions: Python quality, pytest, Power BI package validation, dependency audit, and dbt parse/build workflow
+
 The Power BI validator checks package integrity, page count, visual type allowlist, missing image resources, unsafe fields, raw field-label leakage, native title leakage, and text clipping risk.
 
 ## Documentation
@@ -243,9 +291,11 @@ The Power BI validator checks package integrity, page count, visual type allowli
 - [Tech Stack](docs/02_tech_stack.md)
 - [Analysis Hypotheses](docs/03_analysis_hypotheses.md)
 - [ML Ideas](docs/04_ml_ideas.md)
+- [Architecture](docs/architecture.md)
 - [Data Dictionary](docs/data_dictionary.md)
 - [IEEE-CIS Dataset Methodology Notes](docs/ieee_cis_dataset_methodology.md)
 - [Modeling Decisions](docs/modeling_decisions.md)
+- [Model Results](docs/model_results.md)
 - [Model Validation Evidence](docs/model_validation_evidence.md)
 - [Banking Business Impact](docs/banking_business_impact.md)
 - [Regulatory Context](docs/regulatory_context.md)
