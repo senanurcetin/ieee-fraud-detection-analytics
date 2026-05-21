@@ -1,114 +1,114 @@
-# Power BI Native Visual Spesifikasyonu
+﻿# Power BI Native Visual Spesifikasyonu
 
-Bu doküman, `fraud_project_v2.pbix` dosyasının güncel final rapor standardını tanımlar. Rapor BigQuery DirectQuery modelini korur ve Power BI Desktop içinde açılabilir, sade, Türkçe yönetici sunumu düzeniyle hazırlanır.
+Bu dokÃ¼man, `fraud_project_v2.pbix` dosyasÄ±nÄ±n gÃ¼ncel final rapor standardÄ±nÄ± tanÄ±mlar. Rapor BigQuery DirectQuery modelini korur ve Power BI Desktop iÃ§inde aÃ§Ä±labilir, sade, TÃ¼rkÃ§e yÃ¶netici sunumu dÃ¼zeniyle hazÄ±rlanÄ±r.
 
-## Model Katmanı
+## Model KatmanÄ±
 
-Rapor şu BigQuery raporlama katmanına bağlıdır:
+Rapor ÅŸu BigQuery raporlama katmanÄ±na baÄŸlÄ±dÄ±r:
 
 ```text
-workintech-working.fraud_project_powerbi
+your-gcp-project.fraud_project_powerbi
 ```
 
-Final PBIX içinde güvenli şekilde kullanılan ana tablolar:
+Final PBIX iÃ§inde gÃ¼venli ÅŸekilde kullanÄ±lan ana tablolar:
 
 - `fact_train_transactions`
 - `mart_fraud_summary`
 - `mart_risk_band_stats`
 - `mart_feature_missingness`
 
-`pbi_*` tabloları BigQuery/dbt tarafında korunur. Power BI model metadata'sı yenilendikten sonra bu tablolar ek görseller için kontrollü biçimde devreye alınabilir.
+`pbi_*` tablolarÄ± BigQuery/dbt tarafÄ±nda korunur. Power BI model metadata'sÄ± yenilendikten sonra bu tablolar ek gÃ¶rseller iÃ§in kontrollÃ¼ biÃ§imde devreye alÄ±nabilir.
 
-## Güncel Visual Standardı
+## GÃ¼ncel Visual StandardÄ±
 
-Final rapor şu görsel tipleriyle sınırlıdır:
+Final rapor ÅŸu gÃ¶rsel tipleriyle sÄ±nÄ±rlÄ±dÄ±r:
 
 - `textbox`
 - `slicer`
 - `clusteredColumnChart`
 - `clusteredBarChart`
-- kontrollü native tablo
+- kontrollÃ¼ native tablo
 
-Native card kullanılmaz. KPI alanları Power BI otomatik sayı kısaltmasına düşmemesi için metin tabanlı sunum formatıyla gösterilir.
+Native card kullanÄ±lmaz. KPI alanlarÄ± Power BI otomatik sayÄ± kÄ±saltmasÄ±na dÃ¼ÅŸmemesi iÃ§in metin tabanlÄ± sunum formatÄ±yla gÃ¶sterilir.
 
-25 hazır DAX ölçüsü şu dosyadadır:
+25 hazÄ±r DAX Ã¶lÃ§Ã¼sÃ¼ ÅŸu dosyadadÄ±r:
 
 ```text
 powerbi/dax/fraud_project_measures.dax
 ```
 
-Otomatik paket kontrolü:
+Otomatik paket kontrolÃ¼:
 
 ```powershell
 python scripts\validate_powerbi_report.py
 ```
 
-Bu kontrol sayfa sayısını, görsel tiplerini, gömülü görsel kaynaklarını, ham alan adı referanslarını, tooltip kapsamını, native başlık sızıntısını, metin kırpılma riskini ve güvenli alan allowlist'ini doğrular.
+Bu kontrol sayfa sayÄ±sÄ±nÄ±, gÃ¶rsel tiplerini, gÃ¶mÃ¼lÃ¼ gÃ¶rsel kaynaklarÄ±nÄ±, ham alan adÄ± referanslarÄ±nÄ±, tooltip kapsamÄ±nÄ±, native baÅŸlÄ±k sÄ±zÄ±ntÄ±sÄ±nÄ±, metin kÄ±rpÄ±lma riskini ve gÃ¼venli alan allowlist'ini doÄŸrular.
 
-## Sayfa Bazlı Kurgu
+## Sayfa BazlÄ± Kurgu
 
-### Yönetici Özeti
+### YÃ¶netici Ã–zeti
 
-- KPI göstergeleri: toplam işlem, sahte işlem, baz fraud oranı, identity kapsama.
-- Ürün filtresi.
-- Ürüne göre sahte işlem hacmi.
-- Risk bandına göre sahte işlem hacmi.
-- Tutar bandına göre sahte işlem hacmi.
+- KPI gÃ¶stergeleri: toplam iÅŸlem, sahte iÅŸlem, baz fraud oranÄ±, identity kapsama.
+- ÃœrÃ¼n filtresi.
+- ÃœrÃ¼ne gÃ¶re sahte iÅŸlem hacmi.
+- Risk bandÄ±na gÃ¶re sahte iÅŸlem hacmi.
+- Tutar bandÄ±na gÃ¶re sahte iÅŸlem hacmi.
 - Bulgu, risk ve aksiyon karar metinleri.
 
 ### Risk Konsantrasyonu
 
-- Ürün filtresi.
-- Risk bandı filtresi.
-- Ürün bazlı sahte işlem hacmi.
-- Cihaz tipine göre sahte işlem hacmi.
-- Risk bandı sahte işlem hacmi.
-- Ürün ve risk bandı kanıt tablosu.
-- Risk renk standardı.
+- ÃœrÃ¼n filtresi.
+- Risk bandÄ± filtresi.
+- ÃœrÃ¼n bazlÄ± sahte iÅŸlem hacmi.
+- Cihaz tipine gÃ¶re sahte iÅŸlem hacmi.
+- Risk bandÄ± sahte iÅŸlem hacmi.
+- ÃœrÃ¼n ve risk bandÄ± kanÄ±t tablosu.
+- Risk renk standardÄ±.
 
 ### Tutar ve Zaman Analizi
 
-- Tutar bandı filtresi.
-- Tutar bandına göre sahte işlem hacmi.
-- Gün içi sahte işlem adedi.
-- Tutar bandı işlem hacmi.
-- Tutar bandı kanıt tablosu.
+- Tutar bandÄ± filtresi.
+- Tutar bandÄ±na gÃ¶re sahte iÅŸlem hacmi.
+- GÃ¼n iÃ§i sahte iÅŸlem adedi.
+- Tutar bandÄ± iÅŸlem hacmi.
+- Tutar bandÄ± kanÄ±t tablosu.
 - Zaman ve tutar karar metinleri.
 
-### Ödeme ve Email Segmentleri
+### Ã–deme ve Email Segmentleri
 
 - Email grubu filtresi.
-- Kart ağına göre sahte işlem adedi.
-- Kart tipine göre sahte işlem adedi.
-- Email grubuna göre sahte işlem hacmi.
-- Ödeme segmenti kanıt tablosu.
+- Kart aÄŸÄ±na gÃ¶re sahte iÅŸlem adedi.
+- Kart tipine gÃ¶re sahte iÅŸlem adedi.
+- Email grubuna gÃ¶re sahte iÅŸlem hacmi.
+- Ã–deme segmenti kanÄ±t tablosu.
 
-### Model Skorlama ve Risk Bantları
+### Model Skorlama ve Risk BantlarÄ±
 
-- Risk bandı filtresi.
-- Risk bandı gözlenen fraud oranı.
-- Risk bandı sahte işlem hacmi.
-- Risk bandı işlem tutarı.
-- Risk bandı inceleme kanıt tablosu.
-- Modelin karar değil önceliklendirme katmanı olduğunu anlatan karar metinleri.
+- Risk bandÄ± filtresi.
+- Risk bandÄ± gÃ¶zlenen fraud oranÄ±.
+- Risk bandÄ± sahte iÅŸlem hacmi.
+- Risk bandÄ± iÅŸlem tutarÄ±.
+- Risk bandÄ± inceleme kanÄ±t tablosu.
+- Modelin karar deÄŸil Ã¶nceliklendirme katmanÄ± olduÄŸunu anlatan karar metinleri.
 
 ### Veri Kalitesi ve Mimari
 
-- Feature ailesi eksik değer hacmi.
-- Eksik değer hacmi.
-- Profil edilen satır KPI'ı.
-- Eksik değer sinyali KPI'ı.
+- Feature ailesi eksik deÄŸer hacmi.
+- Eksik deÄŸer hacmi.
+- Profil edilen satÄ±r KPI'Ä±.
+- Eksik deÄŸer sinyali KPI'Ä±.
 - Lineage: `Kaggle CSV -> BigQuery Raw -> dbt Staging -> dbt Mart -> Power BI DirectQuery`.
-- dbt build ve BigQuery row-count kalite mesajı.
+- dbt build ve BigQuery row-count kalite mesajÄ±.
 
-## Format Kuralları
+## Format KurallarÄ±
 
-- Görünen başlıklar Türkçe ve yönetici dilinde olmalıdır.
-- Ham alan adları rapor yüzeyinde görünmemelidir.
-- Native visual başlıkları kapalı olmalı; chart başlıkları ayrı panel başlığı olarak verilmelidir.
-- Slicer alanları çıplak checkbox görünümünde bırakılmamalı; başlık şeridi, iç panel ve vurgu çizgisiyle rapor tasarımına bağlanmalıdır.
-- KPI değerlerinde otomatik `B`, `K`, `M` kısaltması görünmemelidir.
-- Yalnızca işlevsel panel sistemi kullanılmalıdır.
-- Renk standardı: kırmızı kritik risk, petrol yeşili kontrol/aksiyon, koyu lacivert ana metin, nötr gri ikincil metin.
-- Önemli chart görsellerinde işlem tutarı veya sahte işlem adedi gibi tooltip bağlamı bulunmalıdır.
-- Her sayfa tek ana mesaj taşımalıdır.
+- GÃ¶rÃ¼nen baÅŸlÄ±klar TÃ¼rkÃ§e ve yÃ¶netici dilinde olmalÄ±dÄ±r.
+- Ham alan adlarÄ± rapor yÃ¼zeyinde gÃ¶rÃ¼nmemelidir.
+- Native visual baÅŸlÄ±klarÄ± kapalÄ± olmalÄ±; chart baÅŸlÄ±klarÄ± ayrÄ± panel baÅŸlÄ±ÄŸÄ± olarak verilmelidir.
+- Slicer alanlarÄ± Ã§Ä±plak checkbox gÃ¶rÃ¼nÃ¼mÃ¼nde bÄ±rakÄ±lmamalÄ±; baÅŸlÄ±k ÅŸeridi, iÃ§ panel ve vurgu Ã§izgisiyle rapor tasarÄ±mÄ±na baÄŸlanmalÄ±dÄ±r.
+- KPI deÄŸerlerinde otomatik `B`, `K`, `M` kÄ±saltmasÄ± gÃ¶rÃ¼nmemelidir.
+- YalnÄ±zca iÅŸlevsel panel sistemi kullanÄ±lmalÄ±dÄ±r.
+- Renk standardÄ±: kÄ±rmÄ±zÄ± kritik risk, petrol yeÅŸili kontrol/aksiyon, koyu lacivert ana metin, nÃ¶tr gri ikincil metin.
+- Ã–nemli chart gÃ¶rsellerinde iÅŸlem tutarÄ± veya sahte iÅŸlem adedi gibi tooltip baÄŸlamÄ± bulunmalÄ±dÄ±r.
+- Her sayfa tek ana mesaj taÅŸÄ±malÄ±dÄ±r.

@@ -9,7 +9,7 @@ from google.cloud import bigquery
 ROOT = Path(__file__).resolve().parents[1]
 PBI_DIR = ROOT / "outputs" / "powerbi"
 
-DEFAULT_PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "workintech-working")
+DEFAULT_PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 DEFAULT_LOCATION = os.environ.get("BIGQUERY_LOCATION", "US")
 DEFAULT_DATASET = os.environ.get("BIGQUERY_REPORTING_DATASET", "fraud_project_powerbi")
 
@@ -59,6 +59,8 @@ def load_csv(client: bigquery.Client, project_id: str, dataset: str, path: Path)
 
 def main() -> None:
     args = parse_args()
+    if not args.project_id:
+        raise OSError("GCP_PROJECT_ID is not set. Pass --project-id or set the environment variable.")
     if not args.credentials:
         raise OSError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
     credential_path = Path(args.credentials)

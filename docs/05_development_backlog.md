@@ -1,98 +1,98 @@
-# 05 - Detaylı Geliştirme Backlog'u
+﻿# 05 - DetaylÄ± GeliÅŸtirme Backlog'u
 
-Bu liste, projenin portföy ve üst yönetim sunumu seviyesinde korunması için kalan işleri önceliklendirir. Son iterasyonda ana rapor native Power BI görsellerine taşındığı için backlog artık bakım, doğrulama ve kontrollü genişletme odağındadır.
+Bu liste, projenin portfÃ¶y ve Ã¼st yÃ¶netim sunumu seviyesinde korunmasÄ± iÃ§in kalan iÅŸleri Ã¶nceliklendirir. Son iterasyonda ana rapor native Power BI gÃ¶rsellerine taÅŸÄ±ndÄ±ÄŸÄ± iÃ§in backlog artÄ±k bakÄ±m, doÄŸrulama ve kontrollÃ¼ geniÅŸletme odaÄŸÄ±ndadÄ±r.
 
 ## P0 - Kritik
 
-1. Power BI Desktop açılış testi
-   - `powerbi/fraud_project_v2.pbix` Power BI Desktop'ta açılmalı.
-   - 6 sayfanın tamamında hata placeholder'ı olmadığı kontrol edilmeli.
-   - KPI metinleri, slicer, clustered column chart, clustered bar chart ve kanıt tabloları doğru görünmeli.
-   - Açılış öncesi `python scripts/validate_powerbi_report.py` PASS vermeli.
+1. Power BI Desktop aÃ§Ä±lÄ±ÅŸ testi
+   - `powerbi/fraud_project_v2.pbix` Power BI Desktop'ta aÃ§Ä±lmalÄ±.
+   - 6 sayfanÄ±n tamamÄ±nda hata placeholder'Ä± olmadÄ±ÄŸÄ± kontrol edilmeli.
+   - KPI metinleri, slicer, clustered column chart, clustered bar chart ve kanÄ±t tablolarÄ± doÄŸru gÃ¶rÃ¼nmeli.
+   - AÃ§Ä±lÄ±ÅŸ Ã¶ncesi `python scripts/validate_powerbi_report.py` PASS vermeli.
 
-2. DirectQuery veri modeli kontrolü
-   - Rapor `workintech-working.fraud_project_powerbi` veri katmanına bağlı kalmalı.
-   - Slicer seçimleri sayfa görsellerini bozmamalı.
-   - BigQuery bağlantı yetkisi onaylandıktan sonra görseller boş dönmemeli.
+2. DirectQuery veri modeli kontrolÃ¼
+   - Rapor `your-gcp-project.fraud_project_powerbi` veri katmanÄ±na baÄŸlÄ± kalmalÄ±.
+   - Slicer seÃ§imleri sayfa gÃ¶rsellerini bozmamalÄ±.
+   - BigQuery baÄŸlantÄ± yetkisi onaylandÄ±ktan sonra gÃ¶rseller boÅŸ dÃ¶nmemeli.
 
-3. Format kontrolü
-   - KPI alanlarında otomatik kısaltma görünmemeli; değerler sunum formatında kalmalı.
-   - Grafik başlıklarında ham alan adı görünmemeli.
-   - Grafik başlıkları Türkçe ve yönetici seviyesinde kalmalı.
+3. Format kontrolÃ¼
+   - KPI alanlarÄ±nda otomatik kÄ±saltma gÃ¶rÃ¼nmemeli; deÄŸerler sunum formatÄ±nda kalmalÄ±.
+   - Grafik baÅŸlÄ±klarÄ±nda ham alan adÄ± gÃ¶rÃ¼nmemeli.
+   - Grafik baÅŸlÄ±klarÄ± TÃ¼rkÃ§e ve yÃ¶netici seviyesinde kalmalÄ±.
 
-## P1 - Güçlü Analitik
+## P1 - GÃ¼Ã§lÃ¼ Analitik
 
-1. Segment lift anlatımı
+1. Segment lift anlatÄ±mÄ±
    - Product C lift.
    - Identity lift.
-   - Risk bandı lift.
+   - Risk bandÄ± lift.
    - Email domain lift.
    - Payment segment lift.
 
-2. Risk katkısı analizi
-   - Fraud share ve transaction share birlikte gösterilmeli.
-   - Sadece fraud rate'e bakılmamalı; küçük hacimli segmentlerin yanıltıcı etkisi açıklanmalı.
+2. Risk katkÄ±sÄ± analizi
+   - Fraud share ve transaction share birlikte gÃ¶sterilmeli.
+   - Sadece fraud rate'e bakÄ±lmamalÄ±; kÃ¼Ã§Ã¼k hacimli segmentlerin yanÄ±ltÄ±cÄ± etkisi aÃ§Ä±klanmalÄ±.
 
 3. Zaman drift analizi
-   - Günlük fraud rate.
-   - 7 günlük hareketli ortalama.
+   - GÃ¼nlÃ¼k fraud rate.
+   - 7 gÃ¼nlÃ¼k hareketli ortalama.
    - Drift flag.
-   - Hacim ile risk trendinin birlikte okunması.
+   - Hacim ile risk trendinin birlikte okunmasÄ±.
 
 4. Model izleme
-   - Risk bandı dağılımı.
-   - Critical ve High bantlarında fraud capture.
+   - Risk bandÄ± daÄŸÄ±lÄ±mÄ±.
+   - Critical ve High bantlarÄ±nda fraud capture.
    - Feature importance.
-   - Model skorlarının operasyonel kullanımı.
+   - Model skorlarÄ±nÄ±n operasyonel kullanÄ±mÄ±.
 
 ## P2 - dbt ve Veri Kalitesi
 
-1. dbt kalite kapısı
-   - `dbt build --target prod` final kalite komutu olarak kullanılmalı.
-   - 73 data test ve singular QA testleri korunmalı.
-   - Test başarısızsa Power BI final raporu yenilenmemeli.
+1. dbt kalite kapÄ±sÄ±
+   - `dbt build --target prod` final kalite komutu olarak kullanÄ±lmalÄ±.
+   - 73 data test ve singular QA testleri korunmalÄ±.
+   - Test baÅŸarÄ±sÄ±zsa Power BI final raporu yenilenmemeli.
 
-2. Power BI veri kontratı
-   - `pbi_quality_contract` ve `pbi_report_readiness` tabloları BigQuery tarafında PASS kalmalı.
-   - Beklenen ve gerçekleşen satır sayıları final kontrollerinde izlenmeli.
+2. Power BI veri kontratÄ±
+   - `pbi_quality_contract` ve `pbi_report_readiness` tablolarÄ± BigQuery tarafÄ±nda PASS kalmalÄ±.
+   - Beklenen ve gerÃ§ekleÅŸen satÄ±r sayÄ±larÄ± final kontrollerinde izlenmeli.
 
 3. dbt docs
-   - `dbt docs generate` her final build sonrası çalıştırılmalı.
+   - `dbt docs generate` her final build sonrasÄ± Ã§alÄ±ÅŸtÄ±rÄ±lmalÄ±.
    - Exposure: `fraud_project_v2`.
-   - Kritik modellerde açıklamasız kolon kalmamalı.
+   - Kritik modellerde aÃ§Ä±klamasÄ±z kolon kalmamalÄ±.
 
 ## P3 - Sunum Kalitesi
 
-1. Görsel tasarım
-   - Kurumsal bankacılık paleti kullanılmalı.
-   - Aşırı renkli veya amatör hissi veren tasarımdan kaçınılmalı.
-   - Risk renkleri tutarlı olmalı: Critical kırmızı, High koyu turuncu, Elevated amber, Low yeşil/gri.
+1. GÃ¶rsel tasarÄ±m
+   - Kurumsal bankacÄ±lÄ±k paleti kullanÄ±lmalÄ±.
+   - AÅŸÄ±rÄ± renkli veya amatÃ¶r hissi veren tasarÄ±mdan kaÃ§Ä±nÄ±lmalÄ±.
+   - Risk renkleri tutarlÄ± olmalÄ±: Critical kÄ±rmÄ±zÄ±, High koyu turuncu, Elevated amber, Low yeÅŸil/gri.
 
-2. Sayfa düzeni
-   - 1280x720 canvas standardı korunmalı.
-   - Üst satır KPI, orta alan ana grafik, alt alan detay/aksiyon mesajı olacak şekilde düzenlenmeli.
-   - Başlıklar kısa, grafik etiketleri okunabilir olmalı.
+2. Sayfa dÃ¼zeni
+   - 1280x720 canvas standardÄ± korunmalÄ±.
+   - Ãœst satÄ±r KPI, orta alan ana grafik, alt alan detay/aksiyon mesajÄ± olacak ÅŸekilde dÃ¼zenlenmeli.
+   - BaÅŸlÄ±klar kÄ±sa, grafik etiketleri okunabilir olmalÄ±.
 
-3. Yönetici dil kontrolü
-   - Teknik jargon minimumda tutulmalı.
-   - Her sayfada "ne oldu, neden önemli, ne yapılmalı" yapısı kurulmalı.
-   - Görünür hiçbir yerde geliştirme aracı izi, geçici sunum dili veya proje içi teknik not olmamalı.
+3. YÃ¶netici dil kontrolÃ¼
+   - Teknik jargon minimumda tutulmalÄ±.
+   - Her sayfada "ne oldu, neden Ã¶nemli, ne yapÄ±lmalÄ±" yapÄ±sÄ± kurulmalÄ±.
+   - GÃ¶rÃ¼nÃ¼r hiÃ§bir yerde geliÅŸtirme aracÄ± izi, geÃ§ici sunum dili veya proje iÃ§i teknik not olmamalÄ±.
 
-## P4 - Teslim ve Portföy
+## P4 - Teslim ve PortfÃ¶y
 
 1. GitHub temizlik
-   - Ham CSV, DuckDB, credential ve geçici output dump commitlenmemeli.
-   - README proje hikayesini net anlatmalı.
-   - `powerbi/fraud_project_v2.pbix` ana teslim olarak kalmalı.
+   - Ham CSV, DuckDB, credential ve geÃ§ici output dump commitlenmemeli.
+   - README proje hikayesini net anlatmalÄ±.
+   - `powerbi/fraud_project_v2.pbix` ana teslim olarak kalmalÄ±.
 
-2. Sunum akışı
-   - 3 dakikalık kısa yönetici anlatımı hazırlanmalı.
-   - 10 dakikalık teknik walkthrough hazırlanmalı.
-   - dbt lineage ve BigQuery dataset yapısı gösterilebilir olmalı.
+2. Sunum akÄ±ÅŸÄ±
+   - 3 dakikalÄ±k kÄ±sa yÃ¶netici anlatÄ±mÄ± hazÄ±rlanmalÄ±.
+   - 10 dakikalÄ±k teknik walkthrough hazÄ±rlanmalÄ±.
+   - dbt lineage ve BigQuery dataset yapÄ±sÄ± gÃ¶sterilebilir olmalÄ±.
 
 3. Final kabul
-   - Power BI açılır.
-   - BigQuery bağlantısı çalışır.
-   - dbt build geçer.
-   - Rapor 6 dolu sunum sayfasından oluşur.
+   - Power BI aÃ§Ä±lÄ±r.
+   - BigQuery baÄŸlantÄ±sÄ± Ã§alÄ±ÅŸÄ±r.
+   - dbt build geÃ§er.
+   - Rapor 6 dolu sunum sayfasÄ±ndan oluÅŸur.
    - Analiz hikayesi savunulabilir ve profesyoneldir.

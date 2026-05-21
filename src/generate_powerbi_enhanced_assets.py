@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", message="BigQuery Storage module not found.*")
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET_DIR = ROOT / "powerbi" / "assets"
-PROJECT_ID = os.getenv("BIGQUERY_PROJECT_ID", "workintech-working")
+PROJECT_ID = os.getenv("BIGQUERY_PROJECT_ID") or os.getenv("GCP_PROJECT_ID")
 DATASET = os.getenv("BIGQUERY_REPORTING_DATASET", "fraud_project_powerbi")
 
 COLORS = {
@@ -32,6 +32,8 @@ COLORS = {
 
 
 def ensure_credentials() -> None:
+    if not PROJECT_ID:
+        raise RuntimeError("BIGQUERY_PROJECT_ID or GCP_PROJECT_ID must be set.")
     if os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
         return
     raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS must point to a local service-account JSON file.")

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw" / "kaggle_ieee_fraud"
 DB_PATH = ROOT / "data" / "processed" / "ieee_fraud.duckdb"
 
-PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "workintech-working")
+PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 LOCATION = os.environ.get("BIGQUERY_LOCATION", "US")
 DATASETS = [
     "fraud_project_raw",
@@ -75,6 +75,8 @@ def main() -> None:
     global PROJECT_ID, LOCATION
     PROJECT_ID = args.project_id
     LOCATION = args.location
+    if not PROJECT_ID:
+        raise OSError("GCP_PROJECT_ID is not set. Pass --project-id or set the environment variable.")
     if not args.credentials:
         raise OSError("GOOGLE_APPLICATION_CREDENTIALS is not set. Pass --credentials or set the environment variable.")
     credential_path = Path(args.credentials)
@@ -90,7 +92,7 @@ def main() -> None:
     load_duckdb_table(client, "fraud_project_raw", "feature_missingness", "raw.feature_missingness")
     load_duckdb_table(client, "fraud_project_raw", "ml_predictions", "raw.ml_predictions")
     load_duckdb_table(client, "fraud_project_raw", "feature_importance", "raw.feature_importance")
-    print("Next: dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod")
+    print("Next: dbt run --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod")
 
 
 if __name__ == "__main__":

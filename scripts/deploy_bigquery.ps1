@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Credentials,
 
-    [string]$ProjectId = "workintech-working",
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectId,
     [string]$Location = "US",
     [string]$ReportingDataset = "fraud_project_powerbi"
 )

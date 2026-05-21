@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PBI_DIR = ROOT / "outputs" / "powerbi"
-PROJECT_ID = "workintech-working"
+PROJECT_ID = os.environ.get("GCP_PROJECT_ID", "your-gcp-project")
 REPORTING_DATASET = "fraud_project_powerbi"
 
 
@@ -35,14 +36,15 @@ def main() -> None:
 // Dataset: {REPORTING_DATASET}
 
 SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.fact_train_transactions`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_model_predictions`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_fraud_summary`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_daily_stats`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_amount_bands`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_product_device_stats`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_email_domain_stats`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_risk_band_stats`;
-SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.mart_feature_missingness`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_executive_kpis`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_product_risk`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_identity_risk`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_amount_bands`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_email_domain_risk`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_model_risk_bands`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_segment_watchlist`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_review_strategy`;
+SELECT * FROM `{PROJECT_ID}.{REPORTING_DATASET}.pbi_data_quality_scorecard`;
 """
     (PBI_DIR / "bigquery_powerbi_sql.txt").write_text(bigquery_m, encoding="utf-8")
 

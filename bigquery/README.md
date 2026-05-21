@@ -1,56 +1,91 @@
 # BigQuery Deployment
 
-Bu proje BigQuery üzerinde `fraud_project` adıyla katmanlı bir analitik mimari kurar. Deployment scripti ham CSV yüklemesini, dbt dönüşümlerini, testleri ve Power BI raporlama tablolarını tek akışta çalıştırır.
+This project deploys the fraud analytics pipeline into a layered BigQuery architecture under the `fraud_project` naming convention. The deployment flow loads raw Kaggle files, runs dbt transformations, executes quality tests, and publishes DirectQuery-friendly Power BI tables.
 
-## Dataset Yapısı
+## Dataset Layout
 
-- `fraud_project_raw`
-- `fraud_project_staging`
-- `fraud_project_intermediate`
-- `fraud_project_mart`
-- `fraud_project_powerbi`
+| Dataset | Purpose |
+|---|---|
+| `fraud_project_raw` | Raw Kaggle CSV tables and ML support outputs |
+| `fraud_project_staging` | Typed staging views |
+| `fraud_project_intermediate` | Joined and feature-engineered transaction layer |
+| `fraud_project_mart` | Business-ready fraud analytics marts |
+| `fraud_project_powerbi` | Power BI DirectQuery reporting layer |
 
-## Komut
+## Required Environment Variables
+
+Set credentials through environment variables. Do not pass local machine paths or commit service-account JSON files.
+
+```powershell
+$env:GCP_PROJECT_ID = "your-gcp-project"
+$env:BIGQUERY_LOCATION = "US"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "/secure/path/service-account.json"
+```
+
+## Deployment Command
 
 ```powershell
 .\scripts\deploy_bigquery.ps1 `
   -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
   -ProjectId $env:GCP_PROJECT_ID `
-  -Location "US" `
+  -Location $env:BIGQUERY_LOCATION `
   -ReportingDataset "fraud_project_powerbi"
 ```
 
-## dbt Komutları
+## dbt Production Commands
 
 ```powershell
-dbt run --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
-dbt test --project-dir . --profiles-dir profiles --profile ieee_fraud_detection --target prod
+dbt run --project-dir . --profiles-dir config\dbt --profile ieee_fraud_detection --target prod
+dbt test --project-dir . --profiles-dir config\dbt --profile ieee_fraud_detection --target prod
 ```
 
-## Power BI Raporlama Katmanı
+For a single command quality gate:
 
-`fraud_project_powerbi` datasetinde aşağıdaki tablolar oluşturulur:
+```powershell
+dbt build --project-dir . --profiles-dir config\dbt --profile ieee_fraud_detection --target prod
+```
+
+Latest verified production build:
+
+```text
+PASS=123 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=124
+```
+
+## Power BI Reporting Tables
+
+The `fraud_project_powerbi` dataset should expose these reporting tables:
 
 - `fact_train_transactions`
-- `mart_model_predictions`
-- `mart_fraud_summary`
-- `mart_daily_stats`
-- `mart_amount_bands`
-- `mart_product_device_stats`
-- `mart_email_domain_stats`
-- `mart_risk_band_stats`
-- `mart_feature_missingness`
+- `pbi_executive_kpis`
+- `pbi_product_risk`
+- `pbi_identity_risk`
+- `pbi_identity_product_coverage`
+- `pbi_amount_bands`
+- `pbi_time_amount_signals`
+- `pbi_daily_drift`
+- `pbi_payment_heatmap`
+- `pbi_email_domain_risk`
+- `pbi_model_risk_bands`
+- `pbi_threshold_simulation`
+- `pbi_review_strategy`
+- `pbi_segment_watchlist`
+- `pbi_feature_importance`
+- `pbi_data_quality_scorecard`
+- `pbi_quality_contract`
+- `pbi_report_readiness`
+- `pbi_report_narrative`
 
-## Minimum Yetkiler
+## Minimum IAM Roles
 
-Servis hesabı için gerekli minimum BigQuery rolleri:
+The service account needs:
 
 - BigQuery Job User
 - BigQuery Data Editor
 - BigQuery Data Viewer
 
-## Operasyonel Notlar
+## Operational Notes
 
-- Ham transaction tabloları çok geniş kolon yapısına sahiptir; raporlama için doğrudan ham katman yerine mart ve Power BI datasetleri kullanılmalıdır.
-- `fraud_project_powerbi` katmanı, Power BI Desktop içinde sade ve yönetilebilir bir model oluşturmak için özetlenmiş tablolardan oluşur.
-- Servis hesabı JSON dosyası repoya eklenmez.
+- Raw transaction tables are wide and should not be used directly in Power BI.
+- Power BI should connect to `fraud_project_powerbi` only.
+- `config/dbt/profiles.yml` is a sanitized profile template that reads credentials from environment variables.
+- Service-account JSON files are excluded from Git and must remain outside the repository.
