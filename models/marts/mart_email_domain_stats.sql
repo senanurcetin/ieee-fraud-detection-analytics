@@ -9,13 +9,18 @@ with base as (
 email as (
     select
         purchaser_email_group,
-        purchaser_email_risk_group,
+        case
+            when purchaser_email_group = 'Unknown' then 'Unknown'
+            when purchaser_email_group = 'anonymous.com' then 'Privacy masked'
+            when purchaser_email_group in ('gmail.com', 'yahoo.com', 'hotmail.com', 'aol.com', 'comcast.net') then 'Mainstream consumer'
+            else 'Long-tail / other'
+        end as purchaser_email_risk_group,
         count(*) as transaction_count,
         sum(is_fraud) as fraud_count,
         {{ fp_avg_rate('is_fraud') }} as fraud_rate,
         avg(transaction_amount) as avg_transaction_amount
     from {{ ref('int_features') }}
-    group by 1, 2
+    group by 1
 )
 
 select

@@ -4,10 +4,10 @@ select
     {{ fp_int(fp_quote('TransactionDT')) }} as transaction_dt,
     {{ fp_smallint("floor(" ~ fp_quote('TransactionDT') ~ " / 86400) + 1") }} as transaction_day,
     {{ fp_smallint("floor(" ~ fp_quote('TransactionDT') ~ " / 604800) + 1") }} as transaction_week,
-    {{ fp_smallint("floor(mod(" ~ fp_quote('TransactionDT') ~ ", 86400) / 3600)") }} as transaction_hour,
-    {{ fp_smallint("mod(floor(" ~ fp_quote('TransactionDT') ~ " / 86400), 7)") }} as relative_day_of_week,
+    {{ fp_smallint("floor(mod(" ~ fp_int(fp_quote('TransactionDT')) ~ ", 86400) / 3600)") }} as transaction_hour,
+    {{ fp_smallint("mod(" ~ fp_int("floor(" ~ fp_quote('TransactionDT') ~ " / 86400)") ~ ", 7)") }} as relative_day_of_week,
     {{ fp_float(fp_quote('TransactionAmt')) }} as transaction_amount,
-    {{ fp_smallint("round((" ~ fp_quote('TransactionAmt') ~ " - floor(" ~ fp_quote('TransactionAmt') ~ ")) * 100)") }} as transaction_amount_cents,
+    {{ fp_smallint("mod(abs(" ~ fp_int("round(" ~ fp_quote('TransactionAmt') ~ " * 100)") ~ "), 100)") }} as transaction_amount_cents,
     case
         when abs({{ fp_quote('TransactionAmt') }} - floor({{ fp_quote('TransactionAmt') }})) < 0.00001 then 1
         else 0
