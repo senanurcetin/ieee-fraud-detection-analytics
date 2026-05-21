@@ -5,8 +5,8 @@ Son doğrulama tarihi: 20 Mayıs 2026
 ## dbt
 
 - [x] `dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod` başarılı.
-- [x] Son build sonucu: `PASS=102 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=103`.
-- [x] 29 model ve 73 data test bulundu.
+- [x] Son doğrulanmış build sonucu: `PASS=102 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=103`.
+- [ ] Veri seti metodoloji genişletmesi sonrası beklenen tam build: 33 model ve yaklaşık 90 data test.
 - [x] `dbt docs generate --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod` başarılı.
 - [x] `fraud_project_raw` row-count testleri PASS.
 - [x] `fraud_project_mart` reconciliation testleri PASS.
@@ -31,6 +31,8 @@ Son doğrulama tarihi: 20 Mayıs 2026
 - [x] `fraud_project_powerbi.pbi_review_strategy`: 4 satır.
 - [x] `fraud_project_powerbi.pbi_threshold_simulation`: 16 satır.
 - [x] `fraud_project_powerbi.pbi_report_readiness`: 6 satır.
+- [ ] `fraud_project_powerbi.pbi_identity_product_coverage`: ProductCD bazında 5 satır beklenir.
+- [ ] `fraud_project_powerbi.pbi_time_amount_signals`: relatif saat ve tutar-decimal kırılımında 24-48 satır beklenir.
 
 ## Power BI
 

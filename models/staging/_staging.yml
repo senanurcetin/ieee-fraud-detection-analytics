@@ -2,44 +2,76 @@ version: 2
 
 models:
   - name: stg_transactions
-    description: "Transaction ham verisini standart veri tipleri, temiz alan adları ve temel fraud analiz kolonlarıyla staging katmanına taşır."
+    description: "Stages raw transaction records with normalized types and relative time fields derived from TransactionDT."
     config:
       tags: ["staging", "fraud"]
     columns:
       - name: transaction_id
-        description: "Tekil işlem anahtarı."
+        description: "Unique transaction key."
         tests:
           - not_null
           - unique
       - name: is_fraud
-        description: "Fraud etiketi; 1 sahtecilik, 0 normal işlem."
+        description: "Fraud label; 1 fraud, 0 legitimate."
         tests:
           - accepted_values:
               arguments:
                 values: [0, 1]
                 quote: false
       - name: transaction_amount
-        description: "İşlem tutarı."
+        description: "Transaction amount."
         tests:
           - not_null
           - not_negative
       - name: transaction_day
-        description: "TransactionDT üzerinden türetilmiş göreli işlem günü."
+        description: "Relative day derived from TransactionDT seconds. This is not a calendar date."
         tests:
           - not_null
           - not_negative
+      - name: transaction_hour
+        description: "Relative hour of day derived from TransactionDT seconds. This is not a real timestamp hour."
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
+      - name: relative_day_of_week
+        description: "Relative day-of-week index derived from TransactionDT. It is suitable for pattern analysis, not calendar attribution."
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 6
+      - name: transaction_amount_cents
+        description: "Cent component of TransactionAmt used to separate round amounts from fractional amount patterns."
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 99
+      - name: is_round_amount
+        description: "Flag for transactions where the decimal part of TransactionAmt is zero."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: synthetic_uid_card_addr
+        description: "Synthetic customer-like key built from card1 and addr1 for segment-level analysis. It is not a verified customer identifier."
+        tests:
+          - not_null
 
   - name: stg_identity
-    description: "Identity ham verisini cihaz ve identity sinyalleriyle standartlaştırır."
+    description: "Stages raw identity records with device and identity signals."
     config:
       tags: ["staging", "fraud"]
     columns:
       - name: transaction_id
-        description: "Identity kaydını transaction tablosuna bağlayan anahtar."
+        description: "Key that joins identity records to transactions."
         tests:
           - not_null
           - unique
       - name: device_type
-        description: "Cihaz türü."
+        description: "Device type."
       - name: device_info
-        description: "Cihaz bilgisi."
+        description: "Device information."

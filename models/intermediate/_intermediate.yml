@@ -2,22 +2,22 @@ version: 2
 
 models:
   - name: int_fraud_joined
-    description: "Transaction ve identity staging tablolarını tekil transaction seviyesinde birleştirir."
+    description: "Joins transaction and identity staging tables at unique transaction grain."
     config:
       tags: ["intermediate", "fraud"]
     columns:
       - name: transaction_id
-        description: "Tekil işlem anahtarı."
+        description: "Unique transaction key."
         tests:
           - not_null
           - unique
       - name: transaction_amount
-        description: "İşlem tutarı."
+        description: "Transaction amount."
         tests:
           - not_null
           - not_negative
       - name: has_identity
-        description: "İşlemin identity tablosunda kaydı olup olmadığını gösterir."
+        description: "Indicates whether the transaction has a matching identity record."
         tests:
           - accepted_values:
               arguments:
@@ -25,7 +25,7 @@ models:
                 quote: false
 
   - name: int_features
-    description: "Power BI ve ML yorumlaması için tutar, ürün, kart, email, cihaz ve zaman segmentlerini üretir."
+    description: "Creates amount, product, card, email, device, synthetic UID, and relative time segments for marts and reporting."
     config:
       tags: ["intermediate", "fraud", "feature_engineering"]
     columns:
@@ -34,14 +34,18 @@ models:
           - not_null
           - unique
       - name: amount_band
-        description: "Yönetici raporunda kullanılan tutar bandı."
+        description: "Amount band used by executive reporting."
         tests:
           - not_null
       - name: product_cd_clean
-        description: "Temizlenmiş ürün kodu."
+        description: "Cleaned ProductCD value."
         tests:
           - not_null
       - name: purchaser_email_group
-        description: "Purchaser email domain segmenti."
+        description: "Purchaser email domain segment."
+        tests:
+          - not_null
+      - name: purchaser_email_risk_group
+        description: "Business-facing email risk group: mainstream consumer, privacy masked, institutional, unknown, or long-tail."
         tests:
           - not_null

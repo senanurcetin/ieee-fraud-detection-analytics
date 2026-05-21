@@ -9,8 +9,11 @@ This document summarizes the fields used in the reporting and modeling layer. Th
 | `transaction_id` | staging, marts, powerbi | Unique transaction identifier. |
 | `transaction_day` | staging, marts, powerbi | Relative day derived from `TransactionDT`. |
 | `transaction_week` | powerbi | Relative week derived from transaction day. |
-| `transaction_hour` | powerbi | Relative hour within day. |
+| `transaction_hour` | staging, powerbi | Relative hour within day derived from elapsed seconds. Not a real clock timestamp. |
+| `relative_day_of_week` | staging, powerbi | Relative day-of-week index derived from `TransactionDT`. Not a calendar weekday. |
 | `transaction_amount` | staging, marts, powerbi | Transaction amount. |
+| `transaction_amount_cents` | staging, powerbi | Decimal-cent component of `TransactionAmt`. |
+| `is_round_amount` | staging, powerbi | Flag for whole-number transaction amounts. |
 | `amount_band` | intermediate, marts, powerbi | Business-friendly transaction amount bucket. |
 | `product_cd` | powerbi | Product code normalized from Kaggle `ProductCD`. |
 | `is_fraud` | staging, marts, powerbi | Fraud label: `1` fraud, `0` legitimate. |
@@ -20,6 +23,7 @@ This document summarizes the fields used in the reporting and modeling layer. Th
 | Field | Layer | Description |
 | --- | --- | --- |
 | `has_identity` | intermediate, powerbi | Indicates whether the transaction has a matching identity record. |
+| `synthetic_uid_card_addr` | staging, powerbi | Synthetic customer-like analysis key built from `card1 + addr1`; not a verified customer ID. |
 | `device_type` | staging, marts, powerbi | Device type, normalized to desktop, mobile, or unknown. |
 | `device_info` | staging | Raw device information when available. |
 
@@ -30,6 +34,7 @@ This document summarizes the fields used in the reporting and modeling layer. Th
 | `card_network` | intermediate, powerbi | Card network from `card4`, with missing values handled. |
 | `card_type` | intermediate, powerbi | Card type from `card6`, with missing values handled. |
 | `purchaser_email_group` | intermediate, powerbi | Grouped purchaser email domain. |
+| `purchaser_email_risk_group` | intermediate, powerbi | Business-facing email domain group: mainstream, privacy masked, institutional, unknown, or long-tail. |
 
 ## Model Fields
 

@@ -18,6 +18,13 @@ select
         else 'Other'
     end as purchaser_email_group,
     case
+        when p_emaildomain is null then 'Unknown'
+        when lower(p_emaildomain) = 'anonymous.com' then 'Privacy masked'
+        when lower(p_emaildomain) in ('gmail.com', 'yahoo.com', 'hotmail.com', 'aol.com', 'comcast.net', 'outlook.com', 'msn.com', 'live.com', 'icloud.com', 'protonmail.com') then 'Mainstream consumer'
+        when lower(p_emaildomain) like '%.edu' or lower(p_emaildomain) like '%.gov' then 'Institutional'
+        else 'Long-tail / other'
+    end as purchaser_email_risk_group,
+    case
         when transaction_week <= 4 then 'Early'
         when transaction_week <= 8 then 'Middle'
         else 'Late'

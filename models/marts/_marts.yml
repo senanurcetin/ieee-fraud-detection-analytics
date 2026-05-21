@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: mart_fraud_summary
-    description: "Üst yönetim için portföy geneli fraud, identity ve tutar özet metrikleri."
+    description: "Portfolio-level fraud, identity coverage, and amount summary metrics for executive reporting."
     config:
       tags: ["mart", "fraud", "executive"]
     tests:
@@ -18,7 +18,7 @@ models:
                 max_value: 0.04
 
   - name: mart_daily_stats
-    description: "Günlük hacim, fraud oranı, hareketli ortalama ve drift bayrağı."
+    description: "Relative-day volume, fraud rate, moving average, and drift flag. TransactionDT is treated as elapsed seconds, not a calendar timestamp."
     config:
       tags: ["mart", "fraud", "time"]
     columns:
@@ -34,7 +34,7 @@ models:
                 max_value: 1
 
   - name: mart_amount_bands
-    description: "Tutar bandı bazında fraud oranı, lift ve portföy payı."
+    description: "Fraud rate, lift, and portfolio share by transaction amount band."
     config:
       tags: ["mart", "fraud", "amount"]
     columns:
@@ -47,7 +47,7 @@ models:
           - not_negative
 
   - name: mart_product_device_stats
-    description: "Ürün ve cihaz kırılımında risk yoğunlaşması."
+    description: "Risk concentration by product and device segment."
     config:
       tags: ["mart", "fraud", "segment"]
     columns:
@@ -59,7 +59,7 @@ models:
                 max_value: 1
 
   - name: mart_email_domain_stats
-    description: "Purchaser email domain gruplarında hacim, fraud oranı ve lift."
+    description: "Volume, fraud rate, and lift by purchaser email domain group."
     config:
       tags: ["mart", "fraud", "email"]
     columns:
@@ -68,8 +68,48 @@ models:
           - not_null
           - unique
 
+  - name: mart_identity_product_coverage
+    description: "Identity coverage and fraud-rate comparison by ProductCD. Supports the finding that identity availability is itself a risk segmentation signal."
+    config:
+      tags: ["mart", "fraud", "identity", "product"]
+    columns:
+      - name: product_cd
+        tests:
+          - not_null
+          - unique
+      - name: identity_coverage_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: fraud_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: mart_time_amount_signals
+    description: "Relative TransactionDT hour and TransactionAmt decimal-pattern risk signals for operational scheduling and threshold design."
+    config:
+      tags: ["mart", "fraud", "time", "amount"]
+    columns:
+      - name: transaction_hour
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
+      - name: fraud_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
   - name: mart_feature_missingness
-    description: "Ham tablolardaki kolon eksiklik oranlarını raporlama seviyesinde sunar."
+    description: "Column-level missingness rates from raw source tables for data quality reporting."
     config:
       tags: ["mart", "data_quality"]
     columns:
@@ -81,7 +121,7 @@ models:
                 max_value: 1
 
   - name: mart_model_predictions
-    description: "Model skorları ve risk bantları."
+    description: "Model scores and risk bands."
     config:
       tags: ["mart", "model"]
     columns:
@@ -101,7 +141,7 @@ models:
                 values: ["Low", "Elevated", "High", "Critical"]
 
   - name: mart_risk_band_stats
-    description: "Risk bandı bazında gözlenen fraud oranı, lift ve operasyon önceliği."
+    description: "Observed fraud rate, lift, and operational review priority by risk band."
     config:
       tags: ["mart", "model", "executive"]
     columns:

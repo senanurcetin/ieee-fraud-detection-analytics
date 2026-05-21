@@ -9,16 +9,18 @@ with base as (
 email as (
     select
         purchaser_email_group,
+        purchaser_email_risk_group,
         count(*) as transaction_count,
         sum(is_fraud) as fraud_count,
         {{ fp_avg_rate('is_fraud') }} as fraud_rate,
         avg(transaction_amount) as avg_transaction_amount
     from {{ ref('int_features') }}
-    group by 1
+    group by 1, 2
 )
 
 select
     e.purchaser_email_group,
+    e.purchaser_email_risk_group,
     e.transaction_count,
     e.fraud_count,
     e.fraud_rate,

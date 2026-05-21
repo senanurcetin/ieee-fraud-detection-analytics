@@ -4,7 +4,14 @@ select
     {{ fp_int(fp_quote('TransactionDT')) }} as transaction_dt,
     {{ fp_smallint("floor(" ~ fp_quote('TransactionDT') ~ " / 86400) + 1") }} as transaction_day,
     {{ fp_smallint("floor(" ~ fp_quote('TransactionDT') ~ " / 604800) + 1") }} as transaction_week,
+    {{ fp_smallint("floor(mod(" ~ fp_quote('TransactionDT') ~ ", 86400) / 3600)") }} as transaction_hour,
+    {{ fp_smallint("mod(floor(" ~ fp_quote('TransactionDT') ~ " / 86400), 7)") }} as relative_day_of_week,
     {{ fp_float(fp_quote('TransactionAmt')) }} as transaction_amount,
+    {{ fp_smallint("round((" ~ fp_quote('TransactionAmt') ~ " - floor(" ~ fp_quote('TransactionAmt') ~ ")) * 100)") }} as transaction_amount_cents,
+    case
+        when abs({{ fp_quote('TransactionAmt') }} - floor({{ fp_quote('TransactionAmt') }})) < 0.00001 then 1
+        else 0
+    end as is_round_amount,
     nullif(trim({{ fp_string(fp_quote('ProductCD')) }}), '') as product_cd,
     {{ fp_smallint(fp_quote('card1')) }} as card1,
     {{ fp_float(fp_quote('card2')) }} as card2,
@@ -18,6 +25,10 @@ select
     {{ fp_float(fp_quote('dist2')) }} as dist2,
     nullif(trim({{ fp_string(fp_quote('P_emaildomain')) }}), '') as p_emaildomain,
     nullif(trim({{ fp_string(fp_quote('R_emaildomain')) }}), '') as r_emaildomain,
+    case
+        when {{ fp_quote('card1') }} is null or {{ fp_quote('addr1') }} is null then 'uid_missing'
+        else concat({{ fp_string(fp_quote('card1')) }}, '|', {{ fp_string(fp_int(fp_quote('addr1'))) }})
+    end as synthetic_uid_card_addr,
     {{ fp_float(fp_quote('C1')) }} as c1,
     {{ fp_float(fp_quote('C2')) }} as c2,
     {{ fp_float(fp_quote('C3')) }} as c3,

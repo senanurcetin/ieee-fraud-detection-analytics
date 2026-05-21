@@ -27,6 +27,8 @@
 - Banking business impact analysis.
 - Regulatory context.
 - Operational playbook.
+- IEEE-CIS dataset methodology notes.
+- Model validation evidence with precision-recall curve.
 - Data dictionary.
 - Environment setup.
 - Security and secrets guide.

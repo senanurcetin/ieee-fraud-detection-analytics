@@ -183,7 +183,20 @@ Model explainability artifacts:
 
 - [Feature importance](powerbi/assets/05_feature_importance.png)
 - [SHAP summary](powerbi/assets/26_shap_summary.png)
+- [Precision-recall curve](docs/assets/precision_recall_curve.svg)
 - [Threshold simulation and business impact](docs/banking_business_impact.md)
+
+Validation evidence:
+
+| Metric | Value |
+|---|---:|
+| ROC-AUC | 0.9167 |
+| Average precision / AUC-PR proxy | 0.5308 |
+| Validation top 10% lift | 7.24x |
+| Validation High + Critical precision | 40.4% |
+| Validation High + Critical recall | 59.4% |
+| Validation High + Critical false-positive rate | 3.12% |
+| Validation High + Critical workload share | 5.06% |
 
 ## Power BI Report
 
@@ -231,7 +244,9 @@ The Power BI validator checks package integrity, page count, visual type allowli
 - [Analysis Hypotheses](docs/03_analysis_hypotheses.md)
 - [ML Ideas](docs/04_ml_ideas.md)
 - [Data Dictionary](docs/data_dictionary.md)
+- [IEEE-CIS Dataset Methodology Notes](docs/ieee_cis_dataset_methodology.md)
 - [Modeling Decisions](docs/modeling_decisions.md)
+- [Model Validation Evidence](docs/model_validation_evidence.md)
 - [Banking Business Impact](docs/banking_business_impact.md)
 - [Regulatory Context](docs/regulatory_context.md)
 - [Operational Playbook](docs/operational_playbook.md)

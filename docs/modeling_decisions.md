@@ -30,6 +30,8 @@ The validation split is time-based:
 
 This avoids random leakage across time and better reflects fraud monitoring use cases.
 
+`TransactionDT` is treated as an elapsed-time field, not a real timestamp. All daily, hourly, and weekly fields are relative transformations used for pattern analysis and drift monitoring.
+
 ## Metrics
 
 Primary metric:
@@ -54,6 +56,14 @@ Latest validation snapshot:
 - Average precision: 0.5308
 - High + Critical queue: 54.8% precision, 78.3% recall, 0.645 F1, 5.0% review workload
 
+Validation operating point at the train p95 threshold:
+
+- Precision: 40.4%
+- Recall: 59.4%
+- False-positive rate: 3.12%
+- Workload share: 5.06%
+- Top 10% score lift: 7.24x
+
 ## Class Imbalance Strategy
 
 The dataset has a baseline fraud rate of 3.50%, so accuracy is not a useful model-quality measure. The project handles class imbalance through:
@@ -64,6 +74,18 @@ The dataset has a baseline fraud rate of 3.50%, so accuracy is not a useful mode
 - Business-facing threshold simulation rather than a fixed 0.50 classification threshold.
 
 Synthetic oversampling is not used because the validation design is time-based and the priority is preserving realistic transaction chronology and review workload behavior.
+
+## Feature Scope
+
+The baseline model uses 206 selected features:
+
+- Core transaction fields such as `TransactionDT` and `TransactionAmt`
+- Card, address, distance, email, C, D, M, identity, device, and selected Vesta engineered V features
+- V1-V120 from the V1-V339 anonymous V feature family
+
+V121-V339 are not used in the baseline model. This is documented as a scope decision, not as a claim that the omitted fields have no value. Expanding the V-family coverage is the next model experiment and should be judged by AUC-PR, recall, false-positive rate, lift, and runtime.
+
+Masked feature interpretations are treated as observational. The report does not claim confirmed meanings for C, D, M, V, or identity fields beyond their role as anonymized fraud signals.
 
 ## Risk Bands
 
