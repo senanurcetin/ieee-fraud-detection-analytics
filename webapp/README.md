@@ -1,23 +1,20 @@
-# Live Web Dashboard
+# Fraud Risk Intelligence Web Dashboard
 
-This web application is the primary presentation layer for the fraud analytics project. It serves a Turkish executive dashboard from a FastAPI backend and reads only the dbt-built `fraud_project_reporting` tables.
+This web application is the only public presentation layer for the fraud analytics project. It serves an English-first executive dashboard from a FastAPI backend and reads only the dbt-built BigQuery reporting tables in `fraud_project_reporting`.
 
-## Analytics Capabilities
+## What It Shows
 
-- Global slicers for metric, segment family, and operational priority.
-- Drill-through side panel for selected bars, tables, heatmap cells, and driver nodes.
-- Custom tooltip layer for exact values and business context.
-- Pareto fraud-contribution chart.
-- Decomposition tree for segment risk drivers.
-- Identity/product coverage matrix.
-- Relative hour and amount-decimal heatmap.
-- Threshold what-if simulation with workload, fraud capture, precision, and false-positive estimate.
-- Feature importance and feature-family treemap.
-- Data quality contract and report readiness scorecards.
+- Executive KPI strip for transaction volume, fraud volume, fraud rate, identity coverage, review workload, and fraud capture.
+- Segment comparison between two risk cuts with fraud rate, lift, fraud share, transaction share, average amount, and priority.
+- Drill-through drawer with workload impact, recommended action, and copy-ready presentation insight.
+- Fraud contribution waterfall and Pareto concentration view from `rpt_segment_watchlist`.
+- Model operations simulator with analyst capacity, false-positive review cost, and false-negative loss assumptions.
+- Alert simulation for fraud drift, critical queue pressure, missingness, and readiness status.
+- Data trust page with row-count contract, readiness gate, missingness scorecard, and live lineage.
 
 ## Data Contract
 
-The API reads these reporting tables:
+The API reads these 18 reporting tables:
 
 - `rpt_executive_kpis`
 - `rpt_product_risk`
@@ -38,6 +35,8 @@ The API reads these reporting tables:
 - `rpt_quality_contract`
 - `rpt_report_readiness`
 
+No raw transaction table is queried by the dashboard. All visible analytics come from pre-aggregated reporting marts or client-side calculations over the API payload.
+
 ## Local Run
 
 ```powershell
@@ -49,22 +48,15 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-Then open:
+Open:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-## Notes
-
-- The dashboard queries pre-aggregated `rpt_*` tables, not the raw transaction table.
-- API responses are cached in memory for 10 minutes by default.
-- Set `WEB_CACHE_SECONDS` to change the cache duration.
-- Set `BIGQUERY_MAX_BYTES_BILLED` to enforce a query cost guardrail.
-
 ## Vercel Runtime
 
-Deploy this folder as the Vercel project root:
+Deploy the `webapp` folder as the Vercel project root:
 
 ```powershell
 cd webapp
@@ -72,7 +64,7 @@ npx vercel link --yes --project fraud-project-web
 npx vercel deploy --prod --yes
 ```
 
-Vercel does not have access to local credential files. Configure these environment variables in the Vercel project:
+Vercel cannot read local credential files. Configure these environment variables in the Vercel project:
 
 - `GCP_PROJECT_ID`
 - `BQ_DATASET`
@@ -80,4 +72,17 @@ Vercel does not have access to local credential files. Configure these environme
 - `BIGQUERY_MAX_BYTES_BILLED`
 - `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`
 
-`GOOGLE_APPLICATION_CREDENTIALS_JSON_B64` must contain the base64-encoded service-account JSON content. Do not commit credential files to the repository.
+`GOOGLE_APPLICATION_CREDENTIALS_JSON_B64` must contain the base64-encoded service-account JSON content. Never commit credential files to the repository.
+
+## Export Options
+
+- `Export JSON` downloads the current API payload for audit or offline review.
+- `Print / Save PDF` uses browser print styles for the active dashboard tab.
+- `Copy executive summary` creates a short presentation-ready narrative from the current live data.
+
+## Cost and Quota Guardrails
+
+- API responses are cached in memory for 10 minutes by default.
+- Set `WEB_CACHE_SECONDS` to tune cache duration.
+- Set `BIGQUERY_MAX_BYTES_BILLED` to enforce a query cost limit.
+- The dashboard reads only small `rpt_*` reporting tables, which keeps BigQuery usage within free-tier-friendly limits for portfolio traffic.

@@ -1,54 +1,66 @@
 # Development Backlog
 
-Bu backlog, canlÄ± web analitik katmanÄ±nÄ±n kalan geliÅŸtirme alanlarÄ±nÄ± gÃ¶sterir. Ana hedef, dashboard'u Ã¼st yÃ¶netim sunumu ve portfÃ¶y gÃ¶sterimi iÃ§in daha etkileÅŸimli, aÃ§Ä±klanabilir ve gÃ¼venilir tutmaktÄ±r.
+This backlog tracks the remaining work for the live web analytics layer. The goal is to keep the dashboard credible for an executive banking fraud presentation while preserving a zero-cost, English-first, portfolio-ready delivery model.
 
-## P0 - Sunum ve Veri GÃ¼veni
+## P0 - Presentation and Data Trust
 
-1. Vercel production doÄŸrulamasÄ±
-   - `/api/dashboard?refresh=true` endpoint'i 18 tabloyu dÃ¶ndÃ¼rmeli.
-   - Toplam iÅŸlem sayÄ±sÄ± 590.540 olarak gÃ¶rÃ¼nmeli.
-   - `rpt_report_readiness` 6/6 PASS olmalÄ±.
+1. Production smoke test
+   - `/api/dashboard?refresh=true` must return all 18 reporting table groups.
+   - Total transactions must remain 590,540.
+   - `rpt_report_readiness` must show 6/6 passing checks.
 
-2. Dashboard gÃ¶rsel kontrolÃ¼
-   - MasaÃ¼stÃ¼ 1440px ve mobil 390px gÃ¶rÃ¼nÃ¼mleri kontrol edilmeli.
-   - BaÅŸlÄ±k kÄ±rpÄ±lmasÄ±, taÅŸan metin ve boÅŸ chart olmamalÄ±.
-   - Slicer, tooltip, drill-through ve threshold slider akÄ±ÅŸÄ± Ã§alÄ±ÅŸmalÄ±.
+2. Responsive visual review
+   - Validate desktop, tablet, and mobile viewports.
+   - No clipped titles, overlapping controls, empty charts, or unreadable labels.
+   - Slicers, segment comparison, drawer, threshold simulation, and export controls must work end to end.
 
-3. README ekran gÃ¶rÃ¼ntÃ¼leri
-   - YÃ¶netici Ã¶zeti, segment analizi, model simÃ¼lasyonu ve kalite sayfasÄ± gÃ¼ncel web arayÃ¼zÃ¼nden alÄ±nmÄ±ÅŸ olmalÄ±.
+3. Public portfolio evidence
+   - Refresh dashboard screenshots after each major UI iteration.
+   - README preview images should show Executive Overview, Segment Explorer, Model Operations, and Data Trust.
 
-## P1 - Analitik Derinlik
+## P1 - Analytical Depth
 
-1. Segment karÅŸÄ±laÅŸtÄ±rma modu
-   - Ä°ki segmentin fraud oranÄ±, lift, fraud payÄ± ve iÅŸlem payÄ± yan yana karÅŸÄ±laÅŸtÄ±rÄ±lmalÄ±.
+1. Segment comparison mode
+   - Compare two segments side by side on fraud rate, lift, fraud share, transaction share, average amount, and priority.
+   - Generate a recommendation when one segment has materially higher risk concentration.
 
 2. Dynamic threshold policy
-   - Threshold slider yalnÄ±zca model eÄŸrisini deÄŸil, Ã¶nerilen operasyon politikasÄ±nÄ± da gÃ¼ncellemeli.
+   - Connect the threshold simulation to analyst capacity, false-positive review cost, and false-negative loss assumptions.
+   - Surface the recommended threshold and estimated missed fraud exposure.
 
-3. Explainability sayfasÄ±
-   - Feature importance yanÄ±nda SHAP benzeri iÅŸ yorumlarÄ± ve feature family katkÄ±sÄ± sunulmalÄ±.
+3. Explainability narrative
+   - Extend feature importance with business-readable signal families.
+   - Label masked Vesta features as observational signals rather than confirmed business definitions.
 
 4. Fraud contribution waterfall
-   - Product, identity, payment, email ve amount eksenlerinin fraud hacmine katkÄ±sÄ± kademeli gÃ¶sterilmeli.
+   - Show how product, identity, payment, email, and amount segments contribute to fraud concentration.
+   - Keep the method transparent because segment shares can overlap.
 
-## P2 - Operasyonel Olgunluk
+## P2 - Operational Maturity
 
 1. Alert simulation
-   - Fraud rate drift, kritik bant hacmi ve veri kalite dÃ¼ÅŸÃ¼ÅŸÃ¼ iÃ§in uyarÄ± senaryolarÄ± gÃ¶rselleÅŸtirilmeli.
+   - Flag fraud drift, critical queue pressure, high missingness, and readiness failures.
+   - Attach a recommended monitoring action to each alert.
 
 2. Export story
-   - Dashboard JSON export yanÄ±nda executive summary PDF/PNG export akÄ±ÅŸÄ± eklenmeli.
+   - Keep JSON export for auditability.
+   - Use browser print styles for PDF-ready executive views.
+   - Keep copy-ready summary text for meetings.
 
 3. Monitoring runbook
-   - Vercel, BigQuery ve dbt hata durumlarÄ±nda kontrol edilecek adÄ±mlar dokÃ¼mante edilmeli.
+   - Document Vercel, BigQuery, dbt, and credential checks.
+   - Add a clear recovery path for API errors and stale data.
 
-## P3 - ÃœrÃ¼nleÅŸme
+## P3 - Productization
 
 1. Multi-dataset template
-   - AynÄ± dashboard iskeleti farklÄ± fraud veri setlerine uygulanabilir hale getirilmeli.
+   - Make the dashboard structure reusable for additional fraud datasets.
+   - Keep dataset selection environment-driven to avoid paid infrastructure.
 
 2. Tenant-ready architecture note
-   - Ãœcretsiz katman sÄ±nÄ±rlarÄ± korunarak Ã§oklu mÃ¼ÅŸteri mimarisi iÃ§in dataset izolasyonu planlanmalÄ±.
+   - Plan dataset isolation for future multi-tenant usage while staying within free-tier constraints.
+   - Avoid assumptions about paid gateways or custom domains.
 
 3. Payment-independent validation
-   - Stripe varsayÄ±mÄ± olmadan, waitlist ve Merchant of Record uyumlu Ã¼rÃ¼n doÄŸrulama akÄ±ÅŸÄ± tasarlanmalÄ±.
+   - Use waitlist, manual onboarding, and Merchant of Record compatible flows for future monetization.
+   - Do not depend on Stripe availability.

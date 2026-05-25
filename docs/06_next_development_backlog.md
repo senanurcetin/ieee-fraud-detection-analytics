@@ -1,46 +1,52 @@
 # Next Development Backlog
 
-Bu dokÃ¼man, son iterasyonda canlÄ± web dashboard ana raporlama katmanÄ± haline getirildikten sonra izlenecek teknik geliÅŸtirme sÄ±rasÄ±nÄ± tanÄ±mlar.
+This document defines the next technical iteration after making the live web dashboard the primary reporting and presentation layer.
 
-## Tamamlanan Son Ä°terasyon
+## Completed Baseline
 
-1. Eski statik rapor baÄŸÄ±mlÄ±lÄ±ÄŸÄ± ana sunum katmanÄ±ndan Ã§Ä±karÄ±ldÄ±.
-2. FastAPI dashboard API'si 18 BigQuery raporlama tablosunu kapsayacak ÅŸekilde geniÅŸletildi.
-3. Web dashboard'a geliÅŸmiÅŸ analitik yetenekler eklendi:
-   - global slicer
-   - drill-through paneli
-   - Ã¶zel tooltip
-   - Pareto analizi
-   - decomposition tree
-   - identity/product coverage matrisi
-   - relatif saat ve amount-decimal heatmap
-   - threshold what-if simÃ¼lasyonu
-   - feature treemap
-   - veri kalite kontratÄ±
-4. README ve QA dokÃ¼manlarÄ± web dashboard'u ana teslim olarak gÃ¶sterecek ÅŸekilde gÃ¼ncellendi.
+1. Static presentation dependencies were removed from the active reporting path.
+2. The FastAPI dashboard API was expanded to cover 18 BigQuery reporting tables.
+3. The web dashboard includes:
+   - Global filters for metric, segment family, and operational priority.
+   - Segment comparison panel.
+   - Drill-through drawer with copy-ready insight text.
+   - Pareto and fraud contribution waterfall charts.
+   - Identity and product coverage matrix.
+   - Relative hour and amount-decimal heatmap.
+   - Payment and email risk cuts.
+   - Threshold what-if simulation.
+   - Capacity and cost operating assumptions.
+   - Feature importance and feature-family treemap.
+   - Alert simulation, data quality contract, and readiness gate.
+4. The public dashboard language is English-first.
 
-## SÄ±radaki GeliÅŸtirmeler
+## Next Improvements
 
-1. Public deployment smoke test
-   - Production URL Ã¼zerinden API kontratÄ± ve ana dashboard ekranÄ± kontrol edilmeli.
+1. Production verification
+   - Validate the production API contract and dashboard UI after each deployment.
+   - Confirm that the production environment reads `fraud_project_reporting`.
 
-2. Segment drill-down derinleÅŸtirme
-   - Drill paneline trend, hacim, fraud payÄ± ve Ã¶nerilen aksiyon aynÄ± anda eklenmeli.
+2. Deeper segment drill-down
+   - Add mini-trends for selected segments where reporting data is available.
+   - Add comparable peer segments for the selected risk driver.
 
-3. YÃ¶netici sunumu export'u
-   - Her sekme iÃ§in PNG export ve tek sayfalÄ±k executive brief Ã§Ä±ktÄ±sÄ± hazÄ±rlanmalÄ±.
+3. Meeting-ready export
+   - Improve print CSS after screenshot review.
+   - Add one-page executive brief generation from the active filters.
 
 4. Model explainability
-   - Feature importance tablosu iÅŸ birimi diliyle yorumlanmalÄ±.
-   - MaskelenmiÅŸ Vesta Ã¶zellikleri â€œobservational signalâ€ olarak etiketlenmeli.
+   - Add feature family commentary and documented treatment of masked Vesta features.
+   - Add a precision-recall focused explanation for imbalanced fraud data.
 
-5. Operasyonel eÅŸik simÃ¼lasyonu
-   - False positive maliyeti, false negative maliyeti ve inceleme kapasitesi kullanÄ±cÄ± girdisi olarak simÃ¼le edilmeli.
+5. Operational threshold simulation
+   - Expand the cost model with analyst hourly cost, SLA target, and queue backlog.
+   - Add sensitivity bands for conservative, balanced, and aggressive review policies.
 
-## Kabul Kriterleri
+## Acceptance Criteria
 
-- Dashboard production URL'i veri dÃ¶ndÃ¼rÃ¼r.
-- GÃ¶rÃ¼nÃ¼r arayÃ¼zde boÅŸ chart yoktur.
-- TÃ¼m interaktif kontroller veri durumunu deÄŸiÅŸtirir.
-- README ekran gÃ¶rÃ¼ntÃ¼leri gÃ¼ncel web arayÃ¼zÃ¼nÃ¼ gÃ¶sterir.
-- Web dashboard proje iÃ§indeki tek aktif sunum katmanÄ±dÄ±r.
+- Production dashboard returns live data.
+- No visible public UI contains non-English labels.
+- No chart is blank under the default filter context.
+- Every interactive control changes the visible analysis or export state.
+- Dashboard screenshots in the README reflect the current web UI.
+- The web dashboard remains the only active presentation layer.

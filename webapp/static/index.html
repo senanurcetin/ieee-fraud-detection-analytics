@@ -1,74 +1,98 @@
 <!doctype html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fraud Risk Intelligence</title>
   <style>
     :root {
-      --bg: #090d13;
-      --bg-2: #0d131b;
-      --panel: #121923;
-      --panel-2: #172231;
-      --panel-3: #0e151e;
-      --line: rgba(255,255,255,.09);
-      --line-strong: rgba(255,255,255,.17);
+      --bg: #07111f;
+      --bg-soft: #0b1626;
+      --panel: #101b2b;
+      --panel-2: #142237;
+      --panel-3: #0d1828;
+      --line: rgba(226, 235, 246, .10);
+      --line-strong: rgba(226, 235, 246, .20);
       --text: #eef5ff;
-      --muted: #9ba9ba;
-      --dim: #68788c;
-      --red: #f14f55;
+      --muted: #9aa9bb;
+      --dim: #6d7d91;
+      --navy: #0a1322;
+      --red: #e5484d;
+      --red-soft: rgba(229, 72, 77, .13);
+      --teal: #18a999;
+      --teal-soft: rgba(24, 169, 153, .13);
       --amber: #d99a20;
-      --green: #2f9e75;
+      --amber-soft: rgba(217, 154, 32, .14);
       --blue: #4c8df6;
-      --teal: #2bb3a3;
+      --blue-soft: rgba(76, 141, 246, .14);
       --violet: #8b5cf6;
-      --shadow: 0 22px 72px rgba(0,0,0,.32);
+      --green: #2f9e75;
+      --shadow: 0 20px 60px rgba(0, 0, 0, .34);
+      --radius: 8px;
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
       min-height: 100vh;
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 10% -10%, rgba(76,141,246,.16), transparent 28rem),
-        radial-gradient(circle at 90% 4%, rgba(241,79,85,.13), transparent 28rem),
-        linear-gradient(180deg, #0b1017 0%, #090d13 100%);
+        radial-gradient(circle at 6% -14%, rgba(76, 141, 246, .18), transparent 34rem),
+        radial-gradient(circle at 92% -12%, rgba(229, 72, 77, .14), transparent 30rem),
+        linear-gradient(180deg, #08111f 0%, #07111f 42%, #050b14 100%);
       overflow-x: hidden;
     }
 
     button, input, select { font: inherit; }
     button { cursor: pointer; }
+    a { color: inherit; }
 
-    .shell { max-width: 1500px; margin: 0 auto; padding: 22px 28px 36px; }
-    .topbar {
+    .shell { max-width: 1480px; margin: 0 auto; padding: 22px 24px 34px; }
+    .app-header {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 18px;
       align-items: start;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
+
     .brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
     .mark {
-      width: 44px; height: 44px;
-      display: grid; place-items: center;
-      border-radius: 8px;
-      background: linear-gradient(145deg, #203149, #101721);
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, #1a2940, #0b1422);
       border: 1px solid var(--line-strong);
-      color: var(--red);
+      color: #ffc7ca;
       font-weight: 900;
-      letter-spacing: -.05em;
+      letter-spacing: -.06em;
       box-shadow: var(--shadow);
+      flex: 0 0 auto;
     }
-    h1 { margin: 0; font-size: clamp(30px, 3.7vw, 52px); line-height: .96; letter-spacing: -.055em; }
-    .subtitle { margin: 8px 0 0; max-width: 900px; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 3.6vw, 50px);
+      line-height: 1.2;
+      letter-spacing: -.052em;
+      padding-bottom: 8px;
+    }
+    .subtitle {
+      margin: 8px 0 0;
+      max-width: 880px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
-    .statusbar { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
+    .statusbar { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
     .pill {
       max-width: 100%;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.035);
+      background: rgba(255, 255, 255, .035);
       border-radius: 999px;
       color: var(--muted);
       padding: 7px 10px;
@@ -77,1164 +101,1255 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .pill.live { color: #ffc1c4; border-color: rgba(241,79,85,.35); background: rgba(241,79,85,.10); }
-    .pill.pass { color: #bcf8de; border-color: rgba(47,158,117,.35); background: rgba(47,158,117,.10); }
+    .pill.live { color: #ffd1d3; border-color: rgba(229, 72, 77, .35); background: var(--red-soft); }
+    .pill.pass { color: #c8fff6; border-color: rgba(24, 169, 153, .40); background: var(--teal-soft); }
+    .pill.warn { color: #ffe7b2; border-color: rgba(217, 154, 32, .40); background: var(--amber-soft); }
 
-    .control-panel {
+    .command-bar {
       display: grid;
-      grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
+      grid-template-columns: repeat(5, minmax(140px, 1fr)) auto;
       gap: 10px;
       align-items: end;
-      padding: 14px;
-      margin-bottom: 18px;
+      background: rgba(16, 27, 43, .82);
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(18,25,35,.74);
+      border-radius: var(--radius);
+      padding: 12px;
       box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      margin-bottom: 14px;
     }
-    .control { display: grid; gap: 6px; min-width: 0; }
-    .control label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 850; }
-    .select, .btn {
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .select,
+    .input {
+      min-height: 38px;
       width: 100%;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #0d1828;
+      color: var(--text);
+      padding: 0 10px;
+      outline: none;
+    }
+    .select:focus,
+    .input:focus { border-color: rgba(76, 141, 246, .68); box-shadow: 0 0 0 3px rgba(76, 141, 246, .14); }
+    .selected-chip {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: #0d1828;
+      padding: 0 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 13px;
+    }
+    .actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; min-width: 330px; }
+    .btn {
       min-height: 38px;
       border: 1px solid var(--line-strong);
-      border-radius: 8px;
-      background: #101720;
+      border-radius: 7px;
+      padding: 0 11px;
+      background: rgba(255, 255, 255, .045);
       color: var(--text);
-      padding: 8px 10px;
-      font-size: 13px;
-      font-weight: 720;
-    }
-    .btn { width: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-    .btn:hover, .select:hover { border-color: rgba(255,255,255,.30); }
-    .button-row { display: flex; gap: 8px; justify-content: flex-end; }
-
-    .tabs {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--line);
-      overflow-x: auto;
-    }
-    .tab {
-      border: 0;
-      border-bottom: 2px solid transparent;
-      background: transparent;
-      color: var(--muted);
-      padding: 13px 14px 14px;
-      font-weight: 760;
+      font-weight: 800;
+      font-size: 12px;
       white-space: nowrap;
     }
-    .tab.active { color: var(--text); border-color: var(--red); }
+    .btn:hover { border-color: rgba(255, 255, 255, .34); background: rgba(255, 255, 255, .075); }
+    .btn.primary { color: #06121f; background: var(--teal); border-color: var(--teal); }
+    .btn.danger { color: #fff; background: rgba(229, 72, 77, .18); border-color: rgba(229, 72, 77, .42); }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab {
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(16, 27, 43, .72);
+      color: var(--muted);
+      font-weight: 900;
+      letter-spacing: -.01em;
+      text-align: left;
+      padding: 0 14px;
+    }
+    .tab.active {
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(76, 141, 246, .20), rgba(16, 27, 43, .96));
+      border-color: rgba(76, 141, 246, .48);
+    }
+    .tab small { display: block; margin-top: 2px; color: var(--dim); font-weight: 700; }
+    .tab.active small { color: #bfd1f2; }
+
+    .state {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(16, 27, 43, .72);
+      padding: 18px;
+      color: var(--muted);
+      margin: 12px 0;
+    }
+    .state.error { color: #ffd1d3; border-color: rgba(229, 72, 77, .45); background: var(--red-soft); }
 
     .view { display: none; }
     .view.active { display: block; }
-    .grid { display: grid; gap: 16px; }
-    .kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .section-grid { display: grid; gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .wide { grid-column: 1 / -1; }
-    .span-2 { grid-column: span 2; }
 
     .card {
       min-width: 0;
-      overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.038), rgba(255,255,255,.015)),
-        var(--panel);
-      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(18, 31, 49, .94), rgba(12, 22, 36, .94));
+      box-shadow: 0 14px 42px rgba(0, 0, 0, .18);
+      padding: 14px;
+      overflow: hidden;
     }
-    .card.pad { padding: 18px; }
     .card-head {
       display: flex;
-      align-items: flex-start;
       justify-content: space-between;
-      gap: 14px;
-      padding: 16px 18px 12px;
-      border-bottom: 1px solid var(--line);
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
     }
-    .card-title { margin: 0; font-size: 15px; font-weight: 870; letter-spacing: -.025em; }
-    .card-note { color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.35; }
-    .card-body { padding: 18px; }
+    .card-title {
+      margin: 0;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: -.02em;
+    }
+    .card-note {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .chart {
+      min-height: 260px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .chart.short { min-height: 190px; }
+    .chart.tall { min-height: 330px; }
+    svg { display: block; width: 100%; height: auto; }
 
+    .kpi-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
     .kpi {
-      min-height: 132px;
-      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+      padding: 12px;
+      min-height: 122px;
       position: relative;
+      overflow: hidden;
     }
-    .kpi::after {
+    .kpi:before {
       content: "";
       position: absolute;
-      left: 16px; right: 16px; bottom: 0;
+      inset: 0 0 auto 0;
       height: 3px;
-      border-radius: 999px 999px 0 0;
       background: var(--accent, var(--blue));
     }
-    .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 850; }
-    .kpi-value { margin-top: 12px; font-size: clamp(25px, 3vw, 39px); line-height: 1; font-weight: 900; letter-spacing: -.055em; }
-    .kpi-caption { margin-top: 10px; color: var(--dim); font-size: 12px; line-height: 1.35; }
-
-    .narrative {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr 1fr;
-      gap: 12px;
-    }
-    .narrative-card {
-      border-left: 3px solid var(--accent);
-      background: rgba(255,255,255,.026);
-      padding: 15px 16px;
-      min-height: 128px;
-    }
-    .narrative-card h3 { margin: 0 0 9px; font-size: 13px; letter-spacing: -.01em; }
-    .narrative-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
-
-    .insight-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .insight {
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: rgba(255,255,255,.024);
-    }
-    .insight strong { display: block; font-size: 21px; letter-spacing: -.04em; margin-bottom: 4px; }
-    .insight span { color: var(--muted); font-size: 12px; line-height: 1.45; }
-
-    .bar-list { display: grid; gap: 12px; }
-    .bar-row {
-      display: grid;
-      grid-template-columns: 126px minmax(100px, 1fr) 92px;
-      gap: 12px;
-      align-items: center;
-    }
-    .bar-label { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .bar-track { height: 24px; background: var(--panel-3); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 0; background: var(--bar, var(--blue)); border-radius: 5px; transition: width .5s ease; }
-    .bar-value { color: var(--text); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
-    .drillable { cursor: pointer; }
-    .drillable:hover .bar-track, .table-row-drill:hover td { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.035); }
-
-    .chart-wrap { height: 300px; }
-    .chart-wrap.tall { height: 370px; }
-    svg { width: 100%; height: 100%; display: block; }
-    .axis { stroke: rgba(255,255,255,.12); stroke-width: 1; }
-    .gridline { stroke: rgba(255,255,255,.06); stroke-width: 1; }
-    .area { fill: rgba(241,79,85,.12); }
-    .line { fill: none; stroke: var(--red); stroke-width: 2.7; }
-    .line-blue { fill: none; stroke: var(--blue); stroke-width: 2.7; }
-    .line-green { fill: none; stroke: var(--green); stroke-width: 2.7; }
-    .volume { fill: rgba(76,141,246,.18); }
-    .dot { fill: var(--red); stroke: #fff; stroke-width: 1; }
-
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
-    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 850; }
-    td { color: #dce6f2; font-size: 12px; }
-    .table-wrap { overflow-x: auto; }
-
-    .priority {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
+    .kpi-label {
+      color: var(--muted);
       font-size: 11px;
-      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 900;
+    }
+    .kpi-value {
+      margin-top: 12px;
+      color: var(--text);
+      font-size: clamp(24px, 3vw, 37px);
+      line-height: 1;
+      letter-spacing: -.05em;
+      font-weight: 900;
       white-space: nowrap;
     }
-    .priority.Kritik { color: #ffc1c4; background: rgba(241,79,85,.13); border-color: rgba(241,79,85,.36); }
-    .priority.YÃ¼ksek { color: #ffe0aa; background: rgba(217,154,32,.13); border-color: rgba(217,154,32,.36); }
-    .priority.Ä°zle { color: #c4e5ff; background: rgba(76,141,246,.13); border-color: rgba(76,141,246,.36); }
-    .priority.Normal { color: #bcf8de; background: rgba(47,158,117,.13); border-color: rgba(47,158,117,.36); }
+    .kpi-foot { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.35; }
 
-    .heatmap { display: grid; gap: 8px; }
-    .heat-row { display: grid; grid-template-columns: 132px repeat(2, minmax(90px, 1fr)); gap: 8px; align-items: center; }
+    .brief-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .brief {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent, var(--blue));
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .032);
+      padding: 12px;
+      min-height: 110px;
+    }
+    .brief strong { display: block; margin-bottom: 6px; color: var(--accent, var(--text)); }
+    .brief span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+    .bar-list { display: grid; gap: 9px; }
+    .bar-row { display: grid; grid-template-columns: minmax(86px, 142px) minmax(0, 1fr) 92px; gap: 10px; align-items: center; }
+    .bar-label { color: var(--text); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { height: 10px; background: rgba(255, 255, 255, .06); border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0; background: var(--accent, var(--blue)); border-radius: 999px; }
+    .bar-value { color: var(--muted); font-size: 12px; text-align: right; white-space: nowrap; }
+
+    .table-wrap { overflow: auto; max-height: 430px; border: 1px solid var(--line); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; font-size: 12px; vertical-align: top; }
+    th { position: sticky; top: 0; background: #0e1a2b; color: var(--muted); z-index: 2; text-transform: uppercase; letter-spacing: .05em; }
+    td { color: var(--text); }
+    tbody tr:hover { background: rgba(76, 141, 246, .08); }
+    .priority {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-weight: 900;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .priority.Critical { color: #ffd1d3; background: var(--red-soft); border-color: rgba(229, 72, 77, .45); }
+    .priority.High { color: #ffe7b2; background: var(--amber-soft); border-color: rgba(217, 154, 32, .45); }
+    .priority.Monitor { color: #cddfff; background: var(--blue-soft); border-color: rgba(76, 141, 246, .45); }
+    .priority.Normal { color: #c8fff6; background: var(--teal-soft); border-color: rgba(24, 169, 153, .45); }
+
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .compare-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+      padding: 12px;
+    }
+    .compare-card h3 { margin: 0 0 8px; font-size: 14px; }
+    .metric-line { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding: 7px 0; color: var(--muted); font-size: 12px; }
+    .metric-line strong { color: var(--text); font-size: 12px; text-align: right; }
+    .recommendation {
+      margin-top: 10px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(24, 169, 153, .36);
+      background: var(--teal-soft);
+      padding: 10px;
+      color: #c8fff6;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .heatmap { display: grid; gap: 6px; }
+    .heat-row { display: grid; grid-template-columns: 120px repeat(var(--cols, 4), minmax(70px, 1fr)); gap: 6px; align-items: stretch; }
+    .heat-label { color: var(--muted); font-size: 12px; display: flex; align-items: center; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .heat-cell {
       min-height: 44px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      display: grid;
-      align-content: center;
-      padding: 8px;
-      color: white;
-      font-weight: 850;
-      font-size: 12px;
-    }
-    .heat-meta { color: rgba(255,255,255,.74); font-size: 11px; margin-top: 3px; font-weight: 650; }
-
-    .matrix { display: grid; gap: 8px; }
-    .matrix-row {
-      display: grid;
-      grid-template-columns: 96px repeat(3, minmax(90px, 1fr));
-      gap: 8px;
-      align-items: stretch;
-    }
-    .matrix-cell {
-      min-height: 66px;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255,255,255,.035);
-      display: grid;
-      gap: 5px;
-      align-content: center;
-      font-size: 12px;
-    }
-    .matrix-cell strong { font-size: 15px; }
-    .matrix-cell span { color: var(--muted); font-size: 11px; }
-
-    .tree { display: grid; gap: 12px; }
-    .tree-root {
-      border: 1px solid rgba(241,79,85,.32);
-      background: rgba(241,79,85,.10);
-      border-radius: 10px;
-      padding: 13px;
-    }
-    .tree-branches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
-    .tree-node {
-      min-height: 118px;
-      border: 1px solid var(--line);
-      border-top: 3px solid var(--accent);
-      border-radius: 10px;
-      background: rgba(255,255,255,.028);
-      padding: 12px;
+      border-radius: 7px;
+      padding: 7px;
       color: var(--text);
-      text-align: left;
-      font-family: inherit;
-    }
-    .tree-node strong { display: block; font-size: 13px; margin-bottom: 7px; }
-    .tree-node span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
-
-    .treemap {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      grid-auto-rows: 76px;
-      gap: 8px;
-    }
-    .tile {
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      padding: 10px;
-      background: rgba(76,141,246,.12);
-      display: grid;
-      align-content: end;
-      overflow: hidden;
-    }
-    .tile strong { font-size: 14px; }
-    .tile span { color: rgba(255,255,255,.75); font-size: 11px; margin-top: 4px; }
-
-    .whatif {
-      display: grid;
-      grid-template-columns: 1fr 240px;
-      gap: 16px;
-      align-items: stretch;
-    }
-    .slider-card {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 14px;
-      background: rgba(255,255,255,.026);
-      display: grid;
-      gap: 14px;
-    }
-    .range { width: 100%; accent-color: var(--red); }
-    .metric-stack { display: grid; gap: 10px; }
-    .metric-line {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      border-bottom: 1px solid var(--line);
-      padding-bottom: 8px;
-      color: var(--muted);
       font-size: 12px;
+      font-weight: 900;
+      display: grid;
+      align-content: center;
+      gap: 2px;
     }
-    .metric-line strong { color: var(--text); font-size: 15px; }
+    .heat-meta { display: block; color: rgba(238, 245, 255, .72); font-size: 10px; font-weight: 700; }
+
+    .tree { display: grid; gap: 10px; }
+    .tree-group { border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; background: rgba(255, 255, 255, .025); }
+    .tree-group-title { display: flex; justify-content: space-between; gap: 10px; color: var(--text); font-size: 13px; font-weight: 900; margin-bottom: 8px; }
+    .tree-item { display: grid; grid-template-columns: minmax(130px, 1fr) 82px 78px 86px; gap: 8px; padding: 7px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .tree-item strong { color: var(--text); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .lineage {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
+      align-items: stretch;
     }
-    .node {
-      min-height: 90px;
-      display: grid;
-      align-content: center;
-      gap: 6px;
-      text-align: center;
-      padding: 14px 10px;
+    .lineage-node {
       border: 1px solid var(--line);
-      border-radius: 9px;
-      background: var(--panel-2);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: rgba(255, 255, 255, .035);
+      min-height: 96px;
+      position: relative;
     }
-    .node strong { font-size: 13px; }
-    .node span { color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .lineage-node:not(:last-child):after {
+      content: "->";
+      position: absolute;
+      right: -18px;
+      top: 38px;
+      color: var(--dim);
+      font-weight: 900;
+    }
+    .lineage-node strong { display: block; margin-bottom: 6px; color: var(--text); }
+    .lineage-node span { color: var(--muted); font-size: 12px; line-height: 1.4; }
 
-    .loading, .error {
+    .alert-list { display: grid; gap: 9px; }
+    .alert {
       border: 1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      border-radius: 12px;
-      padding: 22px;
-      color: var(--muted);
-      line-height: 1.55;
+      border-left: 3px solid var(--accent, var(--blue));
+      border-radius: var(--radius);
+      padding: 11px;
+      background: rgba(255, 255, 255, .035);
     }
-    .error { color: #ffd4d6; border-color: rgba(241,79,85,.35); background: rgba(241,79,85,.08); }
+    .alert strong { display: block; margin-bottom: 4px; }
+    .alert span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      background: rgba(0, 0, 0, .46);
+      z-index: 40;
+    }
+    .drawer-backdrop.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: min(480px, 100vw);
+      height: 100vh;
+      background: #091424;
+      border-left: 1px solid var(--line-strong);
+      box-shadow: -24px 0 80px rgba(0, 0, 0, .38);
+      transform: translateX(110%);
+      transition: transform .22s ease;
+      z-index: 50;
+      overflow: auto;
+      padding: 18px;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+    .drawer-title { margin: 0; font-size: 24px; line-height: 1.08; letter-spacing: -.04em; }
+    .drawer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 12px 0; }
+    .insight {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 10px;
+      background: rgba(255, 255, 255, .035);
+    }
+    .insight strong { display: block; font-size: 20px; letter-spacing: -.04em; }
+    .insight span { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+    .copy-box {
+      width: 100%;
+      min-height: 112px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #0d1828;
+      color: var(--text);
+      padding: 10px;
+      line-height: 1.45;
+      font-size: 12px;
+    }
 
     .tooltip {
       position: fixed;
-      z-index: 30;
-      pointer-events: none;
-      max-width: 310px;
-      padding: 10px 12px;
+      z-index: 90;
+      display: none;
+      max-width: 320px;
+      padding: 9px 10px;
+      border-radius: 7px;
       border: 1px solid var(--line-strong);
-      border-radius: 9px;
-      background: rgba(8,12,17,.96);
+      background: rgba(7, 17, 31, .96);
       color: var(--text);
-      box-shadow: var(--shadow);
       font-size: 12px;
-      line-height: 1.45;
-      opacity: 0;
-      transform: translate(-999px, -999px);
-      transition: opacity .12s ease;
+      line-height: 1.35;
+      box-shadow: var(--shadow);
+      pointer-events: none;
     }
-    .tooltip.visible { opacity: 1; }
 
-    .drawer {
-      position: fixed;
-      top: 0; right: 0; bottom: 0;
-      width: min(420px, 92vw);
-      z-index: 25;
-      background: #0b1118;
-      border-left: 1px solid var(--line-strong);
-      box-shadow: -24px 0 80px rgba(0,0,0,.38);
-      transform: translateX(105%);
-      transition: transform .22s ease;
+    .empty {
+      min-height: 150px;
       display: grid;
-      grid-template-rows: auto 1fr;
-    }
-    .drawer.open { transform: translateX(0); }
-    .drawer-head {
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-align: center;
       padding: 18px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      align-items: flex-start;
-    }
-    .drawer-title { margin: 0; font-size: 18px; letter-spacing: -.02em; }
-    .drawer-body { padding: 18px; overflow: auto; display: grid; gap: 14px; align-content: start; }
-
-    @media (max-width: 1180px) {
-      .control-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .button-row { justify-content: flex-start; }
-      .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .cols-2, .cols-3, .cols-4, .narrative, .insight-grid, .whatif { grid-template-columns: 1fr; }
-      .span-2 { grid-column: auto; }
-      .lineage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .tree-branches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      background: rgba(255, 255, 255, .025);
     }
 
-    @media (max-width: 720px) {
-      .shell { padding: 18px 14px 30px; }
-      .topbar { grid-template-columns: 1fr; }
+    @media (max-width: 1120px) {
+      .app-header, .command-bar, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .actions { min-width: 0; justify-content: flex-start; }
+      .kpi-grid, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .lineage { grid-template-columns: 1fr; }
+      .lineage-node:not(:last-child):after { display: none; }
+    }
+    @media (max-width: 680px) {
+      .shell { padding: 16px 12px 24px; }
+      .brand { align-items: flex-start; }
+      .mark { width: 36px; height: 36px; }
       .statusbar { justify-content: flex-start; }
-      .control-panel { grid-template-columns: 1fr; }
-      .kpis { grid-template-columns: 1fr; }
-      .bar-row { grid-template-columns: 86px 1fr 76px; }
-      .heat-row, .matrix-row, .lineage, .tree-branches { grid-template-columns: 1fr; }
-      .treemap { grid-template-columns: 1fr 1fr; }
+      .pill { white-space: normal; }
+      .kpi-grid, .brief-grid, .comparison-grid, .grid-4, .tabs { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 90px minmax(0, 1fr) 72px; }
+      .heat-row { grid-template-columns: 88px repeat(var(--cols, 4), minmax(54px, 1fr)); }
+      .drawer-grid { grid-template-columns: 1fr; }
+      .actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+      .actions .btn { width: 100%; min-width: 0; min-height: 44px; white-space: normal; padding: 0 8px; }
+      #copy-summary-btn,
+      #reset-btn { grid-column: 1 / -1; }
+    }
+
+    @media print {
+      body { background: #fff; color: #111827; }
+      .shell { max-width: none; padding: 0; }
+      .command-bar, .tabs, .drawer, .drawer-backdrop, .tooltip, .statusbar .btn { display: none !important; }
+      .app-header { grid-template-columns: 1fr; margin-bottom: 8px; }
+      .mark { box-shadow: none; color: #111827; background: #f2f5f8; }
+      h1 { color: #111827; font-size: 34px; }
+      .subtitle, .card-note, .kpi-foot, .bar-value, .metric-line, .alert span, .brief span { color: #4b5563; }
+      .view { display: none !important; }
+      .view.active { display: block !important; }
+      .card, .kpi, .brief, .compare-card, .alert, .lineage-node {
+        background: #fff;
+        border-color: #d1d5db;
+        color: #111827;
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      .card-title, .kpi-value, .bar-label, td, .lineage-node strong, .brief strong, .alert strong { color: #111827; }
+      th { background: #f3f4f6; color: #374151; }
+      .pill { color: #374151; border-color: #d1d5db; background: #f9fafb; }
+      svg text { fill: #111827 !important; }
     }
   </style>
 </head>
 <body>
   <div class="tooltip" id="tooltip"></div>
-  <aside class="drawer" id="drill-drawer" aria-hidden="true">
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="drawer" id="drill-drawer" aria-label="Segment drill-through panel">
     <div class="drawer-head">
       <div>
-        <h2 class="drawer-title" id="drawer-title">Segment detayÄ±</h2>
-        <p class="card-note" id="drawer-subtitle">SeÃ§ili kÄ±rÄ±lÄ±m iÃ§in operasyonel karar Ã¶zeti.</p>
+        <h2 class="drawer-title" id="drawer-title">Segment detail</h2>
+        <p class="card-note" id="drawer-subtitle">Operational context for the selected segment.</p>
       </div>
-      <button class="btn" id="drawer-close">Kapat</button>
+      <button class="btn" id="drawer-close" type="button">Close</button>
     </div>
-    <div class="drawer-body" id="drawer-body"></div>
+    <div id="drawer-body"></div>
   </aside>
 
   <div class="shell">
-    <header class="topbar">
+    <header class="app-header">
       <div class="brand">
         <div class="mark">FR</div>
         <div>
           <h1>Fraud Risk Intelligence</h1>
-          <p class="subtitle">BigQuery Ã¼zerinde dbt ile Ã¼retilen raporlama katmanÄ±ndan canlÄ± veri Ã§eken, sunum ve analitik inceleme iÃ§in tasarlanmÄ±ÅŸ yÃ¶netici arayÃ¼zÃ¼.</p>
+          <p class="subtitle">Executive fraud analytics over dbt-built BigQuery reporting marts. The dashboard focuses on concentration, operational workload, model triage, and data trust.</p>
         </div>
       </div>
       <div class="statusbar">
-        <span class="pill live">BigQuery Live</span>
-        <span class="pill" id="dataset-pill">dataset hazÄ±rlanÄ±yor</span>
-        <span class="pill pass" id="readiness-pill">kontrol bekleniyor</span>
-        <button class="btn" id="refresh-btn">Yenile</button>
+        <span class="pill live" id="live-pill">BigQuery live</span>
+        <span class="pill" id="dataset-pill">Dataset pending</span>
+        <span class="pill" id="freshness-pill">Freshness pending</span>
+        <span class="pill" id="readiness-pill">Readiness pending</span>
       </div>
     </header>
 
-    <section class="control-panel" aria-label="Analitik kontroller">
-      <div class="control">
-        <label for="metric-select">KarÅŸÄ±laÅŸtÄ±rma metriÄŸi</label>
+    <section class="command-bar" aria-label="Dashboard command bar">
+      <div class="field">
+        <label for="metric-select">Primary metric</label>
         <select class="select" id="metric-select">
-          <option value="fraud_rate">Fraud oranÄ±</option>
+          <option value="fraud_rate">Fraud rate</option>
           <option value="lift">Lift</option>
-          <option value="fraud_share">Fraud payÄ±</option>
-          <option value="transaction_share">Ä°ÅŸlem payÄ±</option>
+          <option value="fraud_share">Fraud share</option>
+          <option value="transaction_share">Transaction share</option>
         </select>
       </div>
-      <div class="control">
-        <label for="family-select">Segment ailesi</label>
-        <select class="select" id="family-select"><option value="TÃ¼mÃ¼">TÃ¼mÃ¼</option></select>
+      <div class="field">
+        <label for="family-select">Segment family</label>
+        <select class="select" id="family-select"><option value="All">All</option></select>
       </div>
-      <div class="control">
-        <label for="priority-select">Ã–ncelik</label>
+      <div class="field">
+        <label for="priority-select">Priority</label>
         <select class="select" id="priority-select">
-          <option value="TÃ¼mÃ¼">TÃ¼mÃ¼</option>
-          <option value="Kritik">Kritik</option>
-          <option value="YÃ¼ksek">YÃ¼ksek</option>
-          <option value="Ä°zle">Ä°zle</option>
+          <option value="All">All</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Monitor">Monitor</option>
           <option value="Normal">Normal</option>
         </select>
       </div>
-      <div class="control">
-        <label>SeÃ§ili segment</label>
-        <div class="select" id="selected-segment">HenÃ¼z seÃ§im yok</div>
+      <div class="field">
+        <label>Selected segment</label>
+        <div class="selected-chip" id="selected-segment">No segment selected</div>
       </div>
-      <div class="button-row">
-        <button class="btn" id="reset-btn">SÄ±fÄ±rla</button>
-        <button class="btn" id="download-btn">JSON indir</button>
+      <div class="field">
+        <label>Readiness gate</label>
+        <div class="selected-chip" id="readiness-chip">Waiting for data</div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="refresh-btn" type="button">Refresh</button>
+        <button class="btn" id="export-json-btn" type="button">Export JSON</button>
+        <button class="btn" id="print-btn" type="button">Print / Save PDF</button>
+        <button class="btn" id="copy-summary-btn" type="button">Copy executive summary</button>
+        <button class="btn danger" id="reset-btn" type="button">Reset</button>
       </div>
     </section>
 
-    <nav class="tabs">
-      <button class="tab active" data-view="overview">01 YÃ¶netici Ã–zeti</button>
-      <button class="tab" data-view="segments">02 Derin Segment Analizi</button>
-      <button class="tab" data-view="model">03 Model ve EÅŸik SimÃ¼lasyonu</button>
-      <button class="tab" data-view="quality">04 Veri GÃ¼veni ve Lineage</button>
+    <nav class="tabs" aria-label="Dashboard sections">
+      <button class="tab active" data-view="overview" type="button">01 Executive Overview<small>Concentration and action</small></button>
+      <button class="tab" data-view="segments" type="button">02 Segment Explorer<small>Drivers and comparisons</small></button>
+      <button class="tab" data-view="model" type="button">03 Model Operations<small>Threshold and capacity</small></button>
+      <button class="tab" data-view="quality" type="button">04 Data Trust<small>Freshness and controls</small></button>
     </nav>
 
-    <main id="state" class="loading">BigQuery raporlama katmanÄ±na baÄŸlanÄ±lÄ±yor.</main>
+    <main id="state" class="state">Connecting to the BigQuery reporting layer.</main>
 
-    <section id="dashboard" style="display:none">
-      <section class="view active" id="overview">
-        <div class="grid kpis" id="kpi-grid"></div>
-        <div class="grid insight-grid" id="influencer-grid"></div>
-        <div class="grid cols-3">
-          <article class="card span-2">
-            <div class="card-head">
-              <div>
-                <h2 class="card-title">Fraud oranÄ± referans zaman ekseninde nasÄ±l deÄŸiÅŸiyor?</h2>
-                <div class="card-note">TransactionDT gerÃ§ek tarih deÄŸildir; dbt katmanÄ± bunu gÃ¶reli gÃ¼n/saat olarak sunar.</div>
-              </div>
+    <section class="view active" id="view-overview">
+      <div class="section-grid">
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="brief-grid" id="executive-brief"></div>
+        <div class="grid-3">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Fraud rate trend</h2><p class="card-note">TransactionDT is treated as a relative day counter, not as a real calendar timestamp.</p></div></div>
+            <div class="chart short" id="daily-trend"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Fraud contribution waterfall</h2><p class="card-note">Top segments explain where fraud labels concentrate across business cuts.</p></div></div>
+            <div class="chart short" id="waterfall-chart"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Pareto concentration</h2><p class="card-note">Cumulative fraud contribution of the watchlist segments.</p></div></div>
+            <div class="chart short" id="pareto-chart"></div>
+          </article>
+        </div>
+        <div class="grid-3">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Product risk</h2><p class="card-note">Fraud intensity by ProductCD.</p></div></div><div class="chart short" id="product-bars"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Risk band separation</h2><p class="card-note">Observed fraud rate by model score band.</p></div></div><div class="chart short" id="risk-bars"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Amount band risk</h2><p class="card-note">Non-linear amount behavior across ticket sizes.</p></div></div><div class="chart short" id="amount-bars"></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-segments">
+      <div class="section-grid">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Segment comparison panel</h2>
+              <p class="card-note">Select or click two segments to compare concentration, workload, and recommended operating response.</p>
             </div>
-            <div class="card-body"><div class="chart-wrap"><svg id="daily-trend"></svg></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Fraud katkÄ±sÄ± Pareto analizi</h2><div class="card-note">Az sayÄ±da segment toplam fraud etiketinin ne kadarÄ±nÄ± taÅŸÄ±r?</div></div></div>
-            <div class="card-body"><div class="chart-wrap"><svg id="pareto-chart"></svg></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">ÃœrÃ¼n kÄ±rÄ±lÄ±mÄ±</h2><div class="card-note">SeÃ§ili metrikle segment karÅŸÄ±laÅŸtÄ±rmasÄ±</div></div></div>
-            <div class="card-body"><div class="bar-list" id="product-bars"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandÄ±</h2><div class="card-note">Model skoru ile gÃ¶zlenen fraud ayrÄ±ÅŸmasÄ±</div></div></div>
-            <div class="card-body"><div class="bar-list" id="risk-bars"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Tutar bandÄ±</h2><div class="card-note">Risk yoÄŸunlaÅŸmasÄ± ve ortalama tutar</div></div></div>
-            <div class="card-body"><div class="bar-list" id="amount-bars"></div></div>
-          </article>
+          </div>
+          <div class="grid-2">
+            <div class="field"><label for="compare-a-select">Segment A</label><select class="select" id="compare-a-select"></select></div>
+            <div class="field"><label for="compare-b-select">Segment B</label><select class="select" id="compare-b-select"></select></div>
+          </div>
+          <div id="comparison-panel" style="margin-top:12px;"></div>
+        </article>
+        <div class="grid-2">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Risk driver tree</h2><p class="card-note">Segment families grouped by fraud share, lift, and priority.</p></div></div><div id="driver-tree" class="tree"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Operational watchlist</h2><p class="card-note">Filtered segments ordered by priority score.</p></div></div><div id="watchlist-table"></div></article>
         </div>
-        <div class="narrative" id="overview-narrative"></div>
-      </section>
-
-      <section class="view" id="segments">
-        <div class="grid cols-2">
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Decomposition tree: risk sÃ¼rÃ¼cÃ¼leri</h2><div class="card-note">Segment aileleri fraud payÄ±, lift ve Ã¶nerilen aksiyonla gruplanÄ±r.</div></div></div>
-            <div class="card-body"><div class="tree" id="driver-tree"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Operasyonel segment izleme listesi</h2><div class="card-note">Slicer seÃ§imleri bu tabloyu ve Pareto analizini etkiler.</div></div></div>
-            <div class="card-body table-wrap"><table id="watchlist-table"></table></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Identity ve Ã¼rÃ¼n matrisi</h2><div class="card-note">Identity coverage, fraud lift ve fraud payÄ± birlikte okunur.</div></div></div>
-            <div class="card-body"><div class="matrix" id="identity-product-matrix"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">GÃ¶reli saat ve tutar deseni</h2><div class="card-note">Saat bandÄ± ile yuvarlak/ondalÄ±klÄ± tutar davranÄ±ÅŸÄ±.</div></div></div>
-            <div class="card-body"><div class="heatmap" id="time-amount-heatmap"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Ã–deme tipi Ä±sÄ± haritasÄ±</h2><div class="card-note">Kart aÄŸÄ± ve kart tipi kesiÅŸiminde fraud oranÄ±.</div></div></div>
-            <div class="card-body"><div class="heatmap" id="payment-heatmap"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Email domain riski</h2><div class="card-note">Email gruplarÄ±nda lift ve fraud payÄ±.</div></div></div>
-            <div class="card-body"><div class="bar-list" id="email-bars"></div></div>
-          </article>
+        <div class="grid-2">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Identity and product coverage</h2><p class="card-note">Identity coverage, fraud rate, and lift by ProductCD.</p></div></div><div id="identity-product-matrix"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Relative hour and amount pattern</h2><p class="card-note">Relative hour and amount-decimal behavior for monitoring windows.</p></div></div><div id="time-amount-heatmap"></div></article>
         </div>
-      </section>
+        <div class="grid-2">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Payment type heatmap</h2><p class="card-note">Card network and card type intersections by fraud rate.</p></div></div><div id="payment-heatmap"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Email domain risk</h2><p class="card-note">Purchaser email groups by fraud intensity.</p></div></div><div class="chart short" id="email-bars"></div></article>
+        </div>
+      </div>
+    </section>
 
-      <section class="view" id="model">
-        <div class="grid cols-2">
-          <article class="card wide">
-            <div class="card-head"><div><h2 class="card-title">What-if threshold simÃ¼lasyonu</h2><div class="card-note">EÅŸik deÄŸiÅŸtikÃ§e yakalama oranÄ±, precision ve operasyon yÃ¼kÃ¼ birlikte izlenir.</div></div></div>
-            <div class="card-body">
-              <div class="whatif">
-                <div>
-                  <div class="chart-wrap"><svg id="threshold-chart"></svg></div>
-                  <input class="range" id="threshold-slider" type="range" min="0" max="0" value="0">
-                </div>
-                <div class="slider-card" id="threshold-summary"></div>
-              </div>
+    <section class="view" id="view-model">
+      <div class="section-grid">
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Capacity and cost simulation</h2>
+              <p class="card-note">Client-side operating assumptions recalculate the threshold recommendation without changing the BigQuery model.</p>
             </div>
-          </article>
+          </div>
+          <div class="grid-3">
+            <div class="field"><label for="analyst-capacity">Analyst daily capacity</label><input class="input" id="analyst-capacity" type="number" min="1" step="1" value="180"></div>
+            <div class="field"><label for="fp-cost">False-positive review cost</label><input class="input" id="fp-cost" type="number" min="0" step="1" value="4"></div>
+            <div class="field"><label for="fn-loss">False-negative loss assumption</label><input class="input" id="fn-loss" type="number" min="0" step="10" value="120"></div>
+          </div>
+          <div id="threshold-recommendation" style="margin-top:12px;"></div>
+        </article>
+        <div class="grid-2">
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandÄ± operasyon stratejisi</h2><div class="card-note">Ä°nceleme kuyruÄŸu, gÃ¼nlÃ¼k hacim ve yÃ¶netim notu.</div></div></div>
-            <div class="card-body table-wrap"><table id="review-table"></table></div>
+            <div class="card-head"><div><h2 class="card-title">Threshold what-if curve</h2><p class="card-note">Capture, precision, and workload move together as the review threshold changes.</p></div></div>
+            <input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color: var(--blue);">
+            <div class="chart short" id="threshold-chart"></div>
           </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Feature importance</h2><div class="card-note">LightGBM skorunun en gÃ¼Ã§lÃ¼ sinyalleri.</div></div></div>
-            <div class="card-body"><div class="bar-list" id="feature-bars"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Feature family treemap</h2><div class="card-note">Sinyal aileleri model katkÄ±sÄ±na gÃ¶re Ã¶lÃ§eklenir.</div></div></div>
-            <div class="card-body"><div class="treemap" id="feature-treemap"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandÄ± hacim daÄŸÄ±lÄ±mÄ±</h2><div class="card-note">Operasyon kapasite planÄ± iÃ§in hacim gÃ¶rÃ¼nÃ¼mÃ¼.</div></div></div>
-            <div class="card-body"><div class="bar-list" id="risk-volume-bars"></div></div>
-          </article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Review queue strategy</h2><p class="card-note">Model scores are used as a prioritization layer, not as an autonomous decision engine.</p></div></div><div id="review-table"></div></article>
         </div>
-      </section>
+        <div class="grid-3">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Feature importance</h2><p class="card-note">Top model signals for explainability discussions.</p></div></div><div class="chart short" id="feature-bars"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Feature family treemap</h2><p class="card-note">Aggregated contribution by signal family.</p></div></div><div class="chart short" id="feature-treemap"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Risk band volume</h2><p class="card-note">Workload distribution by operational risk band.</p></div></div><div class="chart short" id="risk-volume-bars"></div></article>
+        </div>
+      </div>
+    </section>
 
-      <section class="view" id="quality">
-        <div class="grid cols-2">
+    <section class="view" id="view-quality">
+      <div class="section-grid">
+        <article class="card">
+          <div class="card-head"><div><h2 class="card-title">Alert simulation</h2><p class="card-note">Monitoring signals derived from drift, risk queue pressure, and missingness scorecards.</p></div></div>
+          <div class="alert-list" id="alert-list"></div>
+        </article>
+        <div class="grid-2">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Data quality contract</h2><p class="card-note">Source and reporting row-count controls.</p></div></div><div id="quality-contract"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Report readiness gate</h2><p class="card-note">Pre-presentation checks for the reporting layer.</p></div></div><div id="readiness-table"></div></article>
+        </div>
+        <div class="grid-2">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Missingness by feature family</h2><p class="card-note">Structural missingness is treated as a modeling signal and a data quality risk.</p></div></div><div class="chart short" id="quality-bars"></div></article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Veri kalite kontratÄ±</h2><div class="card-note">Raw ve raporlama katmanÄ± row-count kontrolleri.</div></div></div>
-            <div class="card-body table-wrap"><table id="quality-contract-table"></table></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Rapor hazÄ±rlÄ±k kapÄ±sÄ±</h2><div class="card-note">Sunum Ã¶ncesi readiness kontrolleri.</div></div></div>
-            <div class="card-body table-wrap"><table id="readiness-table"></table></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Eksiklik yoÄŸunluÄŸu</h2><div class="card-note">Feature ailesi bazÄ±nda ortalama missingness.</div></div></div>
-            <div class="card-body"><div class="bar-list" id="quality-bars"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Rapor anlatÄ± matrisi</h2><div class="card-note">Her sayfa iÃ§in mesaj, odak ve aksiyon cÃ¼mlesi.</div></div></div>
-            <div class="card-body"><div class="bar-list" id="narrative-list"></div></div>
-          </article>
-          <article class="card wide">
-            <div class="card-head"><div><h2 class="card-title">CanlÄ± veri mimarisi</h2><div class="card-note">Web arayÃ¼zÃ¼ doÄŸrudan BigQuery raporlama martlarÄ±nÄ± okur.</div></div></div>
-            <div class="card-body">
-              <div class="lineage">
-                <div class="node"><strong>Kaggle CSV</strong><span>train/test transaction ve identity</span></div>
-                <div class="node"><strong>BigQuery Raw</strong><span>ham veri tabanÄ±</span></div>
-                <div class="node"><strong>dbt Core</strong><span>staging ve intermediate modeller</span></div>
-                <div class="node"><strong>Mart KatmanÄ±</strong><span>fraud, segment, kalite, model metrikleri</span></div>
-                <div class="node"><strong>Reporting Layer</strong><span>Sunuma hazÄ±r raporlama tablolarÄ±</span></div>
-                <div class="node"><strong>Web Dashboard</strong><span>FastAPI ile canlÄ± sunum</span></div>
-              </div>
+            <div class="card-head"><div><h2 class="card-title">Live data architecture</h2><p class="card-note">The web dashboard reads presentation-ready reporting marts through the FastAPI layer.</p></div></div>
+            <div class="lineage">
+              <div class="lineage-node"><strong>Kaggle CSV</strong><span>IEEE-CIS transaction and identity files.</span></div>
+              <div class="lineage-node"><strong>BigQuery Raw</strong><span>Immutable ingestion layer.</span></div>
+              <div class="lineage-node"><strong>dbt Models</strong><span>Staging, intermediate, mart, and reporting transformations.</span></div>
+              <div class="lineage-node"><strong>FastAPI</strong><span>Allowlisted API over 18 reporting tables.</span></div>
+              <div class="lineage-node"><strong>Web Dashboard</strong><span>Executive analytics, simulation, and export layer.</span></div>
             </div>
           </article>
         </div>
-      </section>
+      </div>
     </section>
   </div>
 
   <script>
-    const fmtInt = value => new Intl.NumberFormat('tr-TR').format(Math.round(Number(value || 0)));
-    const fmtPct = value => `${(Number(value || 0) * 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-    const fmtMoney = value => `$${Number(value || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`;
-    const fmtX = value => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`;
-    const colorScale = ['#f14f55', '#d99a20', '#8b5cf6', '#4c8df6', '#2bb3a3', '#2f9e75', '#ff7b72', '#6ee7b7'];
+    const nf = new Intl.NumberFormat('en-US');
+    const pf = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const cf = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    const df = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtInt = value => nf.format(Math.round(Number(value || 0)));
+    const fmtPct = value => pf.format(Number(value || 0));
+    const fmtMoney = value => cf.format(Number(value || 0));
+    const fmtX = value => `${df.format(Number(value || 0))}x`;
+    const safe = value => value === null || value === undefined ? '' : String(value);
+    const escapeHtml = value => safe(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
     const metricLabels = {
-      fraud_rate: 'Fraud oranÄ±',
+      fraud_rate: 'Fraud rate',
       lift: 'Lift',
-      fraud_share: 'Fraud payÄ±',
-      transaction_share: 'Ä°ÅŸlem payÄ±',
+      fraud_share: 'Fraud share',
+      transaction_share: 'Transaction share',
+      observed_fraud_rate: 'Observed fraud rate',
+      avg_missing_rate: 'Average missingness',
+      transaction_count: 'Transaction count'
     };
 
-    let dashboardData = null;
-    let drillMap = new Map();
-    const viewNames = ['overview', 'segments', 'model', 'quality'];
+    const colorScale = ['#e5484d', '#d99a20', '#8b5cf6', '#4c8df6', '#18a999', '#2f9e75', '#90a4c3'];
     const state = {
+      data: null,
       metric: 'fraud_rate',
-      family: 'TÃ¼mÃ¼',
-      priority: 'TÃ¼mÃ¼',
+      family: 'All',
+      priority: 'All',
       selected: null,
+      compareA: '',
+      compareB: '',
       thresholdIndex: 0,
+      drillRows: new Map()
     };
-
-    function activateView(name) {
-      const selected = viewNames.includes(name) ? name : 'overview';
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === selected));
-      document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === selected));
-    }
-
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        history.replaceState(null, '', `#${tab.dataset.view}`);
-        activateView(tab.dataset.view);
-      });
-    });
-    window.addEventListener('hashchange', () => activateView(location.hash.replace('#', '')));
 
     document.getElementById('refresh-btn').addEventListener('click', () => loadDashboard(true));
-    document.getElementById('reset-btn').addEventListener('click', () => {
-      state.metric = 'fraud_rate';
-      state.family = 'TÃ¼mÃ¼';
-      state.priority = 'TÃ¼mÃ¼';
-      state.selected = null;
-      document.getElementById('metric-select').value = state.metric;
-      document.getElementById('family-select').value = state.family;
-      document.getElementById('priority-select').value = state.priority;
-      document.getElementById('selected-segment').textContent = 'HenÃ¼z seÃ§im yok';
-      closeDrawer();
-      renderDashboard(dashboardData);
-    });
-    document.getElementById('download-btn').addEventListener('click', () => downloadSnapshot());
+    document.getElementById('export-json-btn').addEventListener('click', exportJson);
+    document.getElementById('print-btn').addEventListener('click', () => window.print());
+    document.getElementById('copy-summary-btn').addEventListener('click', copyExecutiveSummary);
+    document.getElementById('reset-btn').addEventListener('click', resetFilters);
     document.getElementById('drawer-close').addEventListener('click', closeDrawer);
-
-    ['metric-select', 'family-select', 'priority-select'].forEach(id => {
-      document.getElementById(id).addEventListener('change', event => {
-        const key = id.replace('-select', '');
-        state[key] = event.target.value;
-        renderDashboard(dashboardData);
+    document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
+    document.getElementById('metric-select').addEventListener('change', event => { state.metric = event.target.value; renderDashboard(); });
+    document.getElementById('family-select').addEventListener('change', event => { state.family = event.target.value; renderDashboard(); });
+    document.getElementById('priority-select').addEventListener('change', event => { state.priority = event.target.value; renderDashboard(); });
+    document.getElementById('compare-a-select').addEventListener('change', event => { state.compareA = event.target.value; renderComparison(); });
+    document.getElementById('compare-b-select').addEventListener('change', event => { state.compareB = event.target.value; renderComparison(); });
+    document.getElementById('threshold-slider').addEventListener('input', event => { state.thresholdIndex = Number(event.target.value || 0); renderThreshold(); renderThresholdRecommendation(); });
+    ['analyst-capacity', 'fp-cost', 'fn-loss'].forEach(id => document.getElementById(id).addEventListener('input', () => { renderThreshold(); renderThresholdRecommendation(); renderAlerts(); }));
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(item => item.classList.toggle('active', item === tab));
+        document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === `view-${tab.dataset.view}`));
       });
     });
+    document.addEventListener('mousemove', moveTooltip);
+    document.addEventListener('mouseover', showTooltip);
+    document.addEventListener('mouseout', hideTooltip);
+    document.addEventListener('click', event => {
+      const drill = event.target.closest('[data-drill-id]');
+      if (drill) {
+        const row = state.drillRows.get(drill.dataset.drillId);
+        if (row) {
+          assignComparison(row);
+          openDrawer(row);
+        }
+      }
+    });
 
-    async function loadDashboard(refresh = false) {
-      const stateBox = document.getElementById('state');
-      stateBox.className = 'loading';
-      stateBox.style.display = 'block';
-      stateBox.textContent = refresh ? 'BigQuery verisi yenileniyor.' : 'BigQuery raporlama katmanÄ±na baÄŸlanÄ±lÄ±yor.';
-      document.getElementById('dashboard').style.display = 'none';
+    loadDashboard(false);
 
+    async function loadDashboard(refresh) {
+      const box = document.getElementById('state');
+      box.className = 'state';
+      box.textContent = refresh ? 'Refreshing BigQuery reporting data.' : 'Connecting to the BigQuery reporting layer.';
       try {
-        const response = await fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`);
-        if (!response.ok) throw new Error(await response.text());
-        dashboardData = await response.json();
-        initializeControls(dashboardData);
-        state.thresholdIndex = defaultThresholdIndex(dashboardData.threshold_simulation);
-        renderDashboard(dashboardData);
-        activateView(location.hash.replace('#', ''));
-        stateBox.style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
+        const response = await fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`, { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error(`Dashboard API returned HTTP ${response.status}`);
+        state.data = await response.json();
+        state.drillRows.clear();
+        state.thresholdIndex = Math.max(0, Math.floor((state.data.threshold_simulation || []).length / 2));
+        box.style.display = 'none';
+        initializeControls();
+        renderDashboard();
       } catch (error) {
-        stateBox.className = 'error';
-        stateBox.innerHTML = `<strong>Dashboard verisi yÃ¼klenemedi.</strong><br>${escapeHtml(error.message)}<br><br>Vercel ortam deÄŸiÅŸkenlerini ve BigQuery yetkilerini kontrol edin.`;
+        box.className = 'state error';
+        box.innerHTML = `<strong>Dashboard data could not be loaded.</strong><br>${escapeHtml(error.message)}<br><br>Check Vercel environment variables, BigQuery permissions, and the reporting dataset.`;
       }
     }
 
-    function initializeControls(data) {
+    function initializeControls() {
+      const families = [...new Set((state.data.segment_watchlist || []).map(row => displayFamily(row.segment_family)))].sort();
       const familySelect = document.getElementById('family-select');
-      if (familySelect.options.length > 1) return;
-      const families = [...new Set((data.segment_watchlist || []).map(row => row.segment_family))].sort((a, b) => String(a).localeCompare(String(b), 'tr'));
-      familySelect.innerHTML = ['TÃ¼mÃ¼', ...families].map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+      familySelect.innerHTML = ['All', ...families].map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+      familySelect.value = state.family;
+
+      const rows = normalizedWatchlist().slice(0, 30);
+      const options = rows.map(row => `<option value="${escapeHtml(segmentKey(row))}">${escapeHtml(displaySegment(row))}</option>`).join('');
+      document.getElementById('compare-a-select').innerHTML = options;
+      document.getElementById('compare-b-select').innerHTML = options;
+      state.compareA = state.compareA || (rows[0] ? segmentKey(rows[0]) : '');
+      state.compareB = state.compareB || (rows[1] ? segmentKey(rows[1]) : state.compareA);
+      document.getElementById('compare-a-select').value = state.compareA;
+      document.getElementById('compare-b-select').value = state.compareB;
     }
 
-    function renderDashboard(data) {
-      if (!data) return;
-      drillMap = new Map();
-      document.getElementById('dataset-pill').textContent = displayDatasetName(data.meta.dataset);
-      document.getElementById('readiness-pill').textContent = `${data.meta.readiness_passed}/${data.meta.readiness_total} kalite kontrolÃ¼ PASS`;
-      renderKpis(data.executive_kpis[0] || {});
-      renderInfluencers(data);
-      renderNarrative('overview-narrative', narrativeFor(data, 'YÃ¶netici Ã–zeti'));
-      renderLineChart('daily-trend', data.daily_drift, 'transaction_day', 'fraud_rate', 'transaction_count');
-      renderPareto('pareto-chart', filteredWatchlist(data));
-      renderBars('product-bars', data.product_risk, 'product_cd', currentMetric(), productMeta, currentMetric(), row => segmentRow('ÃœrÃ¼n', row.product_cd, row));
-      renderBars('risk-bars', data.model_risk_bands, 'risk_band', 'observed_fraud_rate', row => `${fmtPct(row.observed_fraud_rate)} | ${fmtInt(row.transaction_count)} iÅŸlem`, 'observed_fraud_rate', row => segmentRow('Risk bandÄ±', row.risk_band, row));
-      renderBars('amount-bars', data.amount_bands, 'amount_band', currentMetric(), amountMeta, currentMetric(), row => segmentRow('Tutar bandÄ±', row.amount_band, row));
-      renderDriverTree(filteredWatchlist(data));
-      renderWatchlist(filteredWatchlist(data));
-      renderIdentityProductMatrix(data.identity_product_coverage);
-      renderTimeAmountHeatmap(data.time_amount_signals);
-      renderPaymentHeatmap(data.payment_heatmap);
-      renderBars('email-bars', data.email_domain_risk, 'purchaser_email_group', currentMetric(), emailMeta, currentMetric(), row => segmentRow('Email domain', row.purchaser_email_group, row));
-      renderThresholdExperience(data.threshold_simulation);
-      renderReviewStrategy(data.review_strategy);
-      renderBars('feature-bars', data.feature_importance, 'feature', 'importance', row => Number(row.importance || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }), 'importance', row => ({ ...row, segment_family: 'Model sinyali', segment_name: row.feature, recommended_action: 'Model aÃ§Ä±klanabilirliÄŸi iÃ§in Ã¼st sinyal olarak izlenir.' }));
-      renderFeatureTreemap(data.feature_importance);
-      renderBars('risk-volume-bars', data.model_risk_bands, 'risk_band', 'transaction_count', row => `${fmtInt(row.transaction_count)} iÅŸlem`, 'transaction_count', row => segmentRow('Risk bandÄ±', row.risk_band, row));
-      renderReadiness(data.report_readiness);
-      renderQualityContract(data.quality_contract);
-      renderBars('quality-bars', data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} eksik`, 'avg_missing_rate', row => ({ ...row, segment_family: 'Veri kalitesi', segment_name: row.column_family, recommended_action: 'Eksiklik oranÄ± model ve feature engineering kapsamÄ±nda izlenmelidir.' }));
-      renderNarrativeList(data.report_narrative);
-      bindTooltips();
-      bindDrillEvents();
+    function renderDashboard() {
+      if (!state.data) return;
+      const meta = state.data.meta || {};
+      const readinessText = `${meta.readiness_passed || 0}/${meta.readiness_total || 0} checks passed`;
+      document.getElementById('dataset-pill').textContent = meta.dataset ? `Dataset: ${meta.dataset}` : 'Dataset unavailable';
+      document.getElementById('freshness-pill').textContent = meta.refreshed_at ? `Fresh: ${new Date(meta.refreshed_at).toLocaleString('en-US')}` : 'Freshness unavailable';
+      document.getElementById('readiness-pill').textContent = readinessText;
+      document.getElementById('readiness-pill').className = `pill ${(meta.readiness_passed === meta.readiness_total && meta.readiness_total) ? 'pass' : 'warn'}`;
+      document.getElementById('readiness-chip').textContent = readinessText;
+      renderKpis();
+      renderExecutiveBrief();
+      renderDailyTrend();
+      renderWaterfall();
+      renderPareto();
+      renderBars('product-bars', state.data.product_risk, 'product_cd', state.metric, productTooltip, row => segmentRow('Product', row.product_cd, row));
+      renderBars('risk-bars', state.data.model_risk_bands, 'risk_band', 'observed_fraud_rate', riskTooltip, row => segmentRow('Risk band', row.risk_band, row));
+      renderBars('amount-bars', state.data.amount_bands, 'amount_band', state.metric, amountTooltip, row => segmentRow('Amount band', row.amount_band, row));
+      renderComparison();
+      renderDriverTree();
+      renderWatchlist();
+      renderIdentityMatrix();
+      renderTimeAmountHeatmap();
+      renderPaymentHeatmap();
+      renderBars('email-bars', state.data.email_domain_risk, 'purchaser_email_group', 'fraud_rate', emailTooltip, row => segmentRow('Email domain', row.purchaser_email_group, row));
+      renderThreshold();
+      renderThresholdRecommendation();
+      renderReviewTable();
+      renderBars('feature-bars', state.data.feature_importance, 'feature', 'importance', row => fmtInt(row.importance), row => ({ ...row, segment_family: 'Model signal', segment_name: row.feature, recommended_action: 'Use this signal for model explainability and challenger monitoring.' }));
+      renderFeatureTreemap();
+      renderBars('risk-volume-bars', state.data.model_risk_bands, 'risk_band', 'transaction_count', row => fmtInt(row.transaction_count), row => segmentRow('Risk band', row.risk_band, row));
+      renderAlerts();
+      renderQualityContract();
+      renderReadinessTable();
+      renderBars('quality-bars', state.data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} missing`, row => ({ ...row, segment_family: 'Data quality', segment_name: row.column_family, recommended_action: 'Review feature engineering, imputation policy, and monitoring thresholds for this feature family.' }));
     }
 
-    function currentMetric() {
-      return state.metric;
+    function resetFilters() {
+      state.metric = 'fraud_rate';
+      state.family = 'All';
+      state.priority = 'All';
+      state.selected = null;
+      state.compareA = '';
+      state.compareB = '';
+      document.getElementById('metric-select').value = state.metric;
+      document.getElementById('family-select').value = state.family;
+      document.getElementById('priority-select').value = state.priority;
+      document.getElementById('selected-segment').textContent = 'No segment selected';
+      initializeControls();
+      renderDashboard();
     }
 
-    function filteredWatchlist(data) {
-      return (data.segment_watchlist || []).filter(row => {
-        const familyOk = state.family === 'TÃ¼mÃ¼' || row.segment_family === state.family;
-        const priorityOk = state.priority === 'TÃ¼mÃ¼' || row.risk_priority === state.priority;
+    function kpis() { return (state.data.executive_kpis || [])[0] || {}; }
+    function normalizedWatchlist() {
+      return (state.data.segment_watchlist || []).map(row => ({
+        ...row,
+        segment_family_display: displayFamily(row.segment_family),
+        risk_priority_display: displayPriority(row.risk_priority),
+        recommended_action_display: actionFor(row)
+      }));
+    }
+    function filteredWatchlist() {
+      return normalizedWatchlist().filter(row => {
+        const familyOk = state.family === 'All' || row.segment_family_display === state.family;
+        const priorityOk = state.priority === 'All' || row.risk_priority_display === state.priority;
         return familyOk && priorityOk;
       });
     }
 
-    function narrativeFor(data, pageName) {
-      return (data.report_narrative || []).find(row => row.page_name === pageName) || {};
-    }
-
-    function renderKpis(k) {
-      const items = [
-        ['Toplam iÅŸlem', fmtInt(k.total_transactions), 'Analiz edilen eÄŸitim iÅŸlem hacmi', '#4c8df6', `Fraud oranÄ±: ${fmtPct(k.fraud_rate)}`],
-        ['Fraud iÅŸlem', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} baz oran`, '#f14f55', `Legitimate iÅŸlem: ${fmtInt(k.legitimate_transactions)}`],
-        ['Identity kapsama', fmtPct(k.identity_coverage_rate), 'Kimlik kaydÄ± olan iÅŸlem payÄ±', '#2bb3a3', `Identity lift: ${fmtX(k.identity_lift)}`],
-        ['Product C lift', fmtX(k.product_c_lift), `${fmtInt(k.product_c_transactions)} iÅŸlem`, '#d99a20', `Product C fraud oranÄ±: ${fmtPct(k.product_c_fraud_rate)}`],
-        ['Identity lift', fmtX(k.identity_lift), 'Kimlikli iÅŸlemlerde ayrÄ±ÅŸma', '#8b5cf6', `Var: ${fmtPct(k.with_identity_fraud_rate)} | Yok: ${fmtPct(k.without_identity_fraud_rate)}`],
-        ['Critical lift', `${Number(k.critical_risk_lift || 0).toFixed(1)}x`, `${fmtInt(k.critical_risk_transactions)} iÅŸlem`, '#f14f55', `Critical fraud oranÄ±: ${fmtPct(k.critical_risk_fraud_rate)}`],
+    function renderKpis() {
+      const k = kpis();
+      const recommendation = thresholdRecommendation();
+      const capture = recommendation ? recommendation.fraud_capture_rate : (k.critical_risk_fraud_count || 0) / Math.max(k.fraud_transactions || 1, 1);
+      const cards = [
+        ['Total transactions', fmtInt(k.total_transactions), 'Training population analyzed in the reporting mart.', '#4c8df6'],
+        ['Fraud transactions', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} base fraud rate.`, '#e5484d'],
+        ['Fraud rate', fmtPct(k.fraud_rate), `Legitimate transactions: ${fmtInt(k.legitimate_transactions)}.`, '#d99a20'],
+        ['Identity coverage', fmtPct(k.identity_coverage_rate), `Identity lift: ${fmtX(k.identity_lift)}.`, '#18a999'],
+        ['Review workload', fmtInt(recommendation ? recommendation.review_count : k.critical_risk_transactions), 'Recommended threshold review queue.', '#8b5cf6'],
+        ['Fraud capture', fmtPct(capture), 'Estimated capture at the recommended threshold.', '#2f9e75']
       ];
-      document.getElementById('kpi-grid').innerHTML = items.map(([label, value, caption, color, tooltip]) => `
-        <article class="card kpi" style="--accent:${color}" data-tooltip="${escapeHtml(tooltip)}">
-          <div class="kpi-label">${label}</div>
-          <div class="kpi-value">${value}</div>
-          <div class="kpi-caption">${caption}</div>
-        </article>
-      `).join('');
-    }
-
-    function renderInfluencers(data) {
-      const top = [...(data.segment_watchlist || [])].sort((a, b) => Number(b.priority_score || 0) - Number(a.priority_score || 0)).slice(0, 4);
-      document.getElementById('influencer-grid').innerHTML = top.map((row, index) => {
-        const id = registerDrill(row);
-        return `
-          <button class="insight drillable" data-drill-id="${id}" data-tooltip="${escapeHtml(row.recommended_action)}">
-            <strong style="color:${colorScale[index % colorScale.length]}">${escapeHtml(row.segment_name)}</strong>
-            <span>${escapeHtml(row.segment_family)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift | ${fmtPct(row.fraud_share)} fraud payÄ±</span>
-          </button>
-        `;
-      }).join('');
-    }
-
-    function renderNarrative(target, row) {
-      const items = [
-        ['Mesaj', row.executive_message || 'Fraud dÃ¼ÅŸÃ¼k frekanslÄ± ancak yÃ¶netilebilir segmentlerde yoÄŸunlaÅŸÄ±r.', '#f14f55'],
-        ['Analitik odak', row.analytical_focus || 'Lift, fraud payÄ± ve hacim birlikte okunmalÄ±dÄ±r.', '#8b5cf6'],
-        ['Aksiyon', row.recommended_action || 'YÃ¼ksek risk segmentleri ayrÄ± kontrol ve takip kuralÄ±na baÄŸlanmalÄ±dÄ±r.', '#2bb3a3'],
-      ];
-      document.getElementById(target).innerHTML = items.map(([title, text, color]) => `
-        <article class="card narrative-card" style="--accent:${color}">
-          <h3>${title}</h3>
-          <p>${escapeHtml(text)}</p>
-        </article>
-      `).join('');
-    }
-
-    function renderBars(target, sourceRows, labelKey, valueKey, metaFn, scaleKey, drillFactory) {
-      const rows = sourceRows || [];
-      const max = Math.max(...rows.map(row => Number(row[scaleKey || valueKey] || 0)), 0.0001);
-      document.getElementById(target).innerHTML = rows.map((row, index) => {
-        const value = Number(row[valueKey] || 0);
-        const width = Math.max(2, (Number(row[scaleKey || valueKey] || 0) / max) * 100);
-        const drillRow = drillFactory ? drillFactory(row) : row;
-        const drillId = registerDrill(drillRow);
-        const tooltip = `${row[labelKey]} | ${metricLabels[valueKey] || valueKey}: ${formatMetric(valueKey, value)} | Ä°ÅŸlem: ${fmtInt(row.transaction_count)}`;
-        return `
-          <div class="bar-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(tooltip)}">
-            <div class="bar-label" title="${escapeHtml(row[labelKey] ?? '')}">${escapeHtml(row[labelKey] ?? '')}</div>
-            <div class="bar-track"><div class="bar-fill" style="width:${width}%;--bar:${colorScale[index % colorScale.length]}"></div></div>
-            <div class="bar-value">${metaFn ? metaFn(row) : formatMetric(valueKey, value)}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function productMeta(row) {
-      return `${formatMetric(state.metric, row[state.metric])} | ${fmtX(row.lift)}`;
-    }
-
-    function amountMeta(row) {
-      return `${formatMetric(state.metric, row[state.metric])} | ${fmtMoney(row.avg_transaction_amount)}`;
-    }
-
-    function emailMeta(row) {
-      return `${formatMetric(state.metric, row[state.metric])} | ${fmtX(row.lift)}`;
-    }
-
-    function formatMetric(metric, value) {
-      if (metric === 'lift') return fmtX(value);
-      if (metric === 'transaction_count' || metric === 'importance') return fmtInt(value);
-      if (metric && metric.includes('share')) return fmtPct(value);
-      return fmtPct(value);
-    }
-
-    function segmentRow(family, name, row) {
-      return {
-        ...row,
-        segment_family: family,
-        segment_name: name,
-        risk_priority: row.risk_priority || priorityFromLift(row.lift || row.observed_fraud_rate || row.fraud_rate),
-        recommended_action: row.recommended_action || 'Bu kÄ±rÄ±lÄ±m hacim, fraud oranÄ± ve lift ile birlikte izlenmelidir.',
-      };
-    }
-
-    function priorityFromLift(value) {
-      const numeric = Number(value || 0);
-      if (numeric >= 2) return 'Kritik';
-      if (numeric >= 1.3) return 'YÃ¼ksek';
-      if (numeric >= 1) return 'Ä°zle';
-      return 'Normal';
-    }
-
-    function renderLineChart(target, rows, xKey, yKey, volumeKey) {
-      const svg = document.getElementById(target);
-      const w = 1120, h = 286, pad = 38;
-      const values = rows.map(row => Number(row[yKey] || 0));
-      const volumes = rows.map(row => Number(row[volumeKey] || 0));
-      const maxY = Math.max(...values) * 1.16;
-      const minY = Math.min(...values) * .75;
-      const maxV = Math.max(...volumes, 1);
-      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.7);
-      const y = value => h - pad - ((value - minY) / Math.max(maxY - minY, .0001)) * (h - pad * 1.7);
-      const points = values.map((value, i) => `${x(i)},${y(value)}`);
-      const area = `M${pad},${h - pad} L${points.join(' L')} L${w - pad},${h - pad} Z`;
-      const grid = [0, 1, 2, 3].map(i => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${pad + i * 58}" y2="${pad + i * 58}" />`).join('');
-      const bars = rows.map((row, i) => {
-        const bh = (Number(row[volumeKey] || 0) / maxV) * 72;
-        return `<rect class="volume" x="${x(i) - 1}" y="${h - pad - bh}" width="2" height="${bh}" data-tooltip="GÃ¼n ${row[xKey]} | Hacim ${fmtInt(row[volumeKey])} | Fraud ${fmtPct(row[yKey])}" />`;
-      }).join('');
-      const sampleDots = rows.filter((_, i) => i % 18 === 0).map((row, i) => {
-        const originalIndex = i * 18;
-        return `<circle class="dot" cx="${x(originalIndex)}" cy="${y(row[yKey])}" r="3.5" data-tooltip="GÃ¼n ${row[xKey]} | Fraud oranÄ± ${fmtPct(row[yKey])} | Drift: ${escapeHtml(row.drift_flag || '-')}" />`;
-      }).join('');
-      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      svg.innerHTML = `${grid}${bars}<path class="area" d="${area}"></path><path class="line" d="M${points.join(' L')}"></path>${sampleDots}`;
-    }
-
-    function renderPareto(target, rows) {
-      const svg = document.getElementById(target);
-      const sorted = [...rows].sort((a, b) => Number(b.fraud_share || 0) - Number(a.fraud_share || 0)).slice(0, 10);
-      const w = 520, h = 300, pad = 38;
-      const max = Math.max(...sorted.map(row => Number(row.fraud_share || 0)), .0001);
-      let cumulative = 0;
-      const barWidth = (w - pad * 1.8) / Math.max(sorted.length, 1);
-      const bars = sorted.map((row, index) => {
-        const x = pad + index * barWidth;
-        const height = (Number(row.fraud_share || 0) / max) * (h - pad * 1.8);
-        cumulative += Number(row.fraud_share || 0);
-        row._cum = cumulative;
-        return `<rect x="${x + 3}" y="${h - pad - height}" width="${Math.max(barWidth - 6, 8)}" height="${height}" rx="4" fill="${colorScale[index % colorScale.length]}" data-tooltip="${escapeHtml(row.segment_family)} / ${escapeHtml(row.segment_name)} | Fraud payÄ± ${fmtPct(row.fraud_share)} | KÃ¼mÃ¼latif ${fmtPct(cumulative)}" />`;
-      }).join('');
-      const linePoints = sorted.map((row, index) => {
-        const x = pad + index * barWidth + barWidth / 2;
-        const y = h - pad - (Number(row._cum || 0) / Math.max(cumulative, .0001)) * (h - pad * 1.8);
-        return `${x},${y}`;
-      });
-      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      svg.innerHTML = `
-        <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}" />
-        ${bars}
-        <path d="M${linePoints.join(' L')}" fill="none" stroke="#eef5ff" stroke-width="2.4" />
-        <text x="${pad}" y="22" fill="#9ba9ba" font-size="12">Bar: fraud payÄ± | Ã‡izgi: kÃ¼mÃ¼latif etki</text>
-      `;
-    }
-
-    function renderDriverTree(rows) {
-      const grouped = groupBy(rows, row => row.segment_family);
-      const branches = Object.entries(grouped).map(([family, group], index) => {
-        const top = [...group].sort((a, b) => Number(b.priority_score || 0) - Number(a.priority_score || 0))[0];
-        const id = registerDrill(top);
-        return `
-          <button class="tree-node drillable" style="--accent:${colorScale[index % colorScale.length]}" data-drill-id="${id}" data-tooltip="${escapeHtml(top.recommended_action)}">
-            <strong>${escapeHtml(family)}</strong>
-            <span>En gÃ¼Ã§lÃ¼: ${escapeHtml(top.segment_name)} (${fmtX(top.lift)} lift)</span>
-            <span>En yÃ¼ksek fraud payÄ±: ${fmtPct(top.fraud_share)}</span>
-          </button>
-        `;
-      }).join('');
-      document.getElementById('driver-tree').innerHTML = `
-        <div class="tree-root">
-          <strong>Fraud portfÃ¶yÃ¼</strong>
-          <div class="card-note">${Object.keys(grouped).length} segment ailesi analiz ediliyor. Fraud paylarÄ± eksenler arasÄ± toplanmaz; dÃ¼ÄŸÃ¼mlere tÄ±klayarak drill-through aÃ§Ä±lÄ±r.</div>
+      document.getElementById('kpi-grid').innerHTML = cards.map(([label, value, foot, color]) => `
+        <div class="kpi" style="--accent:${color}">
+          <div class="kpi-label">${escapeHtml(label)}</div>
+          <div class="kpi-value">${escapeHtml(value)}</div>
+          <div class="kpi-foot">${escapeHtml(foot)}</div>
         </div>
-        <div class="tree-branches">${branches || '<div class="card-note">Bu filtrelerde segment yok.</div>'}</div>
-      `;
+      `).join('');
     }
 
-    function renderWatchlist(rows) {
-      renderTable('watchlist-table', rows.slice(0, 12), [
-        ['SÄ±ra', row => row.watchlist_rank],
-        ['Alan', row => row.segment_family],
+    function renderExecutiveBrief() {
+      const k = kpis();
+      const top = normalizedWatchlist()[0] || {};
+      const risk = (state.data.model_risk_bands || [])[0] || {};
+      const rows = [
+        ['Board message', `${fmtInt(k.total_transactions)} transactions show a ${fmtPct(k.fraud_rate)} fraud base rate; risk is concentrated enough to manage through prioritized segment queues.`, '#e5484d'],
+        ['Evidence', `${displaySegment(top)} carries ${fmtPct(top.fraud_share)} of fraud labels with ${fmtX(top.lift)} lift versus baseline.`, '#8b5cf6'],
+        ['Decision', `${risk.risk_band || 'Critical'} risk cases should be reviewed first; product, identity, amount, and payment cuts should define weekly monitoring rules.`, '#18a999']
+      ];
+      document.getElementById('executive-brief').innerHTML = rows.map(([title, text, color]) => `
+        <div class="brief" style="--accent:${color}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>
+      `).join('');
+    }
+
+    function renderBars(containerId, rows, labelKey, valueKey, tooltipFn, drillFn) {
+      const target = document.getElementById(containerId);
+      const source = (rows || []).filter(row => row[labelKey] !== null && row[labelKey] !== undefined);
+      if (!source.length) { target.innerHTML = emptyState('No records available for this chart.'); return; }
+      const values = source.map(row => Number(row[valueKey] ?? row.fraud_rate ?? 0));
+      const max = Math.max(...values, 0.00001);
+      target.innerHTML = `<div class="bar-list">${source.slice(0, 12).map((row, index) => {
+        const value = Number(row[valueKey] ?? row.fraud_rate ?? 0);
+        const width = clamp((value / max) * 100, 2, 100);
+        const drill = registerDrill(drillFn ? drillFn(row) : row);
+        return `
+          <div class="bar-row" data-drill-id="${drill}" data-tooltip="${escapeHtml(tooltipFn ? tooltipFn(row) : `${row[labelKey]} | ${formatMetric(valueKey, value)}`)}">
+            <div class="bar-label">${escapeHtml(row[labelKey])}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${width}%;--accent:${colorScale[index % colorScale.length]}"></div></div>
+            <div class="bar-value">${formatMetric(valueKey, value)}</div>
+          </div>`;
+      }).join('')}</div>`;
+    }
+
+    function renderDailyTrend() {
+      const rows = state.data.daily_drift || [];
+      if (!rows.length) { document.getElementById('daily-trend').innerHTML = emptyState('No trend data available.'); return; }
+      const sample = rows.slice(-180);
+      const w = 620, h = 210, pad = 28;
+      const maxRate = Math.max(...sample.map(row => Number(row.fraud_rate || 0)), 0.001);
+      const maxVol = Math.max(...sample.map(row => Number(row.transaction_count || 0)), 1);
+      const x = index => pad + (index / Math.max(sample.length - 1, 1)) * (w - pad * 2);
+      const y = value => h - pad - (Number(value || 0) / maxRate) * (h - pad * 2);
+      const volBars = sample.map((row, index) => {
+        const bh = (Number(row.transaction_count || 0) / maxVol) * (h - pad * 2);
+        return `<rect x="${x(index) - 1}" y="${h - pad - bh}" width="2" height="${bh}" fill="rgba(76,141,246,.22)" data-tooltip="Relative day ${row.transaction_day} | Volume ${fmtInt(row.transaction_count)} | Fraud ${fmtPct(row.fraud_rate)}" />`;
+      }).join('');
+      const points = sample.map((row, index) => `${x(index)},${y(row.fraud_rate)}`).join(' ');
+      const driftDots = sample.filter(row => safe(row.drift_flag).toLowerCase() !== 'normal').map(row => {
+        const index = sample.indexOf(row);
+        return `<circle cx="${x(index)}" cy="${y(row.fraud_rate)}" r="3" fill="#e5484d" data-tooltip="Drift flag: ${escapeHtml(row.drift_flag)} | Relative day ${row.transaction_day}" />`;
+      }).join('');
+      document.getElementById('daily-trend').innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Fraud trend">
+          <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.18)" />
+          <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" stroke="rgba(255,255,255,.12)" />
+          ${volBars}
+          <polyline points="${points}" fill="none" stroke="#e5484d" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" />
+          ${driftDots}
+          <text x="${pad}" y="18" fill="#9aa9bb" font-size="11">Bars: volume | Line: fraud rate</text>
+        </svg>`;
+    }
+
+    function renderWaterfall() {
+      const rows = filteredWatchlist().slice(0, 8);
+      const target = document.getElementById('waterfall-chart');
+      if (!rows.length) { target.innerHTML = emptyState('No watchlist data available.'); return; }
+      const w = 620, h = 210, pad = 28;
+      const total = rows.reduce((sum, row) => sum + Number(row.fraud_share || 0), 0) || 1;
+      const barW = (w - pad * 2) / rows.length;
+      let cum = 0;
+      const bars = rows.map((row, index) => {
+        const value = Number(row.fraud_share || 0);
+        const start = cum;
+        cum += value;
+        const y1 = h - pad - (start / total) * (h - pad * 2);
+        const y2 = h - pad - (cum / total) * (h - pad * 2);
+        const x = pad + index * barW + 5;
+        const height = Math.max(8, y1 - y2);
+        const id = registerDrill(row);
+        return `<g data-drill-id="${id}" data-tooltip="${escapeHtml(displaySegment(row))} | Fraud share ${fmtPct(row.fraud_share)}">
+          <rect x="${x}" y="${y2}" width="${Math.max(10, barW - 10)}" height="${height}" rx="5" fill="${colorScale[index % colorScale.length]}" opacity=".86" />
+          <text x="${x}" y="${h - 8}" fill="#9aa9bb" font-size="10">${escapeHtml(shortLabel(row.segment_name, 9))}</text>
+        </g>`;
+      }).join('');
+      target.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Fraud contribution waterfall">
+        <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.16)" />
+        ${bars}
+        <text x="${pad}" y="18" fill="#9aa9bb" font-size="11">Cumulative contribution of top watchlist segments</text>
+      </svg>`;
+    }
+
+    function renderPareto() {
+      const rows = filteredWatchlist().slice(0, 12);
+      const target = document.getElementById('pareto-chart');
+      if (!rows.length) { target.innerHTML = emptyState('No segment data available.'); return; }
+      const w = 620, h = 210, pad = 30;
+      const max = Math.max(...rows.map(row => Number(row.fraud_share || 0)), 0.001);
+      let cumulative = 0;
+      const bars = rows.map((row, index) => {
+        cumulative += Number(row.fraud_share || 0);
+        const x = pad + index * ((w - pad * 2) / rows.length);
+        const width = Math.max(10, (w - pad * 2) / rows.length - 8);
+        const height = (Number(row.fraud_share || 0) / max) * (h - pad * 2);
+        const id = registerDrill(row);
+        return `<rect data-drill-id="${id}" x="${x}" y="${h - pad - height}" width="${width}" height="${height}" rx="5" fill="${colorScale[index % colorScale.length]}" data-tooltip="${escapeHtml(displaySegment(row))} | Fraud share ${fmtPct(row.fraud_share)} | Cumulative ${fmtPct(cumulative)}" />`;
+      }).join('');
+      document.getElementById('pareto-chart').innerHTML = `<svg viewBox="0 0 ${w} ${h}">
+        <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.16)" />
+        ${bars}
+        <text x="${pad}" y="18" fill="#9aa9bb" font-size="11">Bars: fraud share | Hover for cumulative effect</text>
+      </svg>`;
+    }
+
+    function renderComparison() {
+      const target = document.getElementById('comparison-panel');
+      const rows = normalizedWatchlist();
+      const a = rows.find(row => segmentKey(row) === state.compareA) || rows[0];
+      const b = rows.find(row => segmentKey(row) === state.compareB) || rows[1] || a;
+      if (!a || !b) { target.innerHTML = emptyState('Select two segments to compare.'); return; }
+      const delta = Number(a.fraud_rate || 0) - Number(b.fraud_rate || 0);
+      const leader = delta >= 0 ? a : b;
+      target.innerHTML = `
+        <div class="comparison-grid">
+          ${comparisonCard('Segment A', a)}
+          ${comparisonCard('Segment B', b)}
+        </div>
+        <div class="recommendation">
+          ${escapeHtml(displaySegment(leader))} carries the stronger fraud rate signal by ${fmtPct(Math.abs(delta))}. Prioritize it when capacity is constrained, then validate the rule against lift and fraud share before adding operational friction.
+        </div>`;
+    }
+
+    function comparisonCard(title, row) {
+      const lines = [
+        ['Fraud rate', fmtPct(row.fraud_rate)],
+        ['Lift', fmtX(row.lift)],
+        ['Fraud share', fmtPct(row.fraud_share)],
+        ['Transaction share', fmtPct(row.transaction_share)],
+        ['Average amount', row.avg_transaction_amount ? fmtMoney(row.avg_transaction_amount) : 'Not available'],
+        ['Priority', displayPriority(row.risk_priority)]
+      ];
+      return `<div class="compare-card" data-drill-id="${registerDrill(row)}">
+        <h3>${escapeHtml(title)}: ${escapeHtml(displaySegment(row))}</h3>
+        ${lines.map(([label, value]) => `<div class="metric-line"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('')}
+      </div>`;
+    }
+
+    function renderDriverTree() {
+      const rows = filteredWatchlist();
+      const target = document.getElementById('driver-tree');
+      if (!rows.length) { target.innerHTML = emptyState('No driver data available for the selected filters.'); return; }
+      const grouped = groupBy(rows, row => row.segment_family_display);
+      target.innerHTML = Object.entries(grouped).map(([family, items]) => `
+        <div class="tree-group">
+          <div class="tree-group-title"><span>${escapeHtml(family)}</span><span>${fmtPct(sum(items, 'fraud_share'))} fraud share</span></div>
+          ${items.slice(0, 4).map(row => `<div class="tree-item" data-drill-id="${registerDrill(row)}" data-tooltip="${escapeHtml(actionFor(row))}">
+            <strong>${escapeHtml(row.segment_name)}</strong>
+            <span>${fmtPct(row.fraud_rate)}</span>
+            <span>${fmtX(row.lift)}</span>
+            <span><span class="priority ${displayPriority(row.risk_priority)}">${displayPriority(row.risk_priority)}</span></span>
+          </div>`).join('')}
+        </div>`).join('');
+    }
+
+    function renderWatchlist() {
+      const rows = filteredWatchlist();
+      renderTable('watchlist-table', rows, [
+        ['Rank', row => row.watchlist_rank],
+        ['Family', row => row.segment_family_display],
         ['Segment', row => row.segment_name],
-        ['Ä°ÅŸlem', row => fmtInt(row.transaction_count)],
-        ['Fraud oranÄ±', row => fmtPct(row.fraud_rate)],
+        ['Transactions', row => fmtInt(row.transaction_count)],
+        ['Fraud rate', row => fmtPct(row.fraud_rate)],
         ['Lift', row => fmtX(row.lift)],
-        ['Fraud payÄ±', row => fmtPct(row.fraud_share)],
-        ['Ã–ncelik', row => `<span class="priority ${row.risk_priority}">${row.risk_priority}</span>`],
+        ['Fraud share', row => fmtPct(row.fraud_share)],
+        ['Priority', row => `<span class="priority ${displayPriority(row.risk_priority)}">${displayPriority(row.risk_priority)}</span>`]
       ], row => row);
     }
 
-    function renderIdentityProductMatrix(rows = []) {
-      const maxLift = Math.max(...rows.map(row => Number(row.fraud_lift || 0)), .0001);
-      document.getElementById('identity-product-matrix').innerHTML = rows.map(row => {
-        const alpha = .12 + (Number(row.fraud_lift || 0) / maxLift) * .68;
-        const drillId = registerDrill(segmentRow('Identity/Product', row.product_cd, row));
-        return `
-          <div class="matrix-row drillable" data-drill-id="${drillId}" data-tooltip="Product ${escapeHtml(row.product_cd)} | Identity kapsama ${fmtPct(row.identity_coverage_rate)} | Lift ${fmtX(row.fraud_lift)}">
-            <div class="matrix-cell"><strong>${escapeHtml(row.product_cd)}</strong><span>ProductCD</span></div>
-            <div class="matrix-cell" style="background:rgba(76,141,246,${alpha})"><strong>${fmtPct(row.identity_coverage_rate)}</strong><span>identity coverage</span></div>
-            <div class="matrix-cell" style="background:rgba(241,79,85,${alpha})"><strong>${fmtPct(row.fraud_rate_with_identity)}</strong><span>identity var fraud</span></div>
-            <div class="matrix-cell" style="background:rgba(139,92,246,${alpha})"><strong>${fmtX(row.fraud_lift)}</strong><span>product lift</span></div>
-          </div>
-        `;
-      }).join('');
+    function renderIdentityMatrix() {
+      const rows = state.data.identity_product_coverage || [];
+      renderTable('identity-product-matrix', rows, [
+        ['Product', row => row.product_cd],
+        ['Identity coverage', row => fmtPct(row.identity_coverage_rate)],
+        ['Fraud rate', row => fmtPct(row.fraud_rate)],
+        ['With identity', row => fmtPct(row.fraud_rate_with_identity)],
+        ['Without identity', row => fmtPct(row.fraud_rate_without_identity)],
+        ['Lift', row => fmtX(row.fraud_lift)]
+      ], row => segmentRow('Identity product', row.product_cd, row));
     }
 
-    function renderTimeAmountHeatmap(rows = []) {
-      const topRows = [...rows].sort((a, b) => Number(b.fraud_rate || 0) - Number(a.fraud_rate || 0)).slice(0, 12);
-      const max = Math.max(...topRows.map(row => Number(row.fraud_rate || 0)), .0001);
-      document.getElementById('time-amount-heatmap').innerHTML = topRows.map(row => {
-        const alpha = .16 + (Number(row.fraud_rate || 0) / max) * .72;
-        const label = `${row.relative_hour_window} / ${row.amount_decimal_group}`;
-        const drillId = registerDrill(segmentRow('Saat-Tutar', label, row));
-        return `
-          <div class="heat-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(label)} | Fraud ${fmtPct(row.fraud_rate)} | Ortalama tutar ${fmtMoney(row.avg_transaction_amount)}">
-            <div class="bar-label">${escapeHtml(row.relative_hour_window)}</div>
-            <div class="heat-cell" style="background:rgba(241,79,85,${alpha})">${fmtPct(row.fraud_rate)}<span class="heat-meta">${escapeHtml(row.amount_decimal_group)}</span></div>
-            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .58)})">${fmtInt(row.transaction_count)}<span class="heat-meta">iÅŸlem</span></div>
-          </div>
-        `;
-      }).join('');
+    function renderTimeAmountHeatmap() {
+      const rows = state.data.time_amount_signals || [];
+      const target = document.getElementById('time-amount-heatmap');
+      if (!rows.length) { target.innerHTML = emptyState('No time and amount data available.'); return; }
+      const hours = [...new Set(rows.map(row => row.relative_hour_window))].slice(0, 8);
+      const groups = [...new Set(rows.map(row => row.amount_decimal_group))].slice(0, 4);
+      const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.001);
+      target.innerHTML = `<div class="heatmap" style="--cols:${groups.length}">
+        <div class="heat-row"><div></div>${groups.map(group => `<div class="heat-label">${escapeHtml(group)}</div>`).join('')}</div>
+        ${hours.map(hour => `<div class="heat-row">
+          <div class="heat-label">${escapeHtml(hour)}</div>
+          ${groups.map(group => {
+            const row = rows.find(item => item.relative_hour_window === hour && item.amount_decimal_group === group) || {};
+            const alpha = clamp(Number(row.fraud_rate || 0) / max, .08, .75);
+            const id = registerDrill(segmentRow('Time amount', `${hour} / ${group}`, row));
+            return `<div class="heat-cell" data-drill-id="${id}" style="background:rgba(76,141,246,${alpha})" data-tooltip="${escapeHtml(hour)} / ${escapeHtml(group)} | Fraud ${fmtPct(row.fraud_rate)} | Volume ${fmtInt(row.transaction_count)}">${fmtPct(row.fraud_rate)}<span class="heat-meta">${fmtInt(row.transaction_count)} transactions</span></div>`;
+          }).join('')}
+        </div>`).join('')}
+      </div>`;
     }
 
-    function renderPaymentHeatmap(rows) {
-      const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.0001);
-      document.getElementById('payment-heatmap').innerHTML = rows.map(row => {
-        const alpha = .14 + (Number(row.fraud_rate || 0) / max) * .74;
-        const drillId = registerDrill(segmentRow('Ã–deme', `${row.card_network} / ${row.card_type}`, row));
-        return `
-          <div class="heat-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift">
-            <div class="bar-label">${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)}</div>
-            <div class="heat-cell" style="background:rgba(241,79,85,${alpha})">
-              ${fmtPct(row.fraud_rate)}
-              <span class="heat-meta">${fmtInt(row.transaction_count)} iÅŸlem</span>
-            </div>
-            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .55)})">
-              ${fmtX(row.lift)}
-              <span class="heat-meta">${fmtPct(row.fraud_share)} fraud payÄ±</span>
-            </div>
-          </div>
-        `;
-      }).join('');
+    function renderPaymentHeatmap() {
+      const rows = state.data.payment_heatmap || [];
+      const target = document.getElementById('payment-heatmap');
+      if (!rows.length) { target.innerHTML = emptyState('No payment data available.'); return; }
+      const networks = [...new Set(rows.map(row => row.card_network))].slice(0, 6);
+      const types = [...new Set(rows.map(row => row.card_type))].slice(0, 4);
+      const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.001);
+      target.innerHTML = `<div class="heatmap" style="--cols:${types.length}">
+        <div class="heat-row"><div></div>${types.map(type => `<div class="heat-label">${escapeHtml(type)}</div>`).join('')}</div>
+        ${networks.map(network => `<div class="heat-row">
+          <div class="heat-label">${escapeHtml(network)}</div>
+          ${types.map(type => {
+            const row = rows.find(item => item.card_network === network && item.card_type === type) || {};
+            const alpha = clamp(Number(row.fraud_rate || 0) / max, .08, .78);
+            const id = registerDrill(segmentRow('Payment', `${network} / ${type}`, row));
+            return `<div class="heat-cell" data-drill-id="${id}" style="background:rgba(229,72,77,${alpha})" data-tooltip="${escapeHtml(network)} / ${escapeHtml(type)} | Fraud ${fmtPct(row.fraud_rate)} | Lift ${fmtX(row.lift)}">${fmtPct(row.fraud_rate)}<span class="heat-meta">${fmtPct(row.fraud_share)} fraud share</span></div>`;
+          }).join('')}
+        </div>`).join('')}
+      </div>`;
     }
 
-    function renderThresholdExperience(rows = []) {
+    function renderThreshold() {
+      const rows = state.data.threshold_simulation || [];
+      const target = document.getElementById('threshold-chart');
       const slider = document.getElementById('threshold-slider');
+      if (!rows.length) { target.innerHTML = emptyState('No threshold data available.'); return; }
       slider.max = Math.max(rows.length - 1, 0);
-      slider.value = state.thresholdIndex;
-      slider.oninput = event => {
-        state.thresholdIndex = Number(event.target.value);
-        renderThresholdExperience(rows);
-      };
-      renderThresholdChart('threshold-chart', rows, state.thresholdIndex);
-      const selected = rows[state.thresholdIndex] || {};
-      const falsePositives = Number(selected.review_count || 0) - Number(selected.captured_fraud_count || 0);
-      document.getElementById('threshold-summary').innerHTML = `
-        <div>
-          <div class="kpi-label">SeÃ§ili eÅŸik</div>
-          <div class="kpi-value">${Number(selected.score_threshold || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <div class="kpi-caption">${escapeHtml(selected.operating_mode || 'Operasyon modu')}</div>
-        </div>
-        <div class="metric-stack">
-          <div class="metric-line"><span>Ä°nceleme hacmi</span><strong>${fmtInt(selected.review_count)}</strong></div>
-          <div class="metric-line"><span>Ä°ÅŸ yÃ¼kÃ¼ payÄ±</span><strong>${fmtPct(selected.workload_share)}</strong></div>
-          <div class="metric-line"><span>Fraud yakalama</span><strong>${fmtPct(selected.fraud_capture_rate)}</strong></div>
-          <div class="metric-line"><span>Precision</span><strong>${fmtPct(selected.precision_rate)}</strong></div>
-          <div class="metric-line"><span>Tahmini false positive</span><strong>${fmtInt(falsePositives)}</strong></div>
-        </div>
-      `;
+      slider.value = clamp(state.thresholdIndex, 0, rows.length - 1);
+      const selected = rows[Number(slider.value)];
+      const w = 620, h = 210, pad = 32;
+      const x = index => pad + (index / Math.max(rows.length - 1, 1)) * (w - pad * 2);
+      const y = value => h - pad - Number(value || 0) * (h - pad * 2);
+      const line = key => rows.map((row, index) => `${x(index)},${y(row[key])}`).join(' ');
+      target.innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Threshold simulation">
+          <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.16)" />
+          <polyline points="${line('fraud_capture_rate')}" fill="none" stroke="#18a999" stroke-width="3" />
+          <polyline points="${line('precision_rate')}" fill="none" stroke="#d99a20" stroke-width="3" />
+          <polyline points="${line('workload_share')}" fill="none" stroke="#4c8df6" stroke-width="3" />
+          <circle cx="${x(Number(slider.value))}" cy="${y(selected.fraud_capture_rate)}" r="5" fill="#18a999" />
+          <text x="${pad}" y="18" fill="#18a999" font-size="11">Capture</text>
+          <text x="${pad + 62}" y="18" fill="#d99a20" font-size="11">Precision</text>
+          <text x="${pad + 130}" y="18" fill="#4c8df6" font-size="11">Workload</text>
+        </svg>`;
     }
 
-    function renderThresholdChart(target, rows, selectedIndex) {
-      const svg = document.getElementById(target);
-      const w = 1080, h = 288, pad = 42;
-      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.7);
-      const y = value => h - pad - Number(value || 0) * (h - pad * 1.8);
-      const capture = rows.map((row, i) => `${x(i)},${y(row.fraud_capture_rate)}`);
-      const workload = rows.map((row, i) => `${x(i)},${y(row.workload_share)}`);
-      const precision = rows.map((row, i) => `${x(i)},${y(row.precision_rate)}`);
-      const selected = rows[selectedIndex] || {};
-      const sx = x(selectedIndex);
-      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      svg.innerHTML = `
-        <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}"></line>
-        ${[0, .25, .5, .75, 1].map(t => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${y(t)}" y2="${y(t)}" />`).join('')}
-        <path d="M${capture.join(' L')}" class="line"></path>
-        <path d="M${workload.join(' L')}" class="line-blue"></path>
-        <path d="M${precision.join(' L')}" class="line-green"></path>
-        <line x1="${sx}" x2="${sx}" y1="${pad}" y2="${h - pad}" stroke="rgba(255,255,255,.42)" stroke-dasharray="5 6" />
-        <circle cx="${sx}" cy="${y(selected.fraud_capture_rate)}" r="5" fill="#f14f55" data-tooltip="Fraud yakalama ${fmtPct(selected.fraud_capture_rate)}" />
-        <circle cx="${sx}" cy="${y(selected.workload_share)}" r="5" fill="#4c8df6" data-tooltip="Ä°ÅŸ yÃ¼kÃ¼ ${fmtPct(selected.workload_share)}" />
-        <circle cx="${sx}" cy="${y(selected.precision_rate)}" r="5" fill="#2f9e75" data-tooltip="Precision ${fmtPct(selected.precision_rate)}" />
-        <text x="${pad}" y="20" fill="#f14f55" font-size="12" font-weight="800">Yakalama</text>
-        <text x="${pad + 92}" y="20" fill="#4c8df6" font-size="12" font-weight="800">Ä°ÅŸ yÃ¼kÃ¼</text>
-        <text x="${pad + 174}" y="20" fill="#2f9e75" font-size="12" font-weight="800">Precision</text>
-      `;
+    function renderThresholdRecommendation() {
+      const target = document.getElementById('threshold-recommendation');
+      const rec = thresholdRecommendation();
+      if (!rec) { target.innerHTML = emptyState('No threshold recommendation can be calculated.'); return; }
+      const assumptions = operatingAssumptions();
+      const k = kpis();
+      const days = Math.max((state.data.daily_drift || []).length, 1);
+      const dailyReview = Number(rec.review_count || 0) / days;
+      const captured = Number(rec.captured_fraud_count || 0);
+      const falsePositive = Math.max(Number(rec.review_count || 0) - captured, 0);
+      const missed = Math.max(Number(k.fraud_transactions || 0) - captured, 0);
+      const reviewCost = falsePositive * assumptions.fpCost;
+      const missedExposure = missed * assumptions.fnLoss;
+      const capacityStatus = dailyReview <= assumptions.capacity ? 'Within capacity' : 'Capacity breach';
+      target.innerHTML = `
+        <div class="grid-4">
+          <div class="kpi"><div class="kpi-label">Recommended threshold</div><div class="kpi-value">${df.format(rec.score_threshold || 0)}</div><div class="kpi-foot">${escapeHtml(rec.operating_mode || 'Balanced review mode')}</div></div>
+          <div class="kpi"><div class="kpi-label">Workload</div><div class="kpi-value">${fmtInt(rec.review_count)}</div><div class="kpi-foot">${fmtInt(dailyReview)} reviews per relative day. ${capacityStatus}.</div></div>
+          <div class="kpi"><div class="kpi-label">Precision</div><div class="kpi-value">${fmtPct(rec.precision_rate)}</div><div class="kpi-foot">${fmtInt(falsePositive)} expected false-positive reviews.</div></div>
+          <div class="kpi"><div class="kpi-label">Missed exposure</div><div class="kpi-value">${fmtMoney(missedExposure)}</div><div class="kpi-foot">Review cost estimate: ${fmtMoney(reviewCost)}.</div></div>
+        </div>`;
     }
 
-    function renderReviewStrategy(rows) {
+    function renderReviewTable() {
+      const rows = (state.data.review_strategy || []).map(row => ({
+        ...row,
+        review_priority_display: reviewPriority(row.risk_band),
+        queue_policy_display: queuePolicy(row.risk_band),
+        management_note_display: managementNote(row.risk_band)
+      }));
       renderTable('review-table', rows, [
-        ['Bant', row => row.risk_band],
-        ['Ã–ncelik', row => row.review_priority],
-        ['GÃ¼nlÃ¼k hacim', row => fmtInt(row.estimated_daily_review_volume)],
-        ['Yakalama', row => fmtPct(row.expected_fraud_capture)],
-        ['Lift', row => `${Number(row.lift || 0).toFixed(1)}x`],
-        ['Politika', row => row.queue_policy],
-      ], row => segmentRow('Risk bandÄ±', row.risk_band, row));
+        ['Band', row => row.risk_band],
+        ['Priority', row => row.review_priority_display],
+        ['Daily volume', row => fmtInt(row.estimated_daily_review_volume)],
+        ['Capture', row => fmtPct(row.expected_fraud_capture)],
+        ['Lift', row => fmtX(row.lift)],
+        ['Policy', row => row.queue_policy_display]
+      ], row => segmentRow('Risk band', row.risk_band, row));
     }
 
-    function renderFeatureTreemap(rows = []) {
-      const grouped = Object.values(groupBy(rows, row => row.feature_family)).map(group => ({
-        feature_family: group[0].feature_family,
-        importance: group.reduce((sum, row) => sum + Number(row.importance || 0), 0),
-        count: group.length,
+    function renderFeatureTreemap() {
+      const rows = Object.values(groupBy(state.data.feature_importance || [], row => row.feature_family)).map(items => ({
+        feature_family: items[0].feature_family,
+        importance: sum(items, 'importance'),
+        count: items.length
       })).sort((a, b) => b.importance - a.importance);
-      const max = Math.max(...grouped.map(row => row.importance), 1);
-      document.getElementById('feature-treemap').innerHTML = grouped.map((row, index) => {
-        const span = Math.max(1, Math.ceil((row.importance / max) * 3));
-        return `
-          <div class="tile" style="grid-column:span ${span};background:rgba(${index % 2 ? '139,92,246' : '76,141,246'},${.12 + (row.importance / max) * .34})" data-tooltip="${escapeHtml(row.feature_family)} | Toplam Ã¶nem ${fmtInt(row.importance)} | ${row.count} feature">
-            <strong>${escapeHtml(row.feature_family)}</strong>
-            <span>${fmtInt(row.importance)} Ã¶nem | ${row.count} feature</span>
-          </div>
-        `;
-      }).join('');
+      const target = document.getElementById('feature-treemap');
+      if (!rows.length) { target.innerHTML = emptyState('No feature importance data available.'); return; }
+      const max = Math.max(...rows.map(row => row.importance), 1);
+      target.innerHTML = `<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;">
+        ${rows.map((row, index) => {
+          const span = clamp(Math.round((row.importance / max) * 6), 1, 6);
+          return `<div class="compare-card" style="grid-column:span ${span};background:rgba(${index % 2 ? '139,92,246' : '24,169,153'},${.10 + (row.importance / max) * .32})" data-tooltip="${escapeHtml(row.feature_family)} | Importance ${fmtInt(row.importance)} | ${row.count} features">
+            <h3>${escapeHtml(row.feature_family)}</h3>
+            <div class="card-note">${fmtInt(row.importance)} importance across ${row.count} features</div>
+          </div>`;
+        }).join('')}
+      </div>`;
     }
 
-    function renderReadiness(rows) {
-      renderTable('readiness-table', rows, [
-        ['Kontrol', row => readinessCheckName(row.check_name)],
-        ['Beklenen', row => row.expected_value],
-        ['GerÃ§ek', row => row.actual_value],
-        ['Alan', row => row.readiness_area],
-        ['Durum', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Kritik'}">${row.status}</span>`],
+    function renderAlerts() {
+      const target = document.getElementById('alert-list');
+      const driftRows = (state.data.daily_drift || []).filter(row => safe(row.drift_flag).toLowerCase() !== 'normal');
+      const critical = (state.data.review_strategy || []).find(row => row.risk_band === 'Critical') || {};
+      const assumptions = operatingAssumptions();
+      const highMissing = [...(state.data.data_quality || [])].sort((a, b) => Number(b.avg_missing_rate || 0) - Number(a.avg_missing_rate || 0))[0] || {};
+      const readiness = state.data.meta || {};
+      const alerts = [
+        {
+          title: driftRows.length ? 'Elevated fraud drift requires review' : 'Fraud drift is within control limits',
+          body: driftRows.length ? `${driftRows.length} relative days are flagged by the drift monitor. Review rule stability before the next reporting cycle.` : 'No active daily drift flags are present in the reporting layer.',
+          color: driftRows.length ? '#d99a20' : '#18a999'
+        },
+        {
+          title: Number(critical.estimated_daily_review_volume || 0) > assumptions.capacity ? 'Critical queue pressure exceeds capacity' : 'Critical queue pressure is within capacity',
+          body: `Critical daily review volume is ${fmtInt(critical.estimated_daily_review_volume)} against a capacity assumption of ${fmtInt(assumptions.capacity)} cases per analyst day.`,
+          color: Number(critical.estimated_daily_review_volume || 0) > assumptions.capacity ? '#e5484d' : '#18a999'
+        },
+        {
+          title: Number(highMissing.avg_missing_rate || 0) > .35 ? 'High missingness needs feature monitoring' : 'Missingness scorecard is stable',
+          body: `${highMissing.column_family || 'Feature'} has the highest average missingness at ${fmtPct(highMissing.avg_missing_rate)}. Keep missingness as an explicit feature quality signal.`,
+          color: Number(highMissing.avg_missing_rate || 0) > .35 ? '#d99a20' : '#18a999'
+        },
+        {
+          title: readiness.readiness_passed === readiness.readiness_total ? 'Reporting readiness passed' : 'Reporting readiness needs attention',
+          body: `${readiness.readiness_passed || 0}/${readiness.readiness_total || 0} readiness checks passed across the reporting contract.`,
+          color: readiness.readiness_passed === readiness.readiness_total ? '#18a999' : '#e5484d'
+        }
+      ];
+      target.innerHTML = alerts.map(item => `<div class="alert" style="--accent:${item.color}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.body)}</span></div>`).join('');
+    }
+
+    function renderQualityContract() {
+      renderTable('quality-contract', state.data.quality_contract || [], [
+        ['Object', row => row.object_name],
+        ['Expected', row => fmtInt(row.expected_rows)],
+        ['Actual', row => fmtInt(row.actual_rows)],
+        ['Status', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Critical'}">${escapeHtml(row.status)}</span>`]
       ]);
     }
 
-    function displayDatasetName(value = '') {
-      return String(value);
-    }
-
-    function readinessCheckName(value = '') {
-      return String(value).replace(/web dashboard/gi, 'Raporlama');
-    }
-
-    function renderQualityContract(rows) {
-      renderTable('quality-contract-table', rows, [
-        ['Nesne', row => reportingObjectName(row.object_name)],
-        ['Beklenen', row => fmtInt(row.expected_rows)],
-        ['GerÃ§ek', row => fmtInt(row.actual_rows)],
-        ['Durum', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Kritik'}">${row.status}</span>`],
+    function renderReadinessTable() {
+      renderTable('readiness-table', state.data.report_readiness || [], [
+        ['Area', row => row.readiness_area],
+        ['Check', row => row.check_name],
+        ['Expected', row => row.expected_value],
+        ['Actual', row => row.actual_value],
+        ['Status', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Critical'}">${escapeHtml(row.status)}</span>`]
       ]);
     }
 
-    function reportingObjectName(value = '') {
-      return String(value)
-        .replace(/^reporting\./i, 'reporting.')
-        .replace(/^rpt_/i, 'reporting_')
-        .replace(/\.rpt_/i, '.');
-    }
-
-    function renderNarrativeList(rows = []) {
-      document.getElementById('narrative-list').innerHTML = rows.map(row => `
-        <div class="insight" data-tooltip="${escapeHtml(row.recommended_action)}">
-          <strong>${String(row.page_order).padStart(2, '0')} ${escapeHtml(row.page_name)}</strong>
-          <span>${escapeHtml(row.executive_message)}</span>
-        </div>
-      `).join('');
-    }
-
-    function renderTable(target, rows, columns, drillFactory) {
-      document.getElementById(target).innerHTML = `
-        <thead><tr>${columns.map(([name]) => `<th>${name}</th>`).join('')}</tr></thead>
-        <tbody>${(rows || []).map(row => {
-          const drillId = drillFactory ? registerDrill(drillFactory(row)) : '';
-          const attrs = drillFactory ? ` class="table-row-drill drillable" data-drill-id="${drillId}"` : '';
-          return `<tr${attrs}>${columns.map(([, render]) => `<td>${render(row)}</td>`).join('')}</tr>`;
+    function renderTable(containerId, rows, columns, drillFn) {
+      const target = document.getElementById(containerId);
+      if (!rows || !rows.length) { target.innerHTML = emptyState('No records available.'); return; }
+      target.innerHTML = `<div class="table-wrap"><table>
+        <thead><tr>${columns.map(([label]) => `<th>${escapeHtml(label)}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(row => {
+          const drill = drillFn ? ` data-drill-id="${registerDrill(drillFn(row))}"` : '';
+          return `<tr${drill}>${columns.map(([, fn]) => `<td>${fn(row)}</td>`).join('')}</tr>`;
         }).join('')}</tbody>
-      `;
-    }
-
-    function registerDrill(row) {
-      const id = `d${drillMap.size + 1}`;
-      drillMap.set(id, row);
-      return id;
-    }
-
-    function bindDrillEvents() {
-      document.querySelectorAll('[data-drill-id]').forEach(element => {
-        element.onclick = () => {
-          const row = drillMap.get(element.dataset.drillId);
-          if (row) openDrawer(row);
-        };
-      });
+      </table></div>`;
     }
 
     function openDrawer(row) {
-      state.selected = row;
-      const title = `${row.segment_family || 'Segment'} | ${row.segment_name || row.feature || row.column_family || '-'}`;
-      document.getElementById('selected-segment').textContent = title;
-      document.getElementById('drawer-title').textContent = title;
-      document.getElementById('drawer-subtitle').textContent = row.recommended_action || row.management_note || 'SeÃ§ili kÄ±rÄ±lÄ±m iÃ§in detaylÄ± metrikler.';
+      const normalized = {
+        ...row,
+        segment_family_display: displayFamily(row.segment_family),
+        risk_priority_display: displayPriority(row.risk_priority),
+        recommended_action_display: actionFor(row)
+      };
+      const fraudRate = normalized.fraud_rate ?? normalized.observed_fraud_rate ?? normalized.avg_missing_rate ?? 0;
+      const fraudCount = normalized.fraud_count ?? normalized.observed_fraud_count ?? normalized.captured_fraud_count ?? 0;
+      const transactionCount = normalized.transaction_count ?? normalized.review_count ?? normalized.row_count ?? 0;
+      const copy = `${displaySegment(normalized)} should be monitored because it shows ${fmtPct(fraudRate)} fraud rate, ${fmtX(normalized.lift)} lift, and ${fmtPct(normalized.fraud_share)} fraud share. Recommended action: ${actionFor(normalized)}`;
+      document.getElementById('drawer-title').textContent = displaySegment(normalized);
+      document.getElementById('drawer-subtitle').textContent = actionFor(normalized);
+      document.getElementById('selected-segment').textContent = displaySegment(normalized);
       document.getElementById('drawer-body').innerHTML = `
-        <div class="grid cols-2">
-          <div class="insight"><strong>${fmtInt(row.transaction_count)}</strong><span>Ä°ÅŸlem hacmi</span></div>
-          <div class="insight"><strong>${fmtInt(row.fraud_count || row.observed_fraud_count)}</strong><span>Fraud iÅŸlem</span></div>
-          <div class="insight"><strong>${formatMetric('fraud_rate', row.fraud_rate || row.observed_fraud_rate)}</strong><span>Fraud oranÄ±</span></div>
-          <div class="insight"><strong>${fmtX(row.lift || row.fraud_lift)}</strong><span>Lift</span></div>
-          <div class="insight"><strong>${formatMetric('fraud_share', row.fraud_share || row.expected_fraud_capture)}</strong><span>Fraud yakalama / pay</span></div>
-          <div class="insight"><strong>${formatMetric('transaction_share', row.transaction_share)}</strong><span>Ä°ÅŸlem payÄ±</span></div>
+        <div class="drawer-grid">
+          <div class="insight"><strong>${fmtInt(transactionCount)}</strong><span>Transactions</span></div>
+          <div class="insight"><strong>${fmtInt(fraudCount)}</strong><span>Fraud cases</span></div>
+          <div class="insight"><strong>${fmtPct(fraudRate)}</strong><span>Fraud rate</span></div>
+          <div class="insight"><strong>${fmtX(normalized.lift)}</strong><span>Lift</span></div>
+          <div class="insight"><strong>${fmtPct(normalized.fraud_share)}</strong><span>Fraud share</span></div>
+          <div class="insight"><strong>${fmtPct(normalized.transaction_share)}</strong><span>Workload impact</span></div>
         </div>
-        <article class="card pad">
-          <h3 class="card-title">YÃ¶netim yorumu</h3>
-          <p class="card-note">${escapeHtml(row.recommended_action || row.management_note || 'Bu segment, hacim ve risk ayrÄ±ÅŸmasÄ± birlikte deÄŸerlendirilerek izlenmelidir.')}</p>
-        </article>
-      `;
+        <div class="card" style="box-shadow:none;margin-top:12px;">
+          <h3 class="card-title">Operational recommendation</h3>
+          <p class="card-note">${escapeHtml(actionFor(normalized))}</p>
+        </div>
+        <div class="card" style="box-shadow:none;margin-top:12px;">
+          <h3 class="card-title">Presentation-ready insight</h3>
+          <textarea class="copy-box" id="drawer-copy-text" readonly>${escapeHtml(copy)}</textarea>
+          <button class="btn primary" type="button" style="margin-top:8px;" onclick="copyDrawerInsight()">Copy insight</button>
+        </div>`;
+      document.getElementById('drawer-backdrop').classList.add('open');
       document.getElementById('drill-drawer').classList.add('open');
-      document.getElementById('drill-drawer').setAttribute('aria-hidden', 'false');
     }
 
     function closeDrawer() {
+      document.getElementById('drawer-backdrop').classList.remove('open');
       document.getElementById('drill-drawer').classList.remove('open');
-      document.getElementById('drill-drawer').setAttribute('aria-hidden', 'true');
     }
 
-    function bindTooltips() {
-      const tooltip = document.getElementById('tooltip');
-      document.querySelectorAll('[data-tooltip]').forEach(element => {
-        element.onmouseenter = () => {
-          tooltip.innerHTML = escapeHtml(element.dataset.tooltip);
-          tooltip.classList.add('visible');
-        };
-        element.onmousemove = event => {
-          tooltip.style.transform = `translate(${event.clientX + 14}px, ${event.clientY + 14}px)`;
-        };
-        element.onmouseleave = () => {
-          tooltip.classList.remove('visible');
-          tooltip.style.transform = 'translate(-999px, -999px)';
-        };
-      });
+    function copyDrawerInsight() {
+      const text = document.getElementById('drawer-copy-text')?.value || '';
+      writeClipboard(text);
     }
+    window.copyDrawerInsight = copyDrawerInsight;
 
-    function downloadSnapshot() {
-      if (!dashboardData) return;
-      const blob = new Blob([JSON.stringify(dashboardData, null, 2)], { type: 'application/json' });
+    function exportJson() {
+      if (!state.data) return;
+      const blob = new Blob([JSON.stringify(state.data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -1243,27 +1358,161 @@
       URL.revokeObjectURL(url);
     }
 
-    function defaultThresholdIndex(rows = []) {
-      const index = rows.findIndex(row => Number(row.score_threshold) >= .05);
-      return index >= 0 ? index : Math.floor(rows.length / 2);
+    function copyExecutiveSummary() {
+      const k = kpis();
+      const top = normalizedWatchlist()[0] || {};
+      const rec = thresholdRecommendation();
+      const text = [
+        `Fraud Risk Intelligence summary`,
+        `${fmtInt(k.total_transactions)} transactions were analyzed with a ${fmtPct(k.fraud_rate)} fraud base rate.`,
+        `${displaySegment(top)} is the leading concentration driver with ${fmtPct(top.fraud_share)} fraud share and ${fmtX(top.lift)} lift.`,
+        `Recommended threshold ${rec ? df.format(rec.score_threshold) : 'not available'} reviews ${rec ? fmtInt(rec.review_count) : 'not available'} cases and captures ${rec ? fmtPct(rec.fraud_capture_rate) : 'not available'} of fraud labels.`,
+        `Action: prioritize critical risk bands, Product C, identity-covered transactions, and high-lift payment/email segments for operational review.`
+      ].join('\n');
+      writeClipboard(text);
     }
 
+    async function writeClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        document.getElementById('live-pill').textContent = 'Copied';
+        setTimeout(() => { document.getElementById('live-pill').textContent = 'BigQuery live'; }, 1600);
+      } catch (_) {
+        const box = document.getElementById('state');
+        box.style.display = 'block';
+        box.textContent = 'Copy failed. Select the text and copy manually.';
+      }
+    }
+
+    function thresholdRecommendation() {
+      const rows = state.data?.threshold_simulation || [];
+      if (!rows.length) return null;
+      const assumptions = operatingAssumptions();
+      const days = Math.max((state.data.daily_drift || []).length, 1);
+      const feasible = rows.filter(row => (Number(row.review_count || 0) / days) <= assumptions.capacity);
+      const candidates = feasible.length ? feasible : rows;
+      return [...candidates].sort((a, b) => Number(b.fraud_capture_rate || 0) - Number(a.fraud_capture_rate || 0))[0];
+    }
+    function operatingAssumptions() {
+      return {
+        capacity: Number(document.getElementById('analyst-capacity').value || 180),
+        fpCost: Number(document.getElementById('fp-cost').value || 4),
+        fnLoss: Number(document.getElementById('fn-loss').value || 120)
+      };
+    }
+
+    function assignComparison(row) {
+      const key = segmentKey(row);
+      if (!state.compareA || state.compareA === key) state.compareA = key;
+      else state.compareB = key;
+      document.getElementById('compare-a-select').value = state.compareA;
+      document.getElementById('compare-b-select').value = state.compareB;
+      renderComparison();
+    }
+
+    function segmentRow(family, name, row) {
+      return {
+        ...row,
+        segment_family: family,
+        segment_family_display: displayFamily(family),
+        segment_name: name,
+        risk_priority: row.risk_priority || priorityFromLift(row.lift),
+        recommended_action: row.recommended_action || actionFor({ ...row, segment_family: family, segment_name: name })
+      };
+    }
+    function segmentKey(row) { return `${displayFamily(row.segment_family)}::${row.segment_name}`; }
+    function displaySegment(row) { return `${displayFamily(row.segment_family)} | ${row.segment_name || row.feature || row.risk_band || 'Segment'}`; }
+    function displayFamily(value) {
+      const raw = safe(value).toLowerCase();
+      if (raw.includes('identity')) return 'Identity';
+      if (raw.includes('product')) return 'Product';
+      if (raw.includes('amount') || raw.includes('tutar')) return 'Amount band';
+      if (raw.includes('payment') || raw.includes('deme')) return 'Payment';
+      if (raw.includes('email')) return 'Email domain';
+      if (raw.includes('risk')) return 'Risk band';
+      if (raw.includes('quality')) return 'Data quality';
+      if (/[^\x00-\x7F]/.test(safe(value)) && raw.includes('n')) return 'Product';
+      return value || 'Segment';
+    }
+    function displayPriority(value) {
+      const raw = safe(value).toLowerCase();
+      if (raw.includes('kritik') || raw.includes('critical')) return 'Critical';
+      if (raw.includes('high') || raw.includes('y') || raw.includes('ksek')) return 'High';
+      if (raw.includes('izle') || raw.includes('monitor')) return 'Monitor';
+      return raw ? 'Normal' : 'Monitor';
+    }
+    function priorityFromLift(value) {
+      const lift = Number(value || 0);
+      if (lift >= 1.8) return 'Critical';
+      if (lift >= 1.3) return 'High';
+      if (lift >= 1) return 'Monitor';
+      return 'Normal';
+    }
+    function actionFor(row) {
+      const family = displayFamily(row.segment_family);
+      const priority = displayPriority(row.risk_priority);
+      if (priority === 'Critical') return `${family} requires immediate review, rule calibration, and capacity allocation.`;
+      if (priority === 'High') return `${family} should enter the daily review queue with trend and volume monitoring.`;
+      if (priority === 'Monitor') return `${family} should be sampled weekly and tracked for drift or volume expansion.`;
+      return `${family} remains in standard monitoring with no additional friction unless drift increases.`;
+    }
+    function reviewPriority(band) {
+      return { Critical: 'Immediate review', High: 'Same-day priority', Elevated: 'Queue sampling', Low: 'Standard monitoring' }[band] || 'Standard monitoring';
+    }
+    function queuePolicy(band) {
+      return { Critical: 'Real-time manual queue', High: 'Same-day analyst review', Elevated: 'Sample-based control', Low: 'Automated monitoring' }[band] || 'Automated monitoring';
+    }
+    function managementNote(band) {
+      return { Critical: 'Reserve operational capacity.', High: 'Reserve operational capacity.', Elevated: 'Review rule performance weekly.', Low: 'No extra action required.' }[band] || 'No extra action required.';
+    }
+
+    function registerDrill(row) {
+      const id = `d${state.drillRows.size + 1}`;
+      state.drillRows.set(id, row);
+      return id;
+    }
+    function formatMetric(key, value) {
+      if (['fraud_rate', 'baseline_fraud_rate', 'fraud_share', 'transaction_share', 'observed_fraud_rate', 'avg_missing_rate', 'workload_share', 'fraud_capture_rate', 'precision_rate'].includes(key)) return fmtPct(value);
+      if (key === 'lift') return fmtX(value);
+      if (key.includes('amount')) return fmtMoney(value);
+      return fmtInt(value);
+    }
+    function productTooltip(row) { return `${row.product_cd} | Fraud ${fmtPct(row.fraud_rate)} | Lift ${fmtX(row.lift)} | Transactions ${fmtInt(row.transaction_count)}`; }
+    function riskTooltip(row) { return `${row.risk_band} | Fraud ${fmtPct(row.observed_fraud_rate)} | Lift ${fmtX(row.lift)} | Transactions ${fmtInt(row.transaction_count)}`; }
+    function amountTooltip(row) { return `${row.amount_band} | Fraud ${fmtPct(row.fraud_rate)} | Average amount ${fmtMoney(row.avg_transaction_amount)}`; }
+    function emailTooltip(row) { return `${row.purchaser_email_group} | Fraud ${fmtPct(row.fraud_rate)} | Lift ${fmtX(row.lift)}`; }
+    function emptyState(text) { return `<div class="empty">${escapeHtml(text)}</div>`; }
     function groupBy(rows, keyFn) {
-      return (rows || []).reduce((acc, row) => {
-        const key = keyFn(row) || 'DiÄŸer';
+      return rows.reduce((acc, row) => {
+        const key = keyFn(row) || 'Other';
         acc[key] = acc[key] || [];
         acc[key].push(row);
         return acc;
       }, {});
     }
-
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>"']/g, char => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-      }[char]));
+    function sum(rows, key) { return rows.reduce((total, row) => total + Number(row[key] || 0), 0); }
+    function shortLabel(value, limit) {
+      const text = safe(value);
+      return text.length > limit ? `${text.slice(0, limit - 1)}.` : text;
     }
 
-    loadDashboard();
+    function showTooltip(event) {
+      const item = event.target.closest('[data-tooltip]');
+      if (!item) return;
+      const tooltip = document.getElementById('tooltip');
+      tooltip.textContent = item.dataset.tooltip;
+      tooltip.style.display = 'block';
+      moveTooltip(event);
+    }
+    function moveTooltip(event) {
+      const tooltip = document.getElementById('tooltip');
+      if (tooltip.style.display !== 'block') return;
+      tooltip.style.left = `${Math.min(window.innerWidth - 340, event.clientX + 14)}px`;
+      tooltip.style.top = `${Math.min(window.innerHeight - 120, event.clientY + 14)}px`;
+    }
+    function hideTooltip(event) {
+      if (event.target.closest('[data-tooltip]')) document.getElementById('tooltip').style.display = 'none';
+    }
   </script>
 </body>
 </html>
