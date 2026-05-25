@@ -1,41 +1,47 @@
-# 03 - Analiz İçin Hipotezler
+# 03 - Analysis Hypotheses
 
-## H1 - Ürün Ailesi Riski Ayrıştırır
+## H1 - Product Family Separates Risk
 
-Product C işlemlerinin fraud oranının portföy ortalamasının üzerinde olması beklenir.
+Hypothesis: product categories do not carry the same fraud rate.
 
-Sonuç: Product C fraud oranı %11,69 ile baz oranın yaklaşık 3,3 katıdır. Ürün ailesi risk izleme için birincil kırılımdır.
+Result: Product C has an 11.69% fraud rate, roughly 3.34x the portfolio baseline. Product family is one of the clearest executive-level segmentation dimensions.
 
-## H2 - Identity Kaydı Sadece Veri Tamlığı Değil, Risk Sinyalidir
+## H2 - Identity Coverage Is a Risk Signal
 
-Identity tablosunda kaydı olan işlemlerin risk profilinin farklılaşması beklenir.
+Hypothesis: transactions with identity records have a different risk profile from transactions without identity records.
 
-Sonuç: Identity kaydı olan işlemlerde fraud oranı %7,85; olmayan işlemlerde %2,09 seviyesindedir. Identity varlığı fraud skorlama modelinde izlenmesi gereken davranışsal bir sinyaldir.
+Result: identity-present transactions show a 7.85% fraud rate, compared with 2.09% for identity-missing transactions. Identity coverage is not only a data completeness measure; it is a behavioral segmentation signal.
 
-## H3 - Tutar Riski Doğrusal Değildir
+## H3 - Amount Risk Is Nonlinear
 
-Fraud oranının işlem tutarı arttıkça monoton artması beklenmez; uç tutar bantlarında yoğunlaşma oluşabilir.
+Hypothesis: fraud rate does not increase monotonically with transaction amount.
 
-Sonuç: `<$25` bandı %6,97, `$250-499` bandı %5,28 ve `$500+` bandı %4,72 fraud oranına sahiptir. Orta tutar bantları daha düşük risk göstermektedir.
+Result: very low-value transactions and higher-value bands show elevated risk compared with mid-range amounts. A single amount threshold would miss this shape.
 
-## H4 - Email Domain Grupları Operasyonel Segment Üretir
+## H4 - Email Domains Create Operational Segments
 
-P_emaildomain gruplarının fraud oranı ve hacim açısından ayrışması beklenir.
+Hypothesis: purchaser email-domain groups separate fraud risk and review volume.
 
-Sonuç: Hotmail %5,30, Gmail %4,35 fraud oranıyla öne çıkar. Gmail yüksek hacmi nedeniyle toplam risk katkısı bakımından kritik izleme segmentidir.
+Result: high-volume mainstream domains and selected higher-risk groups require different monitoring logic. Email domain should be used with product, amount, and model score, not as a standalone decision rule.
 
-## H5 - Zaman Penceresi ve Gün İçi Örüntüler Drift Gösterebilir
+## H5 - Relative Time Windows Matter
 
-Fraud oranının gözlem süresi boyunca sabit kalmaması beklenir.
+Hypothesis: fraud concentration changes across relative day and hour windows.
 
-Sonuç: Günlük fraud oranı hareketli ortalamada belirgin dalgalanma üretir. Bu durum fraud izleme panosunda zaman bazlı drift kontrolünü gerekli kılar.
+Result: the project derives relative day and relative hour from `TransactionDT` and monitors drift through rolling fraud-rate metrics. These patterns support staffing and threshold discussions, but they are not real calendar dates.
 
-## H6 - Model Risk Bantları Operasyonel Önceliklendirme Sağlar
+## H6 - Model Risk Bands Enable Review Prioritization
 
-Model skorları doğrudan karar mekanizması olarak değil, inceleme kuyruğu önceliklendirmesi için kullanılmalıdır.
+Hypothesis: model scores can create a manageable review queue without becoming an automated decline engine.
 
-Sonuç: Kritik risk bandında gözlenen fraud oranı %96,31; yüksek risk bandında %44,39 seviyesindedir. Bu bantlar operasyon ekibi için net önceliklendirme sağlar.
+Result: the High + Critical queue reviews about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision. This is the recommended starting operating point.
 
-## Sunum İçin Ana Çerçeve
+## Presentation Frame
 
-Analiz, "sahtecilik hangi segmentlerde yoğunlaşıyor?" sorusuyla açılmalıdır. Ardından ürün, identity, tutar, ödeme tipi, email ve zaman kırılımlarıyla riskin rastgele dağılmadığı kanıtlanmalı; son bölümde model skorları operasyonel aksiyon katmanı olarak konumlandırılmalıdır.
+The analysis should start with fraud concentration, not tooling. The recommended story sequence is:
+
+1. Baseline fraud is low, so averages hide risk.
+2. Product and identity reveal the first concentration layer.
+3. Amount, payment, email, and relative time explain operational patterns.
+4. Model risk bands convert the evidence into review queues.
+5. dbt tests, row-count reconciliation, and data quality checks prove the pipeline is trustworthy.

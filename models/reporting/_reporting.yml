@@ -67,6 +67,12 @@ models:
     description: "Relative-day fraud drift and volume trend."
     config:
       tags: ["reporting", "time"]
+    columns:
+      - name: drift_flag
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["High risk drift", "Low risk drift", "Normal band"]
 
   - name: rpt_time_amount_signals
     description: "Relative hour and amount-decimal risk signals used for operational staffing and dynamic threshold discussion."
@@ -92,6 +98,12 @@ models:
     description: "Model risk bands and operational prioritization metrics."
     config:
       tags: ["reporting", "model", "executive"]
+    columns:
+      - name: review_priority
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Immediate review", "Priority review", "Queue monitoring", "Standard monitoring"]
 
   - name: rpt_feature_importance
     description: "Model feature importance ranking."
@@ -137,7 +149,7 @@ models:
         tests:
           - accepted_values:
               arguments:
-                values: ["Kritik", "YÃ¼ksek", "Ä°zle", "Normal"]
+                values: ["Critical", "High", "Monitor", "Normal"]
 
   - name: rpt_review_strategy
     description: "Maps model risk bands to review queue, estimated daily volume, and management action."
@@ -152,6 +164,15 @@ models:
         tests:
           - not_null
           - unique
+      - name: queue_policy
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - "Real-time manual review queue"
+                  - "Same-day priority review"
+                  - "Sample-based manual control"
+                  - "Automated monitoring"
 
   - name: rpt_threshold_simulation
     description: "Threshold simulation for review workload, fraud capture, and precision trade-off."
@@ -179,6 +200,15 @@ models:
               arguments:
                 min_value: 0
                 max_value: 1
+      - name: operating_mode
+        tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - "Broad monitoring"
+                  - "Balanced operations"
+                  - "Focused risk queue"
+                  - "Narrow critical queue"
 
   - name: rpt_report_readiness
     description: "Acceptance checklist table summarizing data, narrative, risk analytics, and model operations readiness."
@@ -190,6 +220,11 @@ models:
           - accepted_values:
               arguments:
                 values: ["PASS"]
+      - name: readiness_result
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Ready for presentation", "Action required"]
 
 exposures:
   - name: fraud_project_web_dashboard

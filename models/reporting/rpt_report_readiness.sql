@@ -1,47 +1,47 @@
 with checks as (
     select
         'DATA_001' as check_id,
-        'Raw train transaction satÄ±r sayÄ±sÄ±' as check_name,
+        'Raw train transaction row count' as check_name,
         '590540' as expected_value,
         {{ fp_string('(select count(*) from ' ~ source('raw', 'train_transaction') ~ ')') }} as actual_value,
         case when (select count(*) from {{ source('raw', 'train_transaction') }}) = 590540 then 'PASS' else 'FAIL' end as status,
-        'Veri GÃ¼venilirliÄŸi' as readiness_area
+        'Data reliability' as readiness_area
 
     union all
 
     select
         'DATA_002',
-        'web dashboard fact satÄ±r sayÄ±sÄ±',
+        'Web dashboard fact row count',
         '590540',
         {{ fp_string('(select count(*) from ' ~ ref('fact_train_transactions') ~ ')') }},
         case when (select count(*) from {{ ref('fact_train_transactions') }}) = 590540 then 'PASS' else 'FAIL' end,
-        'Veri GÃ¼venilirliÄŸi'
+        'Data reliability'
 
     union all
 
     select
         'STORY_001',
-        'Rapor sayfa anlatÄ±sÄ±',
+        'Report narrative coverage',
         '6',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_report_narrative') ~ ')') }},
         case when (select count(*) from {{ ref('rpt_report_narrative') }}) = 6 then 'PASS' else 'FAIL' end,
-        'YÃ¶netici Sunumu'
+        'Executive presentation'
 
     union all
 
     select
         'RISK_001',
-        'Segment izleme listesi kapsamÄ±',
+        'Segment watchlist coverage',
         '>=10',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_segment_watchlist') ~ ')') }},
         case when (select count(*) from {{ ref('rpt_segment_watchlist') }}) >= 10 then 'PASS' else 'FAIL' end,
-        'Risk AnalitiÄŸi'
+        'Risk analytics'
 
     union all
 
     select
         'MODEL_001',
-        'Risk bandÄ± operasyon stratejisi',
+        'Risk band operations strategy',
         '4',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_review_strategy') ~ ')') }},
         case when (select count(*) from {{ ref('rpt_review_strategy') }}) = 4 then 'PASS' else 'FAIL' end,
@@ -51,7 +51,7 @@ with checks as (
 
     select
         'MODEL_002',
-        'Threshold simÃ¼lasyonu',
+        'Threshold simulation',
         '>=10',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_threshold_simulation') ~ ')') }},
         case when (select count(*) from {{ ref('rpt_threshold_simulation') }}) >= 10 then 'PASS' else 'FAIL' end,
@@ -66,8 +66,8 @@ select
     status,
     readiness_area,
     case
-        when status = 'PASS' then 'Teslime hazÄ±r'
-        else 'Aksiyon gerekli'
+        when status = 'PASS' then 'Ready for presentation'
+        else 'Action required'
     end as readiness_result
 from checks
 order by check_id

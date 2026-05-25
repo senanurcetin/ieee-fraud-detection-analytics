@@ -553,7 +553,7 @@
         </div>
       </div>
       <div class="statusbar">
-        <span class="pill live" id="live-pill">BigQuery live</span>
+        <span class="pill live" id="live-pill">Live data</span>
         <span class="pill" id="dataset-pill">Dataset pending</span>
         <span class="pill" id="freshness-pill">Freshness pending</span>
         <span class="pill" id="readiness-pill">Readiness pending</span>
@@ -800,7 +800,7 @@
     async function loadDashboard(refresh) {
       const box = document.getElementById('state');
       box.className = 'state';
-      box.textContent = refresh ? 'Refreshing BigQuery reporting data.' : 'Connecting to the BigQuery reporting layer.';
+      box.textContent = refresh ? 'Refreshing reporting data.' : 'Connecting to the reporting layer.';
       try {
         const response = await fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`, { headers: { Accept: 'application/json' } });
         if (!response.ok) throw new Error(`Dashboard API returned HTTP ${response.status}`);
@@ -836,6 +836,7 @@
       if (!state.data) return;
       const meta = state.data.meta || {};
       const readinessText = `${meta.readiness_passed || 0}/${meta.readiness_total || 0} checks passed`;
+      document.getElementById('live-pill').textContent = backendLabel();
       document.getElementById('dataset-pill').textContent = meta.dataset ? `Dataset: ${meta.dataset}` : 'Dataset unavailable';
       document.getElementById('freshness-pill').textContent = meta.refreshed_at ? `Fresh: ${new Date(meta.refreshed_at).toLocaleString('en-US')}` : 'Freshness unavailable';
       document.getElementById('readiness-pill').textContent = readinessText;
@@ -884,6 +885,10 @@
     }
 
     function kpis() { return (state.data.executive_kpis || [])[0] || {}; }
+    function backendLabel() {
+      const backend = String(state.data?.meta?.backend || 'bigquery').toLowerCase();
+      return backend === 'duckdb' ? 'DuckDB local' : 'BigQuery live';
+    }
     function normalizedWatchlist() {
       return (state.data.segment_watchlist || []).map(row => ({
         ...row,
@@ -1280,12 +1285,25 @@
 
     function renderReadinessTable() {
       renderTable('readiness-table', state.data.report_readiness || [], [
-        ['Area', row => row.readiness_area],
-        ['Check', row => row.check_name],
+        ['Area', row => readinessCopy(row).area],
+        ['Check', row => readinessCopy(row).check],
         ['Expected', row => row.expected_value],
         ['Actual', row => row.actual_value],
         ['Status', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Critical'}">${escapeHtml(row.status)}</span>`]
       ]);
+    }
+
+    function readinessCopy(row) {
+      const labels = {
+        1: ['Data reliability', 'Raw train transaction row count'],
+        2: ['Dashboard contract', 'Web dashboard fact row count'],
+        3: ['Executive presentation', 'Report narrative coverage'],
+        4: ['Risk analytics', 'Segment watchlist coverage'],
+        5: ['Model operations', 'Risk band operations strategy'],
+        6: ['Model operations', 'Threshold simulation']
+      };
+      const label = labels[Number(row.check_id)];
+      return label ? { area: label[0], check: label[1] } : { area: row.readiness_area || 'Readiness', check: row.check_name || 'Control' };
     }
 
     function renderTable(containerId, rows, columns, drillFn) {
@@ -1376,7 +1394,7 @@
       try {
         await navigator.clipboard.writeText(text);
         document.getElementById('live-pill').textContent = 'Copied';
-        setTimeout(() => { document.getElementById('live-pill').textContent = 'BigQuery live'; }, 1600);
+        setTimeout(() => { document.getElementById('live-pill').textContent = backendLabel(); }, 1600);
       } catch (_) {
         const box = document.getElementById('state');
         box.style.display = 'block';

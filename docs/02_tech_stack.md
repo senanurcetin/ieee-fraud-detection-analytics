@@ -1,74 +1,79 @@
-# 02 - Tech-Stack
+# 02 - Tech Stack
 
-## Mimari AkÄ±ÅŸ
+## Architecture Flow
 
-```text
-Kaggle CSV
-  -> BigQuery raw dataset
-  -> dbt staging
-  -> dbt intermediate
-  -> dbt mart
-  -> fraud_project_reporting
-  -> FastAPI web dashboard / Vercel sunumu
+```mermaid
+flowchart LR
+    A["Kaggle IEEE-CIS CSV"] --> B["DuckDB local analytical store"]
+    B --> C["BigQuery raw dataset"]
+    C --> D["dbt staging"]
+    D --> E["dbt intermediate"]
+    E --> F["dbt marts"]
+    F --> G["dbt reporting tables"]
+    B --> H["LightGBM scoring"]
+    H --> F
+    G --> I["FastAPI API"]
+    I --> J["Executive web dashboard"]
 ```
 
-## Veri AlÄ±mÄ±
+## Data Ingestion
 
-- Kaynak: IEEE-CIS Fraud Detection Kaggle CSV dosyalarÄ±
-- Ham tablolar: `train_transaction`, `train_identity`, `test_transaction`, `test_identity`, `sample_submission`
-- YÃ¼kleme hedefi: `fraud_project_raw`
+- Source: IEEE-CIS Fraud Detection Kaggle files.
+- Local preparation: Python and DuckDB.
+- Warehouse target: `fraud_project_raw`.
+- Raw Kaggle files are not committed to the repository.
 
-## Veri AmbarÄ±
+## Warehouse
 
-BigQuery tarafÄ±nda aÅŸaÄŸÄ±daki dataset yapÄ±sÄ± kullanÄ±lÄ±r:
+The production BigQuery target uses five datasets:
 
-- `fraud_project_raw`
-- `fraud_project_staging`
-- `fraud_project_intermediate`
-- `fraud_project_mart`
-- `fraud_project_reporting`
+| Dataset | Purpose |
+|---|---|
+| `fraud_project_raw` | Raw Kaggle tables and model support outputs |
+| `fraud_project_staging` | Typed and renamed source views/tables |
+| `fraud_project_intermediate` | Joined transaction and identity features |
+| `fraud_project_mart` | Analytical marts for fraud metrics, risk bands, and model scores |
+| `fraud_project_reporting` | Web-dashboard-ready reporting tables |
 
-Bu ayrÄ±m, ham veri, dÃ¶nÃ¼ÅŸÃ¼m katmanÄ±, analitik mart ve raporlama katmanÄ±nÄ± birbirinden ayÄ±rÄ±r.
+This separation keeps raw data, transformation logic, analytical marts, and presentation contracts independent.
 
-## dbt
+## Transformation Layer
 
-dbt projesi repo kÃ¶kÃ¼nde Ã§alÄ±ÅŸÄ±r.
+dbt Core is the transformation framework. The project runs from the repository root with sanitized profiles under `config/dbt/`.
 
-```powershell
-dbt run --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
-dbt test --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
-```
+Model layers:
 
-Model katmanlarÄ±:
+- `models/staging`: source type normalization and basic cleaning.
+- `models/intermediate`: transaction and identity joins, segment features, amount/time derivations.
+- `models/marts`: fraud summary, segment metrics, model predictions, risk-band statistics, and data quality.
+- `models/reporting`: pre-aggregated dashboard contract tables for the web API.
 
-- `models/staging`: Alan adlarÄ±, veri tipi dÃ¶nÃ¼ÅŸÃ¼mÃ¼, temel temizlik
-- `models/intermediate`: Transaction ve identity join'i, feature Ã¼retimi
-- `models/marts`: Fraud metrikleri, segment tablolarÄ±, model skorlarÄ± ve risk bantlarÄ±
+## Machine Learning
 
-## Makine Ã–ÄŸrenmesi
+- Algorithm: LightGBM binary classifier.
+- Validation: time-based holdout using the final 20% of `TransactionDT` order.
+- Current model feature count: 206.
+- Categorical feature count: 26.
+- Primary metrics: ROC-AUC, average precision, precision, recall, false-positive rate, lift, workload share.
 
-- Model: LightGBMClassifier
-- DoÄŸrulama: TransactionDT sÄ±ralamasÄ±na gÃ¶re son %20 holdout
-- Feature sayÄ±sÄ±: 206
-- Kategorik feature sayÄ±sÄ±: 26
-- Validasyon AUC: 0,917
-- Average precision: 0,531
+Model outputs are written into the raw support layer and transformed into `mart_model_predictions`, `mart_risk_band_stats`, `rpt_threshold_simulation`, and `rpt_review_strategy`.
 
-Model Ã§Ä±ktÄ±larÄ± `mart_model_predictions` ve `mart_risk_band_stats` tablolarÄ±yla raporlama katmanÄ±na taÅŸÄ±nÄ±r.
+## Web Dashboard
 
-## CanlÄ± Web Dashboard
+The presentation layer is the live web dashboard:
 
-Ana sunum katmanÄ±:
+- Backend: FastAPI.
+- Data source: BigQuery `fraud_project_reporting`.
+- Frontend: single-file HTML/CSS/JavaScript.
+- Deployment: Vercel free tier.
+- API endpoint: `/api/dashboard`.
 
-```text
-webapp/
-```
+The dashboard includes executive KPIs, segment comparison, drill-through evidence, waterfall contribution, threshold simulation, alert simulation, model explainability, and data trust scorecards.
 
-Dashboard, `fraud_project_reporting` datasetindeki fact, mart ve `rpt_*` tablolarÄ±nÄ± FastAPI Ã¼zerinden okur. ArayÃ¼z; yÃ¶netici KPI'larÄ±, global slicer'lar, drill-through paneli, Ã¶zel tooltip'ler, Pareto analizi, decomposition tree, identity coverage matrisi, threshold simÃ¼lasyonu ve veri kalite kartlarÄ±yla Ã¼st yÃ¶netim sunumunda doÄŸrudan kullanÄ±lacak ÅŸekilde hazÄ±rlanmÄ±ÅŸtÄ±r.
+## Security and Versioning
 
-## GÃ¼venlik ve Versiyonlama
-
-- Servis hesabÄ± JSON dosyasÄ± repoya eklenmez.
-- Ham Kaggle CSV dosyalarÄ± repoya eklenmez.
-- DuckDB ve geÃ§ici output dosyalarÄ± repoya eklenmez.
-- Repo yalnÄ±zca kaynak kod, dbt modelleri, canlÄ± web dashboard ve dokÃ¼mantasyonu iÃ§erir.
+- Service-account files are excluded from Git.
+- Local credential paths are replaced by environment variables.
+- Kaggle CSV files are not committed.
+- DuckDB files and temporary outputs are ignored.
+- Public artifacts are English-first and web-dashboard-only.

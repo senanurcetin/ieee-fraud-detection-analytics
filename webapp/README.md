@@ -54,6 +54,17 @@ Open:
 http://127.0.0.1:8000
 ```
 
+For zero-cost local QA after `dbt build --target dev`, the API can read the local DuckDB reporting schema instead of BigQuery:
+
+```powershell
+$env:WEB_DATA_BACKEND="duckdb"
+$env:FRAUD_PROJECT_DUCKDB_PATH="data/processed/ieee_fraud.duckdb"
+
+uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Production keeps the default `bigquery` backend.
+
 ## Vercel Runtime
 
 Deploy the `webapp` folder as the Vercel project root:

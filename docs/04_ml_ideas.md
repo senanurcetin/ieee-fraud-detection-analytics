@@ -1,47 +1,55 @@
-# 04 - ML Fikirleri
+# 04 - ML Ideas
 
-## Mevcut Model Yaklaşımı
+## Current Modeling Approach
 
-Projede LightGBMClassifier kullanılmıştır. Model, TransactionDT alanına göre zaman sıralı validasyonla değerlendirilir. Bu yaklaşım, rastgele train-test ayrımına göre gerçek hayattaki fraud izleme senaryosuna daha yakındır.
+The project uses a LightGBM binary classifier to rank transactions by fraud probability. The model is validated with a time-based holdout: transactions are ordered by `TransactionDT`, and the last 20% of the training window is used for validation.
 
-Mevcut metrikler:
+This mirrors a real fraud-monitoring setting more closely than random k-fold validation because future-like observations are not allowed to leak into the training sample.
 
-- Validasyon AUC: 0,917
-- Average precision: 0,531
-- Kullanılan feature sayısı: 206
-- Kategorik feature sayısı: 26
+## Current Evidence
 
-## Risk Bantları
+- ROC-AUC: 0.9167
+- Average precision / AUC-PR proxy: 0.5308
+- Validation baseline fraud rate: 3.44%
+- Top 10% validation score lift: 7.24x
+- High + Critical queue precision: 40.4%
+- High + Critical queue recall: 59.4%
+- High + Critical review workload: 5.06%
+- Feature count: 206
+- Categorical feature count: 26
 
-Model olasılıkları operasyonel kullanıma uygun risk bantlarına çevrilmiştir:
+## Risk Bands
 
-- Low
-- Elevated
-- High
-- Critical
+Predicted probabilities are converted into operational risk bands:
 
-Bu bantlar, tekil skorların okunmasını kolaylaştırır ve canlı web dashboard üzerinde yönetilebilir bir inceleme kuyruğu yapısı sağlar.
+| Risk band | Intended use |
+|---|---|
+| Critical | Immediate review or additional verification |
+| High | Same-day priority review |
+| Elevated | Sample-based manual control and weekly monitoring |
+| Low | Standard automated monitoring |
 
-## Geliştirme Fikirleri
+The bands simplify model consumption for analysts and executives. They should be recalibrated if portfolio mix, fraud cost, analyst capacity, or customer-friction assumptions change.
 
-1. Threshold optimizasyonu: Fraud operasyon kapasitesine göre precision-recall dengesi optimize edilebilir.
-2. Maliyet duyarlı modelleme: False negative ve false positive maliyetleri ayrı tanımlanarak karar eşiği iş hedeflerine bağlanabilir.
-3. Feature drift izleme: ProductCD, email domain, tutar bandı ve risk bandı dağılımları periyodik olarak takip edilebilir.
-4. Segment bazlı model performansı: Product C, identity bulunan işlemler ve yüksek tutar bantları için ayrı performans kırılımları hesaplanabilir.
-5. Açıklanabilirlik: Feature importance raporu genişletilerek SHAP tabanlı model açıklama katmanı eklenebilir.
-6. Operasyon geri bildirimi: İnceleme sonucu onaylanan fraud/normal etiketleri model güncelleme sürecine dahil edilebilir.
+## Class Imbalance Strategy
 
-## Üretim Perspektifi
+The dataset has a fraud rate near 3.5%, so accuracy is not used as a decision metric. The project focuses on ranking, precision-recall behavior, lift, and workload share. Threshold decisions are evaluated against review capacity and expected cost assumptions in the web dashboard.
 
-Model tek başına karar verici olarak konumlandırılmamalıdır. En uygun kullanım, iş kuralları ve segment analizleriyle birlikte çalışan bir risk önceliklendirme katmanıdır. Kritik ve yüksek risk bantları manuel inceleme, ek doğrulama veya işlem sonrası takip süreçlerine yönlendirilmelidir.
+## Explainability Strategy
 
-## İzleme Metrikleri
+The model uses masked features as statistical signals only. It does not assign unsupported business definitions to Vesta-masked columns such as V1-V339, C1-C14, D1-D15, M1-M9, or identity IDs.
 
-- Günlük fraud oranı
-- Risk bandı dağılımı
-- Model skor ortalaması
-- Kritik bant hacmi
-- ProductCD bazlı fraud lift
-- Email domain fraud oranı
-- Veri eksiklik oranı
-- Validasyon AUC ve average precision trendi
+Explainability artifacts:
+
+- `docs/assets/model_feature_importance.png`
+- `docs/assets/model_shap_summary.png`
+- `docs/assets/precision_recall_curve.svg`
+
+## Next ML Enhancements
+
+1. Add rolling time-window validation to monitor model stability.
+2. Compare calibrated probabilities against raw LightGBM scores for cost-sensitive thresholding.
+3. Add model drift checks for product, email, amount-band, and risk-band distribution changes.
+4. Track threshold performance by segment so operations can tune queues by product or channel.
+5. Store model version, feature list, validation metrics, and threshold definitions as machine-readable metadata.
+6. Add a lightweight retraining trigger based on fraud-rate drift, feature drift, and threshold degradation.

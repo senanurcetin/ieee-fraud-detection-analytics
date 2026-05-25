@@ -30,10 +30,10 @@ select
         else 4
     end as band_rank,
     case b.risk_band
-        when 'Critical' then 'Acil inceleme'
-        when 'High' then 'Öncelikli inceleme'
-        when 'Elevated' then 'Kuyruk izleme'
-        else 'Standart izleme'
+        when 'Critical' then 'Immediate review'
+        when 'High' then 'Priority review'
+        when 'Elevated' then 'Queue monitoring'
+        else 'Standard monitoring'
     end as review_priority,
     b.transaction_count,
     b.avg_predicted_probability,

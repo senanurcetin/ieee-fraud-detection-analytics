@@ -8,7 +8,6 @@ lightgbm==4.6.0
 scikit-learn==1.8.0
 matplotlib==3.10.9
 seaborn==0.13.2
-python-pptx==1.0.2
 google-cloud-bigquery==3.41.0
 pandas-gbq==0.35.0
 shap==0.51.0

@@ -42,9 +42,9 @@ select
     w.fraud_rate_ma7,
     w.transaction_count_ma7,
     case
-        when w.fraud_rate_ma7 >= base.baseline_fraud_rate * 1.25 then 'Yüksek risk drift'
-        when w.fraud_rate_ma7 <= base.baseline_fraud_rate * 0.75 then 'Düşük risk drift'
-        else 'Normal bant'
+        when w.fraud_rate_ma7 >= base.baseline_fraud_rate * 1.25 then 'High risk drift'
+        when w.fraud_rate_ma7 <= base.baseline_fraud_rate * 0.75 then 'Low risk drift'
+        else 'Normal band'
     end as drift_flag,
     w.avg_transaction_amount,
     w.median_transaction_amount,

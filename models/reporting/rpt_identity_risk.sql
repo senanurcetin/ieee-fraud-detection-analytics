@@ -9,7 +9,7 @@ with base as (
 identity_risk as (
     select
         has_identity,
-        case when has_identity = 1 then 'Identity kaydı var' else 'Identity kaydı yok' end as identity_segment,
+        case when has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_segment,
         count(*) as transaction_count,
         sum(is_fraud) as fraud_count,
         {{ fp_avg_rate('is_fraud') }} as fraud_rate

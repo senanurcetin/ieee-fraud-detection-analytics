@@ -1,35 +1,43 @@
-# 01 - Yönetici Özeti
+# 01 - Executive Summary
 
-## Amaç
+## Objective
 
-`fraud_project`, dijital ödeme işlemlerinde sahtecilik riskinin hangi segmentlerde yoğunlaştığını ölçmek ve operasyon ekipleri için önceliklendirilebilir risk katmanları oluşturmak amacıyla hazırlanmıştır. Çalışma, bankacılık fraud analitiği perspektifiyle üst yönetim sunumuna uygun şekilde kurgulanmıştır.
+`fraud_project` is an end-to-end fraud analytics project built for executive risk review. It turns the IEEE-CIS transaction and identity files into governed warehouse tables, dbt reporting marts, LightGBM risk scores, and a live web dashboard.
 
-## Veri Kapsamı
+The core business question is:
 
-- Toplam işlem: 590.540
-- Sahtecilik etiketi taşıyan işlem: 20.663
-- Gözlenen sahtecilik oranı: %3,50
-- Identity kaydı bulunan işlem oranı: %24,42
-- Gözlem süresi: 183 göreli işlem günü
-- Ürün ailesi sayısı: 5
+> Where does fraud concentrate, and how should a fraud operations team prioritize review capacity?
 
-## Ana Bulgular
+## Dataset Scope
 
-1. Sahtecilik nadir görünür, ancak belirli segmentlerde güçlü biçimde yoğunlaşır.
-2. Product C, %11,69 fraud oranıyla portföy ortalamasının yaklaşık 3,3 katı risk üretir.
-3. Identity kaydı bulunan işlemlerde fraud oranı %7,85; identity kaydı olmayan işlemlerde %2,09 seviyesindedir.
-4. Çok düşük tutarlı işlemler ile yüksek tutarlı işlemler orta tutar bantlarına göre daha risklidir.
-5. Hotmail ve Gmail domain grupları, hacim ve fraud oranı birlikte değerlendirildiğinde öncelikli izleme segmentleridir.
-6. Modelin kritik risk bandında gözlenen fraud oranı %96,31 seviyesine çıkar; bu bant operasyonel inceleme kuyruğu için güçlü bir önceliklendirme sağlar.
+- Profiled train transactions: 590,540
+- Fraud-labeled transactions: 20,663
+- Baseline fraud rate: 3.50%
+- Transactions with identity records: 144,233
+- Identity coverage rate: 24.42%
+- Product categories: 5
+- Feature columns in the original dataset: 431
 
-## Yönetim Mesajı
+`TransactionDT` is treated as elapsed seconds from a reference point, not as a real timestamp. Relative day and hour fields are derived for trend and operational pattern analysis.
 
-Fraud riski tek bir değişkenle açıklanamaz. Ürün ailesi, identity varlığı, ödeme tipi, email domain, tutar ve zaman kırılımları birlikte ele alındığında sahteciliğin rastgele dağılmadığı görülür. Bu nedenle önerilen yaklaşım, segment bazlı iş kuralları ile makine öğrenmesi skorlarını aynı canlı web analitik panelinde birleştiren izlenebilir bir risk yönetimi katmanıdır.
+## Key Findings
 
-## Çıktılar
+1. Fraud is rare at portfolio level, but it is highly concentrated in specific product, identity, payment, email, amount, and model-score segments.
+2. Product C shows an 11.69% fraud rate, roughly 3.34x the portfolio baseline.
+3. Identity-present transactions have a 7.85% fraud rate, while identity-missing transactions show 2.09%.
+4. Amount risk is not linear: very low values and higher-value bands both require monitoring.
+5. Email and payment attributes add explainable operational segmentation when combined with product and model risk bands.
+6. The High + Critical model queue reviews about 5.06% of validation transactions while capturing 59.4% of fraud labels.
 
-- BigQuery üzerinde katmanlı dataset mimarisi
-- dbt staging, intermediate ve mart modelleri
-- Canlı web dashboard için final raporlama datasetleri
-- Türkçe canlı yönetici sunumu
-- Model skorlama, risk bandı ve veri kalitesi dokümantasyonu
+## Management Message
+
+The project does not present the model as an automated decline engine. It positions machine learning as a review-prioritization layer that concentrates low-prevalence fraud into a manageable queue. Business rules and segment analytics remain visible so that analysts can explain why a queue is being prioritized.
+
+## Deliverables
+
+- BigQuery dataset architecture for raw, staging, intermediate, mart, and reporting layers.
+- dbt models and tests for repeatable transformation and reconciliation.
+- LightGBM scoring pipeline with time-based validation and explainability artifacts.
+- FastAPI web API connected to the BigQuery reporting layer.
+- English-first executive web dashboard deployed on Vercel.
+- Documentation covering methodology, business impact, security, and operational playbook.

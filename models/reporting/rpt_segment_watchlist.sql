@@ -1,6 +1,6 @@
 with segments as (
     select
-        'ÃœrÃ¼n' as segment_family,
+        'Product' as segment_family,
         product_cd as segment_name,
         transaction_count,
         fraud_count,
@@ -30,7 +30,7 @@ with segments as (
     union all
 
     select
-        'Tutar bandÄ±' as segment_family,
+        'Amount band' as segment_family,
         amount_band as segment_name,
         transaction_count,
         fraud_count,
@@ -60,7 +60,7 @@ with segments as (
     union all
 
     select
-        'Ã–deme' as segment_family,
+        'Payment' as segment_family,
         concat(card_network, ' / ', card_type) as segment_name,
         transaction_count,
         fraud_count,
@@ -106,16 +106,16 @@ select
     avg_transaction_amount,
     priority_score,
     case
-        when fraud_share >= 0.20 and lift >= 1.50 then 'Kritik'
-        when fraud_share >= 0.10 and lift >= 1.20 then 'YÃ¼ksek'
-        when lift >= 1.10 then 'Ä°zle'
+        when fraud_share >= 0.20 and lift >= 1.50 then 'Critical'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'High'
+        when lift >= 1.10 then 'Monitor'
         else 'Normal'
     end as risk_priority,
     case
-        when fraud_share >= 0.20 and lift >= 1.50 then 'Acil segment inceleme ve kural seti kalibrasyonu'
-        when fraud_share >= 0.10 and lift >= 1.20 then 'GÃ¼nlÃ¼k operasyon kuyruÄŸunda Ã¶ncelikli takip'
-        when lift >= 1.10 then 'HaftalÄ±k trend ve hacim izlemesi'
-        else 'Standart raporlama'
+        when fraud_share >= 0.20 and lift >= 1.50 then 'Immediate segment review and rule calibration'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'Prioritize in the daily operations queue'
+        when lift >= 1.10 then 'Monitor weekly trend and volume'
+        else 'Standard reporting'
     end as recommended_action
 from ranked
 where watchlist_rank <= 20

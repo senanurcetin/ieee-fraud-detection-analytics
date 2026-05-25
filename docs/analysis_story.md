@@ -1,18 +1,20 @@
-# Analiz Hikayesi
+# Analysis Story
 
-## Ana Soru
+## Core Question
 
-Sahtecilik hangi segmentlerde yoğunlaşıyor ve fraud operasyon ekibi bunu nasıl izlemeli?
+Where does fraud concentrate, and how should a fraud operations team monitor it?
 
-## Temel Bulgular
+## Executive Narrative
 
-1. Sahtecilik nadir ancak yoğunlaşmış durumda: baz oran 3.50%.
-2. Ürün riski eşit dağılmıyor: Product C sahtecilik oranı 11.69%, Product W ise 2.04%.
-3. Identity kaydı risk sinyalidir: identity kaydı olan işlemlerde oran 7.85%, olmayan işlemlerde 2.09%.
-4. Tutar riski doğrusal değildir: <$25 ve $250+ bantları orta tutarlı işlemlere göre daha yüksek risk taşır.
-5. Ödeme özellikleri ayrıştırıcıdır: kredi kartı kombinasyonları debit kart kombinasyonlarına göre daha yüksek risk gösterir.
-6. Model, izleme ve önceliklendirme katmanı olarak kullanılmalıdır: Kritik risk bandı baz orana göre çok yüksek lift üretir.
+1. Fraud is rare but concentrated: the portfolio baseline is 3.50%.
+2. Product risk is uneven: Product C is materially above the baseline, while Product W is lower risk at portfolio level.
+3. Identity availability is a signal: identity-present transactions show higher fraud concentration than identity-missing transactions.
+4. Amount risk is nonlinear: very low-value and higher-value bands both need monitoring.
+5. Payment and email attributes add operationally explainable segments.
+6. Model scores should be used as a prioritization layer, not as a fully automated decision engine.
 
-## Önerilen Sunum Akışı
+## Recommended Presentation Flow
 
-Önce sınıf dengesizliğini gösterin, ardından sahteciliğin rastgele dağılmadığını kanıtlayın. Ürün, identity, tutar, ödeme, email ve zaman kırılımlarıyla ilerleyin. Son bölümde model risk bantlarını nihai karar mekanizması olarak değil, operasyonel önceliklendirme katmanı olarak konumlandırın.
+Open with the class imbalance problem, then prove that fraud is not randomly distributed. Move through product, identity, amount, payment, email, and relative time signals. Close with model risk bands, threshold simulation, and data trust evidence.
+
+The architecture should support the story, not replace it. Use dbt, BigQuery, and test evidence after the business insights are clear.

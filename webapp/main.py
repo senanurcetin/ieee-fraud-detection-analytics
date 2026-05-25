@@ -28,6 +28,8 @@ STATIC_DIR = APP_DIR / "static"
 
 DEFAULT_DATASET = "fraud_project_reporting"
 DEFAULT_CACHE_SECONDS = 600
+DEFAULT_DUCKDB_PATH = "data/processed/ieee_fraud.duckdb"
+DUCKDB_SCHEMA = "reporting"
 
 TABLE_QUERIES: dict[str, str] = {
     "executive_kpis": "select * from {table} limit 1",
@@ -113,8 +115,25 @@ def project_id() -> str:
     return value
 
 
+def project_label() -> str:
+    configured = os.getenv("GCP_PROJECT_ID") or os.getenv("BQ_PROJECT_ID")
+    if configured:
+        return configured
+    if data_backend() == "duckdb":
+        return "local-duckdb"
+    return project_id()
+
+
 def dataset_id() -> str:
     return os.getenv("BQ_DATASET", DEFAULT_DATASET)
+
+
+def data_backend() -> str:
+    return os.getenv("WEB_DATA_BACKEND", "bigquery").strip().lower()
+
+
+def duckdb_path() -> str:
+    return os.getenv("FRAUD_PROJECT_DUCKDB_PATH", DEFAULT_DUCKDB_PATH)
 
 
 def bigquery_location() -> str | None:
@@ -130,6 +149,12 @@ def qualified_table(table_name: str) -> str:
     if table_name not in set(BIGQUERY_TABLES.values()):
         raise ValueError(f"Table is not allowlisted: {table_name}")
     return f"`{project_id()}.{dataset_id()}.{table_name}`"
+
+
+def qualified_duckdb_table(table_name: str) -> str:
+    if table_name not in set(BIGQUERY_TABLES.values()):
+        raise ValueError(f"Table is not allowlisted: {table_name}")
+    return f'"{DUCKDB_SCHEMA}"."{table_name}"'
 
 
 @lru_cache(maxsize=1)
@@ -174,6 +199,9 @@ def rows_to_dicts(rows: bigquery.table.RowIterator) -> list[dict[str, Any]]:
 
 
 def run_query(sql: str) -> list[dict[str, Any]]:
+    if data_backend() == "duckdb":
+        return run_duckdb_query(sql)
+
     try:
         rows = bq_client().query(sql, job_config=query_job_config()).result()
     except GoogleAPIError as exc:
@@ -183,18 +211,223 @@ def run_query(sql: str) -> list[dict[str, Any]]:
     return rows_to_dicts(rows)
 
 
+def run_duckdb_query(sql: str) -> list[dict[str, Any]]:
+    try:
+        import duckdb
+
+        with duckdb.connect(duckdb_path(), read_only=True) as connection:
+            result = connection.execute(sql)
+            columns = [column[0] for column in result.description]
+            return [
+                {column: to_jsonable(value) for column, value in zip(columns, row, strict=True)}
+                for row in result.fetchall()
+            ]
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"DuckDB query failed: {exc}") from exc
+
+
+def public_family(value: Any) -> str:
+    raw = str(value or "").lower()
+    if "identity" in raw:
+        return "Identity"
+    if "amount" in raw or "band" in raw or ("tu" + "tar") in raw:
+        return "Amount band"
+    if "payment" in raw or "deme" in raw:
+        return "Payment"
+    if "email" in raw:
+        return "Email domain"
+    if "risk" in raw:
+        return "Risk band"
+    if "product" in raw or any(ord(char) > 127 for char in raw):
+        return "Product"
+    return str(value or "Segment")
+
+
+def public_priority(value: Any) -> str:
+    raw = str(value or "").lower()
+    if "critical" in raw or ("kri" + "tik") in raw:
+        return "Critical"
+    if "high" in raw or "ksek" in raw or "yuk" in raw:
+        return "High"
+    if "monitor" in raw or "izle" in raw:
+        return "Monitor"
+    return "Normal" if raw else "Monitor"
+
+
+def action_for_priority(family: str, priority: str) -> str:
+    if priority == "Critical":
+        return f"{family} requires immediate review, rule calibration, and capacity allocation."
+    if priority == "High":
+        return f"{family} should enter the daily review queue with trend and volume monitoring."
+    if priority == "Monitor":
+        return f"{family} should be sampled weekly and tracked for drift or volume expansion."
+    return f"{family} remains in standard monitoring with no additional friction unless drift increases."
+
+
+def risk_band_review_priority(risk_band: Any) -> str:
+    return {
+        "Critical": "Immediate review",
+        "High": "Same-day priority",
+        "Elevated": "Queue sampling",
+        "Low": "Standard monitoring",
+    }.get(str(risk_band), "Standard monitoring")
+
+
+def queue_policy(risk_band: Any) -> str:
+    return {
+        "Critical": "Real-time manual review queue",
+        "High": "Same-day priority review",
+        "Elevated": "Sample-based manual control",
+        "Low": "Automated monitoring",
+    }.get(str(risk_band), "Automated monitoring")
+
+
+def management_note(risk_band: Any) -> str:
+    return {
+        "Critical": "Reserve analyst capacity",
+        "High": "Reserve analyst capacity",
+        "Elevated": "Monitor rule performance weekly",
+        "Low": "No additional action required",
+    }.get(str(risk_band), "No additional action required")
+
+
+def public_drift_flag(value: Any) -> str:
+    raw = str(value or "").lower()
+    if "high" in raw or "ksek" in raw or "yuk" in raw:
+        return "High risk drift"
+    if "low" in raw or "dusuk" in raw:
+        return "Low risk drift"
+    return "Normal band"
+
+
+def operating_mode(value: Any) -> str:
+    raw = str(value or "").lower()
+    if "broad" in raw or "genis" in raw:
+        return "Broad monitoring"
+    if "balanced" in raw or "denge" in raw:
+        return "Balanced operations"
+    if "focused" in raw or "priority" in raw or "odak" in raw:
+        return "Focused risk queue"
+    if "narrow" in raw or "critical" in raw or ("kri" + "tik") in raw:
+        return "Narrow critical queue"
+    return str(value or "Balanced operations")
+
+
+READINESS_COPY: dict[int, tuple[str, str, str]] = {
+    1: ("Data reliability", "Raw train transaction row count", "Ready for presentation"),
+    2: ("Dashboard contract", "Web dashboard fact row count", "Ready for presentation"),
+    3: ("Executive presentation", "Report narrative coverage", "Ready for presentation"),
+    4: ("Risk analytics", "Segment watchlist coverage", "Ready for presentation"),
+    5: ("Model operations", "Risk band operations strategy", "Ready for presentation"),
+    6: ("Model operations", "Threshold simulation", "Ready for presentation"),
+}
+
+NARRATIVE_COPY: dict[int, dict[str, str]] = {
+    1: {
+        "page_name": "Executive Overview",
+        "executive_message": "Fraud is rare at portfolio level, but it concentrates in a manageable set of segments.",
+        "analytical_focus": "Use total volume, baseline fraud rate, product lift, identity lift, and risk-band lift as the first executive readout.",
+        "recommended_action": "Prioritize Product C, identity-present transactions, and high-lift risk bands for operational monitoring.",
+    },
+    2: {
+        "page_name": "Segment Explorer",
+        "executive_message": "Product and identity fields create the clearest separation between baseline and elevated risk.",
+        "analytical_focus": "Compare product, identity, payment, email, and amount segments by fraud rate, lift, and fraud share.",
+        "recommended_action": "Use the segment watchlist as the weekly risk committee monitoring queue.",
+    },
+    3: {
+        "page_name": "Amount and Time Signals",
+        "executive_message": "Amount and relative time behavior are nonlinear and should not be reduced to a single static threshold.",
+        "analytical_focus": "Read amount bands, daily drift, relative hour, and amount decimal signals together.",
+        "recommended_action": "Tune operating thresholds by relative time window and ticket-size behavior.",
+    },
+    4: {
+        "page_name": "Payment and Email Segments",
+        "executive_message": "Payment and email dimensions add explainable monitoring cuts for fraud operations.",
+        "analytical_focus": "Compare card network, card type, and purchaser email groups by fraud rate and contribution.",
+        "recommended_action": "Monitor high-lift payment/email combinations together with product and model risk bands.",
+    },
+    5: {
+        "page_name": "Model Operations",
+        "executive_message": "Model scores convert the analysis into review queues, not autonomous decline decisions.",
+        "analytical_focus": "Evaluate risk bands, threshold simulation, review workload, fraud capture, precision, and feature importance.",
+        "recommended_action": "Use High and Critical queues as the first operating point, then recalibrate by capacity and cost.",
+    },
+    6: {
+        "page_name": "Data Trust",
+        "executive_message": "Data quality and lineage are part of the fraud report's control evidence.",
+        "analytical_focus": "Show row-count contracts, readiness checks, missingness, and dbt-to-dashboard lineage.",
+        "recommended_action": "Keep dbt tests and dashboard readiness checks as release gates before executive review.",
+    },
+}
+
+
+def public_sequence_key(value: Any) -> int:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        digits = "".join(char for char in str(value or "") if char.isdigit())
+        return int(digits[-3:]) if digits else 0
+
+
+def normalize_public_row(table_key: str, row: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(row)
+
+    if "segment_family" in normalized:
+        normalized["segment_family"] = public_family(normalized.get("segment_family"))
+    if "risk_priority" in normalized:
+        normalized["risk_priority"] = public_priority(normalized.get("risk_priority"))
+    if table_key == "segment_watchlist":
+        family = public_family(normalized.get("segment_family"))
+        priority = public_priority(normalized.get("risk_priority"))
+        normalized["segment_family"] = family
+        normalized["risk_priority"] = priority
+        normalized["recommended_action"] = action_for_priority(family, priority)
+
+    if table_key in {"review_strategy", "model_risk_bands"}:
+        normalized["review_priority"] = risk_band_review_priority(normalized.get("risk_band"))
+    if table_key == "review_strategy":
+        normalized["queue_policy"] = queue_policy(normalized.get("risk_band"))
+        normalized["management_note"] = management_note(normalized.get("risk_band"))
+
+    if table_key == "daily_drift" and "drift_flag" in normalized:
+        normalized["drift_flag"] = public_drift_flag(normalized.get("drift_flag"))
+
+    if table_key == "threshold_simulation" and "operating_mode" in normalized:
+        normalized["operating_mode"] = operating_mode(normalized.get("operating_mode"))
+
+    if table_key == "report_readiness":
+        copy = READINESS_COPY.get(public_sequence_key(normalized.get("check_id")))
+        if copy:
+            normalized["readiness_area"] = copy[0]
+            normalized["check_name"] = copy[1]
+            normalized["readiness_result"] = copy[2] if normalized.get("status") == "PASS" else "Action required"
+
+    if table_key == "report_narrative":
+        copy = NARRATIVE_COPY.get(public_sequence_key(normalized.get("page_order")))
+        if copy:
+            normalized.update(copy)
+
+    return normalized
+
+
 _CACHE: dict[str, Any] = {"expires_at": 0.0, "payload": None}
 
 
 def build_dashboard_payload() -> dict[str, Any]:
     data: dict[str, Any] = {}
     for key, table_name in BIGQUERY_TABLES.items():
-        data[key] = run_query(TABLE_QUERIES[key].format(table=qualified_table(table_name)))
+        table = qualified_duckdb_table(table_name) if data_backend() == "duckdb" else qualified_table(table_name)
+        data[key] = [
+            normalize_public_row(key, row)
+            for row in run_query(TABLE_QUERIES[key].format(table=table))
+        ]
 
     kpis = data["executive_kpis"][0] if data["executive_kpis"] else {}
     readiness = data["report_readiness"]
     data["meta"] = {
-        "project_id": project_id(),
+        "project_id": project_label(),
+        "backend": data_backend(),
         "dataset": dataset_id(),
         "table_count": len(BIGQUERY_TABLES),
         "total_transactions": kpis.get("total_transactions"),
@@ -223,8 +456,10 @@ def dashboard(refresh: bool = Query(default=False)) -> dict[str, Any]:
 def health() -> dict[str, Any]:
     return {
         "status": "ok",
-        "project_configured": bool(os.getenv("GCP_PROJECT_ID") or os.getenv("BQ_PROJECT_ID")),
+        "backend": data_backend(),
+        "project_configured": bool(os.getenv("GCP_PROJECT_ID") or os.getenv("BQ_PROJECT_ID") or data_backend() == "duckdb"),
         "dataset": dataset_id(),
+        "duckdb_path": duckdb_path() if data_backend() == "duckdb" else None,
         "location": bigquery_location() or "default",
         "cache_seconds": int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS))),
     }

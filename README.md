@@ -288,6 +288,8 @@ Vercel deploys the `webapp/` folder as the project root. The production runtime 
 
 ![Data quality and lineage](docs/assets/web_dashboard_quality_lineage.png)
 
+![Mobile overview](docs/assets/web_dashboard_mobile_overview.png)
+
 ## Quality Gates
 
 ```bash
@@ -297,10 +299,10 @@ pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277
 dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 ```
 
-Latest production verification:
+Latest validation snapshot:
 
-- dbt production build: `PASS=123 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=124`
-- dbt project scope: 33 models, 90 data tests, 8 sources, 1 exposure
+- dbt local build: `PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133`
+- dbt project scope: 33 models, 99 data tests, 8 sources, 1 exposure
 - Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; reporting fact 590,540
 - GitHub Actions: Python quality, pytest, web dashboard contract checks, dependency audit, and dbt parse/build workflow
 

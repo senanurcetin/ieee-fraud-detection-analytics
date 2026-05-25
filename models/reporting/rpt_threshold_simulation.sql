@@ -45,10 +45,10 @@ select
     {{ fp_float('s.captured_fraud_count') }} / nullif({{ fp_float('b.total_observed_fraud') }}, 0) as fraud_capture_rate,
     {{ fp_float('s.captured_fraud_count') }} / nullif({{ fp_float('s.review_count') }}, 0) as precision_rate,
     case
-        when s.score_threshold <= 0.03 then 'Geniş izleme'
-        when s.score_threshold <= 0.08 then 'Dengeli operasyon'
-        when s.score_threshold <= 0.20 then 'Yoğun risk kuyruğu'
-        else 'Dar kritik kuyruk'
+        when s.score_threshold <= 0.03 then 'Broad monitoring'
+        when s.score_threshold <= 0.08 then 'Balanced operations'
+        when s.score_threshold <= 0.20 then 'Focused risk queue'
+        else 'Narrow critical queue'
     end as operating_mode
 from scored as s
 cross join base as b

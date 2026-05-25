@@ -2,46 +2,46 @@ version: 2
 
 sources:
   - name: raw
-    description: "Kaggle IEEE-CIS Fraud Detection ham veri katmanı ve model destek çıktıları."
+    description: "Raw Kaggle IEEE-CIS Fraud Detection data layer and model support outputs."
     schema: "{{ 'fraud_project_raw' if target.type == 'bigquery' else 'raw' }}"
     tables:
       - name: train_transaction
-        description: "Eğitim transaction tablosu; fraud etiketi ve işlem özelliklerini içerir."
+        description: "Training transaction table with fraud labels and transaction features."
         tests:
           - row_count_equals:
               arguments:
                 expected_count: 590540
       - name: train_identity
-        description: "Eğitim identity tablosu; cihaz ve identity sinyallerini içerir."
+        description: "Training identity table with device and identity signals."
         tests:
           - row_count_equals:
               arguments:
                 expected_count: 144233
       - name: test_transaction
-        description: "Kaggle test transaction tablosu."
+        description: "Kaggle test transaction table."
         tests:
           - row_count_equals:
               arguments:
                 expected_count: 506691
       - name: test_identity
-        description: "Kaggle test identity tablosu."
+        description: "Kaggle test identity table."
         tests:
           - row_count_equals:
               arguments:
                 expected_count: 141907
       - name: sample_submission
-        description: "Kaggle sample submission tablosu."
+        description: "Kaggle sample submission table."
         tests:
           - row_count_equals:
               arguments:
                 expected_count: 506691
       - name: ml_predictions
-        description: "LightGBM modelinin train ve test işlemleri için ürettiği fraud olasılıkları ve risk bantları."
+        description: "Fraud probabilities and risk bands produced by the LightGBM model for train and test transactions."
         tests:
           - row_count_equals:
               arguments:
                 expected_count: 1097231
       - name: feature_missingness
-        description: "Ham kolonlar için eksiklik oranı profil tablosu."
+        description: "Missingness profile table for raw columns."
       - name: feature_importance
-        description: "LightGBM feature importance çıktısı."
+        description: "LightGBM feature importance output."
