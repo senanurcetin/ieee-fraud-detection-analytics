@@ -46,6 +46,14 @@ http://127.0.0.1:8000
 
 ## Vercel Runtime
 
+Deploy this folder as the Vercel project root:
+
+```powershell
+cd webapp
+npx vercel link --yes --project fraud-project-web
+npx vercel deploy --prod --yes
+```
+
 Vercel does not have access to local credential files. Configure these environment variables in the Vercel project:
 
 - `GCP_PROJECT_ID`

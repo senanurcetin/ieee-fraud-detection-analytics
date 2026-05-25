@@ -1,0 +1,4 @@
+fastapi==0.136.3
+google-cloud-bigquery==3.41.0
+python-dotenv==1.2.2
+uvicorn[standard]==0.30.6
