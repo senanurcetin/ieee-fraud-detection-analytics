@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 from datetime import date
 from decimal import Decimal
@@ -79,6 +80,26 @@ def test_public_api_normalizer_removes_legacy_reporting_copy() -> None:
     assert readiness["readiness_result"] == "Ready for presentation"
 
 
+def test_metadata_endpoint_contract_is_business_ready() -> None:
+    payload = main.metadata()
+    payload_text = json.dumps(payload, ensure_ascii=False)
+
+    assert payload["presentation_layer"] == "web_dashboard"
+    assert payload["dataset"] == "fraud_project_reporting"
+    assert payload["table_count"] == 18
+    assert len(payload["kpi_definitions"]) >= 8
+    assert len(payload["methodology_notes"]) >= 5
+    assert any(item["kpi"] == "Fraud rate" for item in payload["kpi_definitions"])
+    assert any(item["kpi"] == "Review workload" for item in payload["kpi_definitions"])
+    assert any("TransactionDT" in item["note"] for item in payload["methodology_notes"])
+    assert any("automated decline" in item["note"] for item in payload["methodology_notes"])
+    assert "web_dashboard" in payload_text
+    assert "Power" + " BI" not in payload_text
+    assert "p" + "bix" not in payload_text.lower()
+    assert "\u00c3" not in payload_text
+    assert "\u00c4" not in payload_text
+
+
 def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
 
@@ -103,6 +124,10 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "fn-loss" in html
     assert "alert-list" in html
     assert "waterfall-chart" in html
+    assert "action-register" in html
+    assert "kpi-dictionary" in html
+    assert "methodology-notes" in html
+    assert "/api/metadata" in html
     assert "export-json-btn" in html
     assert "print-btn" in html
     assert "copy-summary-btn" in html

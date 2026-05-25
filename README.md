@@ -260,6 +260,7 @@ The live dashboard reads the dbt-built BigQuery reporting tables and is the main
 - Threshold what-if simulation with workload, capture, and precision
 - Feature importance and feature-family treemap
 - Data quality contract and readiness scorecards
+- KPI dictionary, methodology limitations, analyst action register, and public API metadata contract
 
 Run locally:
 
@@ -274,7 +275,7 @@ uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 
 Then open `http://127.0.0.1:8000`.
 
-The API reads pre-aggregated `rpt_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard.
+The API reads pre-aggregated `rpt_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard. A separate `/api/metadata` endpoint publishes the KPI dictionary, methodology controls, operating assumptions, and quality gates used by the public dashboard.
 
 Vercel deploys the `webapp/` folder as the project root. The production runtime uses Vercel environment variables, including `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`, instead of local credential files.
 
@@ -323,6 +324,7 @@ Latest validation snapshot:
 - [Operational Playbook](docs/operational_playbook.md)
 - [Security and Secrets](docs/security_and_secrets.md)
 - [Live Web Dashboard Guide](docs/live_web_dashboard_guide.md)
+- [Professional Data Analyst Gap Closure](docs/data_analyst_gap_closure.md)
 - [QA Acceptance Checklist](docs/qa_acceptance_checklist.md)
 
 ## License

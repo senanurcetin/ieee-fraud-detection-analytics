@@ -59,6 +59,7 @@
     }
 
     .brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
+    .brand > div { min-width: 0; }
     .mark {
       width: 42px;
       height: 42px;
@@ -405,6 +406,43 @@
     .alert strong { display: block; margin-bottom: 4px; }
     .alert span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
 
+    .action-register { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .action-card {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent, var(--blue));
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+      padding: 12px;
+      min-height: 142px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+    .action-card h3 { margin: 0; font-size: 14px; line-height: 1.25; }
+    .action-card p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .action-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .action-meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 7px;
+      color: var(--text);
+      background: rgba(255, 255, 255, .04);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .note-list { display: grid; gap: 9px; }
+    .note-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 11px;
+      background: rgba(255, 255, 255, .032);
+    }
+    .note-card strong { display: block; color: var(--text); margin-bottom: 5px; }
+    .note-card span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
     .drawer-backdrop {
       position: fixed;
       inset: 0;
@@ -485,6 +523,7 @@
       .app-header, .command-bar, .grid-2, .grid-3 { grid-template-columns: 1fr; }
       .actions { min-width: 0; justify-content: flex-start; }
       .kpi-grid, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .action-register { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .lineage { grid-template-columns: 1fr; }
       .lineage-node:not(:last-child):after { display: none; }
@@ -494,15 +533,15 @@
       .brand { align-items: flex-start; }
       .mark { width: 36px; height: 36px; }
       .statusbar { justify-content: flex-start; }
+      h1 { font-size: 28px; line-height: 1.1; }
+      .subtitle { font-size: 13px; overflow-wrap: anywhere; }
       .pill { white-space: normal; }
-      .kpi-grid, .brief-grid, .comparison-grid, .grid-4, .tabs { grid-template-columns: 1fr; }
+      .kpi-grid, .brief-grid, .comparison-grid, .grid-4, .tabs, .action-register { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 90px minmax(0, 1fr) 72px; }
       .heat-row { grid-template-columns: 88px repeat(var(--cols, 4), minmax(54px, 1fr)); }
       .drawer-grid { grid-template-columns: 1fr; }
-      .actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+      .actions { width: 100%; display: grid; grid-template-columns: 1fr; }
       .actions .btn { width: 100%; min-width: 0; min-height: 44px; white-space: normal; padding: 0 8px; }
-      #copy-summary-btn,
-      #reset-btn { grid-column: 1 / -1; }
     }
 
     @media print {
@@ -515,7 +554,7 @@
       .subtitle, .card-note, .kpi-foot, .bar-value, .metric-line, .alert span, .brief span { color: #4b5563; }
       .view { display: none !important; }
       .view.active { display: block !important; }
-      .card, .kpi, .brief, .compare-card, .alert, .lineage-node {
+      .card, .kpi, .brief, .compare-card, .alert, .action-card, .note-card, .lineage-node {
         background: #fff;
         border-color: #d1d5db;
         color: #111827;
@@ -633,6 +672,15 @@
           <article class="card"><div class="card-head"><div><h2 class="card-title">Risk band separation</h2><p class="card-note">Observed fraud rate by model score band.</p></div></div><div class="chart short" id="risk-bars"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Amount band risk</h2><p class="card-note">Non-linear amount behavior across ticket sizes.</p></div></div><div class="chart short" id="amount-bars"></div></article>
         </div>
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Analyst action register</h2>
+              <p class="card-note">Decision-ready actions generated from the current risk concentration, model threshold, identity coverage, and readiness gates.</p>
+            </div>
+          </div>
+          <div id="action-register" class="action-register"></div>
+        </article>
       </div>
     </section>
 
@@ -721,6 +769,16 @@
             </div>
           </article>
         </div>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">KPI dictionary</h2><p class="card-note">Definitions used consistently across the executive dashboard and API contract.</p></div></div>
+            <div id="kpi-dictionary"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Methodology and limitations</h2><p class="card-note">Analytical controls that keep the presentation precise and defensible.</p></div></div>
+            <div id="methodology-notes"></div>
+          </article>
+        </div>
       </div>
     </section>
   </div>
@@ -751,6 +809,7 @@
     const colorScale = ['#e5484d', '#d99a20', '#8b5cf6', '#4c8df6', '#18a999', '#2f9e75', '#90a4c3'];
     const state = {
       data: null,
+      metadata: null,
       metric: 'fraud_rate',
       family: 'All',
       priority: 'All',
@@ -802,9 +861,13 @@
       box.className = 'state';
       box.textContent = refresh ? 'Refreshing reporting data.' : 'Connecting to the reporting layer.';
       try {
-        const response = await fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`, { headers: { Accept: 'application/json' } });
+        const [response, metadataResponse] = await Promise.all([
+          fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`, { headers: { Accept: 'application/json' } }),
+          fetch('/api/metadata', { headers: { Accept: 'application/json' } })
+        ]);
         if (!response.ok) throw new Error(`Dashboard API returned HTTP ${response.status}`);
         state.data = await response.json();
+        state.metadata = metadataResponse.ok ? await metadataResponse.json() : null;
         state.drillRows.clear();
         state.thresholdIndex = Math.max(0, Math.floor((state.data.threshold_simulation || []).length / 2));
         box.style.display = 'none';
@@ -844,6 +907,7 @@
       document.getElementById('readiness-chip').textContent = readinessText;
       renderKpis();
       renderExecutiveBrief();
+      renderActionRegister();
       renderDailyTrend();
       renderWaterfall();
       renderPareto();
@@ -867,6 +931,8 @@
       renderQualityContract();
       renderReadinessTable();
       renderBars('quality-bars', state.data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} missing`, row => ({ ...row, segment_family: 'Data quality', segment_name: row.column_family, recommended_action: 'Review feature engineering, imputation policy, and monitoring thresholds for this feature family.' }));
+      renderKpiDictionary();
+      renderMethodologyNotes();
     }
 
     function resetFilters() {
@@ -937,6 +1003,60 @@
       ];
       document.getElementById('executive-brief').innerHTML = rows.map(([title, text, color]) => `
         <div class="brief" style="--accent:${color}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>
+      `).join('');
+    }
+
+    function renderActionRegister() {
+      const target = document.getElementById('action-register');
+      const k = kpis();
+      const top = normalizedWatchlist()[0] || {};
+      const rec = thresholdRecommendation();
+      const readiness = state.data.meta || {};
+      const identityCoverage = fmtPct(k.identity_coverage_rate);
+      const cards = [
+        {
+          title: 'Segment rule calibration',
+          body: `${displaySegment(top)} carries ${fmtPct(top.fraud_share)} fraud share and ${fmtX(top.lift)} lift. Validate this segment in the weekly rule review before adding customer friction.`,
+          owner: 'Risk strategy',
+          cadence: 'Weekly',
+          status: displayPriority(top.risk_priority),
+          color: '#e5484d'
+        },
+        {
+          title: 'Review queue capacity',
+          body: rec ? `Recommended threshold ${df.format(rec.score_threshold)} sends ${fmtInt(rec.review_count)} cases to review and captures ${fmtPct(rec.fraud_capture_rate)} of fraud labels.` : 'Threshold recommendation is unavailable until model simulation data is loaded.',
+          owner: 'Operations',
+          cadence: 'Daily',
+          status: rec ? 'Ready' : 'Pending',
+          color: '#8b5cf6'
+        },
+        {
+          title: 'Identity coverage monitoring',
+          body: `Identity records cover ${identityCoverage} of transactions. Track fraud lift separately for identity-present and identity-missing populations.`,
+          owner: 'Data quality',
+          cadence: 'Weekly',
+          status: 'Monitor',
+          color: '#18a999'
+        },
+        {
+          title: 'Release readiness gate',
+          body: `${readiness.readiness_passed || 0}/${readiness.readiness_total || 0} reporting checks passed. Keep row-count and model-contract tests as a release blocker.`,
+          owner: 'Analytics engineering',
+          cadence: 'Every release',
+          status: readiness.readiness_passed === readiness.readiness_total ? 'PASS' : 'Action required',
+          color: readiness.readiness_passed === readiness.readiness_total ? '#18a999' : '#d99a20'
+        }
+      ];
+      target.innerHTML = cards.map(card => `
+        <div class="action-card" style="--accent:${card.color}">
+          <h3>${escapeHtml(card.title)}</h3>
+          <p>${escapeHtml(card.body)}</p>
+          <div class="action-meta">
+            <span>${escapeHtml(card.owner)}</span>
+            <span>${escapeHtml(card.cadence)}</span>
+            <span>${escapeHtml(card.status)}</span>
+          </div>
+        </div>
       `).join('');
     }
 
@@ -1291,6 +1411,32 @@
         ['Actual', row => row.actual_value],
         ['Status', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Critical'}">${escapeHtml(row.status)}</span>`]
       ]);
+    }
+
+    function renderKpiDictionary() {
+      const rows = state.metadata?.kpi_definitions || [];
+      if (!rows.length) {
+        document.getElementById('kpi-dictionary').innerHTML = emptyState('KPI metadata is not available.');
+        return;
+      }
+      renderTable('kpi-dictionary', rows, [
+        ['KPI', row => escapeHtml(row.kpi)],
+        ['Definition', row => escapeHtml(row.definition)],
+        ['Business use', row => escapeHtml(row.business_use)]
+      ]);
+    }
+
+    function renderMethodologyNotes() {
+      const notes = state.metadata?.methodology_notes || [];
+      const target = document.getElementById('methodology-notes');
+      if (!notes.length) { target.innerHTML = emptyState('Methodology metadata is not available.'); return; }
+      target.innerHTML = `<div class="note-list">${notes.map(item => `
+        <div class="note-card">
+          <strong>${escapeHtml(item.topic)}</strong>
+          <span>${escapeHtml(item.note)}</span>
+          <span><b>Control:</b> ${escapeHtml(item.control)}</span>
+        </div>
+      `).join('')}</div>`;
     }
 
     function readinessCopy(row) {

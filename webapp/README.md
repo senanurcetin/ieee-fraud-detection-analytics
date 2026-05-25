@@ -11,6 +11,7 @@ This web application is the only public presentation layer for the fraud analyti
 - Model operations simulator with analyst capacity, false-positive review cost, and false-negative loss assumptions.
 - Alert simulation for fraud drift, critical queue pressure, missingness, and readiness status.
 - Data trust page with row-count contract, readiness gate, missingness scorecard, and live lineage.
+- KPI dictionary, methodology limitations, and analyst action register for executive-ready interpretation.
 
 ## Data Contract
 
@@ -36,6 +37,13 @@ The API reads these 18 reporting tables:
 - `rpt_report_readiness`
 
 No raw transaction table is queried by the dashboard. All visible analytics come from pre-aggregated reporting marts or client-side calculations over the API payload.
+
+The API also exposes `/api/metadata`, which publishes:
+
+- KPI definitions used by the dashboard.
+- Dataset methodology notes and analytical limitations.
+- Operating assumptions for capacity, review cost, missed-loss exposure, and API caching.
+- Release quality gates and data contract metadata.
 
 ## Local Run
 

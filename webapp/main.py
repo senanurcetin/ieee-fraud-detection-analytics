@@ -93,6 +93,113 @@ BIGQUERY_TABLES: dict[str, str] = {
     "report_readiness": "rpt_report_readiness",
 }
 
+KPI_DEFINITIONS: list[dict[str, str]] = [
+    {
+        "kpi": "Total transactions",
+        "definition": "Count of profiled training transactions in the governed reporting layer.",
+        "business_use": "Defines the population size behind every executive percentage.",
+    },
+    {
+        "kpi": "Fraud transactions",
+        "definition": "Transactions labeled as fraud in the IEEE-CIS training data.",
+        "business_use": "Measures confirmed fraud volume used for concentration and model validation.",
+    },
+    {
+        "kpi": "Fraud rate",
+        "definition": "Fraud transactions divided by total transactions.",
+        "business_use": "Baseline risk level; segment rates are compared against this benchmark.",
+    },
+    {
+        "kpi": "Identity coverage",
+        "definition": "Share of transactions that join to the identity table.",
+        "business_use": "Shows how often identity attributes are available and whether coverage itself carries risk signal.",
+    },
+    {
+        "kpi": "Lift",
+        "definition": "Segment fraud rate divided by the portfolio fraud rate.",
+        "business_use": "Ranks segments by risk intensity relative to the baseline.",
+    },
+    {
+        "kpi": "Fraud share",
+        "definition": "Share of all fraud labels contained in a segment.",
+        "business_use": "Separates high-risk niche segments from segments that also matter operationally.",
+    },
+    {
+        "kpi": "Review workload",
+        "definition": "Transactions that would enter the analyst review queue at a selected threshold.",
+        "business_use": "Connects model thresholds to operational capacity planning.",
+    },
+    {
+        "kpi": "Fraud capture",
+        "definition": "Fraud labels captured by the selected model threshold or risk band.",
+        "business_use": "Estimates how much fraud the proposed queue can surface for review.",
+    },
+    {
+        "kpi": "Precision",
+        "definition": "Captured fraud cases divided by reviewed transactions.",
+        "business_use": "Estimates review efficiency and false-positive burden.",
+    },
+]
+
+METHODOLOGY_NOTES: list[dict[str, str]] = [
+    {
+        "topic": "Relative time handling",
+        "note": "TransactionDT is an elapsed-second counter from an unknown reference point, not a real calendar timestamp.",
+        "control": "The dashboard describes time as relative day and relative hour; no calendar claims are made.",
+    },
+    {
+        "topic": "Identity coverage",
+        "note": "The identity table covers only a subset of transactions, so missing identity is analyzed as a signal rather than treated as a data defect only.",
+        "control": "Identity coverage and identity-present lift are visible in executive KPIs and segment diagnostics.",
+    },
+    {
+        "topic": "Masked features",
+        "note": "Many engineered fields are anonymized by the dataset provider, so feature interpretation is observational rather than a confirmed business definition.",
+        "control": "Model explanations use feature families and importance ranking instead of unsupported semantic claims.",
+    },
+    {
+        "topic": "Model use",
+        "note": "The model is a prioritization layer for review queues, not an automated decline or customer-blocking engine.",
+        "control": "Threshold simulation reports capture, precision, workload, and missed exposure before recommending action.",
+    },
+    {
+        "topic": "Threshold governance",
+        "note": "Operating thresholds should be recalibrated when fraud base rate, analyst capacity, or false-positive cost changes.",
+        "control": "The dashboard exposes client-side capacity and cost inputs for scenario testing.",
+    },
+]
+
+OPERATING_ASSUMPTIONS: list[dict[str, str]] = [
+    {
+        "assumption": "Analyst capacity",
+        "default_value": "180 reviews per analyst day",
+        "purpose": "Used by the model operations simulator to flag queue pressure.",
+    },
+    {
+        "assumption": "False-positive review cost",
+        "default_value": "$4 per reviewed non-fraud transaction",
+        "purpose": "Used to estimate operational review cost.",
+    },
+    {
+        "assumption": "False-negative fraud loss",
+        "default_value": "$120 per missed fraud transaction",
+        "purpose": "Used to approximate missed fraud exposure for threshold scenarios.",
+    },
+    {
+        "assumption": "API cache",
+        "default_value": f"{DEFAULT_CACHE_SECONDS} seconds",
+        "purpose": "Keeps public dashboard traffic within free-tier-friendly query volume.",
+    },
+]
+
+QUALITY_GATES: list[dict[str, str]] = [
+    {"gate": "Raw row count reconciliation", "expected_result": "PASS before presentation"},
+    {"gate": "Reporting table readiness", "expected_result": "PASS before presentation"},
+    {"gate": "Model score contract", "expected_result": "PASS before release"},
+    {"gate": "Threshold simulation contract", "expected_result": "PASS before release"},
+    {"gate": "English public surface scan", "expected_result": "PASS before deployment"},
+]
+
 app = FastAPI(
     title="Fraud Analytics Live Dashboard",
     description="Live API over the dbt-built BigQuery reporting layer.",
@@ -121,7 +228,7 @@ def project_label() -> str:
         return configured
     if data_backend() == "duckdb":
         return "local-duckdb"
-    return project_id()
+    return "unconfigured"
 
 
 def dataset_id() -> str:
@@ -437,6 +544,32 @@ def build_dashboard_payload() -> dict[str, Any]:
         "refreshed_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
     }
     return data
+
+
+@app.get("/api/metadata")
+def metadata() -> dict[str, Any]:
+    return {
+        "product": "Fraud Risk Intelligence",
+        "presentation_layer": "web_dashboard",
+        "backend": data_backend(),
+        "project_id": project_label(),
+        "dataset": dataset_id(),
+        "table_count": len(BIGQUERY_TABLES),
+        "table_groups": BIGQUERY_TABLES,
+        "kpi_definitions": KPI_DEFINITIONS,
+        "methodology_notes": METHODOLOGY_NOTES,
+        "operating_assumptions": OPERATING_ASSUMPTIONS,
+        "data_contract": {
+            "source": "IEEE-CIS Fraud Detection",
+            "reporting_dataset": dataset_id(),
+            "refresh_mode": "dbt-built reporting tables with cached FastAPI delivery",
+            "owner": "Fraud Analytics Team",
+            "release_rule": "All quality gates must pass before executive presentation.",
+            "raw_access_policy": "The public dashboard reads only allowlisted reporting marts.",
+        },
+        "quality_gates": QUALITY_GATES,
+        "refreshed_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+    }
 
 
 @app.get("/api/dashboard")
