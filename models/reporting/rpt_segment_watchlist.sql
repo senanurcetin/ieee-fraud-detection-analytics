@@ -1,6 +1,6 @@
 with segments as (
     select
-        'Ürün' as segment_family,
+        'ÃœrÃ¼n' as segment_family,
         product_cd as segment_name,
         transaction_count,
         fraud_count,
@@ -10,7 +10,7 @@ with segments as (
         transaction_share,
         fraud_share,
         avg_transaction_amount
-    from {{ ref('pbi_product_risk') }}
+    from {{ ref('rpt_product_risk') }}
 
     union all
 
@@ -25,12 +25,12 @@ with segments as (
         transaction_share,
         fraud_share,
         null as avg_transaction_amount
-    from {{ ref('pbi_identity_risk') }}
+    from {{ ref('rpt_identity_risk') }}
 
     union all
 
     select
-        'Tutar bandı' as segment_family,
+        'Tutar bandÄ±' as segment_family,
         amount_band as segment_name,
         transaction_count,
         fraud_count,
@@ -40,7 +40,7 @@ with segments as (
         transaction_share,
         fraud_share,
         avg_transaction_amount
-    from {{ ref('pbi_amount_bands') }}
+    from {{ ref('rpt_amount_bands') }}
 
     union all
 
@@ -55,12 +55,12 @@ with segments as (
         transaction_share,
         fraud_share,
         avg_transaction_amount
-    from {{ ref('pbi_email_domain_risk') }}
+    from {{ ref('rpt_email_domain_risk') }}
 
     union all
 
     select
-        'Ödeme' as segment_family,
+        'Ã–deme' as segment_family,
         concat(card_network, ' / ', card_type) as segment_name,
         transaction_count,
         fraud_count,
@@ -70,7 +70,7 @@ with segments as (
         transaction_share,
         fraud_share,
         avg_transaction_amount
-    from {{ ref('pbi_payment_heatmap') }}
+    from {{ ref('rpt_payment_heatmap') }}
 ),
 
 scored as (
@@ -107,14 +107,14 @@ select
     priority_score,
     case
         when fraud_share >= 0.20 and lift >= 1.50 then 'Kritik'
-        when fraud_share >= 0.10 and lift >= 1.20 then 'Yüksek'
-        when lift >= 1.10 then 'İzle'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'YÃ¼ksek'
+        when lift >= 1.10 then 'Ä°zle'
         else 'Normal'
     end as risk_priority,
     case
         when fraud_share >= 0.20 and lift >= 1.50 then 'Acil segment inceleme ve kural seti kalibrasyonu'
-        when fraud_share >= 0.10 and lift >= 1.20 then 'Günlük operasyon kuyruğunda öncelikli takip'
-        when lift >= 1.10 then 'Haftalık trend ve hacim izlemesi'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'GÃ¼nlÃ¼k operasyon kuyruÄŸunda Ã¶ncelikli takip'
+        when lift >= 1.10 then 'HaftalÄ±k trend ve hacim izlemesi'
         else 'Standart raporlama'
     end as recommended_action
 from ranked

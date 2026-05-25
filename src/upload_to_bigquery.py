@@ -18,7 +18,7 @@ DATASETS = [
     "fraud_project_staging",
     "fraud_project_intermediate",
     "fraud_project_mart",
-    "fraud_project_powerbi",
+    "fraud_project_reporting",
 ]
 
 

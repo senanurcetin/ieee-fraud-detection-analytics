@@ -32,9 +32,9 @@ locals {
       dataset_id  = "fraud_project_mart"
       description = "Fraud analytics marts, model predictions, and quality outputs."
     }
-    powerbi = {
-      dataset_id  = "fraud_project_powerbi"
-      description = "Power BI DirectQuery reporting layer."
+    reporting = {
+      dataset_id  = "fraud_project_reporting"
+      description = "Web dashboard reporting layer."
     }
   }
 }

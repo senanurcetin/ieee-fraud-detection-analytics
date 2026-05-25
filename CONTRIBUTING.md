@@ -15,7 +15,7 @@ python -m pip install -r requirements-dev.txt
 pre-commit install
 ruff check .
 pytest
-python scripts/validate_powerbi_report.py
+python -m compileall webapp
 ```
 
 If raw data is available locally:
@@ -30,7 +30,7 @@ dbt build --project-dir . --profiles-dir profiles --profile ieee_fraud_detection
 - Code is formatted and linted with Ruff.
 - Python tests pass.
 - dbt models parse or build successfully for the intended target.
-- Power BI package validation passes if the report was changed.
+- Web dashboard contract tests pass if the reporting surface was changed.
 - No raw Kaggle files, local DuckDB files, service-account files, or temporary outputs are committed.
 - Documentation is updated when model, report, or deployment behavior changes.
 
@@ -44,4 +44,4 @@ Prefer small commits with clear intent:
 
 - `Add dbt reconciliation test`
 - `Document BigQuery deployment requirements`
-- `Refine Power BI executive report layout`
+- `Refine web dashboard executive report layout`

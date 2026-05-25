@@ -49,4 +49,3 @@
 - Live dashboard app: `webapp/`
 - Production URL: `https://fraud-project-web.vercel.app`
 - Supporting dashboard assets: `docs/assets/`
-- Archived BI prototype: `powerbi/fraud_project_v2.pbix`

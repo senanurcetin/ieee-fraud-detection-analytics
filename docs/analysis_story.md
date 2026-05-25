@@ -2,7 +2,7 @@
 
 ## Ana Soru
 
-Sahtecilik hangi segmentlerde yoğunlaşıyor ve BI ekibi bunu nasıl izlemeli?
+Sahtecilik hangi segmentlerde yoğunlaşıyor ve fraud operasyon ekibi bunu nasıl izlemeli?
 
 ## Temel Bulgular
 

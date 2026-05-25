@@ -26,7 +26,7 @@ flowchart LR
 | `fraud_project_staging` | Typed and normalized source views |
 | `fraud_project_intermediate` | Joined transaction and identity records with engineered features |
 | `fraud_project_mart` | Reconciled fraud, segment, risk-band, time, amount, and quality marts |
-| `fraud_project_powerbi` | Presentation-ready reporting tables for the live web dashboard |
+| `fraud_project_reporting` | Presentation-ready reporting tables for the live web dashboard |
 
 ## dbt Model Layers
 
@@ -35,11 +35,11 @@ flowchart LR
 | Staging | `stg_transactions`, `stg_identity` | Type casting, safe naming, TransactionDT-derived fields, amount-cent features |
 | Intermediate | `int_fraud_joined`, `int_features` | Transaction and identity join, product/payment/email/device segmentation |
 | Marts | `mart_*` | Fraud summary, risk bands, amount bands, daily drift, payment/email risk, quality checks |
-| Reporting | `fact_train_transactions`, `pbi_*` | Executive KPIs, web visual tables, watchlists, model operations, quality contracts |
+| Reporting | `fact_train_transactions`, `rpt_*` | Executive KPIs, web visual tables, watchlists, model operations, quality contracts |
 
 ## Reporting Design
 
-The web dashboard reads only from `fraud_project_powerbi` through the FastAPI reporting API. Raw Kaggle tables and staging models are intentionally excluded from the presentation surface. This keeps the reporting model stable, understandable, and suitable for executive presentation.
+The web dashboard reads only from `fraud_project_reporting` through the FastAPI reporting API. Raw Kaggle tables and staging models are intentionally excluded from the presentation surface. This keeps the reporting model stable, understandable, and suitable for executive presentation.
 
 ## Quality Gates
 

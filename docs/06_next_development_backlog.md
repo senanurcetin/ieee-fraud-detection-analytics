@@ -1,46 +1,46 @@
 # Next Development Backlog
 
-Bu doküman, son iterasyonda canlı web dashboard ana raporlama katmanı haline getirildikten sonra izlenecek teknik geliştirme sırasını tanımlar.
+Bu dokÃ¼man, son iterasyonda canlÄ± web dashboard ana raporlama katmanÄ± haline getirildikten sonra izlenecek teknik geliÅŸtirme sÄ±rasÄ±nÄ± tanÄ±mlar.
 
-## Tamamlanan Son İterasyon
+## Tamamlanan Son Ä°terasyon
 
-1. Power BI bağımlılığı ana sunum katmanından çıkarıldı.
-2. FastAPI dashboard API'si 18 BigQuery raporlama tablosunu kapsayacak şekilde genişletildi.
-3. Web dashboard'a Power BI benzeri analitik yetenekler eklendi:
+1. Eski statik rapor baÄŸÄ±mlÄ±lÄ±ÄŸÄ± ana sunum katmanÄ±ndan Ã§Ä±karÄ±ldÄ±.
+2. FastAPI dashboard API'si 18 BigQuery raporlama tablosunu kapsayacak ÅŸekilde geniÅŸletildi.
+3. Web dashboard'a geliÅŸmiÅŸ analitik yetenekler eklendi:
    - global slicer
    - drill-through paneli
-   - özel tooltip
+   - Ã¶zel tooltip
    - Pareto analizi
    - decomposition tree
    - identity/product coverage matrisi
    - relatif saat ve amount-decimal heatmap
-   - threshold what-if simülasyonu
+   - threshold what-if simÃ¼lasyonu
    - feature treemap
-   - veri kalite kontratı
-4. README ve QA dokümanları web dashboard'u ana teslim olarak gösterecek şekilde güncellendi.
+   - veri kalite kontratÄ±
+4. README ve QA dokÃ¼manlarÄ± web dashboard'u ana teslim olarak gÃ¶sterecek ÅŸekilde gÃ¼ncellendi.
 
-## Sıradaki Geliştirmeler
+## SÄ±radaki GeliÅŸtirmeler
 
 1. Public deployment smoke test
-   - Production URL üzerinden API kontratı ve ana dashboard ekranı kontrol edilmeli.
+   - Production URL Ã¼zerinden API kontratÄ± ve ana dashboard ekranÄ± kontrol edilmeli.
 
-2. Segment drill-down derinleştirme
-   - Drill paneline trend, hacim, fraud payı ve önerilen aksiyon aynı anda eklenmeli.
+2. Segment drill-down derinleÅŸtirme
+   - Drill paneline trend, hacim, fraud payÄ± ve Ã¶nerilen aksiyon aynÄ± anda eklenmeli.
 
-3. Yönetici sunumu export'u
-   - Her sekme için PNG export ve tek sayfalık executive brief çıktısı hazırlanmalı.
+3. YÃ¶netici sunumu export'u
+   - Her sekme iÃ§in PNG export ve tek sayfalÄ±k executive brief Ã§Ä±ktÄ±sÄ± hazÄ±rlanmalÄ±.
 
 4. Model explainability
-   - Feature importance tablosu iş birimi diliyle yorumlanmalı.
-   - Maskelenmiş Vesta özellikleri “observational signal” olarak etiketlenmeli.
+   - Feature importance tablosu iÅŸ birimi diliyle yorumlanmalÄ±.
+   - MaskelenmiÅŸ Vesta Ã¶zellikleri â€œobservational signalâ€ olarak etiketlenmeli.
 
-5. Operasyonel eşik simülasyonu
-   - False positive maliyeti, false negative maliyeti ve inceleme kapasitesi kullanıcı girdisi olarak simüle edilmeli.
+5. Operasyonel eÅŸik simÃ¼lasyonu
+   - False positive maliyeti, false negative maliyeti ve inceleme kapasitesi kullanÄ±cÄ± girdisi olarak simÃ¼le edilmeli.
 
 ## Kabul Kriterleri
 
-- Dashboard production URL'i veri döndürür.
-- Görünür arayüzde boş chart yoktur.
-- Tüm interaktif kontroller veri durumunu değiştirir.
-- README ekran görüntüleri güncel web arayüzünü gösterir.
-- Power BI yalnızca arşivlenmiş prototip olarak anılır.
+- Dashboard production URL'i veri dÃ¶ndÃ¼rÃ¼r.
+- GÃ¶rÃ¼nÃ¼r arayÃ¼zde boÅŸ chart yoktur.
+- TÃ¼m interaktif kontroller veri durumunu deÄŸiÅŸtirir.
+- README ekran gÃ¶rÃ¼ntÃ¼leri gÃ¼ncel web arayÃ¼zÃ¼nÃ¼ gÃ¶sterir.
+- Web dashboard proje iÃ§indeki tek aktif sunum katmanÄ±dÄ±r.

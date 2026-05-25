@@ -4,7 +4,7 @@ with thresholds as (
         max(case when score_threshold >= 0.20 then precision_rate end) as strict_precision,
         max(case when score_threshold <= 0.03 then workload_share end) as broad_workload,
         max(case when score_threshold >= 0.20 then workload_share end) as strict_workload
-    from {{ ref('pbi_threshold_simulation') }}
+    from {{ ref('rpt_threshold_simulation') }}
 )
 
 select *

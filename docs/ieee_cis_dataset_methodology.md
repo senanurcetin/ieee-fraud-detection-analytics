@@ -34,7 +34,7 @@ Analytical treatment:
 
 - `has_identity` is a model and reporting signal, not only a join-status field.
 - Identity-present and identity-missing transactions are analyzed separately.
-- Product-level identity coverage is modeled in `mart_identity_product_coverage` and `pbi_identity_product_coverage`.
+- Product-level identity coverage is modeled in `mart_identity_product_coverage` and `rpt_identity_product_coverage`.
 
 ## Masked Feature Interpretation
 

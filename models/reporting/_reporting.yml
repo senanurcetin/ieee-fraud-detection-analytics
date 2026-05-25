@@ -2,9 +2,9 @@ version: 2
 
 models:
   - name: fact_train_transactions
-    description: "Power BI DirectQuery fact table for train transactions with fraud label, segments, engineered fields, and model score."
+    description: "Reporting fact table for train transactions with fraud label, segments, engineered fields, and model score."
     config:
-      tags: ["powerbi", "fraud"]
+      tags: ["reporting", "fraud"]
     columns:
       - name: transaction_id
         tests:
@@ -23,29 +23,29 @@ models:
                 min_value: 0
                 max_value: 23
 
-  - name: pbi_executive_kpis
+  - name: rpt_executive_kpis
     description: "Single-row KPI table for executive summary reporting."
     config:
-      tags: ["powerbi", "executive"]
+      tags: ["reporting", "executive"]
     tests:
       - row_count_equals:
           arguments:
             expected_count: 1
 
-  - name: pbi_product_risk
+  - name: rpt_product_risk
     description: "Fraud rate, lift, and risk contribution by product."
     config:
-      tags: ["powerbi", "executive", "segment"]
+      tags: ["reporting", "executive", "segment"]
 
-  - name: pbi_identity_risk
+  - name: rpt_identity_risk
     description: "Fraud risk by identity record availability."
     config:
-      tags: ["powerbi", "executive", "identity"]
+      tags: ["reporting", "executive", "identity"]
 
-  - name: pbi_identity_product_coverage
+  - name: rpt_identity_product_coverage
     description: "Product-level identity coverage and fraud-rate evidence for executive risk segmentation."
     config:
-      tags: ["powerbi", "identity", "product", "executive"]
+      tags: ["reporting", "identity", "product", "executive"]
     columns:
       - name: product_cd
         tests:
@@ -58,60 +58,60 @@ models:
                 min_value: 0
                 max_value: 1
 
-  - name: pbi_amount_bands
-    description: "Pre-aggregated amount-band table for DirectQuery-friendly reporting."
+  - name: rpt_amount_bands
+    description: "Pre-aggregated amount-band table for the web dashboard reporting layer."
     config:
-      tags: ["powerbi", "amount"]
+      tags: ["reporting", "amount"]
 
-  - name: pbi_daily_drift
+  - name: rpt_daily_drift
     description: "Relative-day fraud drift and volume trend."
     config:
-      tags: ["powerbi", "time"]
+      tags: ["reporting", "time"]
 
-  - name: pbi_time_amount_signals
+  - name: rpt_time_amount_signals
     description: "Relative hour and amount-decimal risk signals used for operational staffing and dynamic threshold discussion."
     config:
-      tags: ["powerbi", "time", "amount", "operations"]
+      tags: ["reporting", "time", "amount", "operations"]
     tests:
       - row_count_between:
           arguments:
             min_count: 24
             max_count: 48
 
-  - name: pbi_payment_heatmap
+  - name: rpt_payment_heatmap
     description: "Card network and card type risk matrix."
     config:
-      tags: ["powerbi", "payment"]
+      tags: ["reporting", "payment"]
 
-  - name: pbi_email_domain_risk
+  - name: rpt_email_domain_risk
     description: "Fraud risk by purchaser email domain group."
     config:
-      tags: ["powerbi", "email"]
+      tags: ["reporting", "email"]
 
-  - name: pbi_model_risk_bands
+  - name: rpt_model_risk_bands
     description: "Model risk bands and operational prioritization metrics."
     config:
-      tags: ["powerbi", "model", "executive"]
+      tags: ["reporting", "model", "executive"]
 
-  - name: pbi_feature_importance
+  - name: rpt_feature_importance
     description: "Model feature importance ranking."
     config:
-      tags: ["powerbi", "model"]
+      tags: ["reporting", "model"]
 
-  - name: pbi_data_quality_scorecard
+  - name: rpt_data_quality_scorecard
     description: "Feature-family missingness scorecard for data quality reporting."
     config:
-      tags: ["powerbi", "data_quality"]
+      tags: ["reporting", "data_quality"]
 
-  - name: pbi_report_narrative
+  - name: rpt_report_narrative
     description: "Executive message, analytical focus, and recommended action text for report pages."
     config:
-      tags: ["powerbi", "executive", "storytelling"]
+      tags: ["reporting", "executive", "storytelling"]
 
-  - name: pbi_quality_contract
+  - name: rpt_quality_contract
     description: "Row-count and quality contract table suitable for reporting."
     config:
-      tags: ["powerbi", "data_quality", "qa"]
+      tags: ["reporting", "data_quality", "qa"]
     columns:
       - name: status
         tests:
@@ -119,10 +119,10 @@ models:
               arguments:
                 values: ["PASS"]
 
-  - name: pbi_segment_watchlist
+  - name: rpt_segment_watchlist
     description: "Unified operational watchlist across product, identity, amount, payment, and email segments."
     config:
-      tags: ["powerbi", "executive", "segment", "watchlist"]
+      tags: ["reporting", "executive", "segment", "watchlist"]
     tests:
       - row_count_between:
           arguments:
@@ -137,12 +137,12 @@ models:
         tests:
           - accepted_values:
               arguments:
-                values: ["Kritik", "Yüksek", "İzle", "Normal"]
+                values: ["Kritik", "YÃ¼ksek", "Ä°zle", "Normal"]
 
-  - name: pbi_review_strategy
+  - name: rpt_review_strategy
     description: "Maps model risk bands to review queue, estimated daily volume, and management action."
     config:
-      tags: ["powerbi", "model", "operations", "executive"]
+      tags: ["reporting", "model", "operations", "executive"]
     tests:
       - row_count_equals:
           arguments:
@@ -153,10 +153,10 @@ models:
           - not_null
           - unique
 
-  - name: pbi_threshold_simulation
+  - name: rpt_threshold_simulation
     description: "Threshold simulation for review workload, fraud capture, and precision trade-off."
     config:
-      tags: ["powerbi", "model", "threshold", "operations"]
+      tags: ["reporting", "model", "threshold", "operations"]
     tests:
       - row_count_between:
           arguments:
@@ -180,10 +180,10 @@ models:
                 min_value: 0
                 max_value: 1
 
-  - name: pbi_report_readiness
+  - name: rpt_report_readiness
     description: "Acceptance checklist table summarizing data, narrative, risk analytics, and model operations readiness."
     config:
-      tags: ["powerbi", "qa", "executive"]
+      tags: ["reporting", "qa", "executive"]
     columns:
       - name: status
         tests:
@@ -192,32 +192,32 @@ models:
                 values: ["PASS"]
 
 exposures:
-  - name: fraud_project_v2
-    label: "fraud_project_v2"
+  - name: fraud_project_web_dashboard
+    label: "Fraud Project Web Dashboard"
     type: dashboard
     maturity: high
-    url: "powerbi/fraud_project_v2.pbix"
-    description: "Executive fraud analytics report connected to the BigQuery reporting layer."
+    url: "https://fraud-project-web.vercel.app"
+    description: "Executive fraud analytics web dashboard connected to the BigQuery reporting layer."
     depends_on:
       - ref('fact_train_transactions')
-      - ref('pbi_executive_kpis')
-      - ref('pbi_product_risk')
-      - ref('pbi_identity_risk')
-      - ref('pbi_identity_product_coverage')
-      - ref('pbi_amount_bands')
-      - ref('pbi_daily_drift')
-      - ref('pbi_time_amount_signals')
-      - ref('pbi_payment_heatmap')
-      - ref('pbi_email_domain_risk')
-      - ref('pbi_model_risk_bands')
-      - ref('pbi_feature_importance')
-      - ref('pbi_data_quality_scorecard')
-      - ref('pbi_report_narrative')
-      - ref('pbi_quality_contract')
-      - ref('pbi_segment_watchlist')
-      - ref('pbi_review_strategy')
-      - ref('pbi_threshold_simulation')
-      - ref('pbi_report_readiness')
+      - ref('rpt_executive_kpis')
+      - ref('rpt_product_risk')
+      - ref('rpt_identity_risk')
+      - ref('rpt_identity_product_coverage')
+      - ref('rpt_amount_bands')
+      - ref('rpt_daily_drift')
+      - ref('rpt_time_amount_signals')
+      - ref('rpt_payment_heatmap')
+      - ref('rpt_email_domain_risk')
+      - ref('rpt_model_risk_bands')
+      - ref('rpt_feature_importance')
+      - ref('rpt_data_quality_scorecard')
+      - ref('rpt_report_narrative')
+      - ref('rpt_quality_contract')
+      - ref('rpt_segment_watchlist')
+      - ref('rpt_review_strategy')
+      - ref('rpt_threshold_simulation')
+      - ref('rpt_report_readiness')
     owner:
       name: "Fraud Analytics Team"
       email: "fraud.analytics@company.com"

@@ -2,7 +2,7 @@ with ranked as (
     select
         *,
         row_number() over (order by watchlist_rank) as expected_rank
-    from {{ ref('pbi_segment_watchlist') }}
+    from {{ ref('rpt_segment_watchlist') }}
 ),
 
 violations as (

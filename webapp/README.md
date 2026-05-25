@@ -1,6 +1,6 @@
 # Live Web Dashboard
 
-This web application is the primary presentation layer for the fraud analytics project. It serves a Turkish executive dashboard from a FastAPI backend and reads only the dbt-built `fraud_project_powerbi` tables.
+This web application is the primary presentation layer for the fraud analytics project. It serves a Turkish executive dashboard from a FastAPI backend and reads only the dbt-built `fraud_project_reporting` tables.
 
 ## Analytics Capabilities
 
@@ -19,30 +19,30 @@ This web application is the primary presentation layer for the fraud analytics p
 
 The API reads these reporting tables:
 
-- `pbi_executive_kpis`
-- `pbi_product_risk`
-- `pbi_identity_risk`
-- `pbi_identity_product_coverage`
-- `pbi_amount_bands`
-- `pbi_daily_drift`
-- `pbi_time_amount_signals`
-- `pbi_payment_heatmap`
-- `pbi_email_domain_risk`
-- `pbi_model_risk_bands`
-- `pbi_feature_importance`
-- `pbi_data_quality_scorecard`
-- `pbi_segment_watchlist`
-- `pbi_review_strategy`
-- `pbi_threshold_simulation`
-- `pbi_report_narrative`
-- `pbi_quality_contract`
-- `pbi_report_readiness`
+- `rpt_executive_kpis`
+- `rpt_product_risk`
+- `rpt_identity_risk`
+- `rpt_identity_product_coverage`
+- `rpt_amount_bands`
+- `rpt_daily_drift`
+- `rpt_time_amount_signals`
+- `rpt_payment_heatmap`
+- `rpt_email_domain_risk`
+- `rpt_model_risk_bands`
+- `rpt_feature_importance`
+- `rpt_data_quality_scorecard`
+- `rpt_segment_watchlist`
+- `rpt_review_strategy`
+- `rpt_threshold_simulation`
+- `rpt_report_narrative`
+- `rpt_quality_contract`
+- `rpt_report_readiness`
 
 ## Local Run
 
 ```powershell
 $env:GCP_PROJECT_ID="your-gcp-project"
-$env:BQ_DATASET="fraud_project_powerbi"
+$env:BQ_DATASET="fraud_project_reporting"
 $env:BIGQUERY_LOCATION="US"
 $env:GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 
@@ -57,7 +57,7 @@ http://127.0.0.1:8000
 
 ## Notes
 
-- The dashboard queries pre-aggregated `pbi_*` tables, not the raw transaction table.
+- The dashboard queries pre-aggregated `rpt_*` tables, not the raw transaction table.
 - API responses are cached in memory for 10 minutes by default.
 - Set `WEB_CACHE_SECONDS` to change the cache duration.
 - Set `BIGQUERY_MAX_BYTES_BILLED` to enforce a query cost guardrail.

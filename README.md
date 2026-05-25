@@ -51,7 +51,7 @@ BigQuery datasets used by the production target:
 - `fraud_project_staging`
 - `fraud_project_intermediate`
 - `fraud_project_mart`
-- `fraud_project_powerbi`
+- `fraud_project_reporting`
 
 ## Tech Stack
 
@@ -75,10 +75,9 @@ fraud_project/
 |-- docs/                     # project documentation and business narrative
 |-- infra/bigquery/           # Terraform dataset definitions
 |-- macros/                   # dbt macros and generic tests
-|-- models/                   # staging, intermediate, marts, powerbi dbt models
-|-- powerbi/                  # archived PBIX prototype and supporting assets
+|-- models/                   # staging, intermediate, marts, reporting dbt models
 |-- scripts/                  # local deployment and validation commands
-|-- src/                      # ingestion, ML, exports, archived BI helper scripts
+|-- src/                      # ingestion, ML, and deployment helper scripts
 |-- webapp/                   # FastAPI + browser dashboard over BigQuery
 `-- tests/                    # dbt singular tests and Python tests
 ```
@@ -154,7 +153,7 @@ $env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
   -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
   -ProjectId $env:GCP_PROJECT_ID `
   -Location $env:BIGQUERY_LOCATION `
-  -ReportingDataset "fraud_project_powerbi"
+  -ReportingDataset "fraud_project_reporting"
 ```
 
 Minimum IAM roles:
@@ -171,12 +170,12 @@ The final report is designed for executive review, not exploratory notebook brow
 
 | Question | Primary evidence |
 |---|---|
-| How large is the fraud problem? | `pbi_executive_kpis`, `mart_fraud_summary` |
-| Where does risk concentrate? | `pbi_product_risk`, `pbi_identity_risk`, `pbi_segment_watchlist` |
-| Do amount and time patterns matter? | `pbi_amount_bands`, `pbi_time_amount_signals`, `pbi_daily_drift` |
-| Which payment and email segments need monitoring? | `pbi_payment_heatmap`, `pbi_email_domain_risk` |
-| Can the model prioritize review queues? | `pbi_model_risk_bands`, `pbi_threshold_simulation`, `pbi_review_strategy` |
-| Is the data pipeline trustworthy? | `pbi_quality_contract`, `pbi_report_readiness`, dbt tests |
+| How large is the fraud problem? | `rpt_executive_kpis`, `mart_fraud_summary` |
+| Where does risk concentrate? | `rpt_product_risk`, `rpt_identity_risk`, `rpt_segment_watchlist` |
+| Do amount and time patterns matter? | `rpt_amount_bands`, `rpt_time_amount_signals`, `rpt_daily_drift` |
+| Which payment and email segments need monitoring? | `rpt_payment_heatmap`, `rpt_email_domain_risk` |
+| Can the model prioritize review queues? | `rpt_model_risk_bands`, `rpt_threshold_simulation`, `rpt_review_strategy` |
+| Is the data pipeline trustworthy? | `rpt_quality_contract`, `rpt_report_readiness`, dbt tests |
 
 Current validation snapshot:
 
@@ -223,8 +222,8 @@ Latest local validation snapshot:
 
 Model explainability artifacts:
 
-- [Feature importance](powerbi/assets/05_feature_importance.png)
-- [SHAP summary](powerbi/assets/26_shap_summary.png)
+- [Feature importance](docs/assets/model_feature_importance.png)
+- [SHAP summary](docs/assets/model_shap_summary.png)
 - [Precision-recall curve](docs/assets/precision_recall_curve.svg)
 - [Threshold simulation and business impact](docs/banking_business_impact.md)
 
@@ -248,7 +247,7 @@ Main deliverable:
 https://fraud-project-web.vercel.app
 ```
 
-The live dashboard reads the same dbt-built BigQuery reporting tables and replaces the Power BI report as the main presentation layer. It includes:
+The live dashboard reads the dbt-built BigQuery reporting tables and is the main presentation layer. It includes:
 
 - Global slicers for metric, segment family, and operational priority
 - Cross-highlight style segment selection
@@ -262,19 +261,11 @@ The live dashboard reads the same dbt-built BigQuery reporting tables and replac
 - Feature importance and feature-family treemap
 - Data quality contract and readiness scorecards
 
-Archived BI prototype:
-
-```text
-powerbi/fraud_project_v2.pbix
-```
-
-The PBIX file is retained as a historical BI prototype, but it is no longer the primary reporting deliverable.
-
 Run locally:
 
 ```powershell
 $env:GCP_PROJECT_ID = "your-gcp-project"
-$env:BQ_DATASET = "fraud_project_powerbi"
+$env:BQ_DATASET = "fraud_project_reporting"
 $env:BIGQUERY_LOCATION = "US"
 $env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
 
@@ -283,7 +274,7 @@ uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 
 Then open `http://127.0.0.1:8000`.
 
-The API reads pre-aggregated `pbi_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard.
+The API reads pre-aggregated `rpt_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard.
 
 Vercel deploys the `webapp/` folder as the project root. The production runtime uses Vercel environment variables, including `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`, instead of local credential files.
 
@@ -311,9 +302,7 @@ Latest production verification:
 - dbt production build: `PASS=123 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=124`
 - dbt project scope: 33 models, 90 data tests, 8 sources, 1 exposure
 - Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; reporting fact 590,540
-- GitHub Actions: Python quality, pytest, web dashboard contract checks, archived PBIX package validation, dependency audit, and dbt parse/build workflow
-
-The archived PBIX validator is retained for package integrity checks while the web dashboard is the active presentation surface.
+- GitHub Actions: Python quality, pytest, web dashboard contract checks, dependency audit, and dbt parse/build workflow
 
 ## Documentation
 
@@ -332,7 +321,6 @@ The archived PBIX validator is retained for package integrity checks while the w
 - [Operational Playbook](docs/operational_playbook.md)
 - [Security and Secrets](docs/security_and_secrets.md)
 - [Live Web Dashboard Guide](docs/live_web_dashboard_guide.md)
-- [Archived Power BI Prototype Guide](docs/powerbi_report_guide.md)
 - [QA Acceptance Checklist](docs/qa_acceptance_checklist.md)
 
 ## License

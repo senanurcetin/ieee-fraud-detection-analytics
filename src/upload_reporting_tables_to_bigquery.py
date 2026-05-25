@@ -7,11 +7,11 @@ from pathlib import Path
 from google.cloud import bigquery
 
 ROOT = Path(__file__).resolve().parents[1]
-PBI_DIR = ROOT / "outputs" / "powerbi"
+REPORTING_DIR = ROOT / "outputs" / "reporting"
 
 DEFAULT_PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 DEFAULT_LOCATION = os.environ.get("BIGQUERY_LOCATION", "US")
-DEFAULT_DATASET = os.environ.get("BIGQUERY_REPORTING_DATASET", "fraud_project_powerbi")
+DEFAULT_DATASET = os.environ.get("BIGQUERY_REPORTING_DATASET", "fraud_project_reporting")
 
 REPORTING_FILES = [
     "mart_fraud_summary.csv",
@@ -27,7 +27,7 @@ REPORTING_FILES = [
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Upload Power BI reporting CSV marts to BigQuery.")
+    parser = argparse.ArgumentParser(description="Upload web dashboard reporting CSV marts to BigQuery.")
     parser.add_argument("--project-id", default=DEFAULT_PROJECT_ID)
     parser.add_argument("--location", default=DEFAULT_LOCATION)
     parser.add_argument("--dataset", default=DEFAULT_DATASET)
@@ -72,7 +72,7 @@ def main() -> None:
     create_dataset(client, args.project_id, args.dataset, args.location)
 
     for file_name in REPORTING_FILES:
-        path = PBI_DIR / file_name
+        path = REPORTING_DIR / file_name
         if not path.exists():
             raise FileNotFoundError(f"Missing reporting file: {path}")
         load_csv(client, args.project_id, args.dataset, path)

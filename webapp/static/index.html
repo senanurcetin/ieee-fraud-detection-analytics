@@ -244,8 +244,8 @@
       white-space: nowrap;
     }
     .priority.Kritik { color: #ffc1c4; background: rgba(241,79,85,.13); border-color: rgba(241,79,85,.36); }
-    .priority.Yüksek { color: #ffe0aa; background: rgba(217,154,32,.13); border-color: rgba(217,154,32,.36); }
-    .priority.İzle { color: #c4e5ff; background: rgba(76,141,246,.13); border-color: rgba(76,141,246,.36); }
+    .priority.YÃ¼ksek { color: #ffe0aa; background: rgba(217,154,32,.13); border-color: rgba(217,154,32,.36); }
+    .priority.Ä°zle { color: #c4e5ff; background: rgba(76,141,246,.13); border-color: rgba(76,141,246,.36); }
     .priority.Normal { color: #bcf8de; background: rgba(47,158,117,.13); border-color: rgba(47,158,117,.36); }
 
     .heatmap { display: grid; gap: 8px; }
@@ -451,8 +451,8 @@
   <aside class="drawer" id="drill-drawer" aria-hidden="true">
     <div class="drawer-head">
       <div>
-        <h2 class="drawer-title" id="drawer-title">Segment detayı</h2>
-        <p class="card-note" id="drawer-subtitle">Seçili kırılım için operasyonel karar özeti.</p>
+        <h2 class="drawer-title" id="drawer-title">Segment detayÄ±</h2>
+        <p class="card-note" id="drawer-subtitle">SeÃ§ili kÄ±rÄ±lÄ±m iÃ§in operasyonel karar Ã¶zeti.</p>
       </div>
       <button class="btn" id="drawer-close">Kapat</button>
     </div>
@@ -465,12 +465,12 @@
         <div class="mark">FR</div>
         <div>
           <h1>Fraud Risk Intelligence</h1>
-          <p class="subtitle">BigQuery üzerinde dbt ile üretilen raporlama katmanından canlı veri çeken, sunum ve analitik inceleme için tasarlanmış yönetici arayüzü.</p>
+          <p class="subtitle">BigQuery Ã¼zerinde dbt ile Ã¼retilen raporlama katmanÄ±ndan canlÄ± veri Ã§eken, sunum ve analitik inceleme iÃ§in tasarlanmÄ±ÅŸ yÃ¶netici arayÃ¼zÃ¼.</p>
         </div>
       </div>
       <div class="statusbar">
         <span class="pill live">BigQuery Live</span>
-        <span class="pill" id="dataset-pill">dataset hazırlanıyor</span>
+        <span class="pill" id="dataset-pill">dataset hazÄ±rlanÄ±yor</span>
         <span class="pill pass" id="readiness-pill">kontrol bekleniyor</span>
         <button class="btn" id="refresh-btn">Yenile</button>
       </div>
@@ -478,46 +478,46 @@
 
     <section class="control-panel" aria-label="Analitik kontroller">
       <div class="control">
-        <label for="metric-select">Karşılaştırma metriği</label>
+        <label for="metric-select">KarÅŸÄ±laÅŸtÄ±rma metriÄŸi</label>
         <select class="select" id="metric-select">
-          <option value="fraud_rate">Fraud oranı</option>
+          <option value="fraud_rate">Fraud oranÄ±</option>
           <option value="lift">Lift</option>
-          <option value="fraud_share">Fraud payı</option>
-          <option value="transaction_share">İşlem payı</option>
+          <option value="fraud_share">Fraud payÄ±</option>
+          <option value="transaction_share">Ä°ÅŸlem payÄ±</option>
         </select>
       </div>
       <div class="control">
         <label for="family-select">Segment ailesi</label>
-        <select class="select" id="family-select"><option value="Tümü">Tümü</option></select>
+        <select class="select" id="family-select"><option value="TÃ¼mÃ¼">TÃ¼mÃ¼</option></select>
       </div>
       <div class="control">
-        <label for="priority-select">Öncelik</label>
+        <label for="priority-select">Ã–ncelik</label>
         <select class="select" id="priority-select">
-          <option value="Tümü">Tümü</option>
+          <option value="TÃ¼mÃ¼">TÃ¼mÃ¼</option>
           <option value="Kritik">Kritik</option>
-          <option value="Yüksek">Yüksek</option>
-          <option value="İzle">İzle</option>
+          <option value="YÃ¼ksek">YÃ¼ksek</option>
+          <option value="Ä°zle">Ä°zle</option>
           <option value="Normal">Normal</option>
         </select>
       </div>
       <div class="control">
-        <label>Seçili segment</label>
-        <div class="select" id="selected-segment">Henüz seçim yok</div>
+        <label>SeÃ§ili segment</label>
+        <div class="select" id="selected-segment">HenÃ¼z seÃ§im yok</div>
       </div>
       <div class="button-row">
-        <button class="btn" id="reset-btn">Sıfırla</button>
+        <button class="btn" id="reset-btn">SÄ±fÄ±rla</button>
         <button class="btn" id="download-btn">JSON indir</button>
       </div>
     </section>
 
     <nav class="tabs">
-      <button class="tab active" data-view="overview">01 Yönetici Özeti</button>
+      <button class="tab active" data-view="overview">01 YÃ¶netici Ã–zeti</button>
       <button class="tab" data-view="segments">02 Derin Segment Analizi</button>
-      <button class="tab" data-view="model">03 Model ve Eşik Simülasyonu</button>
-      <button class="tab" data-view="quality">04 Veri Güveni ve Lineage</button>
+      <button class="tab" data-view="model">03 Model ve EÅŸik SimÃ¼lasyonu</button>
+      <button class="tab" data-view="quality">04 Veri GÃ¼veni ve Lineage</button>
     </nav>
 
-    <main id="state" class="loading">BigQuery raporlama katmanına bağlanılıyor.</main>
+    <main id="state" class="loading">BigQuery raporlama katmanÄ±na baÄŸlanÄ±lÄ±yor.</main>
 
     <section id="dashboard" style="display:none">
       <section class="view active" id="overview">
@@ -527,26 +527,26 @@
           <article class="card span-2">
             <div class="card-head">
               <div>
-                <h2 class="card-title">Fraud oranı referans zaman ekseninde nasıl değişiyor?</h2>
-                <div class="card-note">TransactionDT gerçek tarih değildir; dbt katmanı bunu göreli gün/saat olarak sunar.</div>
+                <h2 class="card-title">Fraud oranÄ± referans zaman ekseninde nasÄ±l deÄŸiÅŸiyor?</h2>
+                <div class="card-note">TransactionDT gerÃ§ek tarih deÄŸildir; dbt katmanÄ± bunu gÃ¶reli gÃ¼n/saat olarak sunar.</div>
               </div>
             </div>
             <div class="card-body"><div class="chart-wrap"><svg id="daily-trend"></svg></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Fraud katkısı Pareto analizi</h2><div class="card-note">Az sayıda segment toplam fraud etiketinin ne kadarını taşır?</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Fraud katkÄ±sÄ± Pareto analizi</h2><div class="card-note">Az sayÄ±da segment toplam fraud etiketinin ne kadarÄ±nÄ± taÅŸÄ±r?</div></div></div>
             <div class="card-body"><div class="chart-wrap"><svg id="pareto-chart"></svg></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Ürün kırılımı</h2><div class="card-note">Seçili metrikle segment karşılaştırması</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">ÃœrÃ¼n kÄ±rÄ±lÄ±mÄ±</h2><div class="card-note">SeÃ§ili metrikle segment karÅŸÄ±laÅŸtÄ±rmasÄ±</div></div></div>
             <div class="card-body"><div class="bar-list" id="product-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandı</h2><div class="card-note">Model skoru ile gözlenen fraud ayrışması</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Risk bandÄ±</h2><div class="card-note">Model skoru ile gÃ¶zlenen fraud ayrÄ±ÅŸmasÄ±</div></div></div>
             <div class="card-body"><div class="bar-list" id="risk-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Tutar bandı</h2><div class="card-note">Risk yoğunlaşması ve ortalama tutar</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Tutar bandÄ±</h2><div class="card-note">Risk yoÄŸunlaÅŸmasÄ± ve ortalama tutar</div></div></div>
             <div class="card-body"><div class="bar-list" id="amount-bars"></div></div>
           </article>
         </div>
@@ -556,27 +556,27 @@
       <section class="view" id="segments">
         <div class="grid cols-2">
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Decomposition tree: risk sürücüleri</h2><div class="card-note">Segment aileleri fraud payı, lift ve önerilen aksiyonla gruplanır.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Decomposition tree: risk sÃ¼rÃ¼cÃ¼leri</h2><div class="card-note">Segment aileleri fraud payÄ±, lift ve Ã¶nerilen aksiyonla gruplanÄ±r.</div></div></div>
             <div class="card-body"><div class="tree" id="driver-tree"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Operasyonel segment izleme listesi</h2><div class="card-note">Slicer seçimleri bu tabloyu ve Pareto analizini etkiler.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Operasyonel segment izleme listesi</h2><div class="card-note">Slicer seÃ§imleri bu tabloyu ve Pareto analizini etkiler.</div></div></div>
             <div class="card-body table-wrap"><table id="watchlist-table"></table></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Identity ve ürün matrisi</h2><div class="card-note">Identity coverage, fraud lift ve fraud payı birlikte okunur.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Identity ve Ã¼rÃ¼n matrisi</h2><div class="card-note">Identity coverage, fraud lift ve fraud payÄ± birlikte okunur.</div></div></div>
             <div class="card-body"><div class="matrix" id="identity-product-matrix"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Göreli saat ve tutar deseni</h2><div class="card-note">Saat bandı ile yuvarlak/ondalıklı tutar davranışı.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">GÃ¶reli saat ve tutar deseni</h2><div class="card-note">Saat bandÄ± ile yuvarlak/ondalÄ±klÄ± tutar davranÄ±ÅŸÄ±.</div></div></div>
             <div class="card-body"><div class="heatmap" id="time-amount-heatmap"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Ödeme tipi ısı haritası</h2><div class="card-note">Kart ağı ve kart tipi kesişiminde fraud oranı.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Ã–deme tipi Ä±sÄ± haritasÄ±</h2><div class="card-note">Kart aÄŸÄ± ve kart tipi kesiÅŸiminde fraud oranÄ±.</div></div></div>
             <div class="card-body"><div class="heatmap" id="payment-heatmap"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Email domain riski</h2><div class="card-note">Email gruplarında lift ve fraud payı.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Email domain riski</h2><div class="card-note">Email gruplarÄ±nda lift ve fraud payÄ±.</div></div></div>
             <div class="card-body"><div class="bar-list" id="email-bars"></div></div>
           </article>
         </div>
@@ -585,7 +585,7 @@
       <section class="view" id="model">
         <div class="grid cols-2">
           <article class="card wide">
-            <div class="card-head"><div><h2 class="card-title">What-if threshold simülasyonu</h2><div class="card-note">Eşik değiştikçe yakalama oranı, precision ve operasyon yükü birlikte izlenir.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">What-if threshold simÃ¼lasyonu</h2><div class="card-note">EÅŸik deÄŸiÅŸtikÃ§e yakalama oranÄ±, precision ve operasyon yÃ¼kÃ¼ birlikte izlenir.</div></div></div>
             <div class="card-body">
               <div class="whatif">
                 <div>
@@ -597,19 +597,19 @@
             </div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandı operasyon stratejisi</h2><div class="card-note">İnceleme kuyruğu, günlük hacim ve yönetim notu.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Risk bandÄ± operasyon stratejisi</h2><div class="card-note">Ä°nceleme kuyruÄŸu, gÃ¼nlÃ¼k hacim ve yÃ¶netim notu.</div></div></div>
             <div class="card-body table-wrap"><table id="review-table"></table></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Feature importance</h2><div class="card-note">LightGBM skorunun en güçlü sinyalleri.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Feature importance</h2><div class="card-note">LightGBM skorunun en gÃ¼Ã§lÃ¼ sinyalleri.</div></div></div>
             <div class="card-body"><div class="bar-list" id="feature-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Feature family treemap</h2><div class="card-note">Sinyal aileleri model katkısına göre ölçeklenir.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Feature family treemap</h2><div class="card-note">Sinyal aileleri model katkÄ±sÄ±na gÃ¶re Ã¶lÃ§eklenir.</div></div></div>
             <div class="card-body"><div class="treemap" id="feature-treemap"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandı hacim dağılımı</h2><div class="card-note">Operasyon kapasite planı için hacim görünümü.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Risk bandÄ± hacim daÄŸÄ±lÄ±mÄ±</h2><div class="card-note">Operasyon kapasite planÄ± iÃ§in hacim gÃ¶rÃ¼nÃ¼mÃ¼.</div></div></div>
             <div class="card-body"><div class="bar-list" id="risk-volume-bars"></div></div>
           </article>
         </div>
@@ -618,31 +618,31 @@
       <section class="view" id="quality">
         <div class="grid cols-2">
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Veri kalite kontratı</h2><div class="card-note">Raw ve raporlama katmanı row-count kontrolleri.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Veri kalite kontratÄ±</h2><div class="card-note">Raw ve raporlama katmanÄ± row-count kontrolleri.</div></div></div>
             <div class="card-body table-wrap"><table id="quality-contract-table"></table></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Rapor hazırlık kapısı</h2><div class="card-note">Sunum öncesi readiness kontrolleri.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Rapor hazÄ±rlÄ±k kapÄ±sÄ±</h2><div class="card-note">Sunum Ã¶ncesi readiness kontrolleri.</div></div></div>
             <div class="card-body table-wrap"><table id="readiness-table"></table></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Eksiklik yoğunluğu</h2><div class="card-note">Feature ailesi bazında ortalama missingness.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Eksiklik yoÄŸunluÄŸu</h2><div class="card-note">Feature ailesi bazÄ±nda ortalama missingness.</div></div></div>
             <div class="card-body"><div class="bar-list" id="quality-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Rapor anlatı matrisi</h2><div class="card-note">Her sayfa için mesaj, odak ve aksiyon cümlesi.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Rapor anlatÄ± matrisi</h2><div class="card-note">Her sayfa iÃ§in mesaj, odak ve aksiyon cÃ¼mlesi.</div></div></div>
             <div class="card-body"><div class="bar-list" id="narrative-list"></div></div>
           </article>
           <article class="card wide">
-            <div class="card-head"><div><h2 class="card-title">Canlı veri mimarisi</h2><div class="card-note">Web arayüzü doğrudan BigQuery raporlama martlarını okur.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">CanlÄ± veri mimarisi</h2><div class="card-note">Web arayÃ¼zÃ¼ doÄŸrudan BigQuery raporlama martlarÄ±nÄ± okur.</div></div></div>
             <div class="card-body">
               <div class="lineage">
                 <div class="node"><strong>Kaggle CSV</strong><span>train/test transaction ve identity</span></div>
-                <div class="node"><strong>BigQuery Raw</strong><span>ham veri tabanı</span></div>
+                <div class="node"><strong>BigQuery Raw</strong><span>ham veri tabanÄ±</span></div>
                 <div class="node"><strong>dbt Core</strong><span>staging ve intermediate modeller</span></div>
-                <div class="node"><strong>Mart Katmanı</strong><span>fraud, segment, kalite, model metrikleri</span></div>
-                <div class="node"><strong>Reporting Layer</strong><span>Sunuma hazır raporlama tabloları</span></div>
-                <div class="node"><strong>Web Dashboard</strong><span>FastAPI ile canlı sunum</span></div>
+                <div class="node"><strong>Mart KatmanÄ±</strong><span>fraud, segment, kalite, model metrikleri</span></div>
+                <div class="node"><strong>Reporting Layer</strong><span>Sunuma hazÄ±r raporlama tablolarÄ±</span></div>
+                <div class="node"><strong>Web Dashboard</strong><span>FastAPI ile canlÄ± sunum</span></div>
               </div>
             </div>
           </article>
@@ -658,10 +658,10 @@
     const fmtX = value => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`;
     const colorScale = ['#f14f55', '#d99a20', '#8b5cf6', '#4c8df6', '#2bb3a3', '#2f9e75', '#ff7b72', '#6ee7b7'];
     const metricLabels = {
-      fraud_rate: 'Fraud oranı',
+      fraud_rate: 'Fraud oranÄ±',
       lift: 'Lift',
-      fraud_share: 'Fraud payı',
-      transaction_share: 'İşlem payı',
+      fraud_share: 'Fraud payÄ±',
+      transaction_share: 'Ä°ÅŸlem payÄ±',
     };
 
     let dashboardData = null;
@@ -669,8 +669,8 @@
     const viewNames = ['overview', 'segments', 'model', 'quality'];
     const state = {
       metric: 'fraud_rate',
-      family: 'Tümü',
-      priority: 'Tümü',
+      family: 'TÃ¼mÃ¼',
+      priority: 'TÃ¼mÃ¼',
       selected: null,
       thresholdIndex: 0,
     };
@@ -692,13 +692,13 @@
     document.getElementById('refresh-btn').addEventListener('click', () => loadDashboard(true));
     document.getElementById('reset-btn').addEventListener('click', () => {
       state.metric = 'fraud_rate';
-      state.family = 'Tümü';
-      state.priority = 'Tümü';
+      state.family = 'TÃ¼mÃ¼';
+      state.priority = 'TÃ¼mÃ¼';
       state.selected = null;
       document.getElementById('metric-select').value = state.metric;
       document.getElementById('family-select').value = state.family;
       document.getElementById('priority-select').value = state.priority;
-      document.getElementById('selected-segment').textContent = 'Henüz seçim yok';
+      document.getElementById('selected-segment').textContent = 'HenÃ¼z seÃ§im yok';
       closeDrawer();
       renderDashboard(dashboardData);
     });
@@ -717,7 +717,7 @@
       const stateBox = document.getElementById('state');
       stateBox.className = 'loading';
       stateBox.style.display = 'block';
-      stateBox.textContent = refresh ? 'BigQuery verisi yenileniyor.' : 'BigQuery raporlama katmanına bağlanılıyor.';
+      stateBox.textContent = refresh ? 'BigQuery verisi yenileniyor.' : 'BigQuery raporlama katmanÄ±na baÄŸlanÄ±lÄ±yor.';
       document.getElementById('dashboard').style.display = 'none';
 
       try {
@@ -732,7 +732,7 @@
         document.getElementById('dashboard').style.display = 'block';
       } catch (error) {
         stateBox.className = 'error';
-        stateBox.innerHTML = `<strong>Dashboard verisi yüklenemedi.</strong><br>${escapeHtml(error.message)}<br><br>Vercel ortam değişkenlerini ve BigQuery yetkilerini kontrol edin.`;
+        stateBox.innerHTML = `<strong>Dashboard verisi yÃ¼klenemedi.</strong><br>${escapeHtml(error.message)}<br><br>Vercel ortam deÄŸiÅŸkenlerini ve BigQuery yetkilerini kontrol edin.`;
       }
     }
 
@@ -740,22 +740,22 @@
       const familySelect = document.getElementById('family-select');
       if (familySelect.options.length > 1) return;
       const families = [...new Set((data.segment_watchlist || []).map(row => row.segment_family))].sort((a, b) => String(a).localeCompare(String(b), 'tr'));
-      familySelect.innerHTML = ['Tümü', ...families].map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+      familySelect.innerHTML = ['TÃ¼mÃ¼', ...families].map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
     }
 
     function renderDashboard(data) {
       if (!data) return;
       drillMap = new Map();
       document.getElementById('dataset-pill').textContent = displayDatasetName(data.meta.dataset);
-      document.getElementById('readiness-pill').textContent = `${data.meta.readiness_passed}/${data.meta.readiness_total} kalite kontrolü PASS`;
+      document.getElementById('readiness-pill').textContent = `${data.meta.readiness_passed}/${data.meta.readiness_total} kalite kontrolÃ¼ PASS`;
       renderKpis(data.executive_kpis[0] || {});
       renderInfluencers(data);
-      renderNarrative('overview-narrative', narrativeFor(data, 'Yönetici Özeti'));
+      renderNarrative('overview-narrative', narrativeFor(data, 'YÃ¶netici Ã–zeti'));
       renderLineChart('daily-trend', data.daily_drift, 'transaction_day', 'fraud_rate', 'transaction_count');
       renderPareto('pareto-chart', filteredWatchlist(data));
-      renderBars('product-bars', data.product_risk, 'product_cd', currentMetric(), productMeta, currentMetric(), row => segmentRow('Ürün', row.product_cd, row));
-      renderBars('risk-bars', data.model_risk_bands, 'risk_band', 'observed_fraud_rate', row => `${fmtPct(row.observed_fraud_rate)} | ${fmtInt(row.transaction_count)} işlem`, 'observed_fraud_rate', row => segmentRow('Risk bandı', row.risk_band, row));
-      renderBars('amount-bars', data.amount_bands, 'amount_band', currentMetric(), amountMeta, currentMetric(), row => segmentRow('Tutar bandı', row.amount_band, row));
+      renderBars('product-bars', data.product_risk, 'product_cd', currentMetric(), productMeta, currentMetric(), row => segmentRow('ÃœrÃ¼n', row.product_cd, row));
+      renderBars('risk-bars', data.model_risk_bands, 'risk_band', 'observed_fraud_rate', row => `${fmtPct(row.observed_fraud_rate)} | ${fmtInt(row.transaction_count)} iÅŸlem`, 'observed_fraud_rate', row => segmentRow('Risk bandÄ±', row.risk_band, row));
+      renderBars('amount-bars', data.amount_bands, 'amount_band', currentMetric(), amountMeta, currentMetric(), row => segmentRow('Tutar bandÄ±', row.amount_band, row));
       renderDriverTree(filteredWatchlist(data));
       renderWatchlist(filteredWatchlist(data));
       renderIdentityProductMatrix(data.identity_product_coverage);
@@ -764,12 +764,12 @@
       renderBars('email-bars', data.email_domain_risk, 'purchaser_email_group', currentMetric(), emailMeta, currentMetric(), row => segmentRow('Email domain', row.purchaser_email_group, row));
       renderThresholdExperience(data.threshold_simulation);
       renderReviewStrategy(data.review_strategy);
-      renderBars('feature-bars', data.feature_importance, 'feature', 'importance', row => Number(row.importance || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }), 'importance', row => ({ ...row, segment_family: 'Model sinyali', segment_name: row.feature, recommended_action: 'Model açıklanabilirliği için üst sinyal olarak izlenir.' }));
+      renderBars('feature-bars', data.feature_importance, 'feature', 'importance', row => Number(row.importance || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }), 'importance', row => ({ ...row, segment_family: 'Model sinyali', segment_name: row.feature, recommended_action: 'Model aÃ§Ä±klanabilirliÄŸi iÃ§in Ã¼st sinyal olarak izlenir.' }));
       renderFeatureTreemap(data.feature_importance);
-      renderBars('risk-volume-bars', data.model_risk_bands, 'risk_band', 'transaction_count', row => `${fmtInt(row.transaction_count)} işlem`, 'transaction_count', row => segmentRow('Risk bandı', row.risk_band, row));
+      renderBars('risk-volume-bars', data.model_risk_bands, 'risk_band', 'transaction_count', row => `${fmtInt(row.transaction_count)} iÅŸlem`, 'transaction_count', row => segmentRow('Risk bandÄ±', row.risk_band, row));
       renderReadiness(data.report_readiness);
       renderQualityContract(data.quality_contract);
-      renderBars('quality-bars', data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} eksik`, 'avg_missing_rate', row => ({ ...row, segment_family: 'Veri kalitesi', segment_name: row.column_family, recommended_action: 'Eksiklik oranı model ve feature engineering kapsamında izlenmelidir.' }));
+      renderBars('quality-bars', data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} eksik`, 'avg_missing_rate', row => ({ ...row, segment_family: 'Veri kalitesi', segment_name: row.column_family, recommended_action: 'Eksiklik oranÄ± model ve feature engineering kapsamÄ±nda izlenmelidir.' }));
       renderNarrativeList(data.report_narrative);
       bindTooltips();
       bindDrillEvents();
@@ -781,8 +781,8 @@
 
     function filteredWatchlist(data) {
       return (data.segment_watchlist || []).filter(row => {
-        const familyOk = state.family === 'Tümü' || row.segment_family === state.family;
-        const priorityOk = state.priority === 'Tümü' || row.risk_priority === state.priority;
+        const familyOk = state.family === 'TÃ¼mÃ¼' || row.segment_family === state.family;
+        const priorityOk = state.priority === 'TÃ¼mÃ¼' || row.risk_priority === state.priority;
         return familyOk && priorityOk;
       });
     }
@@ -793,12 +793,12 @@
 
     function renderKpis(k) {
       const items = [
-        ['Toplam işlem', fmtInt(k.total_transactions), 'Analiz edilen eğitim işlem hacmi', '#4c8df6', `Fraud oranı: ${fmtPct(k.fraud_rate)}`],
-        ['Fraud işlem', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} baz oran`, '#f14f55', `Legitimate işlem: ${fmtInt(k.legitimate_transactions)}`],
-        ['Identity kapsama', fmtPct(k.identity_coverage_rate), 'Kimlik kaydı olan işlem payı', '#2bb3a3', `Identity lift: ${fmtX(k.identity_lift)}`],
-        ['Product C lift', fmtX(k.product_c_lift), `${fmtInt(k.product_c_transactions)} işlem`, '#d99a20', `Product C fraud oranı: ${fmtPct(k.product_c_fraud_rate)}`],
-        ['Identity lift', fmtX(k.identity_lift), 'Kimlikli işlemlerde ayrışma', '#8b5cf6', `Var: ${fmtPct(k.with_identity_fraud_rate)} | Yok: ${fmtPct(k.without_identity_fraud_rate)}`],
-        ['Critical lift', `${Number(k.critical_risk_lift || 0).toFixed(1)}x`, `${fmtInt(k.critical_risk_transactions)} işlem`, '#f14f55', `Critical fraud oranı: ${fmtPct(k.critical_risk_fraud_rate)}`],
+        ['Toplam iÅŸlem', fmtInt(k.total_transactions), 'Analiz edilen eÄŸitim iÅŸlem hacmi', '#4c8df6', `Fraud oranÄ±: ${fmtPct(k.fraud_rate)}`],
+        ['Fraud iÅŸlem', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} baz oran`, '#f14f55', `Legitimate iÅŸlem: ${fmtInt(k.legitimate_transactions)}`],
+        ['Identity kapsama', fmtPct(k.identity_coverage_rate), 'Kimlik kaydÄ± olan iÅŸlem payÄ±', '#2bb3a3', `Identity lift: ${fmtX(k.identity_lift)}`],
+        ['Product C lift', fmtX(k.product_c_lift), `${fmtInt(k.product_c_transactions)} iÅŸlem`, '#d99a20', `Product C fraud oranÄ±: ${fmtPct(k.product_c_fraud_rate)}`],
+        ['Identity lift', fmtX(k.identity_lift), 'Kimlikli iÅŸlemlerde ayrÄ±ÅŸma', '#8b5cf6', `Var: ${fmtPct(k.with_identity_fraud_rate)} | Yok: ${fmtPct(k.without_identity_fraud_rate)}`],
+        ['Critical lift', `${Number(k.critical_risk_lift || 0).toFixed(1)}x`, `${fmtInt(k.critical_risk_transactions)} iÅŸlem`, '#f14f55', `Critical fraud oranÄ±: ${fmtPct(k.critical_risk_fraud_rate)}`],
       ];
       document.getElementById('kpi-grid').innerHTML = items.map(([label, value, caption, color, tooltip]) => `
         <article class="card kpi" style="--accent:${color}" data-tooltip="${escapeHtml(tooltip)}">
@@ -816,7 +816,7 @@
         return `
           <button class="insight drillable" data-drill-id="${id}" data-tooltip="${escapeHtml(row.recommended_action)}">
             <strong style="color:${colorScale[index % colorScale.length]}">${escapeHtml(row.segment_name)}</strong>
-            <span>${escapeHtml(row.segment_family)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift | ${fmtPct(row.fraud_share)} fraud payı</span>
+            <span>${escapeHtml(row.segment_family)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift | ${fmtPct(row.fraud_share)} fraud payÄ±</span>
           </button>
         `;
       }).join('');
@@ -824,9 +824,9 @@
 
     function renderNarrative(target, row) {
       const items = [
-        ['Mesaj', row.executive_message || 'Fraud düşük frekanslı ancak yönetilebilir segmentlerde yoğunlaşır.', '#f14f55'],
-        ['Analitik odak', row.analytical_focus || 'Lift, fraud payı ve hacim birlikte okunmalıdır.', '#8b5cf6'],
-        ['Aksiyon', row.recommended_action || 'Yüksek risk segmentleri ayrı kontrol ve takip kuralına bağlanmalıdır.', '#2bb3a3'],
+        ['Mesaj', row.executive_message || 'Fraud dÃ¼ÅŸÃ¼k frekanslÄ± ancak yÃ¶netilebilir segmentlerde yoÄŸunlaÅŸÄ±r.', '#f14f55'],
+        ['Analitik odak', row.analytical_focus || 'Lift, fraud payÄ± ve hacim birlikte okunmalÄ±dÄ±r.', '#8b5cf6'],
+        ['Aksiyon', row.recommended_action || 'YÃ¼ksek risk segmentleri ayrÄ± kontrol ve takip kuralÄ±na baÄŸlanmalÄ±dÄ±r.', '#2bb3a3'],
       ];
       document.getElementById(target).innerHTML = items.map(([title, text, color]) => `
         <article class="card narrative-card" style="--accent:${color}">
@@ -844,7 +844,7 @@
         const width = Math.max(2, (Number(row[scaleKey || valueKey] || 0) / max) * 100);
         const drillRow = drillFactory ? drillFactory(row) : row;
         const drillId = registerDrill(drillRow);
-        const tooltip = `${row[labelKey]} | ${metricLabels[valueKey] || valueKey}: ${formatMetric(valueKey, value)} | İşlem: ${fmtInt(row.transaction_count)}`;
+        const tooltip = `${row[labelKey]} | ${metricLabels[valueKey] || valueKey}: ${formatMetric(valueKey, value)} | Ä°ÅŸlem: ${fmtInt(row.transaction_count)}`;
         return `
           <div class="bar-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(tooltip)}">
             <div class="bar-label" title="${escapeHtml(row[labelKey] ?? '')}">${escapeHtml(row[labelKey] ?? '')}</div>
@@ -880,15 +880,15 @@
         segment_family: family,
         segment_name: name,
         risk_priority: row.risk_priority || priorityFromLift(row.lift || row.observed_fraud_rate || row.fraud_rate),
-        recommended_action: row.recommended_action || 'Bu kırılım hacim, fraud oranı ve lift ile birlikte izlenmelidir.',
+        recommended_action: row.recommended_action || 'Bu kÄ±rÄ±lÄ±m hacim, fraud oranÄ± ve lift ile birlikte izlenmelidir.',
       };
     }
 
     function priorityFromLift(value) {
       const numeric = Number(value || 0);
       if (numeric >= 2) return 'Kritik';
-      if (numeric >= 1.3) return 'Yüksek';
-      if (numeric >= 1) return 'İzle';
+      if (numeric >= 1.3) return 'YÃ¼ksek';
+      if (numeric >= 1) return 'Ä°zle';
       return 'Normal';
     }
 
@@ -907,11 +907,11 @@
       const grid = [0, 1, 2, 3].map(i => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${pad + i * 58}" y2="${pad + i * 58}" />`).join('');
       const bars = rows.map((row, i) => {
         const bh = (Number(row[volumeKey] || 0) / maxV) * 72;
-        return `<rect class="volume" x="${x(i) - 1}" y="${h - pad - bh}" width="2" height="${bh}" data-tooltip="Gün ${row[xKey]} | Hacim ${fmtInt(row[volumeKey])} | Fraud ${fmtPct(row[yKey])}" />`;
+        return `<rect class="volume" x="${x(i) - 1}" y="${h - pad - bh}" width="2" height="${bh}" data-tooltip="GÃ¼n ${row[xKey]} | Hacim ${fmtInt(row[volumeKey])} | Fraud ${fmtPct(row[yKey])}" />`;
       }).join('');
       const sampleDots = rows.filter((_, i) => i % 18 === 0).map((row, i) => {
         const originalIndex = i * 18;
-        return `<circle class="dot" cx="${x(originalIndex)}" cy="${y(row[yKey])}" r="3.5" data-tooltip="Gün ${row[xKey]} | Fraud oranı ${fmtPct(row[yKey])} | Drift: ${escapeHtml(row.drift_flag || '-')}" />`;
+        return `<circle class="dot" cx="${x(originalIndex)}" cy="${y(row[yKey])}" r="3.5" data-tooltip="GÃ¼n ${row[xKey]} | Fraud oranÄ± ${fmtPct(row[yKey])} | Drift: ${escapeHtml(row.drift_flag || '-')}" />`;
       }).join('');
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
       svg.innerHTML = `${grid}${bars}<path class="area" d="${area}"></path><path class="line" d="M${points.join(' L')}"></path>${sampleDots}`;
@@ -929,7 +929,7 @@
         const height = (Number(row.fraud_share || 0) / max) * (h - pad * 1.8);
         cumulative += Number(row.fraud_share || 0);
         row._cum = cumulative;
-        return `<rect x="${x + 3}" y="${h - pad - height}" width="${Math.max(barWidth - 6, 8)}" height="${height}" rx="4" fill="${colorScale[index % colorScale.length]}" data-tooltip="${escapeHtml(row.segment_family)} / ${escapeHtml(row.segment_name)} | Fraud payı ${fmtPct(row.fraud_share)} | Kümülatif ${fmtPct(cumulative)}" />`;
+        return `<rect x="${x + 3}" y="${h - pad - height}" width="${Math.max(barWidth - 6, 8)}" height="${height}" rx="4" fill="${colorScale[index % colorScale.length]}" data-tooltip="${escapeHtml(row.segment_family)} / ${escapeHtml(row.segment_name)} | Fraud payÄ± ${fmtPct(row.fraud_share)} | KÃ¼mÃ¼latif ${fmtPct(cumulative)}" />`;
       }).join('');
       const linePoints = sorted.map((row, index) => {
         const x = pad + index * barWidth + barWidth / 2;
@@ -941,7 +941,7 @@
         <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}" />
         ${bars}
         <path d="M${linePoints.join(' L')}" fill="none" stroke="#eef5ff" stroke-width="2.4" />
-        <text x="${pad}" y="22" fill="#9ba9ba" font-size="12">Bar: fraud payı | Çizgi: kümülatif etki</text>
+        <text x="${pad}" y="22" fill="#9ba9ba" font-size="12">Bar: fraud payÄ± | Ã‡izgi: kÃ¼mÃ¼latif etki</text>
       `;
     }
 
@@ -953,15 +953,15 @@
         return `
           <button class="tree-node drillable" style="--accent:${colorScale[index % colorScale.length]}" data-drill-id="${id}" data-tooltip="${escapeHtml(top.recommended_action)}">
             <strong>${escapeHtml(family)}</strong>
-            <span>En güçlü: ${escapeHtml(top.segment_name)} (${fmtX(top.lift)} lift)</span>
-            <span>En yüksek fraud payı: ${fmtPct(top.fraud_share)}</span>
+            <span>En gÃ¼Ã§lÃ¼: ${escapeHtml(top.segment_name)} (${fmtX(top.lift)} lift)</span>
+            <span>En yÃ¼ksek fraud payÄ±: ${fmtPct(top.fraud_share)}</span>
           </button>
         `;
       }).join('');
       document.getElementById('driver-tree').innerHTML = `
         <div class="tree-root">
-          <strong>Fraud portföyü</strong>
-          <div class="card-note">${Object.keys(grouped).length} segment ailesi analiz ediliyor. Fraud payları eksenler arası toplanmaz; düğümlere tıklayarak drill-through açılır.</div>
+          <strong>Fraud portfÃ¶yÃ¼</strong>
+          <div class="card-note">${Object.keys(grouped).length} segment ailesi analiz ediliyor. Fraud paylarÄ± eksenler arasÄ± toplanmaz; dÃ¼ÄŸÃ¼mlere tÄ±klayarak drill-through aÃ§Ä±lÄ±r.</div>
         </div>
         <div class="tree-branches">${branches || '<div class="card-note">Bu filtrelerde segment yok.</div>'}</div>
       `;
@@ -969,14 +969,14 @@
 
     function renderWatchlist(rows) {
       renderTable('watchlist-table', rows.slice(0, 12), [
-        ['Sıra', row => row.watchlist_rank],
+        ['SÄ±ra', row => row.watchlist_rank],
         ['Alan', row => row.segment_family],
         ['Segment', row => row.segment_name],
-        ['İşlem', row => fmtInt(row.transaction_count)],
-        ['Fraud oranı', row => fmtPct(row.fraud_rate)],
+        ['Ä°ÅŸlem', row => fmtInt(row.transaction_count)],
+        ['Fraud oranÄ±', row => fmtPct(row.fraud_rate)],
         ['Lift', row => fmtX(row.lift)],
-        ['Fraud payı', row => fmtPct(row.fraud_share)],
-        ['Öncelik', row => `<span class="priority ${row.risk_priority}">${row.risk_priority}</span>`],
+        ['Fraud payÄ±', row => fmtPct(row.fraud_share)],
+        ['Ã–ncelik', row => `<span class="priority ${row.risk_priority}">${row.risk_priority}</span>`],
       ], row => row);
     }
 
@@ -1007,7 +1007,7 @@
           <div class="heat-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(label)} | Fraud ${fmtPct(row.fraud_rate)} | Ortalama tutar ${fmtMoney(row.avg_transaction_amount)}">
             <div class="bar-label">${escapeHtml(row.relative_hour_window)}</div>
             <div class="heat-cell" style="background:rgba(241,79,85,${alpha})">${fmtPct(row.fraud_rate)}<span class="heat-meta">${escapeHtml(row.amount_decimal_group)}</span></div>
-            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .58)})">${fmtInt(row.transaction_count)}<span class="heat-meta">işlem</span></div>
+            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .58)})">${fmtInt(row.transaction_count)}<span class="heat-meta">iÅŸlem</span></div>
           </div>
         `;
       }).join('');
@@ -1017,17 +1017,17 @@
       const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.0001);
       document.getElementById('payment-heatmap').innerHTML = rows.map(row => {
         const alpha = .14 + (Number(row.fraud_rate || 0) / max) * .74;
-        const drillId = registerDrill(segmentRow('Ödeme', `${row.card_network} / ${row.card_type}`, row));
+        const drillId = registerDrill(segmentRow('Ã–deme', `${row.card_network} / ${row.card_type}`, row));
         return `
           <div class="heat-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift">
             <div class="bar-label">${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)}</div>
             <div class="heat-cell" style="background:rgba(241,79,85,${alpha})">
               ${fmtPct(row.fraud_rate)}
-              <span class="heat-meta">${fmtInt(row.transaction_count)} işlem</span>
+              <span class="heat-meta">${fmtInt(row.transaction_count)} iÅŸlem</span>
             </div>
             <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .55)})">
               ${fmtX(row.lift)}
-              <span class="heat-meta">${fmtPct(row.fraud_share)} fraud payı</span>
+              <span class="heat-meta">${fmtPct(row.fraud_share)} fraud payÄ±</span>
             </div>
           </div>
         `;
@@ -1047,13 +1047,13 @@
       const falsePositives = Number(selected.review_count || 0) - Number(selected.captured_fraud_count || 0);
       document.getElementById('threshold-summary').innerHTML = `
         <div>
-          <div class="kpi-label">Seçili eşik</div>
+          <div class="kpi-label">SeÃ§ili eÅŸik</div>
           <div class="kpi-value">${Number(selected.score_threshold || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
           <div class="kpi-caption">${escapeHtml(selected.operating_mode || 'Operasyon modu')}</div>
         </div>
         <div class="metric-stack">
-          <div class="metric-line"><span>İnceleme hacmi</span><strong>${fmtInt(selected.review_count)}</strong></div>
-          <div class="metric-line"><span>İş yükü payı</span><strong>${fmtPct(selected.workload_share)}</strong></div>
+          <div class="metric-line"><span>Ä°nceleme hacmi</span><strong>${fmtInt(selected.review_count)}</strong></div>
+          <div class="metric-line"><span>Ä°ÅŸ yÃ¼kÃ¼ payÄ±</span><strong>${fmtPct(selected.workload_share)}</strong></div>
           <div class="metric-line"><span>Fraud yakalama</span><strong>${fmtPct(selected.fraud_capture_rate)}</strong></div>
           <div class="metric-line"><span>Precision</span><strong>${fmtPct(selected.precision_rate)}</strong></div>
           <div class="metric-line"><span>Tahmini false positive</span><strong>${fmtInt(falsePositives)}</strong></div>
@@ -1080,10 +1080,10 @@
         <path d="M${precision.join(' L')}" class="line-green"></path>
         <line x1="${sx}" x2="${sx}" y1="${pad}" y2="${h - pad}" stroke="rgba(255,255,255,.42)" stroke-dasharray="5 6" />
         <circle cx="${sx}" cy="${y(selected.fraud_capture_rate)}" r="5" fill="#f14f55" data-tooltip="Fraud yakalama ${fmtPct(selected.fraud_capture_rate)}" />
-        <circle cx="${sx}" cy="${y(selected.workload_share)}" r="5" fill="#4c8df6" data-tooltip="İş yükü ${fmtPct(selected.workload_share)}" />
+        <circle cx="${sx}" cy="${y(selected.workload_share)}" r="5" fill="#4c8df6" data-tooltip="Ä°ÅŸ yÃ¼kÃ¼ ${fmtPct(selected.workload_share)}" />
         <circle cx="${sx}" cy="${y(selected.precision_rate)}" r="5" fill="#2f9e75" data-tooltip="Precision ${fmtPct(selected.precision_rate)}" />
         <text x="${pad}" y="20" fill="#f14f55" font-size="12" font-weight="800">Yakalama</text>
-        <text x="${pad + 92}" y="20" fill="#4c8df6" font-size="12" font-weight="800">İş yükü</text>
+        <text x="${pad + 92}" y="20" fill="#4c8df6" font-size="12" font-weight="800">Ä°ÅŸ yÃ¼kÃ¼</text>
         <text x="${pad + 174}" y="20" fill="#2f9e75" font-size="12" font-weight="800">Precision</text>
       `;
     }
@@ -1091,12 +1091,12 @@
     function renderReviewStrategy(rows) {
       renderTable('review-table', rows, [
         ['Bant', row => row.risk_band],
-        ['Öncelik', row => row.review_priority],
-        ['Günlük hacim', row => fmtInt(row.estimated_daily_review_volume)],
+        ['Ã–ncelik', row => row.review_priority],
+        ['GÃ¼nlÃ¼k hacim', row => fmtInt(row.estimated_daily_review_volume)],
         ['Yakalama', row => fmtPct(row.expected_fraud_capture)],
         ['Lift', row => `${Number(row.lift || 0).toFixed(1)}x`],
         ['Politika', row => row.queue_policy],
-      ], row => segmentRow('Risk bandı', row.risk_band, row));
+      ], row => segmentRow('Risk bandÄ±', row.risk_band, row));
     }
 
     function renderFeatureTreemap(rows = []) {
@@ -1109,9 +1109,9 @@
       document.getElementById('feature-treemap').innerHTML = grouped.map((row, index) => {
         const span = Math.max(1, Math.ceil((row.importance / max) * 3));
         return `
-          <div class="tile" style="grid-column:span ${span};background:rgba(${index % 2 ? '139,92,246' : '76,141,246'},${.12 + (row.importance / max) * .34})" data-tooltip="${escapeHtml(row.feature_family)} | Toplam önem ${fmtInt(row.importance)} | ${row.count} feature">
+          <div class="tile" style="grid-column:span ${span};background:rgba(${index % 2 ? '139,92,246' : '76,141,246'},${.12 + (row.importance / max) * .34})" data-tooltip="${escapeHtml(row.feature_family)} | Toplam Ã¶nem ${fmtInt(row.importance)} | ${row.count} feature">
             <strong>${escapeHtml(row.feature_family)}</strong>
-            <span>${fmtInt(row.importance)} önem | ${row.count} feature</span>
+            <span>${fmtInt(row.importance)} Ã¶nem | ${row.count} feature</span>
           </div>
         `;
       }).join('');
@@ -1121,34 +1121,34 @@
       renderTable('readiness-table', rows, [
         ['Kontrol', row => readinessCheckName(row.check_name)],
         ['Beklenen', row => row.expected_value],
-        ['Gerçek', row => row.actual_value],
+        ['GerÃ§ek', row => row.actual_value],
         ['Alan', row => row.readiness_area],
         ['Durum', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Kritik'}">${row.status}</span>`],
       ]);
     }
 
     function displayDatasetName(value = '') {
-      return String(value).replace(/powerbi/i, 'reporting');
+      return String(value);
     }
 
     function readinessCheckName(value = '') {
-      return String(value).replace(/Power BI/gi, 'Raporlama').replace(/PBIX/gi, 'BI prototip');
+      return String(value).replace(/web dashboard/gi, 'Raporlama');
     }
 
     function renderQualityContract(rows) {
       renderTable('quality-contract-table', rows, [
         ['Nesne', row => reportingObjectName(row.object_name)],
         ['Beklenen', row => fmtInt(row.expected_rows)],
-        ['Gerçek', row => fmtInt(row.actual_rows)],
+        ['GerÃ§ek', row => fmtInt(row.actual_rows)],
         ['Durum', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Kritik'}">${row.status}</span>`],
       ]);
     }
 
     function reportingObjectName(value = '') {
       return String(value)
-        .replace(/^powerbi\./i, 'reporting.')
-        .replace(/^pbi_/i, 'reporting_')
-        .replace(/\.pbi_/i, '.');
+        .replace(/^reporting\./i, 'reporting.')
+        .replace(/^rpt_/i, 'reporting_')
+        .replace(/\.rpt_/i, '.');
     }
 
     function renderNarrativeList(rows = []) {
@@ -1191,19 +1191,19 @@
       const title = `${row.segment_family || 'Segment'} | ${row.segment_name || row.feature || row.column_family || '-'}`;
       document.getElementById('selected-segment').textContent = title;
       document.getElementById('drawer-title').textContent = title;
-      document.getElementById('drawer-subtitle').textContent = row.recommended_action || row.management_note || 'Seçili kırılım için detaylı metrikler.';
+      document.getElementById('drawer-subtitle').textContent = row.recommended_action || row.management_note || 'SeÃ§ili kÄ±rÄ±lÄ±m iÃ§in detaylÄ± metrikler.';
       document.getElementById('drawer-body').innerHTML = `
         <div class="grid cols-2">
-          <div class="insight"><strong>${fmtInt(row.transaction_count)}</strong><span>İşlem hacmi</span></div>
-          <div class="insight"><strong>${fmtInt(row.fraud_count || row.observed_fraud_count)}</strong><span>Fraud işlem</span></div>
-          <div class="insight"><strong>${formatMetric('fraud_rate', row.fraud_rate || row.observed_fraud_rate)}</strong><span>Fraud oranı</span></div>
+          <div class="insight"><strong>${fmtInt(row.transaction_count)}</strong><span>Ä°ÅŸlem hacmi</span></div>
+          <div class="insight"><strong>${fmtInt(row.fraud_count || row.observed_fraud_count)}</strong><span>Fraud iÅŸlem</span></div>
+          <div class="insight"><strong>${formatMetric('fraud_rate', row.fraud_rate || row.observed_fraud_rate)}</strong><span>Fraud oranÄ±</span></div>
           <div class="insight"><strong>${fmtX(row.lift || row.fraud_lift)}</strong><span>Lift</span></div>
           <div class="insight"><strong>${formatMetric('fraud_share', row.fraud_share || row.expected_fraud_capture)}</strong><span>Fraud yakalama / pay</span></div>
-          <div class="insight"><strong>${formatMetric('transaction_share', row.transaction_share)}</strong><span>İşlem payı</span></div>
+          <div class="insight"><strong>${formatMetric('transaction_share', row.transaction_share)}</strong><span>Ä°ÅŸlem payÄ±</span></div>
         </div>
         <article class="card pad">
-          <h3 class="card-title">Yönetim yorumu</h3>
-          <p class="card-note">${escapeHtml(row.recommended_action || row.management_note || 'Bu segment, hacim ve risk ayrışması birlikte değerlendirilerek izlenmelidir.')}</p>
+          <h3 class="card-title">YÃ¶netim yorumu</h3>
+          <p class="card-note">${escapeHtml(row.recommended_action || row.management_note || 'Bu segment, hacim ve risk ayrÄ±ÅŸmasÄ± birlikte deÄŸerlendirilerek izlenmelidir.')}</p>
         </article>
       `;
       document.getElementById('drill-drawer').classList.add('open');
@@ -1250,7 +1250,7 @@
 
     function groupBy(rows, keyFn) {
       return (rows || []).reduce((acc, row) => {
-        const key = keyFn(row) || 'Diğer';
+        const key = keyFn(row) || 'DiÄŸer';
         acc[key] = acc[key] || [];
         acc[key].push(row);
         return acc;

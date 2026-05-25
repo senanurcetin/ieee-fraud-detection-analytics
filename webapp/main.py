@@ -26,7 +26,7 @@ load_dotenv()
 APP_DIR = Path(__file__).resolve().parent
 STATIC_DIR = APP_DIR / "static"
 
-DEFAULT_DATASET = "fraud_project_powerbi"
+DEFAULT_DATASET = "fraud_project_reporting"
 DEFAULT_CACHE_SECONDS = 600
 
 TABLE_QUERIES: dict[str, str] = {
@@ -71,24 +71,24 @@ TABLE_QUERIES: dict[str, str] = {
 }
 
 BIGQUERY_TABLES: dict[str, str] = {
-    "executive_kpis": "pbi_executive_kpis",
-    "product_risk": "pbi_product_risk",
-    "identity_risk": "pbi_identity_risk",
-    "identity_product_coverage": "pbi_identity_product_coverage",
-    "amount_bands": "pbi_amount_bands",
-    "daily_drift": "pbi_daily_drift",
-    "time_amount_signals": "pbi_time_amount_signals",
-    "payment_heatmap": "pbi_payment_heatmap",
-    "email_domain_risk": "pbi_email_domain_risk",
-    "model_risk_bands": "pbi_model_risk_bands",
-    "feature_importance": "pbi_feature_importance",
-    "data_quality": "pbi_data_quality_scorecard",
-    "segment_watchlist": "pbi_segment_watchlist",
-    "review_strategy": "pbi_review_strategy",
-    "threshold_simulation": "pbi_threshold_simulation",
-    "report_narrative": "pbi_report_narrative",
-    "quality_contract": "pbi_quality_contract",
-    "report_readiness": "pbi_report_readiness",
+    "executive_kpis": "rpt_executive_kpis",
+    "product_risk": "rpt_product_risk",
+    "identity_risk": "rpt_identity_risk",
+    "identity_product_coverage": "rpt_identity_product_coverage",
+    "amount_bands": "rpt_amount_bands",
+    "daily_drift": "rpt_daily_drift",
+    "time_amount_signals": "rpt_time_amount_signals",
+    "payment_heatmap": "rpt_payment_heatmap",
+    "email_domain_risk": "rpt_email_domain_risk",
+    "model_risk_bands": "rpt_model_risk_bands",
+    "feature_importance": "rpt_feature_importance",
+    "data_quality": "rpt_data_quality_scorecard",
+    "segment_watchlist": "rpt_segment_watchlist",
+    "review_strategy": "rpt_review_strategy",
+    "threshold_simulation": "rpt_threshold_simulation",
+    "report_narrative": "rpt_report_narrative",
+    "quality_contract": "rpt_quality_contract",
+    "report_readiness": "rpt_report_readiness",
 }
 
 app = FastAPI(

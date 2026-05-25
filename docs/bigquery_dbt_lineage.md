@@ -7,10 +7,10 @@ fraud_project_raw
   -> fraud_project_staging
   -> fraud_project_intermediate
   -> fraud_project_mart
-  -> fraud_project_powerbi
+  -> fraud_project_reporting
 ```
 
-## Raw Katmanı
+## Raw KatmanÄ±
 
 Dataset: `fraud_project_raw`
 
@@ -24,9 +24,9 @@ Tablolar:
 - `feature_missingness`
 - `ml_predictions`
 
-Amaç: Ham Kaggle tablolarını ve model destek çıktılarını veri ambarında saklamak.
+AmaÃ§: Ham Kaggle tablolarÄ±nÄ± ve model destek Ã§Ä±ktÄ±larÄ±nÄ± veri ambarÄ±nda saklamak.
 
-## Staging Katmanı
+## Staging KatmanÄ±
 
 Dataset: `fraud_project_staging`
 
@@ -35,9 +35,9 @@ Modeller:
 - `stg_transactions`
 - `stg_identity`
 
-Amaç: Ham alanları okunabilir isimlere çevirmek, veri tiplerini standartlaştırmak ve temel temizlik adımlarını uygulamak.
+AmaÃ§: Ham alanlarÄ± okunabilir isimlere Ã§evirmek, veri tiplerini standartlaÅŸtÄ±rmak ve temel temizlik adÄ±mlarÄ±nÄ± uygulamak.
 
-## Intermediate Katmanı
+## Intermediate KatmanÄ±
 
 Dataset: `fraud_project_intermediate`
 
@@ -46,9 +46,9 @@ Modeller:
 - `int_fraud_joined`
 - `int_features`
 
-Amaç: Transaction ve identity kayıtlarını birleştirmek, amount bandı, product, card, email, device ve zaman özelliklerini üretmek.
+AmaÃ§: Transaction ve identity kayÄ±tlarÄ±nÄ± birleÅŸtirmek, amount bandÄ±, product, card, email, device ve zaman Ã¶zelliklerini Ã¼retmek.
 
-## Mart Katmanı
+## Mart KatmanÄ±
 
 Dataset: `fraud_project_mart`
 
@@ -63,11 +63,11 @@ Modeller:
 - `mart_model_predictions`
 - `mart_risk_band_stats`
 
-Amaç: Fraud analizi, segment kıyasları, risk bandı izleme ve veri kalitesi için hazır analitik tablolar üretmek.
+AmaÃ§: Fraud analizi, segment kÄ±yaslarÄ±, risk bandÄ± izleme ve veri kalitesi iÃ§in hazÄ±r analitik tablolar Ã¼retmek.
 
-## Raporlama Katmanı
+## Raporlama KatmanÄ±
 
-Dataset: `fraud_project_powerbi`
+Dataset: `fraud_project_reporting`
 
 Tablolar:
 
@@ -80,25 +80,25 @@ Tablolar:
 - `mart_email_domain_stats`
 - `mart_risk_band_stats`
 - `mart_feature_missingness`
-- `pbi_segment_watchlist`
-- `pbi_review_strategy`
-- `pbi_threshold_simulation`
-- `pbi_feature_importance`
-- `pbi_identity_product_coverage`
-- `pbi_time_amount_signals`
-- `pbi_report_readiness`
-- `pbi_quality_contract`
+- `rpt_segment_watchlist`
+- `rpt_review_strategy`
+- `rpt_threshold_simulation`
+- `rpt_feature_importance`
+- `rpt_identity_product_coverage`
+- `rpt_time_amount_signals`
+- `rpt_report_readiness`
+- `rpt_quality_contract`
 
-Amaç: Canlı web dashboard içinde hızlı, güvenli ve sunuma hazır analitik veri modeli sağlamak.
+AmaÃ§: CanlÄ± web dashboard iÃ§inde hÄ±zlÄ±, gÃ¼venli ve sunuma hazÄ±r analitik veri modeli saÄŸlamak.
 
 ## Testler
 
-dbt test kapsamı:
+dbt test kapsamÄ±:
 
-- Transaction ID boş değer kontrolü
-- Transaction ID benzersizlik kontrolü
-- Fraud label kabul edilen değer kontrolü
-- Günlük istatistiklerde gün benzersizliği
-- Transaction amount boş değer kontrolü
+- Transaction ID boÅŸ deÄŸer kontrolÃ¼
+- Transaction ID benzersizlik kontrolÃ¼
+- Fraud label kabul edilen deÄŸer kontrolÃ¼
+- GÃ¼nlÃ¼k istatistiklerde gÃ¼n benzersizliÄŸi
+- Transaction amount boÅŸ deÄŸer kontrolÃ¼
 
-Bu testler, raporlama katmanına geçmeden önce temel veri güvenilirliğini doğrular.
+Bu testler, raporlama katmanÄ±na geÃ§meden Ã¶nce temel veri gÃ¼venilirliÄŸini doÄŸrular.

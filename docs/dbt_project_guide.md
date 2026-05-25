@@ -8,7 +8,7 @@ The dbt project follows a layered analytics model:
 2. `models/staging`: type normalization and field naming.
 3. `models/intermediate`: joins and feature engineering.
 4. `models/marts`: reusable analytical marts.
-5. `models/powerbi`: presentation-ready reporting tables for the live web dashboard.
+5. `models/reporting`: presentation-ready reporting tables for the live web dashboard.
 
 ## Source Tables
 
@@ -81,4 +81,4 @@ The `analyses`, `seeds`, and `snapshots` directories are intentionally kept with
 
 ## Exposures
 
-The executive web dashboard is declared as the `fraud_project_v2` reporting exposure in `models/powerbi/_powerbi.yml`. The folder name is retained for backward compatibility with the original reporting dataset name.
+The executive web dashboard is declared as the `fraud_project_v2` reporting exposure in `models/reporting/_reporting.yml`. The folder name is retained for backward compatibility with the original reporting dataset name.

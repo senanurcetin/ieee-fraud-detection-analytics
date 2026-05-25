@@ -15,18 +15,18 @@ from webapp import main
 def test_dashboard_table_contract_is_allowlisted() -> None:
     assert set(main.TABLE_QUERIES) == set(main.BIGQUERY_TABLES)
     assert "fraud_transactions" not in set(main.BIGQUERY_TABLES.values())
-    assert "pbi_executive_kpis" in set(main.BIGQUERY_TABLES.values())
-    assert "pbi_segment_watchlist" in set(main.BIGQUERY_TABLES.values())
-    assert "pbi_identity_product_coverage" in set(main.BIGQUERY_TABLES.values())
-    assert "pbi_time_amount_signals" in set(main.BIGQUERY_TABLES.values())
-    assert "pbi_report_narrative" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_executive_kpis" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_segment_watchlist" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_identity_product_coverage" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_time_amount_signals" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_report_narrative" in set(main.BIGQUERY_TABLES.values())
 
 
 def test_qualified_table_rejects_unexpected_tables(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("GCP_PROJECT_ID", "portfolio-project")
-    monkeypatch.setenv("BQ_DATASET", "fraud_project_powerbi")
+    monkeypatch.setenv("BQ_DATASET", "fraud_project_reporting")
 
-    assert main.qualified_table("pbi_executive_kpis") == "`portfolio-project.fraud_project_powerbi.pbi_executive_kpis`"
+    assert main.qualified_table("rpt_executive_kpis") == "`portfolio-project.fraud_project_reporting.rpt_executive_kpis`"
 
     with pytest.raises(ValueError):
         main.qualified_table("raw_train_transaction")

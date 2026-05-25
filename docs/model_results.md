@@ -47,7 +47,7 @@ This threshold should be recalibrated if analyst capacity, fraud cost, customer 
 
 ## Feature Importance
 
-The reporting layer exposes feature importance through `pbi_feature_importance`. The strongest signal families include card attributes, transaction timing, transaction amount, anonymous engineered Vesta features, email domain, distance, and identity fields.
+The reporting layer exposes feature importance through `rpt_feature_importance`. The strongest signal families include card attributes, transaction timing, transaction amount, anonymous engineered Vesta features, email domain, distance, and identity fields.
 
 The model uses masked variables as statistical signals only. It does not assign unsupported business meanings to anonymized fields such as V1-V339, C1-C14, D1-D15, M1-M9, or id columns.
 
@@ -69,8 +69,8 @@ Top 10 feature importance snapshot:
 ## Explainability Artifacts
 
 - Precision-recall curve: `docs/assets/precision_recall_curve.svg`
-- Feature importance export: `powerbi/assets/05_feature_importance.png`
-- SHAP summary export: `powerbi/assets/26_shap_summary.png`
+- Feature importance export: `docs/assets/model_feature_importance.png`
+- SHAP summary export: `docs/assets/model_shap_summary.png`
 
 ## Business Interpretation
 

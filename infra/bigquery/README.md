@@ -8,7 +8,7 @@ This Terraform module defines the BigQuery datasets used by `fraud_project`.
 - `fraud_project_staging`
 - `fraud_project_intermediate`
 - `fraud_project_mart`
-- `fraud_project_powerbi`
+- `fraud_project_reporting`
 
 ## Usage
 

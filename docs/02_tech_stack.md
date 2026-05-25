@@ -1,6 +1,6 @@
 # 02 - Tech-Stack
 
-## Mimari Akış
+## Mimari AkÄ±ÅŸ
 
 ```text
 Kaggle CSV
@@ -8,69 +8,67 @@ Kaggle CSV
   -> dbt staging
   -> dbt intermediate
   -> dbt mart
-  -> fraud_project_powerbi
+  -> fraud_project_reporting
   -> FastAPI web dashboard / Vercel sunumu
 ```
 
-## Veri Alımı
+## Veri AlÄ±mÄ±
 
-- Kaynak: IEEE-CIS Fraud Detection Kaggle CSV dosyaları
+- Kaynak: IEEE-CIS Fraud Detection Kaggle CSV dosyalarÄ±
 - Ham tablolar: `train_transaction`, `train_identity`, `test_transaction`, `test_identity`, `sample_submission`
-- Yükleme hedefi: `fraud_project_raw`
+- YÃ¼kleme hedefi: `fraud_project_raw`
 
-## Veri Ambarı
+## Veri AmbarÄ±
 
-BigQuery tarafında aşağıdaki dataset yapısı kullanılır:
+BigQuery tarafÄ±nda aÅŸaÄŸÄ±daki dataset yapÄ±sÄ± kullanÄ±lÄ±r:
 
 - `fraud_project_raw`
 - `fraud_project_staging`
 - `fraud_project_intermediate`
 - `fraud_project_mart`
-- `fraud_project_powerbi`
+- `fraud_project_reporting`
 
-Bu ayrım, ham veri, dönüşüm katmanı, analitik mart ve raporlama katmanını birbirinden ayırır.
+Bu ayrÄ±m, ham veri, dÃ¶nÃ¼ÅŸÃ¼m katmanÄ±, analitik mart ve raporlama katmanÄ±nÄ± birbirinden ayÄ±rÄ±r.
 
 ## dbt
 
-dbt projesi repo kökünde çalışır.
+dbt projesi repo kÃ¶kÃ¼nde Ã§alÄ±ÅŸÄ±r.
 
 ```powershell
 dbt run --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 dbt test --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 ```
 
-Model katmanları:
+Model katmanlarÄ±:
 
-- `models/staging`: Alan adları, veri tipi dönüşümü, temel temizlik
-- `models/intermediate`: Transaction ve identity join'i, feature üretimi
-- `models/marts`: Fraud metrikleri, segment tabloları, model skorları ve risk bantları
+- `models/staging`: Alan adlarÄ±, veri tipi dÃ¶nÃ¼ÅŸÃ¼mÃ¼, temel temizlik
+- `models/intermediate`: Transaction ve identity join'i, feature Ã¼retimi
+- `models/marts`: Fraud metrikleri, segment tablolarÄ±, model skorlarÄ± ve risk bantlarÄ±
 
-## Makine Öğrenmesi
+## Makine Ã–ÄŸrenmesi
 
 - Model: LightGBMClassifier
-- Doğrulama: TransactionDT sıralamasına göre son %20 holdout
-- Feature sayısı: 206
-- Kategorik feature sayısı: 26
+- DoÄŸrulama: TransactionDT sÄ±ralamasÄ±na gÃ¶re son %20 holdout
+- Feature sayÄ±sÄ±: 206
+- Kategorik feature sayÄ±sÄ±: 26
 - Validasyon AUC: 0,917
 - Average precision: 0,531
 
-Model çıktıları `mart_model_predictions` ve `mart_risk_band_stats` tablolarıyla raporlama katmanına taşınır.
+Model Ã§Ä±ktÄ±larÄ± `mart_model_predictions` ve `mart_risk_band_stats` tablolarÄ±yla raporlama katmanÄ±na taÅŸÄ±nÄ±r.
 
-## Canlı Web Dashboard
+## CanlÄ± Web Dashboard
 
-Ana sunum katmanı:
+Ana sunum katmanÄ±:
 
 ```text
 webapp/
 ```
 
-Dashboard, `fraud_project_powerbi` datasetindeki fact, mart ve `pbi_*` tablolarını FastAPI üzerinden okur. Arayüz; yönetici KPI'ları, global slicer'lar, drill-through paneli, özel tooltip'ler, Pareto analizi, decomposition tree, identity coverage matrisi, threshold simülasyonu ve veri kalite kartlarıyla üst yönetim sunumunda doğrudan kullanılacak şekilde hazırlanmıştır.
+Dashboard, `fraud_project_reporting` datasetindeki fact, mart ve `rpt_*` tablolarÄ±nÄ± FastAPI Ã¼zerinden okur. ArayÃ¼z; yÃ¶netici KPI'larÄ±, global slicer'lar, drill-through paneli, Ã¶zel tooltip'ler, Pareto analizi, decomposition tree, identity coverage matrisi, threshold simÃ¼lasyonu ve veri kalite kartlarÄ±yla Ã¼st yÃ¶netim sunumunda doÄŸrudan kullanÄ±lacak ÅŸekilde hazÄ±rlanmÄ±ÅŸtÄ±r.
 
-Arşivlenen Power BI prototipi `powerbi/fraud_project_v2.pbix` altında korunur; ana raporlama teslimi değildir.
+## GÃ¼venlik ve Versiyonlama
 
-## Güvenlik ve Versiyonlama
-
-- Servis hesabı JSON dosyası repoya eklenmez.
-- Ham Kaggle CSV dosyaları repoya eklenmez.
-- DuckDB ve geçici output dosyaları repoya eklenmez.
-- Repo yalnızca kaynak kod, dbt modelleri, canlı web dashboard, arşivlenmiş BI prototipi ve dokümantasyonu içerir.
+- Servis hesabÄ± JSON dosyasÄ± repoya eklenmez.
+- Ham Kaggle CSV dosyalarÄ± repoya eklenmez.
+- DuckDB ve geÃ§ici output dosyalarÄ± repoya eklenmez.
+- Repo yalnÄ±zca kaynak kod, dbt modelleri, canlÄ± web dashboard ve dokÃ¼mantasyonu iÃ§erir.

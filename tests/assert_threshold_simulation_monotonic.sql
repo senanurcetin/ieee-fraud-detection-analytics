@@ -6,7 +6,7 @@ with ordered as (
         precision_rate,
         lag(workload_share) over (order by score_threshold) as previous_workload_share,
         lag(fraud_capture_rate) over (order by score_threshold) as previous_fraud_capture_rate
-    from {{ ref('pbi_threshold_simulation') }}
+    from {{ ref('rpt_threshold_simulation') }}
 ),
 
 violations as (

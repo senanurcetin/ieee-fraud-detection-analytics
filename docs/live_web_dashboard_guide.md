@@ -1,6 +1,6 @@
 # Live Web Dashboard Guide
 
-The live dashboard is the primary presentation layer for the fraud analytics project. It replaces the archived Power BI prototype and presents the dbt-built BigQuery marts through a FastAPI API and a browser-based executive analytics interface.
+The live dashboard is the primary presentation layer for the fraud analytics project. It presents the dbt-built BigQuery marts through a FastAPI API and a browser-based executive analytics interface.
 
 ## Production URL
 
@@ -10,7 +10,7 @@ https://fraud-project-web.vercel.app
 
 ## Data Contract
 
-The dashboard reads only from the `fraud_project_powerbi` dataset. It does not query raw Kaggle tables directly.
+The dashboard reads only from the `fraud_project_reporting` dataset. It does not query raw Kaggle tables directly.
 
 Core API endpoint:
 
@@ -20,11 +20,11 @@ Core API endpoint:
 
 Main table groups:
 
-- Executive KPIs: `mart_fraud_summary`, `pbi_executive_kpis`
-- Segment analysis: `pbi_segment_watchlist`, `pbi_product_risk`, `pbi_identity_risk`, `pbi_payment_heatmap`
-- Amount and time analysis: `pbi_amount_bands`, `pbi_daily_drift`, `pbi_time_amount_signals`
-- Model operations: `pbi_threshold_simulation`, `pbi_review_strategy`, `pbi_feature_importance`, `pbi_model_risk_bands`
-- Data quality: `pbi_quality_contract`, `pbi_report_readiness`, `pbi_feature_family_missingness`
+- Executive KPIs: `mart_fraud_summary`, `rpt_executive_kpis`
+- Segment analysis: `rpt_segment_watchlist`, `rpt_product_risk`, `rpt_identity_risk`, `rpt_payment_heatmap`
+- Amount and time analysis: `rpt_amount_bands`, `rpt_daily_drift`, `rpt_time_amount_signals`
+- Model operations: `rpt_threshold_simulation`, `rpt_review_strategy`, `rpt_feature_importance`, `rpt_model_risk_bands`
+- Data quality: `rpt_quality_contract`, `rpt_report_readiness`, `rpt_data_quality_scorecard`
 
 ## Dashboard Sections
 

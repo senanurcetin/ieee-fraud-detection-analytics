@@ -23,13 +23,13 @@ select
     case when (select count(*) from {{ source('raw', 'test_identity') }}) = 141907 then 'PASS' else 'FAIL' end
 union all
 select
-    'powerbi.fact_train_transactions',
+    'reporting.fact_train_transactions',
     590540,
     (select count(*) from {{ ref('fact_train_transactions') }}),
     case when (select count(*) from {{ ref('fact_train_transactions') }}) = 590540 then 'PASS' else 'FAIL' end
 union all
 select
-    'powerbi.pbi_executive_kpis',
+    'reporting.rpt_executive_kpis',
     1,
-    (select count(*) from {{ ref('pbi_executive_kpis') }}),
-    case when (select count(*) from {{ ref('pbi_executive_kpis') }}) = 1 then 'PASS' else 'FAIL' end
+    (select count(*) from {{ ref('rpt_executive_kpis') }}),
+    case when (select count(*) from {{ ref('rpt_executive_kpis') }}) = 1 then 'PASS' else 'FAIL' end
