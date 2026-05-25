@@ -19,7 +19,7 @@ Set credentials through environment variables. Do not pass local machine paths o
 ```powershell
 $env:GCP_PROJECT_ID = "your-gcp-project"
 $env:BIGQUERY_LOCATION = "US"
-$env:GOOGLE_APPLICATION_CREDENTIALS = "/secure/path/service-account.json"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
 ```
 
 ## Deployment Command

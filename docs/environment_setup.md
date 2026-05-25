@@ -51,7 +51,7 @@ BigQuery target:
 ```bash
 export GCP_PROJECT_ID="your-gcp-project"
 export BIGQUERY_LOCATION="US"
-export GOOGLE_APPLICATION_CREDENTIALS="/secure/path/service-account.json"
+export GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 ```
 

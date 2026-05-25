@@ -16,7 +16,7 @@ Use environment variables instead:
 ```bash
 export GCP_PROJECT_ID="your-gcp-project"
 export BIGQUERY_LOCATION="US"
-export GOOGLE_APPLICATION_CREDENTIALS="/secure/path/service-account.json"
+export GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 export KAGGLE_USERNAME="your-kaggle-username"
 export KAGGLE_KEY="your-kaggle-api-key"
 ```

@@ -26,7 +26,7 @@ The API reads these reporting tables:
 $env:GCP_PROJECT_ID="your-gcp-project"
 $env:BQ_DATASET="fraud_project_powerbi"
 $env:BIGQUERY_LOCATION="US"
-$env:GOOGLE_APPLICATION_CREDENTIALS="C:\secure\path\service-account.json"
+$env:GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 
 uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
 ```

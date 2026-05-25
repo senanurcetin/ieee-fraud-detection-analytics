@@ -127,7 +127,7 @@ The dbt profile templates under `config/dbt/` are sanitized and use environment 
 ```bash
 export GCP_PROJECT_ID="your-gcp-project"
 export BIGQUERY_LOCATION="US"
-export GOOGLE_APPLICATION_CREDENTIALS="/secure/path/service-account.json"
+export GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 ```
 
 ## Run Locally
@@ -150,7 +150,7 @@ PowerShell deployment:
 ```powershell
 $env:GCP_PROJECT_ID = "your-gcp-project"
 $env:BIGQUERY_LOCATION = "US"
-$env:GOOGLE_APPLICATION_CREDENTIALS = "/secure/path/service-account.json"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
 
 .\scripts\deploy_bigquery.ps1 `
   -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
@@ -265,13 +265,19 @@ Report exports and supporting visuals are stored in `powerbi/assets/`. DAX measu
 
 The project also includes a browser-based presentation layer that reads the same dbt-built BigQuery reporting tables as the Power BI model. This is useful when Power BI Desktop connectivity is unavailable or when the presentation needs to be delivered from a lightweight web interface.
 
+Production dashboard:
+
+```text
+https://fraud-project-web.vercel.app
+```
+
 Run locally:
 
 ```powershell
 $env:GCP_PROJECT_ID = "your-gcp-project"
 $env:BQ_DATASET = "fraud_project_powerbi"
 $env:BIGQUERY_LOCATION = "US"
-$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\secure\path\service-account.json"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
 
 uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 ```
@@ -279,6 +285,8 @@ uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 Then open `http://127.0.0.1:8000`.
 
 The API reads pre-aggregated `pbi_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard.
+
+Vercel deploys the `webapp/` folder as the project root. The production runtime uses Vercel environment variables, including `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`, instead of local credential files.
 
 ## Dashboard Preview
 
