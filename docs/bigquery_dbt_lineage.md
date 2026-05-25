@@ -65,7 +65,7 @@ Modeller:
 
 Amaç: Fraud analizi, segment kıyasları, risk bandı izleme ve veri kalitesi için hazır analitik tablolar üretmek.
 
-## Power BI Katmanı
+## Raporlama Katmanı
 
 Dataset: `fraud_project_powerbi`
 
@@ -80,8 +80,16 @@ Tablolar:
 - `mart_email_domain_stats`
 - `mart_risk_band_stats`
 - `mart_feature_missingness`
+- `pbi_segment_watchlist`
+- `pbi_review_strategy`
+- `pbi_threshold_simulation`
+- `pbi_feature_importance`
+- `pbi_identity_product_coverage`
+- `pbi_time_amount_signals`
+- `pbi_report_readiness`
+- `pbi_quality_contract`
 
-Amaç: Power BI Desktop içinde hızlı ve sade raporlama modeli sağlamak.
+Amaç: Canlı web dashboard içinde hızlı, güvenli ve sunuma hazır analitik veri modeli sağlamak.
 
 ## Testler
 

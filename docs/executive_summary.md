@@ -2,7 +2,7 @@
 
 ## Core Finding
 
-Fraud is rare in the IEEE-CIS portfolio, but it is highly concentrated. Product, identity coverage, card attributes, email domain, amount band, and model risk band produce materially different fraud rates. The project converts these patterns into a governed analytical pipeline and an executive Power BI report.
+Fraud is rare in the IEEE-CIS portfolio, but it is highly concentrated. Product, identity coverage, card attributes, email domain, amount band, and model risk band produce materially different fraud rates. The project converts these patterns into a governed analytical pipeline and an executive live web analytics dashboard.
 
 ## Portfolio Metrics
 

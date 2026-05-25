@@ -6,7 +6,7 @@ Recommended versions:
 
 - Python 3.11 or 3.12
 - dbt Core compatible with `requirements.txt`
-- Power BI Desktop current release
+- FastAPI/Uvicorn compatible with `webapp/requirements.txt`
 - Terraform 1.6+ for optional BigQuery dataset provisioning
 
 ## Python Environment
@@ -60,5 +60,4 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 ```bash
 ruff check .
 pytest
-python scripts/validate_powerbi_report.py
 ```

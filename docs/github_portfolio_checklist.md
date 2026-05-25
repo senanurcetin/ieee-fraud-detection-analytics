@@ -34,7 +34,7 @@
 - Security and secrets guide.
 - dbt project guide.
 - Modeling decisions.
-- Power BI report guide.
+- Live web dashboard guide.
 
 ## Data Governance
 
@@ -44,8 +44,9 @@
 - Root `profiles/` directory is not tracked.
 - Sanitized dbt profile templates are committed under `config/dbt/`.
 
-## Report Assets
+## Reporting Assets
 
-- Power BI file: `powerbi/fraud_project_v2.pbix`
-- Supporting report assets: `powerbi/assets/`
-- DAX measure layer: `powerbi/dax/fraud_project_measures.dax`
+- Live dashboard app: `webapp/`
+- Production URL: `https://fraud-project-web.vercel.app`
+- Supporting dashboard assets: `docs/assets/`
+- Archived BI prototype: `powerbi/fraud_project_v2.pbix`

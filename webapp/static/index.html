@@ -6,90 +6,114 @@
   <title>Fraud Risk Intelligence</title>
   <style>
     :root {
-      --bg: #0c1117;
-      --panel: #131a22;
-      --panel-2: #182230;
-      --panel-3: #0f1620;
+      --bg: #090d13;
+      --bg-2: #0d131b;
+      --panel: #121923;
+      --panel-2: #172231;
+      --panel-3: #0e151e;
       --line: rgba(255,255,255,.09);
-      --line-strong: rgba(255,255,255,.16);
-      --text: #edf2f7;
-      --muted: #9aa7b6;
-      --dim: #617083;
-      --red: #e5484d;
+      --line-strong: rgba(255,255,255,.17);
+      --text: #eef5ff;
+      --muted: #9ba9ba;
+      --dim: #68788c;
+      --red: #f14f55;
       --amber: #d99a20;
       --green: #2f9e75;
       --blue: #4c8df6;
       --teal: #2bb3a3;
       --violet: #8b5cf6;
-      --shadow: 0 20px 70px rgba(0,0,0,.26);
+      --shadow: 0 22px 72px rgba(0,0,0,.32);
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
+      min-height: 100vh;
+      color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(76,141,246,.13), transparent 30rem),
-        radial-gradient(circle at bottom right, rgba(229,72,77,.10), transparent 34rem),
-        var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+        radial-gradient(circle at 10% -10%, rgba(76,141,246,.16), transparent 28rem),
+        radial-gradient(circle at 90% 4%, rgba(241,79,85,.13), transparent 28rem),
+        linear-gradient(180deg, #0b1017 0%, #090d13 100%);
       overflow-x: hidden;
     }
 
     button, input, select { font: inherit; }
+    button { cursor: pointer; }
 
-    .shell { max-width: 1440px; margin: 0 auto; padding: 22px 28px 34px; }
-
+    .shell { max-width: 1500px; margin: 0 auto; padding: 22px 28px 36px; }
     .topbar {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       gap: 18px;
-      align-items: center;
-      margin-bottom: 22px;
+      align-items: start;
+      margin-bottom: 18px;
     }
-
-    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
-    .brand > div:last-child { min-width: 0; }
+    .brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
     .mark {
-      width: 42px; height: 42px;
+      width: 44px; height: 44px;
       display: grid; place-items: center;
       border-radius: 8px;
-      background: linear-gradient(145deg, #1c2938, #101720);
+      background: linear-gradient(145deg, #203149, #101721);
       border: 1px solid var(--line-strong);
-      box-shadow: var(--shadow);
       color: var(--red);
       font-weight: 900;
-      letter-spacing: -.04em;
+      letter-spacing: -.05em;
+      box-shadow: var(--shadow);
     }
-    h1 { margin: 0; font-size: clamp(26px, 3.5vw, 46px); line-height: 1.02; letter-spacing: -.045em; }
-    .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 820px; line-height: 1.55; }
+    h1 { margin: 0; font-size: clamp(30px, 3.7vw, 52px); line-height: .96; letter-spacing: -.055em; }
+    .subtitle { margin: 8px 0 0; max-width: 900px; color: var(--muted); font-size: 14px; line-height: 1.55; }
 
-    .statusbar {
-      display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap;
-      color: var(--muted); font-size: 12px;
-      min-width: 0;
-      max-width: 100%;
-    }
+    .statusbar { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; align-items: center; }
     .pill {
+      max-width: 100%;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.035);
       border-radius: 999px;
+      color: var(--muted);
       padding: 7px 10px;
+      font-size: 12px;
       white-space: nowrap;
-      min-width: 0;
-      max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .pill.live { color: #ffb4b4; border-color: rgba(229,72,77,.35); background: rgba(229,72,77,.10); }
-    .pill.pass { color: #b7f7dc; border-color: rgba(47,158,117,.35); background: rgba(47,158,117,.10); }
+    .pill.live { color: #ffc1c4; border-color: rgba(241,79,85,.35); background: rgba(241,79,85,.10); }
+    .pill.pass { color: #bcf8de; border-color: rgba(47,158,117,.35); background: rgba(47,158,117,.10); }
+
+    .control-panel {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr)) auto;
+      gap: 10px;
+      align-items: end;
+      padding: 14px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(18,25,35,.74);
+      box-shadow: var(--shadow);
+    }
+    .control { display: grid; gap: 6px; min-width: 0; }
+    .control label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 850; }
+    .select, .btn {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: 8px;
+      background: #101720;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 720;
+    }
+    .btn { width: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:hover, .select:hover { border-color: rgba(255,255,255,.30); }
+    .button-row { display: flex; gap: 8px; justify-content: flex-end; }
 
     .tabs {
       display: flex;
       gap: 6px;
-      border-bottom: 1px solid var(--line);
       margin-bottom: 20px;
+      border-bottom: 1px solid var(--line);
       overflow-x: auto;
     }
     .tab {
@@ -97,136 +121,251 @@
       border-bottom: 2px solid transparent;
       background: transparent;
       color: var(--muted);
-      padding: 12px 14px 13px;
-      cursor: pointer;
-      font-weight: 650;
+      padding: 13px 14px 14px;
+      font-weight: 760;
       white-space: nowrap;
     }
     .tab.active { color: var(--text); border-color: var(--red); }
 
     .view { display: none; }
     .view.active { display: block; }
-
     .grid { display: grid; gap: 16px; }
     .kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
     .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .wide { grid-column: 1 / -1; }
+    .span-2 { grid-column: span 2; }
 
     .card {
-      background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.016)), var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      box-shadow: var(--shadow);
       min-width: 0;
       overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.038), rgba(255,255,255,.015)),
+        var(--panel);
+      box-shadow: var(--shadow);
     }
     .card.pad { padding: 18px; }
     .card-head {
-      padding: 15px 18px 12px;
-      border-bottom: 1px solid var(--line);
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--line);
     }
-    .card-title { font-weight: 800; letter-spacing: -.02em; font-size: 15px; margin: 0; }
+    .card-title { margin: 0; font-size: 15px; font-weight: 870; letter-spacing: -.025em; }
     .card-note { color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.35; }
     .card-body { padding: 18px; }
 
-    .kpi { padding: 16px; min-height: 132px; position: relative; }
+    .kpi {
+      min-height: 132px;
+      padding: 16px;
+      position: relative;
+    }
     .kpi::after {
       content: "";
       position: absolute;
       left: 16px; right: 16px; bottom: 0;
       height: 3px;
-      background: var(--accent, var(--blue));
       border-radius: 999px 999px 0 0;
-      opacity: .8;
+      background: var(--accent, var(--blue));
     }
-    .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; }
-    .kpi-value { margin-top: 12px; font-size: clamp(24px, 3vw, 38px); line-height: 1; font-weight: 850; letter-spacing: -.05em; }
+    .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 850; }
+    .kpi-value { margin-top: 12px; font-size: clamp(25px, 3vw, 39px); line-height: 1; font-weight: 900; letter-spacing: -.055em; }
     .kpi-caption { margin-top: 10px; color: var(--dim); font-size: 12px; line-height: 1.35; }
 
-    .bar-list { display: grid; gap: 12px; }
-    .bar-row { display: grid; grid-template-columns: 116px 1fr 74px; gap: 12px; align-items: center; }
-    .bar-label { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .bar-track { height: 24px; background: var(--panel-3); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
-    .bar-fill { height: 100%; width: 0; background: var(--bar, var(--blue)); border-radius: 4px; transition: width .55s ease; }
-    .bar-value { color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; text-align: right; }
+    .narrative {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 1fr;
+      gap: 12px;
+    }
+    .narrative-card {
+      border-left: 3px solid var(--accent);
+      background: rgba(255,255,255,.026);
+      padding: 15px 16px;
+      min-height: 128px;
+    }
+    .narrative-card h3 { margin: 0 0 9px; font-size: 13px; letter-spacing: -.01em; }
+    .narrative-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
 
-    .line-wrap { height: 286px; }
-    svg { display: block; width: 100%; height: 100%; }
-    .axis { stroke: rgba(255,255,255,.10); stroke-width: 1; }
-    .gridline { stroke: rgba(255,255,255,.055); stroke-width: 1; }
-    .area { fill: rgba(229,72,77,.12); }
-    .line { fill: none; stroke: var(--red); stroke-width: 2.5; }
+    .insight-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .insight {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.024);
+    }
+    .insight strong { display: block; font-size: 21px; letter-spacing: -.04em; margin-bottom: 4px; }
+    .insight span { color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .bar-list { display: grid; gap: 12px; }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 126px minmax(100px, 1fr) 92px;
+      gap: 12px;
+      align-items: center;
+    }
+    .bar-label { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 24px; background: var(--panel-3); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0; background: var(--bar, var(--blue)); border-radius: 5px; transition: width .5s ease; }
+    .bar-value { color: var(--text); font-size: 12px; text-align: right; font-variant-numeric: tabular-nums; }
+    .drillable { cursor: pointer; }
+    .drillable:hover .bar-track, .table-row-drill:hover td { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.035); }
+
+    .chart-wrap { height: 300px; }
+    .chart-wrap.tall { height: 370px; }
+    svg { width: 100%; height: 100%; display: block; }
+    .axis { stroke: rgba(255,255,255,.12); stroke-width: 1; }
+    .gridline { stroke: rgba(255,255,255,.06); stroke-width: 1; }
+    .area { fill: rgba(241,79,85,.12); }
+    .line { fill: none; stroke: var(--red); stroke-width: 2.7; }
+    .line-blue { fill: none; stroke: var(--blue); stroke-width: 2.7; }
+    .line-green { fill: none; stroke: var(--green); stroke-width: 2.7; }
     .volume { fill: rgba(76,141,246,.18); }
+    .dot { fill: var(--red); stroke: #fff; stroke-width: 1; }
 
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
-    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
-    td { font-size: 12px; color: #dce4ef; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 850; }
+    td { color: #dce6f2; font-size: 12px; }
     .table-wrap { overflow-x: auto; }
 
     .priority {
-      display: inline-flex; align-items: center;
+      display: inline-flex;
+      align-items: center;
       padding: 4px 8px;
       border-radius: 999px;
-      font-size: 11px;
-      font-weight: 800;
       border: 1px solid var(--line);
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
     }
-    .priority.Kritik { color: #ffb4b4; background: rgba(229,72,77,.13); border-color: rgba(229,72,77,.36); }
-    .priority.Yüksek { color: #ffdca6; background: rgba(217,154,32,.13); border-color: rgba(217,154,32,.36); }
-    .priority.İzle { color: #bae6ff; background: rgba(76,141,246,.13); border-color: rgba(76,141,246,.36); }
-    .priority.Normal { color: #b7f7dc; background: rgba(47,158,117,.13); border-color: rgba(47,158,117,.36); }
-
-    .decision-strip {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-    .decision {
-      border-left: 3px solid var(--accent);
-      padding: 15px 16px;
-      background: rgba(255,255,255,.026);
-      min-height: 122px;
-    }
-    .decision h3 { margin: 0 0 10px; font-size: 14px; letter-spacing: -.01em; }
-    .decision p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 13px; }
+    .priority.Kritik { color: #ffc1c4; background: rgba(241,79,85,.13); border-color: rgba(241,79,85,.36); }
+    .priority.Yüksek { color: #ffe0aa; background: rgba(217,154,32,.13); border-color: rgba(217,154,32,.36); }
+    .priority.İzle { color: #c4e5ff; background: rgba(76,141,246,.13); border-color: rgba(76,141,246,.36); }
+    .priority.Normal { color: #bcf8de; background: rgba(47,158,117,.13); border-color: rgba(47,158,117,.36); }
 
     .heatmap { display: grid; gap: 8px; }
-    .heat-row { display: grid; grid-template-columns: 130px repeat(2, minmax(92px, 1fr)); gap: 8px; align-items: center; }
+    .heat-row { display: grid; grid-template-columns: 132px repeat(2, minmax(90px, 1fr)); gap: 8px; align-items: center; }
     .heat-cell {
-      min-height: 42px;
+      min-height: 44px;
       border: 1px solid var(--line);
-      border-radius: 7px;
+      border-radius: 8px;
       display: grid;
       align-content: center;
       padding: 8px;
       color: white;
-      font-weight: 800;
+      font-weight: 850;
       font-size: 12px;
     }
-    .heat-meta { color: var(--muted); font-size: 11px; margin-top: 3px; font-weight: 600; }
+    .heat-meta { color: rgba(255,255,255,.74); font-size: 11px; margin-top: 3px; font-weight: 650; }
+
+    .matrix { display: grid; gap: 8px; }
+    .matrix-row {
+      display: grid;
+      grid-template-columns: 96px repeat(3, minmax(90px, 1fr));
+      gap: 8px;
+      align-items: stretch;
+    }
+    .matrix-cell {
+      min-height: 66px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255,255,255,.035);
+      display: grid;
+      gap: 5px;
+      align-content: center;
+      font-size: 12px;
+    }
+    .matrix-cell strong { font-size: 15px; }
+    .matrix-cell span { color: var(--muted); font-size: 11px; }
+
+    .tree { display: grid; gap: 12px; }
+    .tree-root {
+      border: 1px solid rgba(241,79,85,.32);
+      background: rgba(241,79,85,.10);
+      border-radius: 10px;
+      padding: 13px;
+    }
+    .tree-branches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    .tree-node {
+      min-height: 118px;
+      border: 1px solid var(--line);
+      border-top: 3px solid var(--accent);
+      border-radius: 10px;
+      background: rgba(255,255,255,.028);
+      padding: 12px;
+      color: var(--text);
+      text-align: left;
+      font-family: inherit;
+    }
+    .tree-node strong { display: block; font-size: 13px; margin-bottom: 7px; }
+    .tree-node span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    .treemap {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 76px;
+      gap: 8px;
+    }
+    .tile {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px;
+      background: rgba(76,141,246,.12);
+      display: grid;
+      align-content: end;
+      overflow: hidden;
+    }
+    .tile strong { font-size: 14px; }
+    .tile span { color: rgba(255,255,255,.75); font-size: 11px; margin-top: 4px; }
+
+    .whatif {
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .slider-card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      background: rgba(255,255,255,.026);
+      display: grid;
+      gap: 14px;
+    }
+    .range { width: 100%; accent-color: var(--red); }
+    .metric-stack { display: grid; gap: 10px; }
+    .metric-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .metric-line strong { color: var(--text); font-size: 15px; }
 
     .lineage {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 10px;
-      align-items: stretch;
     }
     .node {
-      padding: 16px 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel-2);
-      text-align: center;
-      min-height: 86px;
+      min-height: 90px;
       display: grid;
       align-content: center;
       gap: 6px;
+      text-align: center;
+      padding: 14px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-2);
     }
     .node strong { font-size: 13px; }
     .node span { color: var(--muted); font-size: 11px; line-height: 1.35; }
@@ -234,55 +373,99 @@
     .loading, .error {
       border: 1px solid var(--line);
       background: rgba(255,255,255,.04);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 22px;
       color: var(--muted);
       line-height: 1.55;
     }
-    .error { border-color: rgba(229,72,77,.35); color: #ffcccc; background: rgba(229,72,77,.08); }
+    .error { color: #ffd4d6; border-color: rgba(241,79,85,.35); background: rgba(241,79,85,.08); }
 
-    .toolbar { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
-    .btn {
+    .tooltip {
+      position: fixed;
+      z-index: 30;
+      pointer-events: none;
+      max-width: 310px;
+      padding: 10px 12px;
       border: 1px solid var(--line-strong);
-      background: var(--panel-2);
+      border-radius: 9px;
+      background: rgba(8,12,17,.96);
       color: var(--text);
-      border-radius: 7px;
-      padding: 9px 12px;
-      cursor: pointer;
-      font-weight: 750;
+      box-shadow: var(--shadow);
       font-size: 12px;
+      line-height: 1.45;
+      opacity: 0;
+      transform: translate(-999px, -999px);
+      transition: opacity .12s ease;
     }
-    .btn:hover { border-color: rgba(255,255,255,.28); }
+    .tooltip.visible { opacity: 1; }
 
-    @media (max-width: 1120px) {
+    .drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(420px, 92vw);
+      z-index: 25;
+      background: #0b1118;
+      border-left: 1px solid var(--line-strong);
+      box-shadow: -24px 0 80px rgba(0,0,0,.38);
+      transform: translateX(105%);
+      transition: transform .22s ease;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .drawer-title { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    .drawer-body { padding: 18px; overflow: auto; display: grid; gap: 14px; align-content: start; }
+
+    @media (max-width: 1180px) {
+      .control-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .button-row { justify-content: flex-start; }
       .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .cols-3 { grid-template-columns: 1fr; }
-      .cols-2 { grid-template-columns: 1fr; }
-      .decision-strip { grid-template-columns: 1fr; }
-      .lineage { grid-template-columns: 1fr; }
+      .cols-2, .cols-3, .cols-4, .narrative, .insight-grid, .whatif { grid-template-columns: 1fr; }
+      .span-2 { grid-column: auto; }
+      .lineage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .tree-branches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding: 18px 14px 30px; }
       .topbar { grid-template-columns: 1fr; }
       .statusbar { justify-content: flex-start; }
-    }
-    @media (max-width: 680px) {
-      .shell { padding: 18px 14px 28px; }
-      .brand { align-items: flex-start; }
-      .subtitle { max-width: 100%; overflow-wrap: anywhere; }
-      .statusbar { justify-content: flex-start; }
-      .pill { white-space: normal; }
+      .control-panel { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: 1fr; }
-      .bar-row { grid-template-columns: 92px 1fr 58px; }
-      .heat-row { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 86px 1fr 76px; }
+      .heat-row, .matrix-row, .lineage, .tree-branches { grid-template-columns: 1fr; }
+      .treemap { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
 <body>
+  <div class="tooltip" id="tooltip"></div>
+  <aside class="drawer" id="drill-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 class="drawer-title" id="drawer-title">Segment detayı</h2>
+        <p class="card-note" id="drawer-subtitle">Seçili kırılım için operasyonel karar özeti.</p>
+      </div>
+      <button class="btn" id="drawer-close">Kapat</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </aside>
+
   <div class="shell">
     <header class="topbar">
       <div class="brand">
         <div class="mark">FR</div>
         <div>
           <h1>Fraud Risk Intelligence</h1>
-          <p class="subtitle">BigQuery üzerinde dbt ile üretilen raporlama katmanından canlı veri çeken yönetici sunum arayüzü.</p>
+          <p class="subtitle">BigQuery üzerinde dbt ile üretilen raporlama katmanından canlı veri çeken, sunum ve analitik inceleme için tasarlanmış yönetici arayüzü.</p>
         </div>
       </div>
       <div class="statusbar">
@@ -293,11 +476,45 @@
       </div>
     </header>
 
+    <section class="control-panel" aria-label="Analitik kontroller">
+      <div class="control">
+        <label for="metric-select">Karşılaştırma metriği</label>
+        <select class="select" id="metric-select">
+          <option value="fraud_rate">Fraud oranı</option>
+          <option value="lift">Lift</option>
+          <option value="fraud_share">Fraud payı</option>
+          <option value="transaction_share">İşlem payı</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="family-select">Segment ailesi</label>
+        <select class="select" id="family-select"><option value="Tümü">Tümü</option></select>
+      </div>
+      <div class="control">
+        <label for="priority-select">Öncelik</label>
+        <select class="select" id="priority-select">
+          <option value="Tümü">Tümü</option>
+          <option value="Kritik">Kritik</option>
+          <option value="Yüksek">Yüksek</option>
+          <option value="İzle">İzle</option>
+          <option value="Normal">Normal</option>
+        </select>
+      </div>
+      <div class="control">
+        <label>Seçili segment</label>
+        <div class="select" id="selected-segment">Henüz seçim yok</div>
+      </div>
+      <div class="button-row">
+        <button class="btn" id="reset-btn">Sıfırla</button>
+        <button class="btn" id="download-btn">JSON indir</button>
+      </div>
+    </section>
+
     <nav class="tabs">
       <button class="tab active" data-view="overview">01 Yönetici Özeti</button>
-      <button class="tab" data-view="segments">02 Segment Analizi</button>
-      <button class="tab" data-view="model">03 Model Operasyon</button>
-      <button class="tab" data-view="quality">04 Veri Kalitesi</button>
+      <button class="tab" data-view="segments">02 Derin Segment Analizi</button>
+      <button class="tab" data-view="model">03 Model ve Eşik Simülasyonu</button>
+      <button class="tab" data-view="quality">04 Veri Güveni ve Lineage</button>
     </nav>
 
     <main id="state" class="loading">BigQuery raporlama katmanına bağlanılıyor.</main>
@@ -305,69 +522,94 @@
     <section id="dashboard" style="display:none">
       <section class="view active" id="overview">
         <div class="grid kpis" id="kpi-grid"></div>
+        <div class="grid insight-grid" id="influencer-grid"></div>
         <div class="grid cols-3">
-          <article class="card wide">
+          <article class="card span-2">
             <div class="card-head">
               <div>
                 <h2 class="card-title">Fraud oranı referans zaman ekseninde nasıl değişiyor?</h2>
-                <div class="card-note">TransactionDT gerçek tarih değil; dbt katmanı bunu göreli gün/saat olarak sunar.</div>
+                <div class="card-note">TransactionDT gerçek tarih değildir; dbt katmanı bunu göreli gün/saat olarak sunar.</div>
               </div>
             </div>
-            <div class="card-body"><div class="line-wrap"><svg id="daily-trend"></svg></div></div>
+            <div class="card-body"><div class="chart-wrap"><svg id="daily-trend"></svg></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Ürün kırılımı</h2><div class="card-note">Fraud oranı ve lift</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Fraud katkısı Pareto analizi</h2><div class="card-note">Az sayıda segment toplam fraud etiketinin ne kadarını taşır?</div></div></div>
+            <div class="card-body"><div class="chart-wrap"><svg id="pareto-chart"></svg></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Ürün kırılımı</h2><div class="card-note">Seçili metrikle segment karşılaştırması</div></div></div>
             <div class="card-body"><div class="bar-list" id="product-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandı</h2><div class="card-note">Gözlenen fraud oranı</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Risk bandı</h2><div class="card-note">Model skoru ile gözlenen fraud ayrışması</div></div></div>
             <div class="card-body"><div class="bar-list" id="risk-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Tutar bandı</h2><div class="card-note">Risk yoğunlaşması</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Tutar bandı</h2><div class="card-note">Risk yoğunlaşması ve ortalama tutar</div></div></div>
             <div class="card-body"><div class="bar-list" id="amount-bars"></div></div>
           </article>
         </div>
-        <div class="decision-strip" id="decision-strip"></div>
+        <div class="narrative" id="overview-narrative"></div>
       </section>
 
       <section class="view" id="segments">
         <div class="grid cols-2">
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Operasyonel segment izleme listesi</h2><div class="card-note">Fraud payı, lift ve işlem hacmi birlikte sıralanır.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Decomposition tree: risk sürücüleri</h2><div class="card-note">Segment aileleri fraud payı, lift ve önerilen aksiyonla gruplanır.</div></div></div>
+            <div class="card-body"><div class="tree" id="driver-tree"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Operasyonel segment izleme listesi</h2><div class="card-note">Slicer seçimleri bu tabloyu ve Pareto analizini etkiler.</div></div></div>
             <div class="card-body table-wrap"><table id="watchlist-table"></table></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Identity ve ürün matrisi</h2><div class="card-note">Identity coverage, fraud lift ve fraud payı birlikte okunur.</div></div></div>
+            <div class="card-body"><div class="matrix" id="identity-product-matrix"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Göreli saat ve tutar deseni</h2><div class="card-note">Saat bandı ile yuvarlak/ondalıklı tutar davranışı.</div></div></div>
+            <div class="card-body"><div class="heatmap" id="time-amount-heatmap"></div></div>
           </article>
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Ödeme tipi ısı haritası</h2><div class="card-note">Kart ağı ve kart tipi kesişiminde fraud oranı.</div></div></div>
             <div class="card-body"><div class="heatmap" id="payment-heatmap"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Email domain riski</h2><div class="card-note">Satın alan email gruplarında lift.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Email domain riski</h2><div class="card-note">Email gruplarında lift ve fraud payı.</div></div></div>
             <div class="card-body"><div class="bar-list" id="email-bars"></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Identity kapsamı</h2><div class="card-note">Kimlik kaydı olan işlemler ayrı risk sinyali üretir.</div></div></div>
-            <div class="card-body"><div class="bar-list" id="identity-bars"></div></div>
           </article>
         </div>
       </section>
 
       <section class="view" id="model">
         <div class="grid cols-2">
+          <article class="card wide">
+            <div class="card-head"><div><h2 class="card-title">What-if threshold simülasyonu</h2><div class="card-note">Eşik değiştikçe yakalama oranı, precision ve operasyon yükü birlikte izlenir.</div></div></div>
+            <div class="card-body">
+              <div class="whatif">
+                <div>
+                  <div class="chart-wrap"><svg id="threshold-chart"></svg></div>
+                  <input class="range" id="threshold-slider" type="range" min="0" max="0" value="0">
+                </div>
+                <div class="slider-card" id="threshold-summary"></div>
+              </div>
+            </div>
+          </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Model risk bantları</h2><div class="card-note">Skor karar değil, inceleme önceliği üretir.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Risk bandı operasyon stratejisi</h2><div class="card-note">İnceleme kuyruğu, günlük hacim ve yönetim notu.</div></div></div>
             <div class="card-body table-wrap"><table id="review-table"></table></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Threshold simülasyonu</h2><div class="card-note">Yakalama oranı ile operasyon yükü arasındaki trade-off.</div></div></div>
-            <div class="card-body"><div class="line-wrap"><svg id="threshold-chart"></svg></div></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Feature importance</h2><div class="card-note">LightGBM skorunun ağırlıklı sinyal aileleri.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Feature importance</h2><div class="card-note">LightGBM skorunun en güçlü sinyalleri.</div></div></div>
             <div class="card-body"><div class="bar-list" id="feature-bars"></div></div>
           </article>
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Risk bandı hacim dağılımı</h2><div class="card-note">Operasyon kuyruğu kapasite planı.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Feature family treemap</h2><div class="card-note">Sinyal aileleri model katkısına göre ölçeklenir.</div></div></div>
+            <div class="card-body"><div class="treemap" id="feature-treemap"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Risk bandı hacim dağılımı</h2><div class="card-note">Operasyon kapasite planı için hacim görünümü.</div></div></div>
             <div class="card-body"><div class="bar-list" id="risk-volume-bars"></div></div>
           </article>
         </div>
@@ -376,21 +618,30 @@
       <section class="view" id="quality">
         <div class="grid cols-2">
           <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Veri kalite kontratı</h2><div class="card-note">Sunum öncesi row-count ve model/rapor hazırlık kontrolleri.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Veri kalite kontratı</h2><div class="card-note">Raw ve raporlama katmanı row-count kontrolleri.</div></div></div>
+            <div class="card-body table-wrap"><table id="quality-contract-table"></table></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Rapor hazırlık kapısı</h2><div class="card-note">Sunum öncesi readiness kontrolleri.</div></div></div>
             <div class="card-body table-wrap"><table id="readiness-table"></table></div>
           </article>
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Eksiklik yoğunluğu</h2><div class="card-note">Feature ailesi bazında ortalama missingness.</div></div></div>
             <div class="card-body"><div class="bar-list" id="quality-bars"></div></div>
           </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Rapor anlatı matrisi</h2><div class="card-note">Her sayfa için mesaj, odak ve aksiyon cümlesi.</div></div></div>
+            <div class="card-body"><div class="bar-list" id="narrative-list"></div></div>
+          </article>
           <article class="card wide">
-            <div class="card-head"><div><h2 class="card-title">Canlı veri mimarisi</h2><div class="card-note">Aynı BigQuery martları Power BI yerine web arayüzünden sunulur.</div></div></div>
+            <div class="card-head"><div><h2 class="card-title">Canlı veri mimarisi</h2><div class="card-note">Web arayüzü doğrudan BigQuery raporlama martlarını okur.</div></div></div>
             <div class="card-body">
               <div class="lineage">
-                <div class="node"><strong>Kaggle CSV</strong><span>train transaction ve identity</span></div>
+                <div class="node"><strong>Kaggle CSV</strong><span>train/test transaction ve identity</span></div>
                 <div class="node"><strong>BigQuery Raw</strong><span>ham veri tabanı</span></div>
-                <div class="node"><strong>dbt Models</strong><span>staging, intermediate, mart</span></div>
-                <div class="node"><strong>PowerBI Layer</strong><span>pbi_* raporlama tabloları</span></div>
+                <div class="node"><strong>dbt Core</strong><span>staging ve intermediate modeller</span></div>
+                <div class="node"><strong>Mart Katmanı</strong><span>fraud, segment, kalite, model metrikleri</span></div>
+                <div class="node"><strong>Reporting Layer</strong><span>Sunuma hazır raporlama tabloları</span></div>
                 <div class="node"><strong>Web Dashboard</strong><span>FastAPI ile canlı sunum</span></div>
               </div>
             </div>
@@ -403,18 +654,31 @@
   <script>
     const fmtInt = value => new Intl.NumberFormat('tr-TR').format(Math.round(Number(value || 0)));
     const fmtPct = value => `${(Number(value || 0) * 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-    const fmtPctRaw = value => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
     const fmtMoney = value => `$${Number(value || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`;
-    const colorScale = ['#e5484d', '#d99a20', '#8b5cf6', '#4c8df6', '#2bb3a3', '#2f9e75'];
+    const fmtX = value => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`;
+    const colorScale = ['#f14f55', '#d99a20', '#8b5cf6', '#4c8df6', '#2bb3a3', '#2f9e75', '#ff7b72', '#6ee7b7'];
+    const metricLabels = {
+      fraud_rate: 'Fraud oranı',
+      lift: 'Lift',
+      fraud_share: 'Fraud payı',
+      transaction_share: 'İşlem payı',
+    };
 
     let dashboardData = null;
-
+    let drillMap = new Map();
     const viewNames = ['overview', 'segments', 'model', 'quality'];
+    const state = {
+      metric: 'fraud_rate',
+      family: 'Tümü',
+      priority: 'Tümü',
+      selected: null,
+      thresholdIndex: 0,
+    };
 
     function activateView(name) {
       const selected = viewNames.includes(name) ? name : 'overview';
-      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === selected));
-      document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === selected));
+      document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === selected));
+      document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === selected));
     }
 
     document.querySelectorAll('.tab').forEach(tab => {
@@ -423,67 +687,121 @@
         activateView(tab.dataset.view);
       });
     });
-
     window.addEventListener('hashchange', () => activateView(location.hash.replace('#', '')));
 
     document.getElementById('refresh-btn').addEventListener('click', () => loadDashboard(true));
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      state.metric = 'fraud_rate';
+      state.family = 'Tümü';
+      state.priority = 'Tümü';
+      state.selected = null;
+      document.getElementById('metric-select').value = state.metric;
+      document.getElementById('family-select').value = state.family;
+      document.getElementById('priority-select').value = state.priority;
+      document.getElementById('selected-segment').textContent = 'Henüz seçim yok';
+      closeDrawer();
+      renderDashboard(dashboardData);
+    });
+    document.getElementById('download-btn').addEventListener('click', () => downloadSnapshot());
+    document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+
+    ['metric-select', 'family-select', 'priority-select'].forEach(id => {
+      document.getElementById(id).addEventListener('change', event => {
+        const key = id.replace('-select', '');
+        state[key] = event.target.value;
+        renderDashboard(dashboardData);
+      });
+    });
 
     async function loadDashboard(refresh = false) {
-      const state = document.getElementById('state');
-      state.className = 'loading';
-      state.style.display = 'block';
-      state.textContent = refresh ? 'BigQuery verisi yenileniyor.' : 'BigQuery raporlama katmanına bağlanılıyor.';
+      const stateBox = document.getElementById('state');
+      stateBox.className = 'loading';
+      stateBox.style.display = 'block';
+      stateBox.textContent = refresh ? 'BigQuery verisi yenileniyor.' : 'BigQuery raporlama katmanına bağlanılıyor.';
       document.getElementById('dashboard').style.display = 'none';
 
       try {
         const response = await fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`);
-        if (!response.ok) {
-          const detail = await response.text();
-          throw new Error(detail);
-        }
+        if (!response.ok) throw new Error(await response.text());
         dashboardData = await response.json();
+        initializeControls(dashboardData);
+        state.thresholdIndex = defaultThresholdIndex(dashboardData.threshold_simulation);
         renderDashboard(dashboardData);
         activateView(location.hash.replace('#', ''));
-        state.style.display = 'none';
+        stateBox.style.display = 'none';
         document.getElementById('dashboard').style.display = 'block';
       } catch (error) {
-        state.className = 'error';
-        state.innerHTML = `<strong>Dashboard verisi yüklenemedi.</strong><br>${escapeHtml(error.message)}<br><br>GCP_PROJECT_ID, BQ_DATASET ve GOOGLE_APPLICATION_CREDENTIALS değişkenlerini kontrol edin.`;
+        stateBox.className = 'error';
+        stateBox.innerHTML = `<strong>Dashboard verisi yüklenemedi.</strong><br>${escapeHtml(error.message)}<br><br>Vercel ortam değişkenlerini ve BigQuery yetkilerini kontrol edin.`;
       }
     }
 
+    function initializeControls(data) {
+      const familySelect = document.getElementById('family-select');
+      if (familySelect.options.length > 1) return;
+      const families = [...new Set((data.segment_watchlist || []).map(row => row.segment_family))].sort((a, b) => String(a).localeCompare(String(b), 'tr'));
+      familySelect.innerHTML = ['Tümü', ...families].map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+    }
+
     function renderDashboard(data) {
-      document.getElementById('dataset-pill').textContent = data.meta.dataset;
+      if (!data) return;
+      drillMap = new Map();
+      document.getElementById('dataset-pill').textContent = displayDatasetName(data.meta.dataset);
       document.getElementById('readiness-pill').textContent = `${data.meta.readiness_passed}/${data.meta.readiness_total} kalite kontrolü PASS`;
       renderKpis(data.executive_kpis[0] || {});
+      renderInfluencers(data);
+      renderNarrative('overview-narrative', narrativeFor(data, 'Yönetici Özeti'));
       renderLineChart('daily-trend', data.daily_drift, 'transaction_day', 'fraud_rate', 'transaction_count');
-      renderBars('product-bars', data.product_risk, 'product_cd', 'fraud_rate', row => `${fmtPct(row.fraud_rate)} | Lift ${Number(row.lift || 0).toFixed(2)}x`, 'fraud_rate');
-      renderBars('risk-bars', data.model_risk_bands, 'risk_band', 'observed_fraud_rate', row => `${fmtPct(row.observed_fraud_rate)} | ${fmtInt(row.transaction_count)} işlem`, 'observed_fraud_rate');
-      renderBars('amount-bars', data.amount_bands, 'amount_band', 'fraud_rate', row => `${fmtPct(row.fraud_rate)} | ${fmtMoney(row.avg_transaction_amount)}`, 'fraud_rate');
-      renderDecisionStrip(data);
-      renderWatchlist(data.segment_watchlist);
+      renderPareto('pareto-chart', filteredWatchlist(data));
+      renderBars('product-bars', data.product_risk, 'product_cd', currentMetric(), productMeta, currentMetric(), row => segmentRow('Ürün', row.product_cd, row));
+      renderBars('risk-bars', data.model_risk_bands, 'risk_band', 'observed_fraud_rate', row => `${fmtPct(row.observed_fraud_rate)} | ${fmtInt(row.transaction_count)} işlem`, 'observed_fraud_rate', row => segmentRow('Risk bandı', row.risk_band, row));
+      renderBars('amount-bars', data.amount_bands, 'amount_band', currentMetric(), amountMeta, currentMetric(), row => segmentRow('Tutar bandı', row.amount_band, row));
+      renderDriverTree(filteredWatchlist(data));
+      renderWatchlist(filteredWatchlist(data));
+      renderIdentityProductMatrix(data.identity_product_coverage);
+      renderTimeAmountHeatmap(data.time_amount_signals);
       renderPaymentHeatmap(data.payment_heatmap);
-      renderBars('email-bars', data.email_domain_risk, 'purchaser_email_group', 'fraud_rate', row => `${fmtPct(row.fraud_rate)} | Lift ${Number(row.lift || 0).toFixed(2)}x`, 'fraud_rate');
-      renderBars('identity-bars', data.executive_kpis, 'identity_label', 'identity_rate', undefined, 'identity_rate', buildIdentityRows(data.executive_kpis[0] || {}));
+      renderBars('email-bars', data.email_domain_risk, 'purchaser_email_group', currentMetric(), emailMeta, currentMetric(), row => segmentRow('Email domain', row.purchaser_email_group, row));
+      renderThresholdExperience(data.threshold_simulation);
       renderReviewStrategy(data.review_strategy);
-      renderThresholdChart('threshold-chart', data.threshold_simulation);
-      renderBars('feature-bars', data.feature_importance, 'feature', 'importance', row => Number(row.importance || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }), 'importance');
-      renderBars('risk-volume-bars', data.model_risk_bands, 'risk_band', 'transaction_count', row => `${fmtInt(row.transaction_count)} işlem`, 'transaction_count');
+      renderBars('feature-bars', data.feature_importance, 'feature', 'importance', row => Number(row.importance || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }), 'importance', row => ({ ...row, segment_family: 'Model sinyali', segment_name: row.feature, recommended_action: 'Model açıklanabilirliği için üst sinyal olarak izlenir.' }));
+      renderFeatureTreemap(data.feature_importance);
+      renderBars('risk-volume-bars', data.model_risk_bands, 'risk_band', 'transaction_count', row => `${fmtInt(row.transaction_count)} işlem`, 'transaction_count', row => segmentRow('Risk bandı', row.risk_band, row));
       renderReadiness(data.report_readiness);
-      renderBars('quality-bars', data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} eksik`, 'avg_missing_rate');
+      renderQualityContract(data.quality_contract);
+      renderBars('quality-bars', data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} eksik`, 'avg_missing_rate', row => ({ ...row, segment_family: 'Veri kalitesi', segment_name: row.column_family, recommended_action: 'Eksiklik oranı model ve feature engineering kapsamında izlenmelidir.' }));
+      renderNarrativeList(data.report_narrative);
+      bindTooltips();
+      bindDrillEvents();
+    }
+
+    function currentMetric() {
+      return state.metric;
+    }
+
+    function filteredWatchlist(data) {
+      return (data.segment_watchlist || []).filter(row => {
+        const familyOk = state.family === 'Tümü' || row.segment_family === state.family;
+        const priorityOk = state.priority === 'Tümü' || row.risk_priority === state.priority;
+        return familyOk && priorityOk;
+      });
+    }
+
+    function narrativeFor(data, pageName) {
+      return (data.report_narrative || []).find(row => row.page_name === pageName) || {};
     }
 
     function renderKpis(k) {
       const items = [
-        ['Toplam işlem', fmtInt(k.total_transactions), 'Analiz edilen eğitim işlem hacmi', '#4c8df6'],
-        ['Fraud işlem', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} baz oran`, '#e5484d'],
-        ['Identity kapsama', fmtPct(k.identity_coverage_rate), 'Kimlik kaydı olan işlem payı', '#2bb3a3'],
-        ['Product C lift', `${Number(k.product_c_lift || 0).toFixed(2)}x`, `${fmtInt(k.product_c_transactions)} işlem`, '#d99a20'],
-        ['Identity lift', `${Number(k.identity_lift || 0).toFixed(2)}x`, 'Kimlikli işlemlerde ayrışma', '#8b5cf6'],
-        ['Critical lift', `${Number(k.critical_risk_lift || 0).toFixed(1)}x`, `${fmtInt(k.critical_risk_transactions)} işlem`, '#e5484d'],
+        ['Toplam işlem', fmtInt(k.total_transactions), 'Analiz edilen eğitim işlem hacmi', '#4c8df6', `Fraud oranı: ${fmtPct(k.fraud_rate)}`],
+        ['Fraud işlem', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} baz oran`, '#f14f55', `Legitimate işlem: ${fmtInt(k.legitimate_transactions)}`],
+        ['Identity kapsama', fmtPct(k.identity_coverage_rate), 'Kimlik kaydı olan işlem payı', '#2bb3a3', `Identity lift: ${fmtX(k.identity_lift)}`],
+        ['Product C lift', fmtX(k.product_c_lift), `${fmtInt(k.product_c_transactions)} işlem`, '#d99a20', `Product C fraud oranı: ${fmtPct(k.product_c_fraud_rate)}`],
+        ['Identity lift', fmtX(k.identity_lift), 'Kimlikli işlemlerde ayrışma', '#8b5cf6', `Var: ${fmtPct(k.with_identity_fraud_rate)} | Yok: ${fmtPct(k.without_identity_fraud_rate)}`],
+        ['Critical lift', `${Number(k.critical_risk_lift || 0).toFixed(1)}x`, `${fmtInt(k.critical_risk_transactions)} işlem`, '#f14f55', `Critical fraud oranı: ${fmtPct(k.critical_risk_fraud_rate)}`],
       ];
-      document.getElementById('kpi-grid').innerHTML = items.map(([label, value, caption, color]) => `
-        <article class="card kpi" style="--accent:${color}">
+      document.getElementById('kpi-grid').innerHTML = items.map(([label, value, caption, color, tooltip]) => `
+        <article class="card kpi" style="--accent:${color}" data-tooltip="${escapeHtml(tooltip)}">
           <div class="kpi-label">${label}</div>
           <div class="kpi-value">${value}</div>
           <div class="kpi-caption">${caption}</div>
@@ -491,86 +809,283 @@
       `).join('');
     }
 
-    function renderBars(target, sourceRows, labelKey, valueKey, metaFn, scaleKey, overrideRows) {
-      const rows = overrideRows || sourceRows || [];
+    function renderInfluencers(data) {
+      const top = [...(data.segment_watchlist || [])].sort((a, b) => Number(b.priority_score || 0) - Number(a.priority_score || 0)).slice(0, 4);
+      document.getElementById('influencer-grid').innerHTML = top.map((row, index) => {
+        const id = registerDrill(row);
+        return `
+          <button class="insight drillable" data-drill-id="${id}" data-tooltip="${escapeHtml(row.recommended_action)}">
+            <strong style="color:${colorScale[index % colorScale.length]}">${escapeHtml(row.segment_name)}</strong>
+            <span>${escapeHtml(row.segment_family)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift | ${fmtPct(row.fraud_share)} fraud payı</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderNarrative(target, row) {
+      const items = [
+        ['Mesaj', row.executive_message || 'Fraud düşük frekanslı ancak yönetilebilir segmentlerde yoğunlaşır.', '#f14f55'],
+        ['Analitik odak', row.analytical_focus || 'Lift, fraud payı ve hacim birlikte okunmalıdır.', '#8b5cf6'],
+        ['Aksiyon', row.recommended_action || 'Yüksek risk segmentleri ayrı kontrol ve takip kuralına bağlanmalıdır.', '#2bb3a3'],
+      ];
+      document.getElementById(target).innerHTML = items.map(([title, text, color]) => `
+        <article class="card narrative-card" style="--accent:${color}">
+          <h3>${title}</h3>
+          <p>${escapeHtml(text)}</p>
+        </article>
+      `).join('');
+    }
+
+    function renderBars(target, sourceRows, labelKey, valueKey, metaFn, scaleKey, drillFactory) {
+      const rows = sourceRows || [];
       const max = Math.max(...rows.map(row => Number(row[scaleKey || valueKey] || 0)), 0.0001);
       document.getElementById(target).innerHTML = rows.map((row, index) => {
         const value = Number(row[valueKey] || 0);
         const width = Math.max(2, (Number(row[scaleKey || valueKey] || 0) / max) * 100);
+        const drillRow = drillFactory ? drillFactory(row) : row;
+        const drillId = registerDrill(drillRow);
+        const tooltip = `${row[labelKey]} | ${metricLabels[valueKey] || valueKey}: ${formatMetric(valueKey, value)} | İşlem: ${fmtInt(row.transaction_count)}`;
         return `
-          <div class="bar-row">
+          <div class="bar-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(tooltip)}">
             <div class="bar-label" title="${escapeHtml(row[labelKey] ?? '')}">${escapeHtml(row[labelKey] ?? '')}</div>
             <div class="bar-track"><div class="bar-fill" style="width:${width}%;--bar:${colorScale[index % colorScale.length]}"></div></div>
-            <div class="bar-value">${metaFn ? metaFn(row) : fmtPct(value)}</div>
+            <div class="bar-value">${metaFn ? metaFn(row) : formatMetric(valueKey, value)}</div>
           </div>
         `;
       }).join('');
     }
 
-    function buildIdentityRows(k) {
-      return [
-        { identity_label: 'Identity kaydı var', identity_rate: Number(k.with_identity_fraud_rate || 0), lift: Number(k.identity_lift || 0) },
-        { identity_label: 'Identity kaydı yok', identity_rate: Number(k.without_identity_fraud_rate || 0), lift: 1 },
-      ];
+    function productMeta(row) {
+      return `${formatMetric(state.metric, row[state.metric])} | ${fmtX(row.lift)}`;
+    }
+
+    function amountMeta(row) {
+      return `${formatMetric(state.metric, row[state.metric])} | ${fmtMoney(row.avg_transaction_amount)}`;
+    }
+
+    function emailMeta(row) {
+      return `${formatMetric(state.metric, row[state.metric])} | ${fmtX(row.lift)}`;
+    }
+
+    function formatMetric(metric, value) {
+      if (metric === 'lift') return fmtX(value);
+      if (metric === 'transaction_count' || metric === 'importance') return fmtInt(value);
+      if (metric && metric.includes('share')) return fmtPct(value);
+      return fmtPct(value);
+    }
+
+    function segmentRow(family, name, row) {
+      return {
+        ...row,
+        segment_family: family,
+        segment_name: name,
+        risk_priority: row.risk_priority || priorityFromLift(row.lift || row.observed_fraud_rate || row.fraud_rate),
+        recommended_action: row.recommended_action || 'Bu kırılım hacim, fraud oranı ve lift ile birlikte izlenmelidir.',
+      };
+    }
+
+    function priorityFromLift(value) {
+      const numeric = Number(value || 0);
+      if (numeric >= 2) return 'Kritik';
+      if (numeric >= 1.3) return 'Yüksek';
+      if (numeric >= 1) return 'İzle';
+      return 'Normal';
     }
 
     function renderLineChart(target, rows, xKey, yKey, volumeKey) {
       const svg = document.getElementById(target);
-      const w = 1120, h = 270, pad = 36;
+      const w = 1120, h = 286, pad = 38;
       const values = rows.map(row => Number(row[yKey] || 0));
       const volumes = rows.map(row => Number(row[volumeKey] || 0));
-      const maxY = Math.max(...values) * 1.15;
-      const minY = Math.min(...values) * 0.75;
-      const maxV = Math.max(...volumes);
-      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.6);
-      const y = value => h - pad - ((value - minY) / Math.max(maxY - minY, .0001)) * (h - pad * 1.5);
+      const maxY = Math.max(...values) * 1.16;
+      const minY = Math.min(...values) * .75;
+      const maxV = Math.max(...volumes, 1);
+      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.7);
+      const y = value => h - pad - ((value - minY) / Math.max(maxY - minY, .0001)) * (h - pad * 1.7);
       const points = values.map((value, i) => `${x(i)},${y(value)}`);
       const area = `M${pad},${h - pad} L${points.join(' L')} L${w - pad},${h - pad} Z`;
+      const grid = [0, 1, 2, 3].map(i => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${pad + i * 58}" y2="${pad + i * 58}" />`).join('');
       const bars = rows.map((row, i) => {
-        const bh = (Number(row[volumeKey] || 0) / Math.max(maxV, 1)) * 70;
-        return `<rect class="volume" x="${x(i) - 1}" y="${h - pad - bh}" width="2" height="${bh}" />`;
+        const bh = (Number(row[volumeKey] || 0) / maxV) * 72;
+        return `<rect class="volume" x="${x(i) - 1}" y="${h - pad - bh}" width="2" height="${bh}" data-tooltip="Gün ${row[xKey]} | Hacim ${fmtInt(row[volumeKey])} | Fraud ${fmtPct(row[yKey])}" />`;
       }).join('');
-      const grid = [0, 1, 2, 3].map(i => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${pad + i * 55}" y2="${pad + i * 55}" />`).join('');
+      const sampleDots = rows.filter((_, i) => i % 18 === 0).map((row, i) => {
+        const originalIndex = i * 18;
+        return `<circle class="dot" cx="${x(originalIndex)}" cy="${y(row[yKey])}" r="3.5" data-tooltip="Gün ${row[xKey]} | Fraud oranı ${fmtPct(row[yKey])} | Drift: ${escapeHtml(row.drift_flag || '-')}" />`;
+      }).join('');
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-      svg.innerHTML = `${grid}${bars}<path class="area" d="${area}"></path><path class="line" d="M${points.join(' L')}"></path>`;
+      svg.innerHTML = `${grid}${bars}<path class="area" d="${area}"></path><path class="line" d="M${points.join(' L')}"></path>${sampleDots}`;
     }
 
-    function renderThresholdChart(target, rows) {
+    function renderPareto(target, rows) {
       const svg = document.getElementById(target);
-      const w = 720, h = 270, pad = 38;
-      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.7);
-      const y = value => h - pad - Number(value || 0) * (h - pad * 1.7);
-      const capture = rows.map((row, i) => `${x(i)},${y(row.fraud_capture_rate)}`);
-      const workload = rows.map((row, i) => `${x(i)},${y(row.workload_share)}`);
+      const sorted = [...rows].sort((a, b) => Number(b.fraud_share || 0) - Number(a.fraud_share || 0)).slice(0, 10);
+      const w = 520, h = 300, pad = 38;
+      const max = Math.max(...sorted.map(row => Number(row.fraud_share || 0)), .0001);
+      let cumulative = 0;
+      const barWidth = (w - pad * 1.8) / Math.max(sorted.length, 1);
+      const bars = sorted.map((row, index) => {
+        const x = pad + index * barWidth;
+        const height = (Number(row.fraud_share || 0) / max) * (h - pad * 1.8);
+        cumulative += Number(row.fraud_share || 0);
+        row._cum = cumulative;
+        return `<rect x="${x + 3}" y="${h - pad - height}" width="${Math.max(barWidth - 6, 8)}" height="${height}" rx="4" fill="${colorScale[index % colorScale.length]}" data-tooltip="${escapeHtml(row.segment_family)} / ${escapeHtml(row.segment_name)} | Fraud payı ${fmtPct(row.fraud_share)} | Kümülatif ${fmtPct(cumulative)}" />`;
+      }).join('');
+      const linePoints = sorted.map((row, index) => {
+        const x = pad + index * barWidth + barWidth / 2;
+        const y = h - pad - (Number(row._cum || 0) / Math.max(cumulative, .0001)) * (h - pad * 1.8);
+        return `${x},${y}`;
+      });
       svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
       svg.innerHTML = `
-        <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}"></line>
-        <path d="M${capture.join(' L')}" fill="none" stroke="#e5484d" stroke-width="3"></path>
-        <path d="M${workload.join(' L')}" fill="none" stroke="#4c8df6" stroke-width="3"></path>
-        <text x="${pad}" y="22" fill="#e5484d" font-size="12" font-weight="800">Fraud yakalama</text>
-        <text x="${pad + 132}" y="22" fill="#4c8df6" font-size="12" font-weight="800">İş yükü</text>
+        <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}" />
+        ${bars}
+        <path d="M${linePoints.join(' L')}" fill="none" stroke="#eef5ff" stroke-width="2.4" />
+        <text x="${pad}" y="22" fill="#9ba9ba" font-size="12">Bar: fraud payı | Çizgi: kümülatif etki</text>
       `;
     }
 
-    function renderDecisionStrip(data) {
-      const k = data.executive_kpis[0] || {};
-      document.getElementById('decision-strip').innerHTML = `
-        <div class="card decision" style="--accent:#e5484d"><h3>Risk yoğunlaşması</h3><p>Fraud nadir görünse de Product C ${Number(k.product_c_lift || 0).toFixed(2)}x lift taşıyor. Yönetim odağı genel hacimden riskli segmente kaymalı.</p></div>
-        <div class="card decision" style="--accent:#8b5cf6"><h3>Modelin rolü</h3><p>Skor nihai karar değil, operasyon kuyruğu önceliklendirme katmanı olarak kullanılmalı. Critical ve High bantlar ayrı SLA ile izlenmeli.</p></div>
-        <div class="card decision" style="--accent:#2bb3a3"><h3>Sunum kanıtı</h3><p>Bu ekran doğrudan dbt tarafından üretilen BigQuery raporlama tablolarını okur; Power BI model hatasına bağlı değildir.</p></div>
+    function renderDriverTree(rows) {
+      const grouped = groupBy(rows, row => row.segment_family);
+      const branches = Object.entries(grouped).map(([family, group], index) => {
+        const top = [...group].sort((a, b) => Number(b.priority_score || 0) - Number(a.priority_score || 0))[0];
+        const id = registerDrill(top);
+        return `
+          <button class="tree-node drillable" style="--accent:${colorScale[index % colorScale.length]}" data-drill-id="${id}" data-tooltip="${escapeHtml(top.recommended_action)}">
+            <strong>${escapeHtml(family)}</strong>
+            <span>En güçlü: ${escapeHtml(top.segment_name)} (${fmtX(top.lift)} lift)</span>
+            <span>En yüksek fraud payı: ${fmtPct(top.fraud_share)}</span>
+          </button>
+        `;
+      }).join('');
+      document.getElementById('driver-tree').innerHTML = `
+        <div class="tree-root">
+          <strong>Fraud portföyü</strong>
+          <div class="card-note">${Object.keys(grouped).length} segment ailesi analiz ediliyor. Fraud payları eksenler arası toplanmaz; düğümlere tıklayarak drill-through açılır.</div>
+        </div>
+        <div class="tree-branches">${branches || '<div class="card-note">Bu filtrelerde segment yok.</div>'}</div>
       `;
     }
 
     function renderWatchlist(rows) {
-      renderTable('watchlist-table', rows.slice(0, 10), [
+      renderTable('watchlist-table', rows.slice(0, 12), [
         ['Sıra', row => row.watchlist_rank],
         ['Alan', row => row.segment_family],
         ['Segment', row => row.segment_name],
         ['İşlem', row => fmtInt(row.transaction_count)],
         ['Fraud oranı', row => fmtPct(row.fraud_rate)],
-        ['Lift', row => `${Number(row.lift || 0).toFixed(2)}x`],
+        ['Lift', row => fmtX(row.lift)],
+        ['Fraud payı', row => fmtPct(row.fraud_share)],
         ['Öncelik', row => `<span class="priority ${row.risk_priority}">${row.risk_priority}</span>`],
-      ]);
+      ], row => row);
+    }
+
+    function renderIdentityProductMatrix(rows = []) {
+      const maxLift = Math.max(...rows.map(row => Number(row.fraud_lift || 0)), .0001);
+      document.getElementById('identity-product-matrix').innerHTML = rows.map(row => {
+        const alpha = .12 + (Number(row.fraud_lift || 0) / maxLift) * .68;
+        const drillId = registerDrill(segmentRow('Identity/Product', row.product_cd, row));
+        return `
+          <div class="matrix-row drillable" data-drill-id="${drillId}" data-tooltip="Product ${escapeHtml(row.product_cd)} | Identity kapsama ${fmtPct(row.identity_coverage_rate)} | Lift ${fmtX(row.fraud_lift)}">
+            <div class="matrix-cell"><strong>${escapeHtml(row.product_cd)}</strong><span>ProductCD</span></div>
+            <div class="matrix-cell" style="background:rgba(76,141,246,${alpha})"><strong>${fmtPct(row.identity_coverage_rate)}</strong><span>identity coverage</span></div>
+            <div class="matrix-cell" style="background:rgba(241,79,85,${alpha})"><strong>${fmtPct(row.fraud_rate_with_identity)}</strong><span>identity var fraud</span></div>
+            <div class="matrix-cell" style="background:rgba(139,92,246,${alpha})"><strong>${fmtX(row.fraud_lift)}</strong><span>product lift</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTimeAmountHeatmap(rows = []) {
+      const topRows = [...rows].sort((a, b) => Number(b.fraud_rate || 0) - Number(a.fraud_rate || 0)).slice(0, 12);
+      const max = Math.max(...topRows.map(row => Number(row.fraud_rate || 0)), .0001);
+      document.getElementById('time-amount-heatmap').innerHTML = topRows.map(row => {
+        const alpha = .16 + (Number(row.fraud_rate || 0) / max) * .72;
+        const label = `${row.relative_hour_window} / ${row.amount_decimal_group}`;
+        const drillId = registerDrill(segmentRow('Saat-Tutar', label, row));
+        return `
+          <div class="heat-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(label)} | Fraud ${fmtPct(row.fraud_rate)} | Ortalama tutar ${fmtMoney(row.avg_transaction_amount)}">
+            <div class="bar-label">${escapeHtml(row.relative_hour_window)}</div>
+            <div class="heat-cell" style="background:rgba(241,79,85,${alpha})">${fmtPct(row.fraud_rate)}<span class="heat-meta">${escapeHtml(row.amount_decimal_group)}</span></div>
+            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .58)})">${fmtInt(row.transaction_count)}<span class="heat-meta">işlem</span></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPaymentHeatmap(rows) {
+      const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.0001);
+      document.getElementById('payment-heatmap').innerHTML = rows.map(row => {
+        const alpha = .14 + (Number(row.fraud_rate || 0) / max) * .74;
+        const drillId = registerDrill(segmentRow('Ödeme', `${row.card_network} / ${row.card_type}`, row));
+        return `
+          <div class="heat-row drillable" data-drill-id="${drillId}" data-tooltip="${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)} | ${fmtPct(row.fraud_rate)} fraud | ${fmtX(row.lift)} lift">
+            <div class="bar-label">${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)}</div>
+            <div class="heat-cell" style="background:rgba(241,79,85,${alpha})">
+              ${fmtPct(row.fraud_rate)}
+              <span class="heat-meta">${fmtInt(row.transaction_count)} işlem</span>
+            </div>
+            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .55)})">
+              ${fmtX(row.lift)}
+              <span class="heat-meta">${fmtPct(row.fraud_share)} fraud payı</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderThresholdExperience(rows = []) {
+      const slider = document.getElementById('threshold-slider');
+      slider.max = Math.max(rows.length - 1, 0);
+      slider.value = state.thresholdIndex;
+      slider.oninput = event => {
+        state.thresholdIndex = Number(event.target.value);
+        renderThresholdExperience(rows);
+      };
+      renderThresholdChart('threshold-chart', rows, state.thresholdIndex);
+      const selected = rows[state.thresholdIndex] || {};
+      const falsePositives = Number(selected.review_count || 0) - Number(selected.captured_fraud_count || 0);
+      document.getElementById('threshold-summary').innerHTML = `
+        <div>
+          <div class="kpi-label">Seçili eşik</div>
+          <div class="kpi-value">${Number(selected.score_threshold || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div class="kpi-caption">${escapeHtml(selected.operating_mode || 'Operasyon modu')}</div>
+        </div>
+        <div class="metric-stack">
+          <div class="metric-line"><span>İnceleme hacmi</span><strong>${fmtInt(selected.review_count)}</strong></div>
+          <div class="metric-line"><span>İş yükü payı</span><strong>${fmtPct(selected.workload_share)}</strong></div>
+          <div class="metric-line"><span>Fraud yakalama</span><strong>${fmtPct(selected.fraud_capture_rate)}</strong></div>
+          <div class="metric-line"><span>Precision</span><strong>${fmtPct(selected.precision_rate)}</strong></div>
+          <div class="metric-line"><span>Tahmini false positive</span><strong>${fmtInt(falsePositives)}</strong></div>
+        </div>
+      `;
+    }
+
+    function renderThresholdChart(target, rows, selectedIndex) {
+      const svg = document.getElementById(target);
+      const w = 1080, h = 288, pad = 42;
+      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.7);
+      const y = value => h - pad - Number(value || 0) * (h - pad * 1.8);
+      const capture = rows.map((row, i) => `${x(i)},${y(row.fraud_capture_rate)}`);
+      const workload = rows.map((row, i) => `${x(i)},${y(row.workload_share)}`);
+      const precision = rows.map((row, i) => `${x(i)},${y(row.precision_rate)}`);
+      const selected = rows[selectedIndex] || {};
+      const sx = x(selectedIndex);
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.innerHTML = `
+        <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}"></line>
+        ${[0, .25, .5, .75, 1].map(t => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${y(t)}" y2="${y(t)}" />`).join('')}
+        <path d="M${capture.join(' L')}" class="line"></path>
+        <path d="M${workload.join(' L')}" class="line-blue"></path>
+        <path d="M${precision.join(' L')}" class="line-green"></path>
+        <line x1="${sx}" x2="${sx}" y1="${pad}" y2="${h - pad}" stroke="rgba(255,255,255,.42)" stroke-dasharray="5 6" />
+        <circle cx="${sx}" cy="${y(selected.fraud_capture_rate)}" r="5" fill="#f14f55" data-tooltip="Fraud yakalama ${fmtPct(selected.fraud_capture_rate)}" />
+        <circle cx="${sx}" cy="${y(selected.workload_share)}" r="5" fill="#4c8df6" data-tooltip="İş yükü ${fmtPct(selected.workload_share)}" />
+        <circle cx="${sx}" cy="${y(selected.precision_rate)}" r="5" fill="#2f9e75" data-tooltip="Precision ${fmtPct(selected.precision_rate)}" />
+        <text x="${pad}" y="20" fill="#f14f55" font-size="12" font-weight="800">Yakalama</text>
+        <text x="${pad + 92}" y="20" fill="#4c8df6" font-size="12" font-weight="800">İş yükü</text>
+        <text x="${pad + 174}" y="20" fill="#2f9e75" font-size="12" font-weight="800">Precision</text>
+      `;
     }
 
     function renderReviewStrategy(rows) {
@@ -581,12 +1096,30 @@
         ['Yakalama', row => fmtPct(row.expected_fraud_capture)],
         ['Lift', row => `${Number(row.lift || 0).toFixed(1)}x`],
         ['Politika', row => row.queue_policy],
-      ]);
+      ], row => segmentRow('Risk bandı', row.risk_band, row));
+    }
+
+    function renderFeatureTreemap(rows = []) {
+      const grouped = Object.values(groupBy(rows, row => row.feature_family)).map(group => ({
+        feature_family: group[0].feature_family,
+        importance: group.reduce((sum, row) => sum + Number(row.importance || 0), 0),
+        count: group.length,
+      })).sort((a, b) => b.importance - a.importance);
+      const max = Math.max(...grouped.map(row => row.importance), 1);
+      document.getElementById('feature-treemap').innerHTML = grouped.map((row, index) => {
+        const span = Math.max(1, Math.ceil((row.importance / max) * 3));
+        return `
+          <div class="tile" style="grid-column:span ${span};background:rgba(${index % 2 ? '139,92,246' : '76,141,246'},${.12 + (row.importance / max) * .34})" data-tooltip="${escapeHtml(row.feature_family)} | Toplam önem ${fmtInt(row.importance)} | ${row.count} feature">
+            <strong>${escapeHtml(row.feature_family)}</strong>
+            <span>${fmtInt(row.importance)} önem | ${row.count} feature</span>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderReadiness(rows) {
       renderTable('readiness-table', rows, [
-        ['Kontrol', row => row.check_name],
+        ['Kontrol', row => readinessCheckName(row.check_name)],
         ['Beklenen', row => row.expected_value],
         ['Gerçek', row => row.actual_value],
         ['Alan', row => row.readiness_area],
@@ -594,31 +1127,134 @@
       ]);
     }
 
-    function renderTable(target, rows, columns) {
+    function displayDatasetName(value = '') {
+      return String(value).replace(/powerbi/i, 'reporting');
+    }
+
+    function readinessCheckName(value = '') {
+      return String(value).replace(/Power BI/gi, 'Raporlama').replace(/PBIX/gi, 'BI prototip');
+    }
+
+    function renderQualityContract(rows) {
+      renderTable('quality-contract-table', rows, [
+        ['Nesne', row => reportingObjectName(row.object_name)],
+        ['Beklenen', row => fmtInt(row.expected_rows)],
+        ['Gerçek', row => fmtInt(row.actual_rows)],
+        ['Durum', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Kritik'}">${row.status}</span>`],
+      ]);
+    }
+
+    function reportingObjectName(value = '') {
+      return String(value)
+        .replace(/^powerbi\./i, 'reporting.')
+        .replace(/^pbi_/i, 'reporting_')
+        .replace(/\.pbi_/i, '.');
+    }
+
+    function renderNarrativeList(rows = []) {
+      document.getElementById('narrative-list').innerHTML = rows.map(row => `
+        <div class="insight" data-tooltip="${escapeHtml(row.recommended_action)}">
+          <strong>${String(row.page_order).padStart(2, '0')} ${escapeHtml(row.page_name)}</strong>
+          <span>${escapeHtml(row.executive_message)}</span>
+        </div>
+      `).join('');
+    }
+
+    function renderTable(target, rows, columns, drillFactory) {
       document.getElementById(target).innerHTML = `
         <thead><tr>${columns.map(([name]) => `<th>${name}</th>`).join('')}</tr></thead>
-        <tbody>${rows.map(row => `<tr>${columns.map(([, render]) => `<td>${render(row)}</td>`).join('')}</tr>`).join('')}</tbody>
+        <tbody>${(rows || []).map(row => {
+          const drillId = drillFactory ? registerDrill(drillFactory(row)) : '';
+          const attrs = drillFactory ? ` class="table-row-drill drillable" data-drill-id="${drillId}"` : '';
+          return `<tr${attrs}>${columns.map(([, render]) => `<td>${render(row)}</td>`).join('')}</tr>`;
+        }).join('')}</tbody>
       `;
     }
 
-    function renderPaymentHeatmap(rows) {
-      const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.0001);
-      document.getElementById('payment-heatmap').innerHTML = rows.map(row => {
-        const alpha = .14 + (Number(row.fraud_rate || 0) / max) * .74;
-        return `
-          <div class="heat-row">
-            <div class="bar-label">${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)}</div>
-            <div class="heat-cell" style="background:rgba(229,72,77,${alpha})">
-              ${fmtPct(row.fraud_rate)}
-              <span class="heat-meta">${fmtInt(row.transaction_count)} işlem</span>
-            </div>
-            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .55)})">
-              ${Number(row.lift || 0).toFixed(2)}x lift
-              <span class="heat-meta">${fmtPct(row.fraud_share)} fraud payı</span>
-            </div>
-          </div>
-        `;
-      }).join('');
+    function registerDrill(row) {
+      const id = `d${drillMap.size + 1}`;
+      drillMap.set(id, row);
+      return id;
+    }
+
+    function bindDrillEvents() {
+      document.querySelectorAll('[data-drill-id]').forEach(element => {
+        element.onclick = () => {
+          const row = drillMap.get(element.dataset.drillId);
+          if (row) openDrawer(row);
+        };
+      });
+    }
+
+    function openDrawer(row) {
+      state.selected = row;
+      const title = `${row.segment_family || 'Segment'} | ${row.segment_name || row.feature || row.column_family || '-'}`;
+      document.getElementById('selected-segment').textContent = title;
+      document.getElementById('drawer-title').textContent = title;
+      document.getElementById('drawer-subtitle').textContent = row.recommended_action || row.management_note || 'Seçili kırılım için detaylı metrikler.';
+      document.getElementById('drawer-body').innerHTML = `
+        <div class="grid cols-2">
+          <div class="insight"><strong>${fmtInt(row.transaction_count)}</strong><span>İşlem hacmi</span></div>
+          <div class="insight"><strong>${fmtInt(row.fraud_count || row.observed_fraud_count)}</strong><span>Fraud işlem</span></div>
+          <div class="insight"><strong>${formatMetric('fraud_rate', row.fraud_rate || row.observed_fraud_rate)}</strong><span>Fraud oranı</span></div>
+          <div class="insight"><strong>${fmtX(row.lift || row.fraud_lift)}</strong><span>Lift</span></div>
+          <div class="insight"><strong>${formatMetric('fraud_share', row.fraud_share || row.expected_fraud_capture)}</strong><span>Fraud yakalama / pay</span></div>
+          <div class="insight"><strong>${formatMetric('transaction_share', row.transaction_share)}</strong><span>İşlem payı</span></div>
+        </div>
+        <article class="card pad">
+          <h3 class="card-title">Yönetim yorumu</h3>
+          <p class="card-note">${escapeHtml(row.recommended_action || row.management_note || 'Bu segment, hacim ve risk ayrışması birlikte değerlendirilerek izlenmelidir.')}</p>
+        </article>
+      `;
+      document.getElementById('drill-drawer').classList.add('open');
+      document.getElementById('drill-drawer').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeDrawer() {
+      document.getElementById('drill-drawer').classList.remove('open');
+      document.getElementById('drill-drawer').setAttribute('aria-hidden', 'true');
+    }
+
+    function bindTooltips() {
+      const tooltip = document.getElementById('tooltip');
+      document.querySelectorAll('[data-tooltip]').forEach(element => {
+        element.onmouseenter = () => {
+          tooltip.innerHTML = escapeHtml(element.dataset.tooltip);
+          tooltip.classList.add('visible');
+        };
+        element.onmousemove = event => {
+          tooltip.style.transform = `translate(${event.clientX + 14}px, ${event.clientY + 14}px)`;
+        };
+        element.onmouseleave = () => {
+          tooltip.classList.remove('visible');
+          tooltip.style.transform = 'translate(-999px, -999px)';
+        };
+      });
+    }
+
+    function downloadSnapshot() {
+      if (!dashboardData) return;
+      const blob = new Blob([JSON.stringify(dashboardData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `fraud-dashboard-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function defaultThresholdIndex(rows = []) {
+      const index = rows.findIndex(row => Number(row.score_threshold) >= .05);
+      return index >= 0 ? index : Math.floor(rows.length / 2);
+    }
+
+    function groupBy(rows, keyFn) {
+      return (rows || []).reduce((acc, row) => {
+        const key = keyFn(row) || 'Diğer';
+        acc[key] = acc[key] || [];
+        acc[key].push(row);
+        return acc;
+      }, {});
     }
 
     function escapeHtml(value) {

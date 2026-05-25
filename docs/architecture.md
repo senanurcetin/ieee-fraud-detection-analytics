@@ -13,8 +13,9 @@ flowchart LR
     E --> F["dbt intermediate"]
     F --> G["dbt marts"]
     C --> G
-    G --> H["dbt Power BI layer"]
-    H --> I["Power BI DirectQuery report"]
+    G --> H["dbt reporting layer"]
+    H --> I["FastAPI analytics API"]
+    I --> J["Executive web dashboard"]
 ```
 
 ## BigQuery Datasets
@@ -25,7 +26,7 @@ flowchart LR
 | `fraud_project_staging` | Typed and normalized source views |
 | `fraud_project_intermediate` | Joined transaction and identity records with engineered features |
 | `fraud_project_mart` | Reconciled fraud, segment, risk-band, time, amount, and quality marts |
-| `fraud_project_powerbi` | DirectQuery-friendly reporting tables for Power BI |
+| `fraud_project_powerbi` | Presentation-ready reporting tables for the live web dashboard |
 
 ## dbt Model Layers
 
@@ -34,11 +35,11 @@ flowchart LR
 | Staging | `stg_transactions`, `stg_identity` | Type casting, safe naming, TransactionDT-derived fields, amount-cent features |
 | Intermediate | `int_fraud_joined`, `int_features` | Transaction and identity join, product/payment/email/device segmentation |
 | Marts | `mart_*` | Fraud summary, risk bands, amount bands, daily drift, payment/email risk, quality checks |
-| Power BI | `fact_train_transactions`, `pbi_*` | Executive KPIs, DirectQuery visual tables, watchlists, model operations, quality contracts |
+| Reporting | `fact_train_transactions`, `pbi_*` | Executive KPIs, web visual tables, watchlists, model operations, quality contracts |
 
 ## Reporting Design
 
-The Power BI report should connect only to `fraud_project_powerbi`. Raw Kaggle tables and staging models are intentionally excluded from the report surface. This keeps the reporting model stable, understandable, and suitable for executive presentation.
+The web dashboard reads only from `fraud_project_powerbi` through the FastAPI reporting API. Raw Kaggle tables and staging models are intentionally excluded from the presentation surface. This keeps the reporting model stable, understandable, and suitable for executive presentation.
 
 ## Quality Gates
 
@@ -46,7 +47,7 @@ The Power BI report should connect only to `fraud_project_powerbi`. Raw Kaggle t
 - Staging tests validate key fields, ranges, and transaction uniqueness.
 - Reconciliation tests check fact and mart consistency.
 - Risk-band tests enforce expected risk labels and monotonic behavior.
-- Report-readiness tests verify that the Power BI reporting layer is complete.
+- Report-readiness tests verify that the web reporting layer is complete.
 
 Latest production verification:
 

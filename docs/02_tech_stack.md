@@ -9,7 +9,7 @@ Kaggle CSV
   -> dbt intermediate
   -> dbt mart
   -> fraud_project_powerbi
-  -> Power BI yönetici raporu
+  -> FastAPI web dashboard / Vercel sunumu
 ```
 
 ## Veri Alımı
@@ -56,19 +56,21 @@ Model katmanları:
 
 Model çıktıları `mart_model_predictions` ve `mart_risk_band_stats` tablolarıyla raporlama katmanına taşınır.
 
-## Power BI
+## Canlı Web Dashboard
 
-Ana teslim dosyası:
+Ana sunum katmanı:
 
 ```text
-powerbi/fraud_project_v2.pbix
+webapp/
 ```
 
-Rapor, `fraud_project_powerbi` datasetindeki fact ve mart tabloları için hazırlanmıştır. Sayfalar, üst yönetim sunumunda doğrudan kullanılacak şekilde Türkçe başlık, KPI ve analiz görselleriyle düzenlenmiştir.
+Dashboard, `fraud_project_powerbi` datasetindeki fact, mart ve `pbi_*` tablolarını FastAPI üzerinden okur. Arayüz; yönetici KPI'ları, global slicer'lar, drill-through paneli, özel tooltip'ler, Pareto analizi, decomposition tree, identity coverage matrisi, threshold simülasyonu ve veri kalite kartlarıyla üst yönetim sunumunda doğrudan kullanılacak şekilde hazırlanmıştır.
+
+Arşivlenen Power BI prototipi `powerbi/fraud_project_v2.pbix` altında korunur; ana raporlama teslimi değildir.
 
 ## Güvenlik ve Versiyonlama
 
 - Servis hesabı JSON dosyası repoya eklenmez.
 - Ham Kaggle CSV dosyaları repoya eklenmez.
 - DuckDB ve geçici output dosyaları repoya eklenmez.
-- Repo yalnızca kaynak kod, dbt modelleri, Power BI teslimi ve dokümantasyonu içerir.
+- Repo yalnızca kaynak kod, dbt modelleri, canlı web dashboard, arşivlenmiş BI prototipi ve dokümantasyonu içerir.

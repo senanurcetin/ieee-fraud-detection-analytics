@@ -20,7 +20,7 @@ Model olasılıkları operasyonel kullanıma uygun risk bantlarına çevrilmişt
 - High
 - Critical
 
-Bu bantlar, tekil skorların okunmasını kolaylaştırır ve Power BI üzerinde yönetilebilir bir inceleme kuyruğu yapısı sağlar.
+Bu bantlar, tekil skorların okunmasını kolaylaştırır ve canlı web dashboard üzerinde yönetilebilir bir inceleme kuyruğu yapısı sağlar.
 
 ## Geliştirme Fikirleri
 

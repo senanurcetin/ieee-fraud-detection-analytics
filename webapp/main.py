@@ -32,8 +32,11 @@ DEFAULT_CACHE_SECONDS = 600
 TABLE_QUERIES: dict[str, str] = {
     "executive_kpis": "select * from {table} limit 1",
     "product_risk": "select * from {table} order by fraud_rate desc",
+    "identity_risk": "select * from {table} order by has_identity desc",
+    "identity_product_coverage": "select * from {table} order by fraud_lift desc",
     "amount_bands": "select * from {table} order by amount_band",
     "daily_drift": "select * from {table} order by transaction_day",
+    "time_amount_signals": "select * from {table} order by transaction_hour, amount_decimal_group",
     "payment_heatmap": "select * from {table} order by fraud_rate desc",
     "email_domain_risk": "select * from {table} order by fraud_rate desc",
     "model_risk_bands": (
@@ -62,14 +65,19 @@ TABLE_QUERIES: dict[str, str] = {
     "segment_watchlist": "select * from {table} order by watchlist_rank",
     "review_strategy": "select * from {table} order by band_rank",
     "threshold_simulation": "select * from {table} order by score_threshold",
+    "report_narrative": "select * from {table} order by page_order",
+    "quality_contract": "select * from {table} order by object_name",
     "report_readiness": "select * from {table} order by check_id",
 }
 
 BIGQUERY_TABLES: dict[str, str] = {
     "executive_kpis": "pbi_executive_kpis",
     "product_risk": "pbi_product_risk",
+    "identity_risk": "pbi_identity_risk",
+    "identity_product_coverage": "pbi_identity_product_coverage",
     "amount_bands": "pbi_amount_bands",
     "daily_drift": "pbi_daily_drift",
+    "time_amount_signals": "pbi_time_amount_signals",
     "payment_heatmap": "pbi_payment_heatmap",
     "email_domain_risk": "pbi_email_domain_risk",
     "model_risk_bands": "pbi_model_risk_bands",
@@ -78,6 +86,8 @@ BIGQUERY_TABLES: dict[str, str] = {
     "segment_watchlist": "pbi_segment_watchlist",
     "review_strategy": "pbi_review_strategy",
     "threshold_simulation": "pbi_threshold_simulation",
+    "report_narrative": "pbi_report_narrative",
+    "quality_contract": "pbi_quality_contract",
     "report_readiness": "pbi_report_readiness",
 }
 

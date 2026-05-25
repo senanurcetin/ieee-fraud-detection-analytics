@@ -24,12 +24,12 @@
 
 ## Yönetim Mesajı
 
-Fraud riski tek bir değişkenle açıklanamaz. Ürün ailesi, identity varlığı, ödeme tipi, email domain, tutar ve zaman kırılımları birlikte ele alındığında sahteciliğin rastgele dağılmadığı görülür. Bu nedenle önerilen yaklaşım, segment bazlı iş kuralları ile makine öğrenmesi skorlarını aynı Power BI raporunda birleştiren izlenebilir bir risk yönetimi katmanıdır.
+Fraud riski tek bir değişkenle açıklanamaz. Ürün ailesi, identity varlığı, ödeme tipi, email domain, tutar ve zaman kırılımları birlikte ele alındığında sahteciliğin rastgele dağılmadığı görülür. Bu nedenle önerilen yaklaşım, segment bazlı iş kuralları ile makine öğrenmesi skorlarını aynı canlı web analitik panelinde birleştiren izlenebilir bir risk yönetimi katmanıdır.
 
 ## Çıktılar
 
 - BigQuery üzerinde katmanlı dataset mimarisi
 - dbt staging, intermediate ve mart modelleri
-- Power BI için final raporlama datasetleri
-- Türkçe yönetici raporu
+- Canlı web dashboard için final raporlama datasetleri
+- Türkçe canlı yönetici sunumu
 - Model skorlama, risk bandı ve veri kalitesi dokümantasyonu

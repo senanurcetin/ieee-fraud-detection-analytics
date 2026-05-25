@@ -8,7 +8,7 @@ The dbt project follows a layered analytics model:
 2. `models/staging`: type normalization and field naming.
 3. `models/intermediate`: joins and feature engineering.
 4. `models/marts`: reusable analytical marts.
-5. `models/powerbi`: DirectQuery-friendly reporting tables.
+5. `models/powerbi`: presentation-ready reporting tables for the live web dashboard.
 
 ## Source Tables
 
@@ -35,7 +35,7 @@ The project includes:
 - Custom range tests
 - Reconciliation tests
 - Risk band completeness tests
-- Power BI contract tests
+- Reporting layer contract tests
 - Business-rule tests for watchlist and review strategy tables
 - Relative TransactionDT and amount-cent validation tests
 - Product-level identity coverage tests
@@ -81,4 +81,4 @@ The `analyses`, `seeds`, and `snapshots` directories are intentionally kept with
 
 ## Exposures
 
-The Power BI report is declared as the `fraud_project_v2` exposure in `models/powerbi/_powerbi.yml`.
+The executive web dashboard is declared as the `fraud_project_v2` reporting exposure in `models/powerbi/_powerbi.yml`. The folder name is retained for backward compatibility with the original reporting dataset name.

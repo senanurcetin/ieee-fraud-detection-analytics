@@ -1,6 +1,6 @@
 # Fraud Project
 
-End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive Power BI report.
+End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive live web analytics dashboard.
 
 The business question is simple: where does fraud concentrate, and how should an operations team prioritize review capacity?
 
@@ -18,7 +18,7 @@ Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate i
 
 ## Executive Summary
 
-Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final Power BI report is structured as a senior banking fraud analyst presentation: first the portfolio risk, then concentration drivers, then amount/time behavior, then payment and email segments, then model-based review queues, and finally data quality evidence.
+Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final web dashboard is structured as a senior banking fraud analyst presentation: first the portfolio risk, then concentration drivers, then amount/time behavior, then payment and email segments, then model-based review queues, and finally data quality evidence.
 
 Portfolio snapshot:
 
@@ -38,11 +38,11 @@ flowchart LR
     C --> D["dbt staging models"]
     D --> E["dbt intermediate models"]
     E --> F["dbt mart models"]
-    F --> G["Power BI DirectQuery dataset"]
+    F --> G["Executive reporting tables"]
     B --> H["LightGBM scoring"]
     H --> F
-    G --> I["fraud_project_v2.pbix"]
-    G --> J["FastAPI web dashboard"]
+    G --> I["FastAPI web dashboard"]
+    I --> J["Vercel public presentation"]
 ```
 
 BigQuery datasets used by the production target:
@@ -59,8 +59,8 @@ BigQuery datasets used by the production target:
 - Warehouse: Google BigQuery
 - Transformation: dbt Core, dbt-bigquery, custom dbt tests
 - Machine learning: LightGBM, scikit-learn, time-based validation
-- Reporting: Power BI Desktop, DirectQuery, native visuals
-- Live dashboard: FastAPI, static HTML/CSS/JavaScript, BigQuery client
+- Reporting: FastAPI live dashboard, static HTML/CSS/JavaScript, BigQuery client
+- Deployment: Vercel production deployment
 - Quality gates: dbt tests, Python validation scripts, GitHub Actions
 - Infrastructure definition: Terraform dataset manifest for BigQuery
 
@@ -76,9 +76,9 @@ fraud_project/
 |-- infra/bigquery/           # Terraform dataset definitions
 |-- macros/                   # dbt macros and generic tests
 |-- models/                   # staging, intermediate, marts, powerbi dbt models
-|-- powerbi/                  # PBIX, DAX layer, report assets, report guide
+|-- powerbi/                  # archived PBIX prototype and supporting assets
 |-- scripts/                  # local deployment and validation commands
-|-- src/                      # ingestion, ML, exports, PBIX build scripts
+|-- src/                      # ingestion, ML, exports, archived BI helper scripts
 |-- webapp/                   # FastAPI + browser dashboard over BigQuery
 `-- tests/                    # dbt singular tests and Python tests
 ```
@@ -138,9 +138,7 @@ Build the local analytical store and model scores:
 python src/prepare_raw_and_ml.py
 dbt deps
 dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
-python src/export_powerbi_and_charts.py
-python src/build_fraud_project_v2_pbix.py
-python scripts/validate_powerbi_report.py
+uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 ```
 
 ## BigQuery Deployment
@@ -242,34 +240,35 @@ Validation evidence:
 | Validation High + Critical false-positive rate | 3.12% |
 | Validation High + Critical workload share | 5.06% |
 
-## Power BI Report
+## Live Web Dashboard
 
 Main deliverable:
+
+```text
+https://fraud-project-web.vercel.app
+```
+
+The live dashboard reads the same dbt-built BigQuery reporting tables and replaces the Power BI report as the main presentation layer. It includes:
+
+- Global slicers for metric, segment family, and operational priority
+- Cross-highlight style segment selection
+- Drill-through side panel for selected segments
+- Custom tooltips on bars, heatmaps, time series, and model curves
+- Pareto analysis for fraud contribution
+- Decomposition tree for segment risk drivers
+- Identity/product coverage matrix
+- Relative time and amount-pattern heatmap
+- Threshold what-if simulation with workload, capture, and precision
+- Feature importance and feature-family treemap
+- Data quality contract and readiness scorecards
+
+Archived BI prototype:
 
 ```text
 powerbi/fraud_project_v2.pbix
 ```
 
-The report uses BigQuery DirectQuery and contains six executive pages:
-
-1. Executive summary
-2. Risk concentration
-3. Amount and time analysis
-4. Payment and email segments
-5. Model scoring and risk bands
-6. Data quality and architecture
-
-Report exports and supporting visuals are stored in `powerbi/assets/`. DAX measures are documented in `powerbi/dax/fraud_project_measures.dax`.
-
-## Live Web Dashboard
-
-The project also includes a browser-based presentation layer that reads the same dbt-built BigQuery reporting tables as the Power BI model. This is useful when Power BI Desktop connectivity is unavailable or when the presentation needs to be delivered from a lightweight web interface.
-
-Production dashboard:
-
-```text
-https://fraud-project-web.vercel.app
-```
+The PBIX file is retained as a historical BI prototype, but it is no longer the primary reporting deliverable.
 
 Run locally:
 
@@ -290,11 +289,13 @@ Vercel deploys the `webapp/` folder as the project root. The production runtime 
 
 ## Dashboard Preview
 
-![Executive control panel](powerbi/assets/17_executive_control_panel.png)
+![Executive web overview](docs/assets/web_dashboard_executive_overview.png)
 
-![Segment watchlist](powerbi/assets/18_segment_watchlist.png)
+![Segment analysis drilldown](docs/assets/web_dashboard_segment_analysis.png)
 
-![Review strategy matrix](powerbi/assets/22_review_strategy_matrix.png)
+![Model threshold simulation](docs/assets/web_dashboard_model_threshold.png)
+
+![Data quality and lineage](docs/assets/web_dashboard_quality_lineage.png)
 
 ## Quality Gates
 
@@ -303,17 +304,16 @@ ruff check .
 pytest
 pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277
 dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
-python scripts/validate_powerbi_report.py
 ```
 
 Latest production verification:
 
 - dbt production build: `PASS=123 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=124`
 - dbt project scope: 33 models, 90 data tests, 8 sources, 1 exposure
-- Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; Power BI fact 590,540
-- GitHub Actions: Python quality, pytest, Power BI package validation, dependency audit, and dbt parse/build workflow
+- Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; reporting fact 590,540
+- GitHub Actions: Python quality, pytest, web dashboard contract checks, archived PBIX package validation, dependency audit, and dbt parse/build workflow
 
-The Power BI validator checks package integrity, page count, visual type allowlist, missing image resources, unsafe fields, raw field-label leakage, native title leakage, and text clipping risk.
+The archived PBIX validator is retained for package integrity checks while the web dashboard is the active presentation surface.
 
 ## Documentation
 
@@ -331,7 +331,8 @@ The Power BI validator checks package integrity, page count, visual type allowli
 - [Regulatory Context](docs/regulatory_context.md)
 - [Operational Playbook](docs/operational_playbook.md)
 - [Security and Secrets](docs/security_and_secrets.md)
-- [Power BI Report Guide](docs/powerbi_report_guide.md)
+- [Live Web Dashboard Guide](docs/live_web_dashboard_guide.md)
+- [Archived Power BI Prototype Guide](docs/powerbi_report_guide.md)
 - [QA Acceptance Checklist](docs/qa_acceptance_checklist.md)
 
 ## License
