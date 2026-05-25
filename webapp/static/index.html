@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fraud Risk Intelligence</title>
+  <style>
+    :root {
+      --bg: #0c1117;
+      --panel: #131a22;
+      --panel-2: #182230;
+      --panel-3: #0f1620;
+      --line: rgba(255,255,255,.09);
+      --line-strong: rgba(255,255,255,.16);
+      --text: #edf2f7;
+      --muted: #9aa7b6;
+      --dim: #617083;
+      --red: #e5484d;
+      --amber: #d99a20;
+      --green: #2f9e75;
+      --blue: #4c8df6;
+      --teal: #2bb3a3;
+      --violet: #8b5cf6;
+      --shadow: 0 20px 70px rgba(0,0,0,.26);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(76,141,246,.13), transparent 30rem),
+        radial-gradient(circle at bottom right, rgba(229,72,77,.10), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    button, input, select { font: inherit; }
+
+    .shell { max-width: 1440px; margin: 0 auto; padding: 22px 28px 34px; }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+    .brand > div:last-child { min-width: 0; }
+    .mark {
+      width: 42px; height: 42px;
+      display: grid; place-items: center;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #1c2938, #101720);
+      border: 1px solid var(--line-strong);
+      box-shadow: var(--shadow);
+      color: var(--red);
+      font-weight: 900;
+      letter-spacing: -.04em;
+    }
+    h1 { margin: 0; font-size: clamp(26px, 3.5vw, 46px); line-height: 1.02; letter-spacing: -.045em; }
+    .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 820px; line-height: 1.55; }
+
+    .statusbar {
+      display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap;
+      color: var(--muted); font-size: 12px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.035);
+      border-radius: 999px;
+      padding: 7px 10px;
+      white-space: nowrap;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pill.live { color: #ffb4b4; border-color: rgba(229,72,77,.35); background: rgba(229,72,77,.10); }
+    .pill.pass { color: #b7f7dc; border-color: rgba(47,158,117,.35); background: rgba(47,158,117,.10); }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+    .tab {
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      padding: 12px 14px 13px;
+      cursor: pointer;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .tab.active { color: var(--text); border-color: var(--red); }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .grid { display: grid; gap: 16px; }
+    .kpis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .wide { grid-column: 1 / -1; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.016)), var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+      overflow: hidden;
+    }
+    .card.pad { padding: 18px; }
+    .card-head {
+      padding: 15px 18px 12px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .card-title { font-weight: 800; letter-spacing: -.02em; font-size: 15px; margin: 0; }
+    .card-note { color: var(--muted); font-size: 12px; margin-top: 4px; line-height: 1.35; }
+    .card-body { padding: 18px; }
+
+    .kpi { padding: 16px; min-height: 132px; position: relative; }
+    .kpi::after {
+      content: "";
+      position: absolute;
+      left: 16px; right: 16px; bottom: 0;
+      height: 3px;
+      background: var(--accent, var(--blue));
+      border-radius: 999px 999px 0 0;
+      opacity: .8;
+    }
+    .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; }
+    .kpi-value { margin-top: 12px; font-size: clamp(24px, 3vw, 38px); line-height: 1; font-weight: 850; letter-spacing: -.05em; }
+    .kpi-caption { margin-top: 10px; color: var(--dim); font-size: 12px; line-height: 1.35; }
+
+    .bar-list { display: grid; gap: 12px; }
+    .bar-row { display: grid; grid-template-columns: 116px 1fr 74px; gap: 12px; align-items: center; }
+    .bar-label { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 24px; background: var(--panel-3); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; width: 0; background: var(--bar, var(--blue)); border-radius: 4px; transition: width .55s ease; }
+    .bar-value { color: var(--text); font-variant-numeric: tabular-nums; font-size: 12px; text-align: right; }
+
+    .line-wrap { height: 286px; }
+    svg { display: block; width: 100%; height: 100%; }
+    .axis { stroke: rgba(255,255,255,.10); stroke-width: 1; }
+    .gridline { stroke: rgba(255,255,255,.055); stroke-width: 1; }
+    .area { fill: rgba(229,72,77,.12); }
+    .line { fill: none; stroke: var(--red); stroke-width: 2.5; }
+    .volume { fill: rgba(76,141,246,.18); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+    th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; font-weight: 800; }
+    td { font-size: 12px; color: #dce4ef; }
+    .table-wrap { overflow-x: auto; }
+
+    .priority {
+      display: inline-flex; align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      border: 1px solid var(--line);
+    }
+    .priority.Kritik { color: #ffb4b4; background: rgba(229,72,77,.13); border-color: rgba(229,72,77,.36); }
+    .priority.Yüksek { color: #ffdca6; background: rgba(217,154,32,.13); border-color: rgba(217,154,32,.36); }
+    .priority.İzle { color: #bae6ff; background: rgba(76,141,246,.13); border-color: rgba(76,141,246,.36); }
+    .priority.Normal { color: #b7f7dc; background: rgba(47,158,117,.13); border-color: rgba(47,158,117,.36); }
+
+    .decision-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .decision {
+      border-left: 3px solid var(--accent);
+      padding: 15px 16px;
+      background: rgba(255,255,255,.026);
+      min-height: 122px;
+    }
+    .decision h3 { margin: 0 0 10px; font-size: 14px; letter-spacing: -.01em; }
+    .decision p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 13px; }
+
+    .heatmap { display: grid; gap: 8px; }
+    .heat-row { display: grid; grid-template-columns: 130px repeat(2, minmax(92px, 1fr)); gap: 8px; align-items: center; }
+    .heat-cell {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      display: grid;
+      align-content: center;
+      padding: 8px;
+      color: white;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .heat-meta { color: var(--muted); font-size: 11px; margin-top: 3px; font-weight: 600; }
+
+    .lineage {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+    .node {
+      padding: 16px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      text-align: center;
+      min-height: 86px;
+      display: grid;
+      align-content: center;
+      gap: 6px;
+    }
+    .node strong { font-size: 13px; }
+    .node span { color: var(--muted); font-size: 11px; line-height: 1.35; }
+
+    .loading, .error {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      border-radius: 10px;
+      padding: 22px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .error { border-color: rgba(229,72,77,.35); color: #ffcccc; background: rgba(229,72,77,.08); }
+
+    .toolbar { display: flex; gap: 10px; align-items: center; justify-content: flex-end; }
+    .btn {
+      border: 1px solid var(--line-strong);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 12px;
+    }
+    .btn:hover { border-color: rgba(255,255,255,.28); }
+
+    @media (max-width: 1120px) {
+      .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .cols-3 { grid-template-columns: 1fr; }
+      .cols-2 { grid-template-columns: 1fr; }
+      .decision-strip { grid-template-columns: 1fr; }
+      .lineage { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; }
+      .statusbar { justify-content: flex-start; }
+    }
+    @media (max-width: 680px) {
+      .shell { padding: 18px 14px 28px; }
+      .brand { align-items: flex-start; }
+      .subtitle { max-width: 100%; overflow-wrap: anywhere; }
+      .statusbar { justify-content: flex-start; }
+      .pill { white-space: normal; }
+      .kpis { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 92px 1fr 58px; }
+      .heat-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">FR</div>
+        <div>
+          <h1>Fraud Risk Intelligence</h1>
+          <p class="subtitle">BigQuery üzerinde dbt ile üretilen raporlama katmanından canlı veri çeken yönetici sunum arayüzü.</p>
+        </div>
+      </div>
+      <div class="statusbar">
+        <span class="pill live">BigQuery Live</span>
+        <span class="pill" id="dataset-pill">dataset hazırlanıyor</span>
+        <span class="pill pass" id="readiness-pill">kontrol bekleniyor</span>
+        <button class="btn" id="refresh-btn">Yenile</button>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <button class="tab active" data-view="overview">01 Yönetici Özeti</button>
+      <button class="tab" data-view="segments">02 Segment Analizi</button>
+      <button class="tab" data-view="model">03 Model Operasyon</button>
+      <button class="tab" data-view="quality">04 Veri Kalitesi</button>
+    </nav>
+
+    <main id="state" class="loading">BigQuery raporlama katmanına bağlanılıyor.</main>
+
+    <section id="dashboard" style="display:none">
+      <section class="view active" id="overview">
+        <div class="grid kpis" id="kpi-grid"></div>
+        <div class="grid cols-3">
+          <article class="card wide">
+            <div class="card-head">
+              <div>
+                <h2 class="card-title">Fraud oranı referans zaman ekseninde nasıl değişiyor?</h2>
+                <div class="card-note">TransactionDT gerçek tarih değil; dbt katmanı bunu göreli gün/saat olarak sunar.</div>
+              </div>
+            </div>
+            <div class="card-body"><div class="line-wrap"><svg id="daily-trend"></svg></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Ürün kırılımı</h2><div class="card-note">Fraud oranı ve lift</div></div></div>
+            <div class="card-body"><div class="bar-list" id="product-bars"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Risk bandı</h2><div class="card-note">Gözlenen fraud oranı</div></div></div>
+            <div class="card-body"><div class="bar-list" id="risk-bars"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Tutar bandı</h2><div class="card-note">Risk yoğunlaşması</div></div></div>
+            <div class="card-body"><div class="bar-list" id="amount-bars"></div></div>
+          </article>
+        </div>
+        <div class="decision-strip" id="decision-strip"></div>
+      </section>
+
+      <section class="view" id="segments">
+        <div class="grid cols-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Operasyonel segment izleme listesi</h2><div class="card-note">Fraud payı, lift ve işlem hacmi birlikte sıralanır.</div></div></div>
+            <div class="card-body table-wrap"><table id="watchlist-table"></table></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Ödeme tipi ısı haritası</h2><div class="card-note">Kart ağı ve kart tipi kesişiminde fraud oranı.</div></div></div>
+            <div class="card-body"><div class="heatmap" id="payment-heatmap"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Email domain riski</h2><div class="card-note">Satın alan email gruplarında lift.</div></div></div>
+            <div class="card-body"><div class="bar-list" id="email-bars"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Identity kapsamı</h2><div class="card-note">Kimlik kaydı olan işlemler ayrı risk sinyali üretir.</div></div></div>
+            <div class="card-body"><div class="bar-list" id="identity-bars"></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="model">
+        <div class="grid cols-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Model risk bantları</h2><div class="card-note">Skor karar değil, inceleme önceliği üretir.</div></div></div>
+            <div class="card-body table-wrap"><table id="review-table"></table></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Threshold simülasyonu</h2><div class="card-note">Yakalama oranı ile operasyon yükü arasındaki trade-off.</div></div></div>
+            <div class="card-body"><div class="line-wrap"><svg id="threshold-chart"></svg></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Feature importance</h2><div class="card-note">LightGBM skorunun ağırlıklı sinyal aileleri.</div></div></div>
+            <div class="card-body"><div class="bar-list" id="feature-bars"></div></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Risk bandı hacim dağılımı</h2><div class="card-note">Operasyon kuyruğu kapasite planı.</div></div></div>
+            <div class="card-body"><div class="bar-list" id="risk-volume-bars"></div></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="quality">
+        <div class="grid cols-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Veri kalite kontratı</h2><div class="card-note">Sunum öncesi row-count ve model/rapor hazırlık kontrolleri.</div></div></div>
+            <div class="card-body table-wrap"><table id="readiness-table"></table></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Eksiklik yoğunluğu</h2><div class="card-note">Feature ailesi bazında ortalama missingness.</div></div></div>
+            <div class="card-body"><div class="bar-list" id="quality-bars"></div></div>
+          </article>
+          <article class="card wide">
+            <div class="card-head"><div><h2 class="card-title">Canlı veri mimarisi</h2><div class="card-note">Aynı BigQuery martları Power BI yerine web arayüzünden sunulur.</div></div></div>
+            <div class="card-body">
+              <div class="lineage">
+                <div class="node"><strong>Kaggle CSV</strong><span>train transaction ve identity</span></div>
+                <div class="node"><strong>BigQuery Raw</strong><span>ham veri tabanı</span></div>
+                <div class="node"><strong>dbt Models</strong><span>staging, intermediate, mart</span></div>
+                <div class="node"><strong>PowerBI Layer</strong><span>pbi_* raporlama tabloları</span></div>
+                <div class="node"><strong>Web Dashboard</strong><span>FastAPI ile canlı sunum</span></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    const fmtInt = value => new Intl.NumberFormat('tr-TR').format(Math.round(Number(value || 0)));
+    const fmtPct = value => `${(Number(value || 0) * 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+    const fmtPctRaw = value => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+    const fmtMoney = value => `$${Number(value || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`;
+    const colorScale = ['#e5484d', '#d99a20', '#8b5cf6', '#4c8df6', '#2bb3a3', '#2f9e75'];
+
+    let dashboardData = null;
+
+    const viewNames = ['overview', 'segments', 'model', 'quality'];
+
+    function activateView(name) {
+      const selected = viewNames.includes(name) ? name : 'overview';
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.view === selected));
+      document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === selected));
+    }
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        history.replaceState(null, '', `#${tab.dataset.view}`);
+        activateView(tab.dataset.view);
+      });
+    });
+
+    window.addEventListener('hashchange', () => activateView(location.hash.replace('#', '')));
+
+    document.getElementById('refresh-btn').addEventListener('click', () => loadDashboard(true));
+
+    async function loadDashboard(refresh = false) {
+      const state = document.getElementById('state');
+      state.className = 'loading';
+      state.style.display = 'block';
+      state.textContent = refresh ? 'BigQuery verisi yenileniyor.' : 'BigQuery raporlama katmanına bağlanılıyor.';
+      document.getElementById('dashboard').style.display = 'none';
+
+      try {
+        const response = await fetch(`/api/dashboard${refresh ? '?refresh=true' : ''}`);
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(detail);
+        }
+        dashboardData = await response.json();
+        renderDashboard(dashboardData);
+        activateView(location.hash.replace('#', ''));
+        state.style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+      } catch (error) {
+        state.className = 'error';
+        state.innerHTML = `<strong>Dashboard verisi yüklenemedi.</strong><br>${escapeHtml(error.message)}<br><br>GCP_PROJECT_ID, BQ_DATASET ve GOOGLE_APPLICATION_CREDENTIALS değişkenlerini kontrol edin.`;
+      }
+    }
+
+    function renderDashboard(data) {
+      document.getElementById('dataset-pill').textContent = data.meta.dataset;
+      document.getElementById('readiness-pill').textContent = `${data.meta.readiness_passed}/${data.meta.readiness_total} kalite kontrolü PASS`;
+      renderKpis(data.executive_kpis[0] || {});
+      renderLineChart('daily-trend', data.daily_drift, 'transaction_day', 'fraud_rate', 'transaction_count');
+      renderBars('product-bars', data.product_risk, 'product_cd', 'fraud_rate', row => `${fmtPct(row.fraud_rate)} | Lift ${Number(row.lift || 0).toFixed(2)}x`, 'fraud_rate');
+      renderBars('risk-bars', data.model_risk_bands, 'risk_band', 'observed_fraud_rate', row => `${fmtPct(row.observed_fraud_rate)} | ${fmtInt(row.transaction_count)} işlem`, 'observed_fraud_rate');
+      renderBars('amount-bars', data.amount_bands, 'amount_band', 'fraud_rate', row => `${fmtPct(row.fraud_rate)} | ${fmtMoney(row.avg_transaction_amount)}`, 'fraud_rate');
+      renderDecisionStrip(data);
+      renderWatchlist(data.segment_watchlist);
+      renderPaymentHeatmap(data.payment_heatmap);
+      renderBars('email-bars', data.email_domain_risk, 'purchaser_email_group', 'fraud_rate', row => `${fmtPct(row.fraud_rate)} | Lift ${Number(row.lift || 0).toFixed(2)}x`, 'fraud_rate');
+      renderBars('identity-bars', data.executive_kpis, 'identity_label', 'identity_rate', undefined, 'identity_rate', buildIdentityRows(data.executive_kpis[0] || {}));
+      renderReviewStrategy(data.review_strategy);
+      renderThresholdChart('threshold-chart', data.threshold_simulation);
+      renderBars('feature-bars', data.feature_importance, 'feature', 'importance', row => Number(row.importance || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 }), 'importance');
+      renderBars('risk-volume-bars', data.model_risk_bands, 'risk_band', 'transaction_count', row => `${fmtInt(row.transaction_count)} işlem`, 'transaction_count');
+      renderReadiness(data.report_readiness);
+      renderBars('quality-bars', data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} eksik`, 'avg_missing_rate');
+    }
+
+    function renderKpis(k) {
+      const items = [
+        ['Toplam işlem', fmtInt(k.total_transactions), 'Analiz edilen eğitim işlem hacmi', '#4c8df6'],
+        ['Fraud işlem', fmtInt(k.fraud_transactions), `${fmtPct(k.fraud_rate)} baz oran`, '#e5484d'],
+        ['Identity kapsama', fmtPct(k.identity_coverage_rate), 'Kimlik kaydı olan işlem payı', '#2bb3a3'],
+        ['Product C lift', `${Number(k.product_c_lift || 0).toFixed(2)}x`, `${fmtInt(k.product_c_transactions)} işlem`, '#d99a20'],
+        ['Identity lift', `${Number(k.identity_lift || 0).toFixed(2)}x`, 'Kimlikli işlemlerde ayrışma', '#8b5cf6'],
+        ['Critical lift', `${Number(k.critical_risk_lift || 0).toFixed(1)}x`, `${fmtInt(k.critical_risk_transactions)} işlem`, '#e5484d'],
+      ];
+      document.getElementById('kpi-grid').innerHTML = items.map(([label, value, caption, color]) => `
+        <article class="card kpi" style="--accent:${color}">
+          <div class="kpi-label">${label}</div>
+          <div class="kpi-value">${value}</div>
+          <div class="kpi-caption">${caption}</div>
+        </article>
+      `).join('');
+    }
+
+    function renderBars(target, sourceRows, labelKey, valueKey, metaFn, scaleKey, overrideRows) {
+      const rows = overrideRows || sourceRows || [];
+      const max = Math.max(...rows.map(row => Number(row[scaleKey || valueKey] || 0)), 0.0001);
+      document.getElementById(target).innerHTML = rows.map((row, index) => {
+        const value = Number(row[valueKey] || 0);
+        const width = Math.max(2, (Number(row[scaleKey || valueKey] || 0) / max) * 100);
+        return `
+          <div class="bar-row">
+            <div class="bar-label" title="${escapeHtml(row[labelKey] ?? '')}">${escapeHtml(row[labelKey] ?? '')}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${width}%;--bar:${colorScale[index % colorScale.length]}"></div></div>
+            <div class="bar-value">${metaFn ? metaFn(row) : fmtPct(value)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function buildIdentityRows(k) {
+      return [
+        { identity_label: 'Identity kaydı var', identity_rate: Number(k.with_identity_fraud_rate || 0), lift: Number(k.identity_lift || 0) },
+        { identity_label: 'Identity kaydı yok', identity_rate: Number(k.without_identity_fraud_rate || 0), lift: 1 },
+      ];
+    }
+
+    function renderLineChart(target, rows, xKey, yKey, volumeKey) {
+      const svg = document.getElementById(target);
+      const w = 1120, h = 270, pad = 36;
+      const values = rows.map(row => Number(row[yKey] || 0));
+      const volumes = rows.map(row => Number(row[volumeKey] || 0));
+      const maxY = Math.max(...values) * 1.15;
+      const minY = Math.min(...values) * 0.75;
+      const maxV = Math.max(...volumes);
+      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.6);
+      const y = value => h - pad - ((value - minY) / Math.max(maxY - minY, .0001)) * (h - pad * 1.5);
+      const points = values.map((value, i) => `${x(i)},${y(value)}`);
+      const area = `M${pad},${h - pad} L${points.join(' L')} L${w - pad},${h - pad} Z`;
+      const bars = rows.map((row, i) => {
+        const bh = (Number(row[volumeKey] || 0) / Math.max(maxV, 1)) * 70;
+        return `<rect class="volume" x="${x(i) - 1}" y="${h - pad - bh}" width="2" height="${bh}" />`;
+      }).join('');
+      const grid = [0, 1, 2, 3].map(i => `<line class="gridline" x1="${pad}" x2="${w - pad}" y1="${pad + i * 55}" y2="${pad + i * 55}" />`).join('');
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.innerHTML = `${grid}${bars}<path class="area" d="${area}"></path><path class="line" d="M${points.join(' L')}"></path>`;
+    }
+
+    function renderThresholdChart(target, rows) {
+      const svg = document.getElementById(target);
+      const w = 720, h = 270, pad = 38;
+      const x = i => pad + (i / Math.max(rows.length - 1, 1)) * (w - pad * 1.7);
+      const y = value => h - pad - Number(value || 0) * (h - pad * 1.7);
+      const capture = rows.map((row, i) => `${x(i)},${y(row.fraud_capture_rate)}`);
+      const workload = rows.map((row, i) => `${x(i)},${y(row.workload_share)}`);
+      svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+      svg.innerHTML = `
+        <line class="axis" x1="${pad}" x2="${w - pad}" y1="${h - pad}" y2="${h - pad}"></line>
+        <path d="M${capture.join(' L')}" fill="none" stroke="#e5484d" stroke-width="3"></path>
+        <path d="M${workload.join(' L')}" fill="none" stroke="#4c8df6" stroke-width="3"></path>
+        <text x="${pad}" y="22" fill="#e5484d" font-size="12" font-weight="800">Fraud yakalama</text>
+        <text x="${pad + 132}" y="22" fill="#4c8df6" font-size="12" font-weight="800">İş yükü</text>
+      `;
+    }
+
+    function renderDecisionStrip(data) {
+      const k = data.executive_kpis[0] || {};
+      document.getElementById('decision-strip').innerHTML = `
+        <div class="card decision" style="--accent:#e5484d"><h3>Risk yoğunlaşması</h3><p>Fraud nadir görünse de Product C ${Number(k.product_c_lift || 0).toFixed(2)}x lift taşıyor. Yönetim odağı genel hacimden riskli segmente kaymalı.</p></div>
+        <div class="card decision" style="--accent:#8b5cf6"><h3>Modelin rolü</h3><p>Skor nihai karar değil, operasyon kuyruğu önceliklendirme katmanı olarak kullanılmalı. Critical ve High bantlar ayrı SLA ile izlenmeli.</p></div>
+        <div class="card decision" style="--accent:#2bb3a3"><h3>Sunum kanıtı</h3><p>Bu ekran doğrudan dbt tarafından üretilen BigQuery raporlama tablolarını okur; Power BI model hatasına bağlı değildir.</p></div>
+      `;
+    }
+
+    function renderWatchlist(rows) {
+      renderTable('watchlist-table', rows.slice(0, 10), [
+        ['Sıra', row => row.watchlist_rank],
+        ['Alan', row => row.segment_family],
+        ['Segment', row => row.segment_name],
+        ['İşlem', row => fmtInt(row.transaction_count)],
+        ['Fraud oranı', row => fmtPct(row.fraud_rate)],
+        ['Lift', row => `${Number(row.lift || 0).toFixed(2)}x`],
+        ['Öncelik', row => `<span class="priority ${row.risk_priority}">${row.risk_priority}</span>`],
+      ]);
+    }
+
+    function renderReviewStrategy(rows) {
+      renderTable('review-table', rows, [
+        ['Bant', row => row.risk_band],
+        ['Öncelik', row => row.review_priority],
+        ['Günlük hacim', row => fmtInt(row.estimated_daily_review_volume)],
+        ['Yakalama', row => fmtPct(row.expected_fraud_capture)],
+        ['Lift', row => `${Number(row.lift || 0).toFixed(1)}x`],
+        ['Politika', row => row.queue_policy],
+      ]);
+    }
+
+    function renderReadiness(rows) {
+      renderTable('readiness-table', rows, [
+        ['Kontrol', row => row.check_name],
+        ['Beklenen', row => row.expected_value],
+        ['Gerçek', row => row.actual_value],
+        ['Alan', row => row.readiness_area],
+        ['Durum', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Kritik'}">${row.status}</span>`],
+      ]);
+    }
+
+    function renderTable(target, rows, columns) {
+      document.getElementById(target).innerHTML = `
+        <thead><tr>${columns.map(([name]) => `<th>${name}</th>`).join('')}</tr></thead>
+        <tbody>${rows.map(row => `<tr>${columns.map(([, render]) => `<td>${render(row)}</td>`).join('')}</tr>`).join('')}</tbody>
+      `;
+    }
+
+    function renderPaymentHeatmap(rows) {
+      const max = Math.max(...rows.map(row => Number(row.fraud_rate || 0)), 0.0001);
+      document.getElementById('payment-heatmap').innerHTML = rows.map(row => {
+        const alpha = .14 + (Number(row.fraud_rate || 0) / max) * .74;
+        return `
+          <div class="heat-row">
+            <div class="bar-label">${escapeHtml(row.card_network)} / ${escapeHtml(row.card_type)}</div>
+            <div class="heat-cell" style="background:rgba(229,72,77,${alpha})">
+              ${fmtPct(row.fraud_rate)}
+              <span class="heat-meta">${fmtInt(row.transaction_count)} işlem</span>
+            </div>
+            <div class="heat-cell" style="background:rgba(76,141,246,${Math.min(alpha, .55)})">
+              ${Number(row.lift || 0).toFixed(2)}x lift
+              <span class="heat-meta">${fmtPct(row.fraud_share)} fraud payı</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+      }[char]));
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

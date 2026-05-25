@@ -42,6 +42,7 @@ flowchart LR
     B --> H["LightGBM scoring"]
     H --> F
     G --> I["fraud_project_v2.pbix"]
+    G --> J["FastAPI web dashboard"]
 ```
 
 BigQuery datasets used by the production target:
@@ -59,6 +60,7 @@ BigQuery datasets used by the production target:
 - Transformation: dbt Core, dbt-bigquery, custom dbt tests
 - Machine learning: LightGBM, scikit-learn, time-based validation
 - Reporting: Power BI Desktop, DirectQuery, native visuals
+- Live dashboard: FastAPI, static HTML/CSS/JavaScript, BigQuery client
 - Quality gates: dbt tests, Python validation scripts, GitHub Actions
 - Infrastructure definition: Terraform dataset manifest for BigQuery
 
@@ -77,6 +79,7 @@ fraud_project/
 |-- powerbi/                  # PBIX, DAX layer, report assets, report guide
 |-- scripts/                  # local deployment and validation commands
 |-- src/                      # ingestion, ML, exports, PBIX build scripts
+|-- webapp/                   # FastAPI + browser dashboard over BigQuery
 `-- tests/                    # dbt singular tests and Python tests
 ```
 
@@ -257,6 +260,25 @@ The report uses BigQuery DirectQuery and contains six executive pages:
 6. Data quality and architecture
 
 Report exports and supporting visuals are stored in `powerbi/assets/`. DAX measures are documented in `powerbi/dax/fraud_project_measures.dax`.
+
+## Live Web Dashboard
+
+The project also includes a browser-based presentation layer that reads the same dbt-built BigQuery reporting tables as the Power BI model. This is useful when Power BI Desktop connectivity is unavailable or when the presentation needs to be delivered from a lightweight web interface.
+
+Run locally:
+
+```powershell
+$env:GCP_PROJECT_ID = "your-gcp-project"
+$env:BQ_DATASET = "fraud_project_powerbi"
+$env:BIGQUERY_LOCATION = "US"
+$env:GOOGLE_APPLICATION_CREDENTIALS = "C:\secure\path\service-account.json"
+
+uvicorn webapp.main:app --host 127.0.0.1 --port 8000
+```
+
+Then open `http://127.0.0.1:8000`.
+
+The API reads pre-aggregated `pbi_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard.
 
 ## Dashboard Preview
 
