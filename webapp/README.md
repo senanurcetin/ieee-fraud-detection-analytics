@@ -43,3 +43,15 @@ http://127.0.0.1:8000
 - API responses are cached in memory for 10 minutes by default.
 - Set `WEB_CACHE_SECONDS` to change the cache duration.
 - Set `BIGQUERY_MAX_BYTES_BILLED` to enforce a query cost guardrail.
+
+## Vercel Runtime
+
+Vercel does not have access to local credential files. Configure these environment variables in the Vercel project:
+
+- `GCP_PROJECT_ID`
+- `BQ_DATASET`
+- `BIGQUERY_LOCATION`
+- `BIGQUERY_MAX_BYTES_BILLED`
+- `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`
+
+`GOOGLE_APPLICATION_CREDENTIALS_JSON_B64` must contain the base64-encoded service-account JSON content. Do not commit credential files to the repository.

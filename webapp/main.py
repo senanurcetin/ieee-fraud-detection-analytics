@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import base64
+import json
 import os
 import time
 from datetime import date, datetime
@@ -17,6 +19,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import bigquery
+from google.oauth2 import service_account
 
 load_dotenv()
 
@@ -121,6 +124,19 @@ def qualified_table(table_name: str) -> str:
 
 @lru_cache(maxsize=1)
 def bq_client() -> bigquery.Client:
+    raw_credentials = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    encoded_credentials = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON_B64")
+    if encoded_credentials:
+        raw_credentials = base64.b64decode(encoded_credentials).decode("utf-8")
+
+    if raw_credentials:
+        credentials_info = json.loads(raw_credentials)
+        credentials = service_account.Credentials.from_service_account_info(
+            credentials_info,
+            scopes=["https://www.googleapis.com/auth/bigquery"],
+        )
+        return bigquery.Client(project=project_id(), location=bigquery_location(), credentials=credentials)
+
     return bigquery.Client(project=project_id(), location=bigquery_location())
 
 
