@@ -58,7 +58,7 @@ This backlog tracks the remaining work for the live web analytics layer. The goa
    - Keep dataset selection environment-driven to avoid paid infrastructure.
 
 2. Tenant-ready architecture note
-   - Plan dataset isolation for future multi-tenant usage while staying within free-tier constraints.
+   - Plan dataset isolation for future multi-tenant usage while staying within cost-controlled public deployment constraints.
    - Avoid assumptions about paid gateways or custom domains.
 
 3. Payment-independent validation

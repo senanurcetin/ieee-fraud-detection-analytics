@@ -1,7 +1,6 @@
 data/raw/
 data/processed/
 outputs/charts/
-outputs/powerbi/
 outputs/qa/
 outputs/manual-*/
 outputs/presentation/preview/

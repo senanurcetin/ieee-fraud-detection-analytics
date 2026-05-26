@@ -188,7 +188,7 @@ OPERATING_ASSUMPTIONS: list[dict[str, str]] = [
     {
         "assumption": "API cache",
         "default_value": f"{DEFAULT_CACHE_SECONDS} seconds",
-        "purpose": "Keeps public dashboard traffic within free-tier-friendly query volume.",
+        "purpose": "Keeps public dashboard traffic within cost-controlled query volume.",
     },
 ]
 

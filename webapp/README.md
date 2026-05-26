@@ -104,4 +104,4 @@ Vercel cannot read local credential files. Configure these environment variables
 - API responses are cached in memory for 10 minutes by default.
 - Set `WEB_CACHE_SECONDS` to tune cache duration.
 - Set `BIGQUERY_MAX_BYTES_BILLED` to enforce a query cost limit.
-- The dashboard reads only small `rpt_*` reporting tables, which keeps BigQuery usage within free-tier-friendly limits for portfolio traffic.
+- The dashboard reads only small `rpt_*` reporting tables, which keeps BigQuery usage cost-controlled for portfolio traffic.
