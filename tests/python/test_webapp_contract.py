@@ -129,6 +129,11 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "alert-list" in html
     assert "waterfall-chart" in html
     assert "action-register" in html
+    assert "portfolio-exposure" in html
+    assert "model-validation-scorecard" in html
+    assert "threshold-confusion-matrix" in html
+    assert "analysis-coverage-matrix" in html
+    assert "hypothesis-register" in html
     assert "kpi-dictionary" in html
     assert "methodology-notes" in html
     assert "/api/metadata" in html
@@ -139,6 +144,9 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Selected threshold" in html
     assert "Move the slider to compare scenarios" in html
     assert "chart focus" in html
+    assert "Fraud amount exposure" in html
+    assert "Selected-threshold confusion matrix" in html
+    assert "Analysis coverage matrix" in html
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:
@@ -151,6 +159,17 @@ def test_threshold_slider_updates_selected_scenario_cards() -> None:
     assert "selectedThresholdScenario()" in section
     assert "thresholdRecommendation()" not in section
     assert "Capture / precision" in section
+
+
+def test_metadata_contains_full_analysis_coverage() -> None:
+    payload = main.metadata()
+
+    assert len(payload["analysis_coverage"]) >= 12
+    assert len(payload["hypothesis_register"]) >= 5
+    assert len(payload["model_validation_metrics"]) >= 5
+    assert any(item["area"] == "Business impact" for item in payload["analysis_coverage"])
+    assert any(item["area"] == "ML performance" for item in payload["analysis_coverage"])
+    assert any(item["metric"] == "ROC-AUC" for item in payload["model_validation_metrics"])
 
 
 def test_web_dashboard_public_ui_is_english_only() -> None:

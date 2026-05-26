@@ -657,6 +657,15 @@
       <div class="section-grid">
         <div class="kpi-grid" id="kpi-grid"></div>
         <div class="brief-grid" id="executive-brief"></div>
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Portfolio exposure lens</h2>
+              <p class="card-note">Amount exposure, identity coverage, and model queue scale translated into executive operating terms.</p>
+            </div>
+          </div>
+          <div id="portfolio-exposure"></div>
+        </article>
         <div class="grid-large">
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Fraud rate trend</h2><p class="card-note">TransactionDT is treated as a relative day counter, not as a real calendar timestamp.</p></div></div>
@@ -736,6 +745,16 @@
         </article>
         <div class="grid-2">
           <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Model validation scorecard</h2><p class="card-note">Validation metrics used to defend model quality in an imbalanced fraud setting.</p></div></div>
+            <div id="model-validation-scorecard"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Selected-threshold confusion matrix</h2><p class="card-note">The slider-selected threshold is converted into TP, FP, FN, and TN operating counts.</p></div></div>
+            <div id="threshold-confusion-matrix"></div>
+          </article>
+        </div>
+        <div class="grid-2">
+          <article class="card">
             <div class="card-head"><div><h2 class="card-title">Threshold what-if curve</h2><p class="card-note">Capture, precision, and workload move together as the review threshold changes.</p></div></div>
             <input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color: var(--blue);">
             <div class="chart focus" id="threshold-chart"></div>
@@ -781,6 +800,16 @@
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Methodology and limitations</h2><p class="card-note">Analytical controls that keep the presentation precise and defensible.</p></div></div>
             <div id="methodology-notes"></div>
+          </article>
+        </div>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Analysis coverage matrix</h2><p class="card-note">Traceability between the analyst workplan and the public dashboard evidence.</p></div></div>
+            <div id="analysis-coverage-matrix"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Hypothesis register</h2><p class="card-note">Core fraud hypotheses, evidence, and presentation decisions.</p></div></div>
+            <div id="hypothesis-register"></div>
           </article>
         </div>
       </div>
@@ -836,7 +865,12 @@
     document.getElementById('priority-select').addEventListener('change', event => { state.priority = event.target.value; renderDashboard(); });
     document.getElementById('compare-a-select').addEventListener('change', event => { state.compareA = event.target.value; renderComparison(); });
     document.getElementById('compare-b-select').addEventListener('change', event => { state.compareB = event.target.value; renderComparison(); });
-    document.getElementById('threshold-slider').addEventListener('input', event => { state.thresholdIndex = Number(event.target.value || 0); renderThreshold(); renderThresholdRecommendation(); });
+    document.getElementById('threshold-slider').addEventListener('input', event => {
+      state.thresholdIndex = Number(event.target.value || 0);
+      renderThreshold();
+      renderThresholdRecommendation();
+      renderConfusionMatrix();
+    });
     ['analyst-capacity', 'fp-cost', 'fn-loss'].forEach(id => document.getElementById(id).addEventListener('input', () => { renderThreshold(); renderThresholdRecommendation(); renderAlerts(); }));
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -911,6 +945,7 @@
       document.getElementById('readiness-chip').textContent = readinessText;
       renderKpis();
       renderExecutiveBrief();
+      renderPortfolioExposure();
       renderActionRegister();
       renderDailyTrend();
       renderWaterfall();
@@ -927,6 +962,8 @@
       renderBars('email-bars', state.data.email_domain_risk, 'purchaser_email_group', 'fraud_rate', emailTooltip, row => segmentRow('Email domain', row.purchaser_email_group, row));
       renderThreshold();
       renderThresholdRecommendation();
+      renderModelValidationScorecard();
+      renderConfusionMatrix();
       renderReviewTable();
       renderBars('feature-bars', state.data.feature_importance, 'feature', 'importance', row => fmtInt(row.importance), row => ({ ...row, segment_family: 'Model signal', segment_name: row.feature, recommended_action: 'Use this signal for model explainability and challenger monitoring.' }));
       renderFeatureTreemap();
@@ -937,6 +974,8 @@
       renderBars('quality-bars', state.data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} missing`, row => ({ ...row, segment_family: 'Data quality', segment_name: row.column_family, recommended_action: 'Review feature engineering, imputation policy, and monitoring thresholds for this feature family.' }));
       renderKpiDictionary();
       renderMethodologyNotes();
+      renderAnalysisCoverage();
+      renderHypothesisRegister();
     }
 
     function resetFilters() {
@@ -1008,6 +1047,28 @@
       document.getElementById('executive-brief').innerHTML = rows.map(([title, text, color]) => `
         <div class="brief" style="--accent:${color}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>
       `).join('');
+    }
+
+    function renderPortfolioExposure() {
+      const k = kpis();
+      const amountRows = state.data.amount_bands || [];
+      const bandFraudExposure = row => Number(row.fraud_transaction_amount || 0) || Number(row.avg_fraud_transaction_amount || row.avg_transaction_amount || 0) * Number(row.fraud_count || 0);
+      const totalAmount = Number(k.total_transaction_amount || 0) || Number(k.avg_transaction_amount || 0) * Number(k.total_transactions || 0);
+      const fraudAmount = Number(k.fraud_transaction_amount || 0) || amountRows.reduce((total, row) => total + bandFraudExposure(row), 0) || Number(k.avg_transaction_amount || 0) * Number(k.fraud_transactions || 0);
+      const fraudAmountShare = fraudAmount / Math.max(totalAmount, 1);
+      const highAmount = [...amountRows].sort((a, b) => bandFraudExposure(b) - bandFraudExposure(a))[0] || {};
+      const topSegment = normalizedWatchlist()[0] || {};
+      const rec = thresholdRecommendation();
+      const rows = [
+        ['Total amount processed', fmtMoney(totalAmount), `Average ticket ${fmtMoney(k.avg_transaction_amount)}; p95 ticket ${fmtMoney(k.p95_transaction_amount)}.`],
+        ['Fraud amount exposure', fmtMoney(fraudAmount), `${fmtPct(fraudAmountShare)} of observed amount. Uses exact reporting amount when available; otherwise aggregate proxy.`],
+        ['Highest amount band exposure', highAmount.amount_band || 'Not available', `${fmtMoney(bandFraudExposure(highAmount))} fraud amount exposure signal.`],
+        ['Top concentration segment', displaySegment(topSegment), `${fmtPct(topSegment.fraud_share)} fraud share and ${fmtX(topSegment.lift)} lift.`],
+        ['Recommended queue scale', rec ? fmtInt(rec.review_count) : 'Not available', rec ? `${fmtPct(rec.workload_share)} workload share; ${fmtPct(rec.fraud_capture_rate)} fraud capture.` : 'Threshold data unavailable.']
+      ];
+      document.getElementById('portfolio-exposure').innerHTML = `<div class="grid-4">
+        ${rows.map(([label, value, foot]) => `<div class="kpi"><div class="kpi-label">${escapeHtml(label)}</div><div class="kpi-value">${escapeHtml(value)}</div><div class="kpi-foot">${escapeHtml(foot)}</div></div>`).join('')}
+      </div>`;
     }
 
     function renderActionRegister() {
@@ -1322,10 +1383,66 @@
       const capacityStatus = dailyReview <= assumptions.capacity ? 'Within capacity' : 'Capacity breach';
       target.innerHTML = `
         <div class="grid-4">
-          <div class="kpi"><div class="kpi-label">Selected threshold</div><div class="kpi-value">${df.format(rec.score_threshold || 0)}</div><div class="kpi-foot">${escapeHtml(rec.operating_mode || 'Balanced review mode')}. Move the slider to compare scenarios.</div></div>
+          <div class="kpi"><div class="kpi-label">Selected threshold</div><div class="kpi-value">${df.format(rec.score_threshold || 0)}</div><div class="kpi-foot">${escapeHtml(operatingModeLabel(rec))}. Move the slider to compare scenarios.</div></div>
           <div class="kpi"><div class="kpi-label">Workload</div><div class="kpi-value">${fmtInt(rec.review_count)}</div><div class="kpi-foot">${fmtInt(dailyReview)} reviews per relative day. ${capacityStatus}.</div></div>
           <div class="kpi"><div class="kpi-label">Capture / precision</div><div class="kpi-value">${fmtPct(rec.fraud_capture_rate)}</div><div class="kpi-foot">${fmtPct(rec.precision_rate)} precision; ${fmtInt(falsePositive)} expected false-positive reviews.</div></div>
           <div class="kpi"><div class="kpi-label">Missed exposure</div><div class="kpi-value">${fmtMoney(missedExposure)}</div><div class="kpi-foot">Review cost estimate: ${fmtMoney(reviewCost)} for the selected scenario.</div></div>
+        </div>`;
+    }
+
+    function operatingModeLabel(rec) {
+      const threshold = Number(rec.score_threshold || 0);
+      const thresholdLabels = [
+        [0.03, 'Broad monitoring'],
+        [0.08, 'Balanced operations'],
+        [0.20, 'Focused risk queue'],
+        [Infinity, 'Narrow critical queue']
+      ];
+      const englishLabels = new Set(thresholdLabels.map(item => item[1]));
+      if (englishLabels.has(rec.operating_mode)) return rec.operating_mode;
+      return thresholdLabels.find(([limit]) => threshold <= limit)?.[1] || 'Balanced review mode';
+    }
+
+    function renderModelValidationScorecard() {
+      const rows = state.metadata?.model_validation_metrics || [];
+      if (!rows.length) {
+        document.getElementById('model-validation-scorecard').innerHTML = emptyState('Model validation metadata is not available.');
+        return;
+      }
+      renderTable('model-validation-scorecard', rows, [
+        ['Metric', row => escapeHtml(row.metric)],
+        ['Value', row => escapeHtml(row.value)],
+        ['Interpretation', row => escapeHtml(row.interpretation)]
+      ]);
+    }
+
+    function renderConfusionMatrix() {
+      const target = document.getElementById('threshold-confusion-matrix');
+      const rec = selectedThresholdScenario();
+      const k = kpis();
+      if (!rec) { target.innerHTML = emptyState('No threshold scenario is selected.'); return; }
+      const tp = Number(rec.captured_fraud_count || 0);
+      const reviewed = Number(rec.review_count || 0);
+      const totalFraud = Number(k.fraud_transactions || 0);
+      const totalLegit = Number(k.legitimate_transactions || 0);
+      const fp = Math.max(reviewed - tp, 0);
+      const fn = Math.max(totalFraud - tp, 0);
+      const tn = Math.max(totalLegit - fp, 0);
+      const assumptions = operatingAssumptions();
+      const reviewCost = fp * assumptions.fpCost;
+      const missedExposure = fn * assumptions.fnLoss;
+      const rows = [
+        ['True positive', tp, 'Fraud sent to review'],
+        ['False positive', fp, 'Legitimate transaction sent to review'],
+        ['False negative', fn, 'Fraud missed by the selected threshold'],
+        ['True negative', tn, 'Legitimate transaction outside review queue']
+      ];
+      target.innerHTML = `
+        <div class="grid-4">
+          ${rows.map(([label, value, note]) => `<div class="kpi"><div class="kpi-label">${escapeHtml(label)}</div><div class="kpi-value">${fmtInt(value)}</div><div class="kpi-foot">${escapeHtml(note)}</div></div>`).join('')}
+        </div>
+        <div class="recommendation">
+          At threshold ${df.format(rec.score_threshold || 0)}, estimated false-positive review cost is ${fmtMoney(reviewCost)} and missed fraud exposure is ${fmtMoney(missedExposure)} under the current operating assumptions.
         </div>`;
     }
 
@@ -1428,6 +1545,33 @@
         ['Definition', row => escapeHtml(row.definition)],
         ['Business use', row => escapeHtml(row.business_use)]
       ]);
+    }
+
+    function renderAnalysisCoverage() {
+      const rows = state.metadata?.analysis_coverage || [];
+      if (!rows.length) {
+        document.getElementById('analysis-coverage-matrix').innerHTML = emptyState('Analysis coverage metadata is not available.');
+        return;
+      }
+      renderTable('analysis-coverage-matrix', rows, [
+        ['Area', row => escapeHtml(row.area)],
+        ['Dashboard evidence', row => escapeHtml(row.dashboard_evidence)],
+        ['Status', row => `<span class="priority Normal">${escapeHtml(row.status)}</span>`],
+        ['Primary output', row => escapeHtml(row.primary_output)]
+      ]);
+    }
+
+    function renderHypothesisRegister() {
+      const rows = state.metadata?.hypothesis_register || [];
+      const target = document.getElementById('hypothesis-register');
+      if (!rows.length) { target.innerHTML = emptyState('Hypothesis metadata is not available.'); return; }
+      target.innerHTML = `<div class="note-list">${rows.map(item => `
+        <div class="note-card">
+          <strong>${escapeHtml(item.hypothesis)}</strong>
+          <span><b>Evidence:</b> ${escapeHtml(item.evidence)}</span>
+          <span><b>Decision:</b> ${escapeHtml(item.decision)}</span>
+        </div>
+      `).join('')}</div>`;
     }
 
     function renderMethodologyNotes() {

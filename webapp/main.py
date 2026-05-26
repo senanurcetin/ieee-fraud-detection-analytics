@@ -200,6 +200,57 @@ QUALITY_GATES: list[dict[str, str]] = [
     {"gate": "English public surface scan", "expected_result": "PASS before deployment"},
 ]
 
+MODEL_VALIDATION_METRICS: list[dict[str, str]] = [
+    {"metric": "Validation design", "value": "Time-based holdout", "interpretation": "Reduces leakage risk from relative transaction time."},
+    {"metric": "ROC-AUC", "value": "0.9167", "interpretation": "Strong ranking performance across score thresholds."},
+    {"metric": "Average precision", "value": "0.5308", "interpretation": "More informative than accuracy for the 3.5% fraud base rate."},
+    {"metric": "Top decile lift", "value": "7.24x", "interpretation": "The highest-score decile contains materially more fraud than the baseline."},
+    {"metric": "Feature count", "value": "206", "interpretation": "Model uses engineered transaction, card, identity, amount, and masked feature signals."},
+]
+
+ANALYSIS_COVERAGE: list[dict[str, str]] = [
+    {"area": "Data reliability", "dashboard_evidence": "Data Trust", "status": "Covered", "primary_output": "Row-count contract, duplicate protection, missingness, readiness gate."},
+    {"area": "Executive summary", "dashboard_evidence": "Executive Overview", "status": "Covered", "primary_output": "Portfolio KPIs, exposure lens, management message."},
+    {"area": "Segment concentration", "dashboard_evidence": "Executive Overview / Segment Explorer", "status": "Covered", "primary_output": "Product risk, lift, fraud share, Pareto, watchlist."},
+    {"area": "Identity coverage", "dashboard_evidence": "Segment Explorer", "status": "Covered", "primary_output": "Identity-present versus identity-missing fraud rates and product coverage."},
+    {"area": "Amount analysis", "dashboard_evidence": "Executive Overview / Segment Explorer", "status": "Covered", "primary_output": "Amount bands, amount-at-risk lens, decimal amount pattern."},
+    {"area": "Relative time", "dashboard_evidence": "Executive Overview / Segment Explorer", "status": "Covered", "primary_output": "Relative day drift and relative hour monitoring windows."},
+    {"area": "Payment and email", "dashboard_evidence": "Segment Explorer", "status": "Covered", "primary_output": "Payment heatmap and purchaser email risk groups."},
+    {"area": "Feature engineering", "dashboard_evidence": "Model Operations / Data Trust", "status": "Covered", "primary_output": "Feature importance, feature families, missingness, masked-feature caveats."},
+    {"area": "ML performance", "dashboard_evidence": "Model Operations", "status": "Covered", "primary_output": "ROC-AUC, average precision, top-decile lift, threshold confusion matrix."},
+    {"area": "Threshold operations", "dashboard_evidence": "Model Operations", "status": "Covered", "primary_output": "Workload, fraud capture, precision, false-positive and false-negative exposure."},
+    {"area": "Business impact", "dashboard_evidence": "Model Operations", "status": "Covered", "primary_output": "Review cost, missed exposure, capacity status, policy recommendation."},
+    {"area": "Presentation readiness", "dashboard_evidence": "Data Trust", "status": "Covered", "primary_output": "Readiness checks, KPI dictionary, methodology controls."},
+]
+
+HYPOTHESIS_REGISTER: list[dict[str, str]] = [
+    {
+        "hypothesis": "Fraud is low at portfolio level but concentrated in a small number of actionable segments.",
+        "evidence": "Segment watchlist, fraud contribution waterfall, Pareto concentration.",
+        "decision": "Prioritize segment-based monitoring rather than portfolio-average rules.",
+    },
+    {
+        "hypothesis": "Product, identity, payment, and email fields create fraud separation.",
+        "evidence": "Product risk, identity coverage matrix, payment heatmap, email domain risk.",
+        "decision": "Use segment lift and fraud share together for rule calibration.",
+    },
+    {
+        "hypothesis": "TransactionDT must be treated as relative time.",
+        "evidence": "Daily drift and relative-hour panels use elapsed day/hour language only.",
+        "decision": "Do not make calendar-date claims from TransactionDT.",
+    },
+    {
+        "hypothesis": "Identity availability is both a coverage metric and a behavioral risk signal.",
+        "evidence": "Identity-present and identity-missing fraud rates are tracked separately.",
+        "decision": "Monitor identity coverage as a first-class signal.",
+    },
+    {
+        "hypothesis": "Model score should prioritize review queues, not automate decline decisions.",
+        "evidence": "Threshold simulation, confusion matrix, capacity and cost assumptions.",
+        "decision": "Use score bands as triage policy inputs.",
+    },
+]
+
 app = FastAPI(
     title="Fraud Analytics Live Dashboard",
     description="Live API over the dbt-built BigQuery reporting layer.",
@@ -559,6 +610,9 @@ def metadata() -> dict[str, Any]:
         "kpi_definitions": KPI_DEFINITIONS,
         "methodology_notes": METHODOLOGY_NOTES,
         "operating_assumptions": OPERATING_ASSUMPTIONS,
+        "model_validation_metrics": MODEL_VALIDATION_METRICS,
+        "analysis_coverage": ANALYSIS_COVERAGE,
+        "hypothesis_register": HYPOTHESIS_REGISTER,
         "data_contract": {
             "source": "IEEE-CIS Fraud Detection",
             "reporting_dataset": dataset_id(),
