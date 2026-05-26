@@ -11,6 +11,6 @@ seaborn==0.13.2
 google-cloud-bigquery==3.41.0
 pandas-gbq==0.35.0
 shap==0.51.0
-fastapi==0.136.3
+fastapi==0.136.1
 uvicorn[standard]==0.30.6
 python-dotenv==1.2.2

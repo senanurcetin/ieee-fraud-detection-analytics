@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fraud Risk Intelligence</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307111f'/%3E%3Cpath d='M32 8l19 8v14c0 12-8 22-19 26C21 52 13 42 13 30V16l19-8z' fill='%2318a999'/%3E%3Cpath d='M23 32l6 6 13-15' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root {
       --bg: #07111f;
@@ -309,9 +310,9 @@
     .bar-fill { height: 100%; width: 0; background: var(--accent, var(--blue)); border-radius: 999px; }
     .bar-value { color: var(--muted); font-size: 13px; text-align: right; white-space: nowrap; }
 
-    .table-wrap { overflow: auto; max-height: 430px; border: 1px solid var(--line); border-radius: var(--radius); }
-    table { width: 100%; border-collapse: collapse; min-width: 760px; }
-    th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; font-size: 12px; vertical-align: top; }
+    .table-wrap { overflow: auto; max-height: 430px; border: 1px solid var(--line); border-radius: var(--radius); scrollbar-width: thin; }
+    table { width: 100%; border-collapse: collapse; min-width: 100%; table-layout: fixed; }
+    th, td { padding: 10px 11px; border-bottom: 1px solid var(--line); text-align: left; font-size: 12px; vertical-align: top; overflow-wrap: anywhere; }
     th { position: sticky; top: 0; background: #0e1a2b; color: var(--muted); z-index: 2; text-transform: uppercase; letter-spacing: .05em; }
     td { color: var(--text); }
     tbody tr:hover { background: rgba(76, 141, 246, .08); }
@@ -640,6 +641,7 @@
         <button class="btn" id="export-json-btn" type="button">Export JSON</button>
         <button class="btn" id="print-btn" type="button">Print / Save PDF</button>
         <button class="btn" id="copy-summary-btn" type="button">Copy executive summary</button>
+        <button class="btn" id="download-memo-btn" type="button">Download analyst memo</button>
         <button class="btn danger" id="reset-btn" type="button">Reset</button>
       </div>
     </section>
@@ -657,6 +659,15 @@
       <div class="section-grid">
         <div class="kpi-grid" id="kpi-grid"></div>
         <div class="brief-grid" id="executive-brief"></div>
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Executive takeaways</h2>
+              <p class="card-note">Board-ready messages that translate the analysis into operating decisions.</p>
+            </div>
+          </div>
+          <div id="executive-takeaways"></div>
+        </article>
         <article class="card">
           <div class="card-head">
             <div>
@@ -724,6 +735,15 @@
           <article class="card"><div class="card-head"><div><h2 class="card-title">Payment type heatmap</h2><p class="card-note">Card network and card type intersections by fraud rate.</p></div></div><div id="payment-heatmap"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Email domain risk</h2><p class="card-note">Purchaser email groups by fraud intensity.</p></div></div><div class="chart short" id="email-bars"></div></article>
         </div>
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Segment action playbook</h2>
+              <p class="card-note">Priority, policy, and review cadence for the highest-impact fraud segments.</p>
+            </div>
+          </div>
+          <div id="segment-action-playbook"></div>
+        </article>
       </div>
     </section>
 
@@ -743,6 +763,16 @@
           </div>
           <div id="threshold-recommendation" style="margin-top:12px;"></div>
         </article>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Operating point recommendation</h2><p class="card-note">Selected threshold translated into operating posture, queue pressure, and decision rule.</p></div></div>
+            <div id="operating-point-recommendation"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Business impact sensitivity</h2><p class="card-note">Cost and loss assumptions converted into threshold-level financial tradeoffs.</p></div></div>
+            <div id="business-impact-sensitivity"></div>
+          </article>
+        </div>
         <div class="grid-2">
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Model validation scorecard</h2><p class="card-note">Validation metrics used to defend model quality in an imbalanced fraud setting.</p></div></div>
@@ -765,6 +795,10 @@
           <article class="card"><div class="card-head"><div><h2 class="card-title">Feature importance</h2><p class="card-note">Top model signals for explainability discussions.</p></div></div><div class="chart short" id="feature-bars"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Feature family treemap</h2><p class="card-note">Aggregated contribution by signal family.</p></div></div><div class="chart short" id="feature-treemap"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Risk band volume</h2><p class="card-note">Workload distribution by operational risk band.</p></div></div><div class="chart short" id="risk-volume-bars"></div></article>
+        </div>
+        <div class="grid-2">
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Calibration by risk band</h2><p class="card-note">Compares average model score with observed fraud rate to identify calibration gaps.</p></div></div><div id="calibration-analysis"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Feature family explainability</h2><p class="card-note">Feature groups summarized for model-risk and stakeholder review.</p></div></div><div id="feature-family-explainability"></div></article>
         </div>
       </div>
     </section>
@@ -798,8 +832,18 @@
             <div id="kpi-dictionary"></div>
           </article>
           <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Data dictionary</h2><p class="card-note">Dataset fields and interpretation controls used to defend the analysis.</p></div></div>
+            <div id="data-dictionary"></div>
+          </article>
+        </div>
+        <div class="grid-2">
+          <article class="card">
             <div class="card-head"><div><h2 class="card-title">Methodology and limitations</h2><p class="card-note">Analytical controls that keep the presentation precise and defensible.</p></div></div>
             <div id="methodology-notes"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Model reproducibility contract</h2><p class="card-note">Artifacts and scripts that make validation metrics independently reproducible.</p></div></div>
+            <div id="model-reproducibility"></div>
           </article>
         </div>
         <div class="grid-2">
@@ -857,6 +901,7 @@
     document.getElementById('export-json-btn').addEventListener('click', exportJson);
     document.getElementById('print-btn').addEventListener('click', () => window.print());
     document.getElementById('copy-summary-btn').addEventListener('click', copyExecutiveSummary);
+    document.getElementById('download-memo-btn').addEventListener('click', downloadAnalystMemo);
     document.getElementById('reset-btn').addEventListener('click', resetFilters);
     document.getElementById('drawer-close').addEventListener('click', closeDrawer);
     document.getElementById('drawer-backdrop').addEventListener('click', closeDrawer);
@@ -871,7 +916,14 @@
       renderThresholdRecommendation();
       renderConfusionMatrix();
     });
-    ['analyst-capacity', 'fp-cost', 'fn-loss'].forEach(id => document.getElementById(id).addEventListener('input', () => { renderThreshold(); renderThresholdRecommendation(); renderAlerts(); }));
+    ['analyst-capacity', 'fp-cost', 'fn-loss'].forEach(id => document.getElementById(id).addEventListener('input', () => {
+      renderThreshold();
+      renderThresholdRecommendation();
+      renderOperatingPointRecommendation();
+      renderBusinessImpactSensitivity();
+      renderConfusionMatrix();
+      renderAlerts();
+    }));
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(item => item.classList.toggle('active', item === tab));
@@ -945,6 +997,7 @@
       document.getElementById('readiness-chip').textContent = readinessText;
       renderKpis();
       renderExecutiveBrief();
+      renderExecutiveTakeaways();
       renderPortfolioExposure();
       renderActionRegister();
       renderDailyTrend();
@@ -960,20 +1013,27 @@
       renderTimeAmountHeatmap();
       renderPaymentHeatmap();
       renderBars('email-bars', state.data.email_domain_risk, 'purchaser_email_group', 'fraud_rate', emailTooltip, row => segmentRow('Email domain', row.purchaser_email_group, row));
+      renderSegmentActionPlaybook();
       renderThreshold();
       renderThresholdRecommendation();
+      renderOperatingPointRecommendation();
+      renderBusinessImpactSensitivity();
       renderModelValidationScorecard();
       renderConfusionMatrix();
       renderReviewTable();
       renderBars('feature-bars', state.data.feature_importance, 'feature', 'importance', row => fmtInt(row.importance), row => ({ ...row, segment_family: 'Model signal', segment_name: row.feature, recommended_action: 'Use this signal for model explainability and challenger monitoring.' }));
       renderFeatureTreemap();
+      renderCalibrationAnalysis();
+      renderFeatureFamilyExplainability();
       renderBars('risk-volume-bars', state.data.model_risk_bands, 'risk_band', 'transaction_count', row => fmtInt(row.transaction_count), row => segmentRow('Risk band', row.risk_band, row));
       renderAlerts();
       renderQualityContract();
       renderReadinessTable();
       renderBars('quality-bars', state.data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} missing`, row => ({ ...row, segment_family: 'Data quality', segment_name: row.column_family, recommended_action: 'Review feature engineering, imputation policy, and monitoring thresholds for this feature family.' }));
       renderKpiDictionary();
+      renderDataDictionary();
       renderMethodologyNotes();
+      renderModelReproducibility();
       renderAnalysisCoverage();
       renderHypothesisRegister();
     }
@@ -1047,6 +1107,19 @@
       document.getElementById('executive-brief').innerHTML = rows.map(([title, text, color]) => `
         <div class="brief" style="--accent:${color}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>
       `).join('');
+    }
+
+    function renderExecutiveTakeaways() {
+      const rows = state.metadata?.executive_takeaways || [];
+      const target = document.getElementById('executive-takeaways');
+      if (!rows.length) { target.innerHTML = emptyState('Executive takeaways are not available.'); return; }
+      target.innerHTML = `<div class="action-register">${rows.map((item, index) => `
+        <div class="action-card" style="--accent:${colorScale[index % colorScale.length]}">
+          <h3>${escapeHtml(item.takeaway)}</h3>
+          <p><strong>Evidence:</strong> ${escapeHtml(item.evidence)}</p>
+          <p><strong>Decision:</strong> ${escapeHtml(item.decision)}</p>
+        </div>
+      `).join('')}</div>`;
     }
 
     function renderPortfolioExposure() {
@@ -1288,6 +1361,24 @@
       ], row => row);
     }
 
+    function renderSegmentActionPlaybook() {
+      const rows = filteredWatchlist().slice(0, 12).map(row => ({
+        ...row,
+        policy: displayPriority(row.risk_priority) === 'Critical' ? 'Immediate review' : displayPriority(row.risk_priority) === 'High' ? 'Daily priority queue' : 'Weekly monitoring',
+        cadence: displayPriority(row.risk_priority) === 'Critical' ? 'Same day' : displayPriority(row.risk_priority) === 'High' ? 'Daily' : 'Weekly sample',
+      }));
+      renderTable('segment-action-playbook', rows, [
+        ['Priority', row => `<span class="priority ${displayPriority(row.risk_priority)}">${displayPriority(row.risk_priority)}</span>`],
+        ['Segment', row => escapeHtml(displaySegment(row))],
+        ['Fraud rate', row => fmtPct(row.fraud_rate)],
+        ['Lift', row => fmtX(row.lift)],
+        ['Fraud share', row => fmtPct(row.fraud_share)],
+        ['Policy', row => escapeHtml(row.policy)],
+        ['Cadence', row => escapeHtml(row.cadence)],
+        ['Action', row => escapeHtml(actionFor(row))]
+      ], row => row);
+    }
+
     function renderIdentityMatrix() {
       const rows = state.data.identity_product_coverage || [];
       renderTable('identity-product-matrix', rows, [
@@ -1403,6 +1494,55 @@
       return thresholdLabels.find(([limit]) => threshold <= limit)?.[1] || 'Balanced review mode';
     }
 
+    function renderOperatingPointRecommendation() {
+      const rec = selectedThresholdScenario();
+      const target = document.getElementById('operating-point-recommendation');
+      if (!rec) { target.innerHTML = emptyState('No operating point can be calculated.'); return; }
+      const assumptions = operatingAssumptions();
+      const days = Math.max((state.data.daily_drift || []).length, 1);
+      const dailyReview = Number(rec.review_count || 0) / days;
+      const workload = Number(rec.workload_share || 0);
+      const posture = workload > .35 ? 'Conservative capture posture' : workload > .15 ? 'Balanced review posture' : 'Focused queue posture';
+      const capacity = dailyReview <= assumptions.capacity ? 'Within capacity' : 'Capacity breach';
+      const recommendation = capacity === 'Within capacity'
+        ? 'This threshold can be operated under the current capacity assumption.'
+        : 'Increase analyst capacity, raise the threshold, or narrow the queue to Critical and High segments.';
+      target.innerHTML = `<div class="note-list">
+        <div class="note-card"><strong>${escapeHtml(posture)}</strong><span>${escapeHtml(operatingModeLabel(rec))} at threshold ${df.format(rec.score_threshold || 0)}.</span></div>
+        <div class="note-card"><strong>${escapeHtml(capacity)}</strong><span>${fmtInt(dailyReview)} reviews per relative day versus ${fmtInt(assumptions.capacity)} assumed analyst capacity.</span></div>
+        <div class="note-card"><strong>Decision rule</strong><span>${escapeHtml(recommendation)}</span></div>
+      </div>`;
+    }
+
+    function renderBusinessImpactSensitivity() {
+      const rec = selectedThresholdScenario();
+      const target = document.getElementById('business-impact-sensitivity');
+      if (!rec) { target.innerHTML = emptyState('No threshold scenario is selected.'); return; }
+      const k = kpis();
+      const assumptions = operatingAssumptions();
+      const captured = Number(rec.captured_fraud_count || 0);
+      const reviewed = Number(rec.review_count || 0);
+      const falsePositive = Math.max(reviewed - captured, 0);
+      const missed = Math.max(Number(k.fraud_transactions || 0) - captured, 0);
+      const cases = [
+        ['Current assumption', assumptions.fpCost, assumptions.fnLoss],
+        ['Higher review cost', assumptions.fpCost * 2, assumptions.fnLoss],
+        ['Higher fraud loss', assumptions.fpCost, assumptions.fnLoss * 2],
+        ['Stress case', assumptions.fpCost * 2, assumptions.fnLoss * 2]
+      ].map(([scenario, fpCost, fnLoss]) => {
+        const reviewCost = falsePositive * fpCost;
+        const missedExposure = missed * fnLoss;
+        const capturedValue = captured * fnLoss;
+        return { scenario, reviewCost, missedExposure, netBenefitProxy: capturedValue - reviewCost - missedExposure };
+      });
+      renderTable('business-impact-sensitivity', cases, [
+        ['Scenario', row => escapeHtml(row.scenario)],
+        ['Review cost', row => fmtMoney(row.reviewCost)],
+        ['Missed exposure', row => fmtMoney(row.missedExposure)],
+        ['Net benefit proxy', row => fmtMoney(row.netBenefitProxy)]
+      ]);
+    }
+
     function renderModelValidationScorecard() {
       const rows = state.metadata?.model_validation_metrics || [];
       if (!rows.length) {
@@ -1483,6 +1623,46 @@
       </div>`;
     }
 
+    function renderCalibrationAnalysis() {
+      const rows = (state.data.model_risk_bands || []).filter(row => row.split === 'train' || row.transaction_count).map(row => ({
+        band: row.risk_band,
+        avgScore: Number(row.avg_predicted_probability || 0),
+        observed: Number(row.observed_fraud_rate || 0),
+        gap: Number(row.observed_fraud_rate || 0) - Number(row.avg_predicted_probability || 0),
+        lift: Number(row.lift || 0),
+        transactions: Number(row.transaction_count || 0)
+      }));
+      renderTable('calibration-analysis', rows, [
+        ['Band', row => escapeHtml(row.band)],
+        ['Average score', row => fmtPct(row.avgScore)],
+        ['Observed fraud', row => fmtPct(row.observed)],
+        ['Calibration gap', row => fmtPct(row.gap)],
+        ['Lift', row => fmtX(row.lift)],
+        ['Transactions', row => fmtInt(row.transactions)]
+      ]);
+    }
+
+    function renderFeatureFamilyExplainability() {
+      const grouped = Object.values(groupBy(state.data.feature_importance || [], row => row.feature_family)).map(items => {
+        const importance = sum(items, 'importance');
+        const top = [...items].sort((a, b) => Number(b.importance || 0) - Number(a.importance || 0))[0] || {};
+        return {
+          family: items[0].feature_family,
+          featureCount: items.length,
+          importance,
+          topFeature: top.feature,
+          control: `${items[0].feature_family} signals are used as statistical evidence; masked fields are not over-interpreted.`
+        };
+      }).sort((a, b) => b.importance - a.importance);
+      renderTable('feature-family-explainability', grouped, [
+        ['Family', row => escapeHtml(row.family)],
+        ['Features', row => fmtInt(row.featureCount)],
+        ['Importance', row => fmtInt(row.importance)],
+        ['Top feature', row => escapeHtml(row.topFeature)],
+        ['Interpretation control', row => escapeHtml(row.control)]
+      ]);
+    }
+
     function renderAlerts() {
       const target = document.getElementById('alert-list');
       const driftRows = (state.data.daily_drift || []).filter(row => safe(row.drift_flag).toLowerCase() !== 'normal');
@@ -1544,6 +1724,31 @@
         ['KPI', row => escapeHtml(row.kpi)],
         ['Definition', row => escapeHtml(row.definition)],
         ['Business use', row => escapeHtml(row.business_use)]
+      ]);
+    }
+
+    function renderDataDictionary() {
+      const rows = state.metadata?.data_dictionary || [];
+      if (!rows.length) {
+        document.getElementById('data-dictionary').innerHTML = emptyState('Data dictionary metadata is not available.');
+        return;
+      }
+      renderTable('data-dictionary', rows, [
+        ['Field', row => escapeHtml(row.field)],
+        ['Business meaning', row => escapeHtml(row.business_meaning)],
+        ['Interpretation control', row => escapeHtml(row.interpretation_note)]
+      ]);
+    }
+
+    function renderModelReproducibility() {
+      const rows = state.metadata?.model_reproducibility || [];
+      if (!rows.length) {
+        document.getElementById('model-reproducibility').innerHTML = emptyState('Model reproducibility metadata is not available.');
+        return;
+      }
+      renderTable('model-reproducibility', rows, [
+        ['Artifact', row => escapeHtml(row.artifact)],
+        ['Purpose', row => escapeHtml(row.purpose)]
       ]);
     }
 
@@ -1671,17 +1876,36 @@
     }
 
     function copyExecutiveSummary() {
+      writeClipboard(analystMemoText());
+    }
+
+    function downloadAnalystMemo() {
+      const blob = new Blob([analystMemoText()], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `fraud-analyst-memo-${new Date().toISOString().slice(0, 10)}.txt`;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function analystMemoText() {
       const k = kpis();
       const top = normalizedWatchlist()[0] || {};
       const rec = thresholdRecommendation();
-      const text = [
+      const selected = selectedThresholdScenario() || rec || {};
+      const takeaways = (state.metadata?.executive_takeaways || []).map(item => `- ${item.takeaway} Evidence: ${item.evidence} Decision: ${item.decision}`);
+      return [
         `Fraud Risk Intelligence summary`,
         `${fmtInt(k.total_transactions)} transactions were analyzed with a ${fmtPct(k.fraud_rate)} fraud base rate.`,
+        `Fraud amount exposure is estimated at ${fmtMoney(k.fraud_transaction_amount || Number(k.avg_transaction_amount || 0) * Number(k.fraud_transactions || 0))}.`,
         `${displaySegment(top)} is the leading concentration driver with ${fmtPct(top.fraud_share)} fraud share and ${fmtX(top.lift)} lift.`,
         `Recommended threshold ${rec ? df.format(rec.score_threshold) : 'not available'} reviews ${rec ? fmtInt(rec.review_count) : 'not available'} cases and captures ${rec ? fmtPct(rec.fraud_capture_rate) : 'not available'} of fraud labels.`,
+        `Selected operating scenario ${selected.score_threshold ? df.format(selected.score_threshold) : 'not available'} has ${selected.precision_rate ? fmtPct(selected.precision_rate) : 'not available'} precision and ${selected.workload_share ? fmtPct(selected.workload_share) : 'not available'} workload share.`,
+        `Executive takeaways:`,
+        ...takeaways,
         `Action: prioritize critical risk bands, Product C, identity-covered transactions, and high-lift payment/email segments for operational review.`
       ].join('\n');
-      writeClipboard(text);
     }
 
     async function writeClipboard(text) {
@@ -1744,8 +1968,8 @@
       const raw = safe(value).toLowerCase();
       if (raw.includes('identity')) return 'Identity';
       if (raw.includes('product')) return 'Product';
-      if (raw.includes('amount') || raw.includes('tutar')) return 'Amount band';
-      if (raw.includes('payment') || raw.includes('deme')) return 'Payment';
+      if (raw.includes('amount')) return 'Amount band';
+      if (raw.includes('payment')) return 'Payment';
       if (raw.includes('email')) return 'Email domain';
       if (raw.includes('risk')) return 'Risk band';
       if (raw.includes('quality')) return 'Data quality';
@@ -1754,9 +1978,9 @@
     }
     function displayPriority(value) {
       const raw = safe(value).toLowerCase();
-      if (raw.includes('kritik') || raw.includes('critical')) return 'Critical';
-      if (raw.includes('high') || raw.includes('y') || raw.includes('ksek')) return 'High';
-      if (raw.includes('izle') || raw.includes('monitor')) return 'Monitor';
+      if (raw.includes('critical')) return 'Critical';
+      if (raw.includes('high')) return 'High';
+      if (raw.includes('monitor')) return 'Monitor';
       return raw ? 'Normal' : 'Monitor';
     }
     function priorityFromLift(value) {

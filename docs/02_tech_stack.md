@@ -65,7 +65,7 @@ The presentation layer is the live web dashboard:
 - Backend: FastAPI.
 - Data source: BigQuery `fraud_project_reporting`.
 - Frontend: single-file HTML/CSS/JavaScript.
-- Deployment: Vercel free tier.
+- Deployment: Vercel hosted runtime.
 - API endpoint: `/api/dashboard`.
 
 The dashboard includes executive KPIs, segment comparison, drill-through evidence, waterfall contribution, threshold simulation, alert simulation, model explainability, and data trust scorecards.

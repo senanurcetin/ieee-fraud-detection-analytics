@@ -251,6 +251,102 @@ HYPOTHESIS_REGISTER: list[dict[str, str]] = [
     },
 ]
 
+EXECUTIVE_TAKEAWAYS: list[dict[str, str]] = [
+    {
+        "takeaway": "Fraud is concentrated, not evenly distributed.",
+        "evidence": "Product, identity, amount, payment, and email cuts show materially different lift and fraud-share profiles.",
+        "decision": "Manage fraud through segment-specific monitoring instead of a single portfolio-average rule.",
+    },
+    {
+        "takeaway": "Identity availability is an analytical signal.",
+        "evidence": "Identity-present transactions carry higher observed fraud intensity, while identity coverage varies sharply by ProductCD.",
+        "decision": "Track identity coverage and identity-present risk as separate operating controls.",
+    },
+    {
+        "takeaway": "Model score is a triage layer.",
+        "evidence": "Threshold simulation converts score cutoffs into workload, capture, precision, false positives, and missed exposure.",
+        "decision": "Use score bands to prioritize analyst queues; do not position the model as an autonomous decline engine.",
+    },
+]
+
+DATA_DICTIONARY: list[dict[str, str]] = [
+    {
+        "field": "TransactionID",
+        "business_meaning": "Unique transaction key used for reconciliation, joins, and duplicate controls.",
+        "interpretation_note": "Must remain unique after transaction and identity joins.",
+    },
+    {
+        "field": "TransactionDT",
+        "business_meaning": "Elapsed seconds from an unknown reference point.",
+        "interpretation_note": "Use only as relative day/hour. Do not make calendar-date claims.",
+    },
+    {
+        "field": "TransactionAmt",
+        "business_meaning": "Transaction amount used for ticket-size bands and amount exposure analysis.",
+        "interpretation_note": "Analyze both amount bands and decimal/round amount behavior.",
+    },
+    {
+        "field": "ProductCD",
+        "business_meaning": "Masked product/channel category supplied by the dataset owner.",
+        "interpretation_note": "Use as a segmentation signal; do not assign unsupported real-world product names.",
+    },
+    {
+        "field": "card1-card6",
+        "business_meaning": "Masked card-related attributes.",
+        "interpretation_note": "High model importance supports predictive value, not a confirmed business definition.",
+    },
+    {
+        "field": "addr1-addr2",
+        "business_meaning": "Masked address-related attributes.",
+        "interpretation_note": "Used in synthetic UID and segment diagnostics where available.",
+    },
+    {
+        "field": "P_emaildomain / R_emaildomain",
+        "business_meaning": "Purchaser and recipient email domain groups.",
+        "interpretation_note": "Grouped into monitoring categories for explainable operations.",
+    },
+    {
+        "field": "C1-C14",
+        "business_meaning": "Masked count-style engineered features.",
+        "interpretation_note": "Treat as observational signals, not as confirmed customer behavior definitions.",
+    },
+    {
+        "field": "D1-D15",
+        "business_meaning": "Masked time-delta style engineered features.",
+        "interpretation_note": "Useful for model ranking and drift monitoring, but interpretation remains limited.",
+    },
+    {
+        "field": "M1-M9",
+        "business_meaning": "Masked match indicators.",
+        "interpretation_note": "Monitor missingness and importance by family rather than over-explaining individual fields.",
+    },
+    {
+        "field": "V1-V339",
+        "business_meaning": "Anonymized Vesta-engineered relationship/count/ranking features.",
+        "interpretation_note": "Feature selection and missingness handling must be documented because these fields are heavily masked.",
+    },
+    {
+        "field": "risk_band",
+        "business_meaning": "Operational band derived from model score quantiles.",
+        "interpretation_note": "Used for queue priority, not for automatic decline decisions.",
+    },
+]
+
+MODEL_REPRODUCIBILITY: list[dict[str, str]] = [
+    {
+        "artifact": "outputs/tables/validation_predictions.csv",
+        "purpose": "Validation labels and predicted probabilities used to recompute ROC-AUC, average precision, threshold metrics, and calibration.",
+    },
+    {
+        "artifact": "outputs/tables/feature_importance.csv",
+        "purpose": "LightGBM feature importance export used for feature-family explainability.",
+    },
+    {
+        "artifact": "scripts/generate_model_evidence.py",
+        "purpose": "Recomputes model evidence from exported validation artifacts and writes portfolio-ready documentation.",
+    },
+]
+
 app = FastAPI(
     title="Fraud Analytics Live Dashboard",
     description="Live API over the dbt-built BigQuery reporting layer.",
@@ -388,9 +484,9 @@ def public_family(value: Any) -> str:
     raw = str(value or "").lower()
     if "identity" in raw:
         return "Identity"
-    if "amount" in raw or "band" in raw or ("tu" + "tar") in raw:
+    if "amount" in raw or "band" in raw:
         return "Amount band"
-    if "payment" in raw or "deme" in raw:
+    if "payment" in raw:
         return "Payment"
     if "email" in raw:
         return "Email domain"
@@ -403,11 +499,11 @@ def public_family(value: Any) -> str:
 
 def public_priority(value: Any) -> str:
     raw = str(value or "").lower()
-    if "critical" in raw or ("kri" + "tik") in raw:
+    if "critical" in raw:
         return "Critical"
-    if "high" in raw or "ksek" in raw or "yuk" in raw:
+    if "high" in raw:
         return "High"
-    if "monitor" in raw or "izle" in raw:
+    if "monitor" in raw:
         return "Monitor"
     return "Normal" if raw else "Monitor"
 
@@ -451,22 +547,22 @@ def management_note(risk_band: Any) -> str:
 
 def public_drift_flag(value: Any) -> str:
     raw = str(value or "").lower()
-    if "high" in raw or "ksek" in raw or "yuk" in raw:
+    if "high" in raw:
         return "High risk drift"
-    if "low" in raw or "dusuk" in raw:
+    if "low" in raw:
         return "Low risk drift"
     return "Normal band"
 
 
 def operating_mode(value: Any) -> str:
     raw = str(value or "").lower()
-    if "broad" in raw or "genis" in raw:
+    if "broad" in raw:
         return "Broad monitoring"
-    if "balanced" in raw or "denge" in raw:
+    if "balanced" in raw:
         return "Balanced operations"
-    if "focused" in raw or "priority" in raw or "odak" in raw:
+    if "focused" in raw or "priority" in raw:
         return "Focused risk queue"
-    if "narrow" in raw or "critical" in raw or ("kri" + "tik") in raw:
+    if "narrow" in raw or "critical" in raw:
         return "Narrow critical queue"
     return str(value or "Balanced operations")
 
@@ -613,6 +709,9 @@ def metadata() -> dict[str, Any]:
         "model_validation_metrics": MODEL_VALIDATION_METRICS,
         "analysis_coverage": ANALYSIS_COVERAGE,
         "hypothesis_register": HYPOTHESIS_REGISTER,
+        "executive_takeaways": EXECUTIVE_TAKEAWAYS,
+        "data_dictionary": DATA_DICTIONARY,
+        "model_reproducibility": MODEL_REPRODUCIBILITY,
         "data_contract": {
             "source": "IEEE-CIS Fraud Detection",
             "reporting_dataset": dataset_id(),

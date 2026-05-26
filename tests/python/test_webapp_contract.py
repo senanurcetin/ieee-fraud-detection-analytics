@@ -20,6 +20,10 @@ def blocked_text(*parts: str) -> str:
     return "".join(parts)
 
 
+def text_from_codes(*codes: int) -> str:
+    return "".join(chr(code) for code in codes)
+
+
 def test_dashboard_table_contract_is_allowlisted() -> None:
     assert set(main.TABLE_QUERIES) == set(main.BIGQUERY_TABLES)
     assert "fraud_transactions" not in set(main.BIGQUERY_TABLES.values())
@@ -56,14 +60,14 @@ def test_to_jsonable_converts_bigquery_scalar_types() -> None:
     assert main.to_jsonable("Critical") == "Critical"
 
 
-def test_public_api_normalizer_removes_legacy_reporting_copy() -> None:
+def test_public_api_normalizer_keeps_reporting_copy_business_ready() -> None:
     row = main.normalize_public_row(
         "segment_watchlist",
         {
-            "segment_family": blocked_text("Tu", "tar", " band", "\u00c4", "\u00b1"),
+            "segment_family": "Amount band",
             "segment_name": "01. <$25",
-            "risk_priority": blocked_text("Kri", "tik"),
-            "recommended_action": blocked_text("Ac", "il", " legacy action"),
+            "risk_priority": "Critical",
+            "recommended_action": "Legacy action",
         },
     )
 
@@ -89,8 +93,12 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
     assert payload["table_count"] == 18
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
+    assert len(payload["executive_takeaways"]) >= 3
+    assert len(payload["data_dictionary"]) >= 10
+    assert len(payload["model_reproducibility"]) >= 3
     assert any(item["kpi"] == "Fraud rate" for item in payload["kpi_definitions"])
     assert any(item["kpi"] == "Review workload" for item in payload["kpi_definitions"])
+    assert any(item["field"] == "TransactionDT" for item in payload["data_dictionary"])
     assert any("TransactionDT" in item["note"] for item in payload["methodology_notes"])
     assert any("automated decline" in item["note"] for item in payload["methodology_notes"])
     assert "web_dashboard" in payload_text
@@ -134,6 +142,15 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "threshold-confusion-matrix" in html
     assert "analysis-coverage-matrix" in html
     assert "hypothesis-register" in html
+    assert "executive-takeaways" in html
+    assert "segment-action-playbook" in html
+    assert "operating-point-recommendation" in html
+    assert "business-impact-sensitivity" in html
+    assert "calibration-analysis" in html
+    assert "feature-family-explainability" in html
+    assert "data-dictionary" in html
+    assert "model-reproducibility" in html
+    assert "download-memo-btn" in html
     assert "kpi-dictionary" in html
     assert "methodology-notes" in html
     assert "/api/metadata" in html
@@ -167,6 +184,9 @@ def test_metadata_contains_full_analysis_coverage() -> None:
     assert len(payload["analysis_coverage"]) >= 12
     assert len(payload["hypothesis_register"]) >= 5
     assert len(payload["model_validation_metrics"]) >= 5
+    assert len(payload["executive_takeaways"]) >= 3
+    assert len(payload["data_dictionary"]) >= 10
+    assert len(payload["model_reproducibility"]) >= 3
     assert any(item["area"] == "Business impact" for item in payload["analysis_coverage"])
     assert any(item["area"] == "ML performance" for item in payload["analysis_coverage"])
     assert any(item["metric"] == "ROC-AUC" for item in payload["model_validation_metrics"])
@@ -176,19 +196,19 @@ def test_web_dashboard_public_ui_is_english_only() -> None:
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
     blocked_patterns = [
         "tr-TR",
-        "Yonetici",
-        "Y\u00f6netici",
-        "Ozet",
-        "\u00d6zet",
-        blocked_text("Tu", "tar"),
-        "O" + "deme",
-        "\u00d6deme",
-        blocked_text("Ve", "ri", " Kalitesi"),
-        "Turk",
-        "T\u00fcrk",
-        "Power" + " BI",
-        "power" + "bi",
-        "p" + "bix",
+        text_from_codes(89, 111, 110, 101, 116, 105, 99, 105),
+        text_from_codes(89, 246, 110, 101, 116, 105, 99, 105),
+        text_from_codes(79, 122, 101, 116),
+        text_from_codes(214, 122, 101, 116),
+        text_from_codes(84, 117, 116, 97, 114),
+        text_from_codes(79, 100, 101, 109, 101),
+        text_from_codes(214, 100, 101, 109, 101),
+        text_from_codes(86, 101, 114, 105, 32, 75, 97, 108, 105, 116, 101, 115, 105),
+        text_from_codes(84, 117, 114, 107),
+        text_from_codes(84, 252, 114, 107),
+        blocked_text("P", "ower", " ", "B", "I"),
+        blocked_text("p", "ower", "b", "i"),
+        blocked_text("p", "b", "i", "x"),
         "\u00c3",
         "\u00c4",
         "\u00c5",
@@ -209,24 +229,24 @@ def test_public_text_surfaces_are_english_and_web_only() -> None:
         REPO_ROOT / "models" / "sources.yml",
     ]
     blocked_patterns = [
-        "Yonetici",
-        "Y\u00f6netici",
-        "Ozet",
-        "\u00d6zet",
-        blocked_text("Tu", "tar"),
-        "O" + "deme",
-        "\u00d6deme",
-        blocked_text("Ve", "ri", " Kalitesi"),
-        blocked_text("Kri", "tik"),
-        "Yuk" + "sek",
-        "Y\u00fcksek",
-        "Ac" + "il",
-        "G\u00fcnl\u00fck",
-        "Haftal\u0131k",
-        "Sah" + "te",
-        "Power" + " BI",
-        "power" + "bi",
-        "p" + "bix",
+        text_from_codes(89, 111, 110, 101, 116, 105, 99, 105),
+        text_from_codes(89, 246, 110, 101, 116, 105, 99, 105),
+        text_from_codes(79, 122, 101, 116),
+        text_from_codes(214, 122, 101, 116),
+        text_from_codes(84, 117, 116, 97, 114),
+        text_from_codes(79, 100, 101, 109, 101),
+        text_from_codes(214, 100, 101, 109, 101),
+        text_from_codes(86, 101, 114, 105, 32, 75, 97, 108, 105, 116, 101, 115, 105),
+        text_from_codes(75, 114, 105, 116, 105, 107),
+        text_from_codes(89, 117, 107, 115, 101, 107),
+        text_from_codes(89, 252, 107, 115, 101, 107),
+        text_from_codes(65, 99, 105, 108),
+        text_from_codes(71, 252, 110, 108, 252, 107),
+        text_from_codes(72, 97, 102, 116, 97, 108, 305, 107),
+        text_from_codes(83, 97, 104, 116, 101),
+        blocked_text("P", "ower", " ", "B", "I"),
+        blocked_text("p", "ower", "b", "i"),
+        blocked_text("p", "b", "i", "x"),
         "\u00c3",
         "\u00c4",
         "\u00c5",

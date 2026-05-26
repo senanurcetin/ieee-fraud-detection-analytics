@@ -319,6 +319,7 @@ Latest validation snapshot:
 - [Modeling Decisions](docs/modeling_decisions.md)
 - [Model Results](docs/model_results.md)
 - [Model Validation Evidence](docs/model_validation_evidence.md)
+- [Recomputed Model Validation Snapshot](docs/model_validation_recomputed.md)
 - [Professional Fraud Analysis Coverage](docs/professional_analysis_coverage.md)
 - [Banking Business Impact](docs/banking_business_impact.md)
 - [Regulatory Context](docs/regulatory_context.md)
