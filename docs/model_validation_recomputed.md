@@ -10,12 +10,24 @@ This file is generated from exported validation artifacts and can be recreated w
 | Validation fraud baseline | 3.44% | Base precision before model ranking. |
 | ROC-AUC | 0.9167 | Ranking power across thresholds. |
 | Average precision | 0.5308 | Imbalance-aware model quality. |
+| Brier score | 0.0654 | Probability calibration error; lower is better. |
+| Expected calibration error | 14.87% | Weighted score-to-observed-rate gap across deciles. |
+| KS statistic | 67.81% | Maximum separation between fraud and legitimate score distributions. |
 | Top decile lift | 7.24x | Fraud concentration in the highest-score decile. |
 | Operating threshold | 0.6892 | p95 validation score threshold. |
 | Precision at threshold | 40.72% | Reviewed transactions that are fraud. |
 | Recall at threshold | 59.18% | Fraud labels captured by the queue. |
 | False-positive rate | 3.07% | Legitimate transactions sent to review. |
 | Workload share | 5.00% | Share of validation transactions reviewed. |
+
+## Holdout Stability Windows
+
+| Window | Rows | Fraud rate | ROC-AUC | Average precision |
+| --- | --- | --- | --- | --- |
+| Holdout window 1 | 29,527 | 3.32% | 0.9140 | 0.5232 |
+| Holdout window 2 | 29,527 | 2.95% | 0.9239 | 0.5505 |
+| Holdout window 3 | 29,527 | 3.54% | 0.9062 | 0.4972 |
+| Holdout window 4 | 29,527 | 3.96% | 0.9222 | 0.5520 |
 
 ## Calibration by Score Decile
 
@@ -49,4 +61,4 @@ This file is generated from exported validation artifacts and can be recreated w
 
 ## Governance Note
 
-The model is suitable for prioritizing analyst review queues. It should not be used as an autonomous decline engine without calibrated probabilities, production decision logs, and bank-specific cost validation.
+The model is suitable for prioritizing analyst review queues. It should not be used as an autonomous decline engine without calibrated probabilities, production decision logs, model-risk approval, and bank-specific cost validation.

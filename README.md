@@ -322,6 +322,7 @@ Latest validation snapshot:
 - [Recomputed Model Validation Snapshot](docs/model_validation_recomputed.md)
 - [Professional Fraud Analysis Coverage](docs/professional_analysis_coverage.md)
 - [Banking Business Impact](docs/banking_business_impact.md)
+- [Production Validation Gate](docs/production_validation.md)
 - [Regulatory Context](docs/regulatory_context.md)
 - [Operational Playbook](docs/operational_playbook.md)
 - [Security and Secrets](docs/security_and_secrets.md)

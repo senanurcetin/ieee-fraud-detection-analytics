@@ -96,8 +96,17 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
     assert len(payload["executive_takeaways"]) >= 3
     assert len(payload["data_dictionary"]) >= 10
     assert len(payload["model_reproducibility"]) >= 3
+    assert len(payload["threshold_decision_policy"]) >= 4
+    assert len(payload["business_impact_scenarios"]) >= 4
+    assert len(payload["model_governance_controls"]) >= 4
+    assert len(payload["monitoring_playbook"]) >= 4
+    assert len(payload["production_validation"]) >= 5
+    assert len(payload["page_action_messages"]) == 4
     assert any(item["kpi"] == "Fraud rate" for item in payload["kpi_definitions"])
     assert any(item["kpi"] == "Review workload" for item in payload["kpi_definitions"])
+    assert any(item["metric"] == "Brier score" for item in payload["model_validation_metrics"])
+    assert any(item["metric"] == "Expected calibration error" for item in payload["model_validation_metrics"])
+    assert any(item["rule"] == "Primary operating rule" for item in payload["threshold_decision_policy"])
     assert any(item["field"] == "TransactionDT" for item in payload["data_dictionary"])
     assert any("TransactionDT" in item["note"] for item in payload["methodology_notes"])
     assert any("automated decline" in item["note"] for item in payload["methodology_notes"])
@@ -147,6 +156,15 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "operating-point-recommendation" in html
     assert "business-impact-sensitivity" in html
     assert "calibration-analysis" in html
+    assert "overview-action-banner" in html
+    assert "segment-action-banner" in html
+    assert "model-action-banner" in html
+    assert "quality-action-banner" in html
+    assert "segment-interaction-insights" in html
+    assert "threshold-decision-policy" in html
+    assert "monitoring-playbook" in html
+    assert "model-governance-controls" in html
+    assert "production-validation-gate" in html
     assert "feature-family-explainability" in html
     assert "data-dictionary" in html
     assert "model-reproducibility" in html
@@ -184,6 +202,8 @@ def test_metadata_contains_full_analysis_coverage() -> None:
     assert len(payload["analysis_coverage"]) >= 12
     assert len(payload["hypothesis_register"]) >= 5
     assert len(payload["model_validation_metrics"]) >= 5
+    assert any(item["metric"] == "KS statistic" for item in payload["model_validation_metrics"])
+    assert any(item["metric"] == "p95 precision" for item in payload["model_validation_metrics"])
     assert len(payload["executive_takeaways"]) >= 3
     assert len(payload["data_dictionary"]) >= 10
     assert len(payload["model_reproducibility"]) >= 3

@@ -350,6 +350,40 @@
       font-size: 12px;
       line-height: 1.45;
     }
+    .action-banner {
+      border: 1px solid rgba(76, 141, 246, .34);
+      border-left: 4px solid var(--blue);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(76, 141, 246, .14), rgba(16, 27, 43, .82));
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .action-banner strong {
+      display: block;
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .action-banner span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+    .action-banner .banner-tag {
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 999px;
+      color: #cddfff;
+      padding: 6px 9px;
+      white-space: nowrap;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
 
     .heatmap { display: grid; gap: 6px; }
     .heat-row { display: grid; grid-template-columns: 120px repeat(var(--cols, 4), minmax(70px, 1fr)); gap: 6px; align-items: stretch; }
@@ -657,6 +691,7 @@
 
     <section class="view active" id="view-overview">
       <div class="section-grid">
+        <div id="overview-action-banner"></div>
         <div class="kpi-grid" id="kpi-grid"></div>
         <div class="brief-grid" id="executive-brief"></div>
         <article class="card">
@@ -710,6 +745,7 @@
 
     <section class="view" id="view-segments">
       <div class="section-grid">
+        <div id="segment-action-banner"></div>
         <article class="card">
           <div class="card-head">
             <div>
@@ -727,6 +763,15 @@
           <article class="card"><div class="card-head"><div><h2 class="card-title">Risk driver tree</h2><p class="card-note">Segment families grouped by fraud share, lift, and priority.</p></div></div><div id="driver-tree" class="tree"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Operational watchlist</h2><p class="card-note">Filtered segments ordered by priority score.</p></div></div><div id="watchlist-table"></div></article>
         </div>
+        <article class="card">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">Segment interaction insights</h2>
+              <p class="card-note">Cross-cutting fraud signals from product, identity, amount, payment, and email views.</p>
+            </div>
+          </div>
+          <div id="segment-interaction-insights"></div>
+        </article>
         <div class="grid-2">
           <article class="card"><div class="card-head"><div><h2 class="card-title">Identity and product coverage</h2><p class="card-note">Identity coverage, fraud rate, and lift by ProductCD.</p></div></div><div id="identity-product-matrix"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Relative hour and amount pattern</h2><p class="card-note">Relative hour and amount-decimal behavior for monitoring windows.</p></div></div><div id="time-amount-heatmap"></div></article>
@@ -749,6 +794,7 @@
 
     <section class="view" id="view-model">
       <div class="section-grid">
+        <div id="model-action-banner"></div>
         <article class="card">
           <div class="card-head">
             <div>
@@ -764,6 +810,10 @@
           <div id="threshold-recommendation" style="margin-top:12px;"></div>
         </article>
         <div class="grid-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Threshold decision policy</h2><p class="card-note">Governed decision rule for moving from score output to operating policy.</p></div></div>
+            <div id="threshold-decision-policy"></div>
+          </article>
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Operating point recommendation</h2><p class="card-note">Selected threshold translated into operating posture, queue pressure, and decision rule.</p></div></div>
             <div id="operating-point-recommendation"></div>
@@ -805,6 +855,7 @@
 
     <section class="view" id="view-quality">
       <div class="section-grid">
+        <div id="quality-action-banner"></div>
         <article class="card">
           <div class="card-head"><div><h2 class="card-title">Alert simulation</h2><p class="card-note">Monitoring signals derived from drift, risk queue pressure, and missingness scorecards.</p></div></div>
           <div class="alert-list" id="alert-list"></div>
@@ -826,6 +877,20 @@
             </div>
           </article>
         </div>
+        <div class="grid-2">
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Monitoring playbook</h2><p class="card-note">Operational triggers and actions for drift, queue pressure, missingness, and release readiness.</p></div></div>
+            <div id="monitoring-playbook"></div>
+          </article>
+          <article class="card">
+            <div class="card-head"><div><h2 class="card-title">Model governance controls</h2><p class="card-note">Controls needed before model scores become production decision inputs.</p></div></div>
+            <div id="model-governance-controls"></div>
+          </article>
+        </div>
+        <article class="card">
+          <div class="card-head"><div><h2 class="card-title">Production validation gate</h2><p class="card-note">Deployment and data-readiness proof points for the web reporting layer.</p></div></div>
+          <div id="production-validation-gate"></div>
+        </article>
         <div class="grid-2">
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">KPI dictionary</h2><p class="card-note">Definitions used consistently across the executive dashboard and API contract.</p></div></div>
@@ -959,9 +1024,9 @@
         state.data = await response.json();
         state.metadata = metadataResponse.ok ? await metadataResponse.json() : null;
         state.drillRows.clear();
-        state.thresholdIndex = Math.max(0, Math.floor((state.data.threshold_simulation || []).length / 2));
         box.style.display = 'none';
         initializeControls();
+        state.thresholdIndex = recommendedThresholdIndex();
         renderDashboard();
       } catch (error) {
         box.className = 'state error';
@@ -995,6 +1060,7 @@
       document.getElementById('readiness-pill').textContent = readinessText;
       document.getElementById('readiness-pill').className = `pill ${(meta.readiness_passed === meta.readiness_total && meta.readiness_total) ? 'pass' : 'warn'}`;
       document.getElementById('readiness-chip').textContent = readinessText;
+      renderPageActionBanners();
       renderKpis();
       renderExecutiveBrief();
       renderExecutiveTakeaways();
@@ -1009,6 +1075,7 @@
       renderComparison();
       renderDriverTree();
       renderWatchlist();
+      renderSegmentInteractionInsights();
       renderIdentityMatrix();
       renderTimeAmountHeatmap();
       renderPaymentHeatmap();
@@ -1016,6 +1083,7 @@
       renderSegmentActionPlaybook();
       renderThreshold();
       renderThresholdRecommendation();
+      renderThresholdDecisionPolicy();
       renderOperatingPointRecommendation();
       renderBusinessImpactSensitivity();
       renderModelValidationScorecard();
@@ -1027,6 +1095,9 @@
       renderFeatureFamilyExplainability();
       renderBars('risk-volume-bars', state.data.model_risk_bands, 'risk_band', 'transaction_count', row => fmtInt(row.transaction_count), row => segmentRow('Risk band', row.risk_band, row));
       renderAlerts();
+      renderMonitoringPlaybook();
+      renderModelGovernanceControls();
+      renderProductionValidationGate();
       renderQualityContract();
       renderReadinessTable();
       renderBars('quality-bars', state.data.data_quality, 'column_family', 'avg_missing_rate', row => `${fmtPct(row.avg_missing_rate)} | ${fmtInt(row.total_missing_values)} missing`, row => ({ ...row, segment_family: 'Data quality', segment_name: row.column_family, recommended_action: 'Review feature engineering, imputation policy, and monitoring thresholds for this feature family.' }));
@@ -1071,6 +1142,29 @@
         const familyOk = state.family === 'All' || row.segment_family_display === state.family;
         const priorityOk = state.priority === 'All' || row.risk_priority_display === state.priority;
         return familyOk && priorityOk;
+      });
+    }
+
+    function renderPageActionBanners() {
+      const messages = state.metadata?.page_action_messages || [];
+      const mapping = {
+        'Executive Overview': 'overview-action-banner',
+        'Segment Explorer': 'segment-action-banner',
+        'Model Operations': 'model-action-banner',
+        'Data Trust': 'quality-action-banner'
+      };
+      Object.entries(mapping).forEach(([page, id]) => {
+        const item = messages.find(row => row.page === page);
+        const target = document.getElementById(id);
+        if (!target) return;
+        if (!item) { target.innerHTML = ''; return; }
+        target.innerHTML = `<div class="action-banner">
+          <div>
+            <strong>${escapeHtml(item.action)}</strong>
+            <span>${escapeHtml(item.message)}</span>
+          </div>
+          <div class="banner-tag">${escapeHtml(page)}</div>
+        </div>`;
       });
     }
 
@@ -1379,6 +1473,61 @@
       ], row => row);
     }
 
+    function renderSegmentInteractionInsights() {
+      const target = document.getElementById('segment-interaction-insights');
+      const identity = [...(state.data.identity_product_coverage || [])].sort((a, b) => Number(b.fraud_lift || 0) - Number(a.fraud_lift || 0))[0];
+      const payment = [...(state.data.payment_heatmap || [])].sort((a, b) => Number(b.fraud_rate || 0) - Number(a.fraud_rate || 0))[0];
+      const timeAmount = [...(state.data.time_amount_signals || [])].sort((a, b) => Number(b.fraud_rate || 0) - Number(a.fraud_rate || 0))[0];
+      const watchlist = normalizedWatchlist()[0];
+      const email = [...(state.data.email_domain_risk || [])].sort((a, b) => Number(b.fraud_rate || 0) - Number(a.fraud_rate || 0))[0];
+      const rows = [
+        identity ? {
+          title: `Product ${identity.product_cd} identity split`,
+          metric: `${fmtX(identity.fraud_lift)} lift`,
+          body: `Identity coverage is ${fmtPct(identity.identity_coverage_rate)}; with-identity fraud rate is ${fmtPct(identity.fraud_rate_with_identity)} versus ${fmtPct(identity.fraud_rate_without_identity)} without identity.`,
+          action: 'Use this split for identity-aware rule calibration.',
+          drill: segmentRow('Identity', identity.product_cd, identity)
+        } : null,
+        payment ? {
+          title: `${payment.card_network} / ${payment.card_type}`,
+          metric: fmtPct(payment.fraud_rate),
+          body: `Payment combination contributes ${fmtPct(payment.fraud_share)} fraud share with ${fmtX(payment.lift)} lift.`,
+          action: 'Review payment rules together with product and score band.',
+          drill: segmentRow('Payment', `${payment.card_network} / ${payment.card_type}`, payment)
+        } : null,
+        timeAmount ? {
+          title: `${timeAmount.relative_hour_window} / ${timeAmount.amount_decimal_group}`,
+          metric: fmtPct(timeAmount.fraud_rate),
+          body: `Relative-time and amount-decimal pattern covers ${fmtInt(timeAmount.transaction_count)} transactions.`,
+          action: 'Use as a monitoring window, not as a real calendar-time claim.',
+          drill: segmentRow('Time amount', `${timeAmount.relative_hour_window} / ${timeAmount.amount_decimal_group}`, timeAmount)
+        } : null,
+        watchlist ? {
+          title: displaySegment(watchlist),
+          metric: `${fmtPct(watchlist.fraud_share)} share`,
+          body: `Top watchlist segment carries ${fmtX(watchlist.lift)} lift and ${fmtPct(watchlist.transaction_share)} transaction share.`,
+          action: 'Prioritize this segment in the weekly action register.',
+          drill: watchlist
+        } : null,
+        email ? {
+          title: `${email.purchaser_email_group} email group`,
+          metric: fmtPct(email.fraud_rate),
+          body: `Email group shows ${fmtX(email.lift)} lift and ${fmtPct(email.fraud_share)} fraud share.`,
+          action: 'Combine email grouping with payment and product cuts before increasing friction.',
+          drill: segmentRow('Email domain', email.purchaser_email_group, email)
+        } : null
+      ].filter(Boolean);
+      if (!rows.length) { target.innerHTML = emptyState('No segment interaction data available.'); return; }
+      target.innerHTML = `<div class="action-register">
+        ${rows.map((row, index) => `<div class="action-card" style="--accent:${colorScale[index % colorScale.length]}" data-drill-id="${registerDrill(row.drill)}">
+          <h3>${escapeHtml(row.title)}</h3>
+          <p><strong>${escapeHtml(row.metric)}</strong></p>
+          <p>${escapeHtml(row.body)}</p>
+          <div class="action-meta"><span>${escapeHtml(row.action)}</span></div>
+        </div>`).join('')}
+      </div>`;
+    }
+
     function renderIdentityMatrix() {
       const rows = state.data.identity_product_coverage || [];
       renderTable('identity-product-matrix', rows, [
@@ -1478,6 +1627,25 @@
           <div class="kpi"><div class="kpi-label">Workload</div><div class="kpi-value">${fmtInt(rec.review_count)}</div><div class="kpi-foot">${fmtInt(dailyReview)} reviews per relative day. ${capacityStatus}.</div></div>
           <div class="kpi"><div class="kpi-label">Capture / precision</div><div class="kpi-value">${fmtPct(rec.fraud_capture_rate)}</div><div class="kpi-foot">${fmtPct(rec.precision_rate)} precision; ${fmtInt(falsePositive)} expected false-positive reviews.</div></div>
           <div class="kpi"><div class="kpi-label">Missed exposure</div><div class="kpi-value">${fmtMoney(missedExposure)}</div><div class="kpi-foot">Review cost estimate: ${fmtMoney(reviewCost)} for the selected scenario.</div></div>
+        </div>`;
+    }
+
+    function renderThresholdDecisionPolicy() {
+      const target = document.getElementById('threshold-decision-policy');
+      const rows = state.metadata?.threshold_decision_policy || [];
+      const rec = selectedThresholdScenario();
+      if (!rows.length) { target.innerHTML = emptyState('Threshold decision policy is not available.'); return; }
+      const selectedSummary = rec
+        ? `Selected threshold ${df.format(rec.score_threshold || 0)} captures ${fmtPct(rec.fraud_capture_rate)} with ${fmtPct(rec.precision_rate)} precision at ${fmtPct(rec.workload_share)} workload share.`
+        : 'Select a threshold to translate score output into an operating policy.';
+      target.innerHTML = `
+        <div class="recommendation">${escapeHtml(selectedSummary)}</div>
+        <div class="note-list" style="margin-top:10px;">
+          ${rows.map(item => `<div class="note-card">
+            <strong>${escapeHtml(item.rule)}</strong>
+            <span><b>Decision:</b> ${escapeHtml(item.decision)}</span>
+            <span><b>Evidence:</b> ${escapeHtml(item.evidence)}</span>
+          </div>`).join('')}
         </div>`;
     }
 
@@ -1695,6 +1863,45 @@
       target.innerHTML = alerts.map(item => `<div class="alert" style="--accent:${item.color}"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.body)}</span></div>`).join('');
     }
 
+    function renderMonitoringPlaybook() {
+      const rows = state.metadata?.monitoring_playbook || [];
+      if (!rows.length) {
+        document.getElementById('monitoring-playbook').innerHTML = emptyState('Monitoring playbook metadata is not available.');
+        return;
+      }
+      renderTable('monitoring-playbook', rows, [
+        ['Trigger', row => escapeHtml(row.trigger)],
+        ['Condition', row => escapeHtml(row.condition)],
+        ['Action', row => escapeHtml(row.action)]
+      ]);
+    }
+
+    function renderModelGovernanceControls() {
+      const rows = state.metadata?.model_governance_controls || [];
+      if (!rows.length) {
+        document.getElementById('model-governance-controls').innerHTML = emptyState('Model governance metadata is not available.');
+        return;
+      }
+      renderTable('model-governance-controls', rows, [
+        ['Control', row => escapeHtml(row.control)],
+        ['Owner', row => escapeHtml(row.owner)],
+        ['Evidence', row => escapeHtml(row.evidence)]
+      ]);
+    }
+
+    function renderProductionValidationGate() {
+      const rows = state.metadata?.production_validation || [];
+      if (!rows.length) {
+        document.getElementById('production-validation-gate').innerHTML = emptyState('Production validation metadata is not available.');
+        return;
+      }
+      renderTable('production-validation-gate', rows, [
+        ['Gate', row => escapeHtml(row.gate)],
+        ['Status', row => `<span class="priority ${row.status === 'PASS' ? 'Normal' : 'Monitor'}">${escapeHtml(row.status)}</span>`],
+        ['Evidence', row => escapeHtml(row.evidence)]
+      ]);
+    }
+
     function renderQualityContract() {
       renderTable('quality-contract', state.data.quality_contract || [], [
         ['Object', row => row.object_name],
@@ -1895,6 +2102,8 @@
       const rec = thresholdRecommendation();
       const selected = selectedThresholdScenario() || rec || {};
       const takeaways = (state.metadata?.executive_takeaways || []).map(item => `- ${item.takeaway} Evidence: ${item.evidence} Decision: ${item.decision}`);
+      const thresholdPolicy = (state.metadata?.threshold_decision_policy || []).map(item => `- ${item.rule}: ${item.decision}`);
+      const validation = (state.metadata?.model_validation_metrics || []).filter(item => ['ROC-AUC', 'Average precision', 'Brier score', 'Expected calibration error', 'KS statistic'].includes(item.metric)).map(item => `- ${item.metric}: ${item.value}`);
       return [
         `Fraud Risk Intelligence summary`,
         `${fmtInt(k.total_transactions)} transactions were analyzed with a ${fmtPct(k.fraud_rate)} fraud base rate.`,
@@ -1902,6 +2111,10 @@
         `${displaySegment(top)} is the leading concentration driver with ${fmtPct(top.fraud_share)} fraud share and ${fmtX(top.lift)} lift.`,
         `Recommended threshold ${rec ? df.format(rec.score_threshold) : 'not available'} reviews ${rec ? fmtInt(rec.review_count) : 'not available'} cases and captures ${rec ? fmtPct(rec.fraud_capture_rate) : 'not available'} of fraud labels.`,
         `Selected operating scenario ${selected.score_threshold ? df.format(selected.score_threshold) : 'not available'} has ${selected.precision_rate ? fmtPct(selected.precision_rate) : 'not available'} precision and ${selected.workload_share ? fmtPct(selected.workload_share) : 'not available'} workload share.`,
+        `Model validation evidence:`,
+        ...validation,
+        `Threshold decision policy:`,
+        ...thresholdPolicy,
         `Executive takeaways:`,
         ...takeaways,
         `Action: prioritize critical risk bands, Product C, identity-covered transactions, and high-lift payment/email segments for operational review.`
@@ -1926,8 +2139,21 @@
       const assumptions = operatingAssumptions();
       const days = Math.max((state.data.daily_drift || []).length, 1);
       const feasible = rows.filter(row => (Number(row.review_count || 0) / days) <= assumptions.capacity);
-      const candidates = feasible.length ? feasible : rows;
-      return [...candidates].sort((a, b) => Number(b.fraud_capture_rate || 0) - Number(a.fraud_capture_rate || 0))[0];
+      if (feasible.length) {
+        return [...feasible].sort((a, b) => Number(b.fraud_capture_rate || 0) - Number(a.fraud_capture_rate || 0))[0];
+      }
+      return [...rows].sort((a, b) => {
+        const workloadDelta = Number(a.workload_share || 0) - Number(b.workload_share || 0);
+        if (workloadDelta !== 0) return workloadDelta;
+        return Number(b.precision_rate || 0) - Number(a.precision_rate || 0);
+      })[0];
+    }
+    function recommendedThresholdIndex() {
+      const rows = state.data?.threshold_simulation || [];
+      const rec = thresholdRecommendation();
+      if (!rows.length || !rec) return 0;
+      const index = rows.findIndex(row => Number(row.score_threshold) === Number(rec.score_threshold));
+      return index >= 0 ? index : Math.max(0, rows.length - 1);
     }
     function selectedThresholdScenario() {
       const rows = state.data?.threshold_simulation || [];

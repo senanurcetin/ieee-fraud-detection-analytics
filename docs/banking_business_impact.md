@@ -32,6 +32,18 @@ The analytical objective is not only to predict fraud, but to convert model scor
 - It keeps precision at 54.8%, which is high enough for a manual investigation queue.
 - It avoids the operational overload caused by reviewing the broader `Elevated` band.
 
+## Threshold Decision Rule
+
+The decision rule is intentionally operational, not purely statistical:
+
+1. Start with the smallest queue that meets the target fraud-capture level.
+2. Check that estimated daily review volume stays inside analyst capacity.
+3. If capacity is breached, raise the score threshold or restrict the queue to `High + Critical`.
+4. If fraud capture is below the target, lower the threshold and offset workload through segment prioritization.
+5. Do not use the model as an automatic decline engine until calibration, decision logging, and model-risk approval are in place.
+
+The dashboard implements this rule client-side through capacity, false-positive review cost, and false-negative loss inputs.
+
 ## Financial Framing
 
 The project separates measured dataset value from operational assumptions.
@@ -54,6 +66,17 @@ Illustrative impact:
 - Net value before customer-friction adjustment: approximately $1.34M
 
 This is not presented as realized savings. It is a decision frame for prioritizing review capacity and for defining the next production pilot.
+
+## Sensitivity Scenarios
+
+| Scenario | Review cost assumption | Missed-fraud loss assumption | Management interpretation |
+|---|---:|---:|---|
+| Base pilot | $4 per false-positive review | $120 per missed fraud | Default weekly risk committee scenario. |
+| Higher review cost | $8 per false-positive review | $120 per missed fraud | Tests whether analyst capacity or customer friction makes the queue too expensive. |
+| Higher fraud loss | $4 per false-positive review | $240 per missed fraud | Tests whether capture should be increased even if review volume rises. |
+| Stress case | $8 per false-positive review | $240 per missed fraud | Defines the decision boundary before production pilot approval. |
+
+These are scenario controls rather than accounting claims. They help management understand how the recommended threshold changes when operating assumptions change.
 
 ## False Positive / False Negative Interpretation
 

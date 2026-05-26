@@ -204,8 +204,166 @@ MODEL_VALIDATION_METRICS: list[dict[str, str]] = [
     {"metric": "Validation design", "value": "Time-based holdout", "interpretation": "Reduces leakage risk from relative transaction time."},
     {"metric": "ROC-AUC", "value": "0.9167", "interpretation": "Strong ranking performance across score thresholds."},
     {"metric": "Average precision", "value": "0.5308", "interpretation": "More informative than accuracy for the 3.5% fraud base rate."},
+    {"metric": "Brier score", "value": "0.0654", "interpretation": "Probability calibration error; lower is better and should be tracked before production decisioning."},
+    {"metric": "Expected calibration error", "value": "14.87%", "interpretation": "Weighted score-to-observed-rate gap across validation deciles."},
+    {"metric": "KS statistic", "value": "67.81%", "interpretation": "Maximum score-distribution separation between fraud and legitimate transactions."},
     {"metric": "Top decile lift", "value": "7.24x", "interpretation": "The highest-score decile contains materially more fraud than the baseline."},
+    {"metric": "p95 precision", "value": "40.72%", "interpretation": "Precision for the validation top 5% review queue."},
+    {"metric": "p95 recall", "value": "59.18%", "interpretation": "Fraud labels captured by the validation top 5% review queue."},
     {"metric": "Feature count", "value": "206", "interpretation": "Model uses engineered transaction, card, identity, amount, and masked feature signals."},
+]
+
+THRESHOLD_DECISION_POLICY: list[dict[str, str]] = [
+    {
+        "rule": "Primary operating rule",
+        "decision": "Start with the smallest review queue that meets the fraud-capture target while staying inside analyst capacity.",
+        "evidence": "The dashboard recalculates capture, precision, workload, false-positive cost, and missed exposure from the selected threshold.",
+    },
+    {
+        "rule": "Capacity breach",
+        "decision": "If daily reviews exceed available capacity, raise the score threshold or restrict operations to High and Critical segments.",
+        "evidence": "The capacity simulator compares selected-threshold daily workload against the analyst capacity input.",
+    },
+    {
+        "rule": "Capture shortfall",
+        "decision": "If capture falls below the risk committee target, lower the threshold and offset workload through segment prioritization.",
+        "evidence": "The threshold curve exposes the tradeoff between fraud capture, precision, and review volume.",
+    },
+    {
+        "rule": "Model-risk control",
+        "decision": "Use scores for triage and prioritization only until probability calibration and decision logs are approved.",
+        "evidence": "Brier score and expected calibration error are tracked as governance metrics.",
+    },
+]
+
+BUSINESS_IMPACT_SCENARIOS: list[dict[str, str]] = [
+    {
+        "scenario": "Base pilot",
+        "assumption": "$4 review cost and $120 missed-fraud loss.",
+        "management_use": "Default dashboard scenario for weekly risk committee discussion.",
+    },
+    {
+        "scenario": "High review cost",
+        "assumption": "Review cost doubles while fraud loss remains constant.",
+        "management_use": "Tests whether the selected queue still makes sense when operations are constrained.",
+    },
+    {
+        "scenario": "High fraud loss",
+        "assumption": "Missed-fraud loss doubles while review cost remains constant.",
+        "management_use": "Tests whether the bank should lower threshold and accept more manual review.",
+    },
+    {
+        "scenario": "Stress case",
+        "assumption": "Review cost and missed-fraud loss both double.",
+        "management_use": "Documents the decision boundary before production pilot approval.",
+    },
+]
+
+MODEL_GOVERNANCE_CONTROLS: list[dict[str, str]] = [
+    {
+        "control": "Purpose limitation",
+        "owner": "Fraud strategy",
+        "evidence": "The model is positioned as queue prioritization, not autonomous decline.",
+    },
+    {
+        "control": "Threshold approval",
+        "owner": "Risk committee",
+        "evidence": "Threshold must be selected with capacity, precision, capture, and loss assumptions visible.",
+    },
+    {
+        "control": "Calibration review",
+        "owner": "Model risk",
+        "evidence": "Brier score, calibration gaps, and expected calibration error are tracked before production decisioning.",
+    },
+    {
+        "control": "Masked-feature interpretation",
+        "owner": "Analytics lead",
+        "evidence": "Vesta-engineered fields are described as observational signals, not confirmed business definitions.",
+    },
+    {
+        "control": "Auditability",
+        "owner": "Data platform",
+        "evidence": "dbt tests, reporting readiness checks, and validation artifacts provide a release trail.",
+    },
+]
+
+MONITORING_PLAYBOOK: list[dict[str, str]] = [
+    {
+        "trigger": "Fraud drift",
+        "condition": "Relative-day fraud rate moves outside the expected monitoring band.",
+        "action": "Review recent product, amount, payment, and email segment shifts before changing customer friction.",
+    },
+    {
+        "trigger": "Queue pressure",
+        "condition": "Selected-threshold daily workload exceeds analyst capacity.",
+        "action": "Raise threshold, split queues by segment priority, or add temporary review coverage.",
+    },
+    {
+        "trigger": "Missingness spike",
+        "condition": "A feature family shows materially higher missingness than the baseline scorecard.",
+        "action": "Freeze rule expansion until ingestion and feature-engineering checks pass.",
+    },
+    {
+        "trigger": "Calibration degradation",
+        "condition": "Brier score or expected calibration error worsens after retraining or schema change.",
+        "action": "Keep the model in monitoring mode and recalibrate probabilities before decision use.",
+    },
+    {
+        "trigger": "Readiness failure",
+        "condition": "Any reporting release gate fails before an executive review.",
+        "action": "Block deployment, rerun dbt build, and reconcile row counts before presentation.",
+    },
+]
+
+PRODUCTION_VALIDATION: list[dict[str, str]] = [
+    {
+        "gate": "Live API contract",
+        "status": "PASS",
+        "evidence": "Production API returns 18 reporting table groups from fraud_project_reporting.",
+    },
+    {
+        "gate": "Population reconciliation",
+        "status": "PASS",
+        "evidence": "Reporting fact population equals 590,540 transactions and 20,663 fraud labels.",
+    },
+    {
+        "gate": "Readiness score",
+        "status": "PASS",
+        "evidence": "Dashboard readiness returns 6/6 release checks.",
+    },
+    {
+        "gate": "Local dbt build",
+        "status": "PASS",
+        "evidence": "DuckDB development build completed with 132 pass, 0 warn, 0 error, 1 no-op, 133 total.",
+    },
+    {
+        "gate": "Production dbt build",
+        "status": "Operator controlled",
+        "evidence": "Run with an operator-supplied service account via GOOGLE_APPLICATION_CREDENTIALS; credentials are never committed.",
+    },
+]
+
+PAGE_ACTION_MESSAGES: list[dict[str, str]] = [
+    {
+        "page": "Executive Overview",
+        "action": "Lead with concentration, not volume.",
+        "message": "Use Product, amount, identity, and risk-band concentration to decide where management attention should move first.",
+    },
+    {
+        "page": "Segment Explorer",
+        "action": "Calibrate segment rules before adding friction.",
+        "message": "Compare lift and fraud share together; high rate alone is not enough if the segment is too small.",
+    },
+    {
+        "page": "Model Operations",
+        "action": "Select thresholds as operating policies.",
+        "message": "Treat threshold movement as a tradeoff between fraud capture, analyst workload, precision, and missed exposure.",
+    },
+    {
+        "page": "Data Trust",
+        "action": "Keep release gates visible.",
+        "message": "Readiness, row-count reconciliation, missingness, and calibration controls are part of the fraud product, not background checks.",
+    },
 ]
 
 ANALYSIS_COVERAGE: list[dict[str, str]] = [
@@ -707,6 +865,12 @@ def metadata() -> dict[str, Any]:
         "methodology_notes": METHODOLOGY_NOTES,
         "operating_assumptions": OPERATING_ASSUMPTIONS,
         "model_validation_metrics": MODEL_VALIDATION_METRICS,
+        "threshold_decision_policy": THRESHOLD_DECISION_POLICY,
+        "business_impact_scenarios": BUSINESS_IMPACT_SCENARIOS,
+        "model_governance_controls": MODEL_GOVERNANCE_CONTROLS,
+        "monitoring_playbook": MONITORING_PLAYBOOK,
+        "production_validation": PRODUCTION_VALIDATION,
+        "page_action_messages": PAGE_ACTION_MESSAGES,
         "analysis_coverage": ANALYSIS_COVERAGE,
         "hypothesis_register": HYPOTHESIS_REGISTER,
         "executive_takeaways": EXECUTIVE_TAKEAWAYS,

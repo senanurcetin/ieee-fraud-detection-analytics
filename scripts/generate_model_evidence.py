@@ -10,7 +10,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from sklearn.metrics import average_precision_score, precision_recall_fscore_support, roc_auc_score
+from sklearn.metrics import (
+    average_precision_score,
+    brier_score_loss,
+    precision_recall_fscore_support,
+    roc_auc_score,
+    roc_curve,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TABLES_DIR = REPO_ROOT / "outputs" / "tables"
@@ -64,11 +70,15 @@ def compute_metrics(predictions: pd.DataFrame) -> dict[str, float]:
     baseline = float(actual.mean())
     top_decile_threshold = float(score.quantile(0.90))
     top_decile_rate = float(actual[score >= top_decile_threshold].mean())
+    fpr_values, tpr_values, _ = roc_curve(actual, score)
+    ks_statistic = float((tpr_values - fpr_values).max())
     return {
         "validation_rows": float(len(predictions)),
         "fraud_baseline": baseline,
         "roc_auc": float(roc_auc_score(actual, score)),
         "average_precision": float(average_precision_score(actual, score)),
+        "brier_score": float(brier_score_loss(actual, score)),
+        "ks_statistic": ks_statistic,
         "operating_threshold": threshold,
         "precision": float(precision),
         "recall": float(recall),
@@ -95,6 +105,41 @@ def calibration_table(predictions: pd.DataFrame) -> pd.DataFrame:
     return grouped
 
 
+def expected_calibration_error(calibration: pd.DataFrame) -> float:
+    total_rows = calibration["transaction_count"].sum()
+    if not total_rows:
+        return 0.0
+    weighted_gap = calibration["transaction_count"] * calibration["calibration_gap"].abs()
+    return float(weighted_gap.sum() / total_rows)
+
+
+def validation_window_table(predictions: pd.DataFrame) -> pd.DataFrame:
+    """Summarize model stability over row-order windows in the exported holdout.
+
+    The exported validation file is created from a time-based holdout. When the
+    original TransactionDT is not present in the artifact, row-order windows are
+    the safest reproducible proxy for drift and stability documentation.
+    """
+
+    frame = predictions.reset_index(drop=True).copy()
+    frame["validation_window"] = pd.qcut(frame.index, 4, labels=False, duplicates="drop") + 1
+    rows: list[dict[str, float | int | str]] = []
+    for window, group in frame.groupby("validation_window", observed=True):
+        actual = group["actual"].astype(int)
+        score = group["prediction"].astype(float)
+        unique_labels = actual.nunique()
+        rows.append(
+            {
+                "validation_window": f"Holdout window {int(window)}",
+                "rows": int(len(group)),
+                "fraud_rate": float(actual.mean()),
+                "roc_auc": float(roc_auc_score(actual, score)) if unique_labels > 1 else 0.0,
+                "average_precision": float(average_precision_score(actual, score)) if unique_labels > 1 else 0.0,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def feature_family_table(feature_importance: pd.DataFrame) -> pd.DataFrame:
     if feature_importance.empty:
         return feature_importance
@@ -118,12 +163,20 @@ def markdown_table(rows: list[list[str]], headers: list[str]) -> str:
     return "\n".join(lines)
 
 
-def build_document(metrics: dict[str, float], calibration: pd.DataFrame, family: pd.DataFrame) -> str:
+def build_document(
+    metrics: dict[str, float],
+    calibration: pd.DataFrame,
+    family: pd.DataFrame,
+    windows: pd.DataFrame,
+) -> str:
     metric_rows = [
         ["Validation rows", f"{int(metrics['validation_rows']):,}", "Time-based holdout population."],
         ["Validation fraud baseline", pct(metrics["fraud_baseline"]), "Base precision before model ranking."],
         ["ROC-AUC", num(metrics["roc_auc"]), "Ranking power across thresholds."],
         ["Average precision", num(metrics["average_precision"]), "Imbalance-aware model quality."],
+        ["Brier score", num(metrics["brier_score"]), "Probability calibration error; lower is better."],
+        ["Expected calibration error", pct(metrics["expected_calibration_error"]), "Weighted score-to-observed-rate gap across deciles."],
+        ["KS statistic", pct(metrics["ks_statistic"]), "Maximum separation between fraud and legitimate score distributions."],
         ["Top decile lift", f"{metrics['top_decile_lift']:.2f}x", "Fraud concentration in the highest-score decile."],
         ["Operating threshold", num(metrics["operating_threshold"]), "p95 validation score threshold."],
         ["Precision at threshold", pct(metrics["precision"]), "Reviewed transactions that are fraud."],
@@ -150,18 +203,30 @@ def build_document(metrics: dict[str, float], calibration: pd.DataFrame, family:
         ]
         for row in family.head(10).itertuples()
     ]
+    window_rows = [
+        [
+            str(row.validation_window),
+            f"{int(row.rows):,}",
+            pct(row.fraud_rate),
+            num(row.roc_auc),
+            num(row.average_precision),
+        ]
+        for row in windows.itertuples()
+    ]
     return "\n\n".join(
         [
             "# Recomputed Model Validation Evidence",
             "This file is generated from exported validation artifacts and can be recreated with `python scripts/generate_model_evidence.py`.",
             "## Validation Metrics",
             markdown_table(metric_rows, ["Metric", "Value", "Interpretation"]),
+            "## Holdout Stability Windows",
+            markdown_table(window_rows, ["Window", "Rows", "Fraud rate", "ROC-AUC", "Average precision"]),
             "## Calibration by Score Decile",
             markdown_table(calibration_rows, ["Score decile", "Rows", "Average score", "Observed fraud rate", "Calibration gap"]),
             "## Feature Family Evidence",
             markdown_table(family_rows, ["Feature family", "Feature count", "Total importance", "Top feature"]),
             "## Governance Note",
-            "The model is suitable for prioritizing analyst review queues. It should not be used as an autonomous decline engine without calibrated probabilities, production decision logs, and bank-specific cost validation.",
+            "The model is suitable for prioritizing analyst review queues. It should not be used as an autonomous decline engine without calibrated probabilities, production decision logs, model-risk approval, and bank-specific cost validation.",
         ]
     ) + "\n"
 
@@ -170,7 +235,14 @@ def main() -> None:
     predictions = load_predictions()
     feature_importance = load_feature_importance()
     metrics = compute_metrics(predictions)
-    document = build_document(metrics, calibration_table(predictions), feature_family_table(feature_importance))
+    calibration = calibration_table(predictions)
+    metrics["expected_calibration_error"] = expected_calibration_error(calibration)
+    document = build_document(
+        metrics,
+        calibration,
+        feature_family_table(feature_importance),
+        validation_window_table(predictions),
+    )
     OUTPUT_DOC.write_text(document, encoding="utf-8")
     print(f"Wrote {OUTPUT_DOC.relative_to(REPO_ROOT)}")
     print(f"ROC-AUC={metrics['roc_auc']:.4f} AveragePrecision={metrics['average_precision']:.4f}")
