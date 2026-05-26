@@ -210,6 +210,8 @@
     .section-grid { display: grid; gap: 12px; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .grid-large { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .grid-large .card:first-child { grid-column: 1 / -1; }
     .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .wide { grid-column: 1 / -1; }
 
@@ -219,7 +221,7 @@
       border-radius: var(--radius);
       background: linear-gradient(180deg, rgba(18, 31, 49, .94), rgba(12, 22, 36, .94));
       box-shadow: 0 14px 42px rgba(0, 0, 0, .18);
-      padding: 14px;
+      padding: 16px;
       overflow: hidden;
     }
     .card-head {
@@ -248,7 +250,8 @@
       width: 100%;
       overflow: hidden;
     }
-    .chart.short { min-height: 190px; }
+    .chart.short { min-height: 260px; }
+    .chart.focus { min-height: 320px; }
     .chart.tall { min-height: 330px; }
     svg { display: block; width: 100%; height: auto; }
 
@@ -300,11 +303,11 @@
     .brief span { color: var(--muted); font-size: 13px; line-height: 1.45; }
 
     .bar-list { display: grid; gap: 9px; }
-    .bar-row { display: grid; grid-template-columns: minmax(86px, 142px) minmax(0, 1fr) 92px; gap: 10px; align-items: center; }
-    .bar-label { color: var(--text); font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .bar-track { height: 10px; background: rgba(255, 255, 255, .06); border-radius: 999px; overflow: hidden; }
+    .bar-row { display: grid; grid-template-columns: minmax(104px, 168px) minmax(0, 1fr) 104px; gap: 12px; align-items: center; min-height: 30px; }
+    .bar-label { color: var(--text); font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bar-track { height: 14px; background: rgba(255, 255, 255, .06); border-radius: 999px; overflow: hidden; }
     .bar-fill { height: 100%; width: 0; background: var(--accent, var(--blue)); border-radius: 999px; }
-    .bar-value { color: var(--muted); font-size: 12px; text-align: right; white-space: nowrap; }
+    .bar-value { color: var(--muted); font-size: 13px; text-align: right; white-space: nowrap; }
 
     .table-wrap { overflow: auto; max-height: 430px; border: 1px solid var(--line); border-radius: var(--radius); }
     table { width: 100%; border-collapse: collapse; min-width: 760px; }
@@ -520,7 +523,8 @@
     }
 
     @media (max-width: 1120px) {
-      .app-header, .command-bar, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .app-header, .command-bar, .grid-2, .grid-3, .grid-large { grid-template-columns: 1fr; }
+      .grid-large .card:first-child { grid-column: auto; }
       .actions { min-width: 0; justify-content: flex-start; }
       .kpi-grid, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .action-register { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -537,7 +541,7 @@
       .subtitle { font-size: 13px; overflow-wrap: anywhere; }
       .pill { white-space: normal; }
       .kpi-grid, .brief-grid, .comparison-grid, .grid-4, .tabs, .action-register { grid-template-columns: 1fr; }
-      .bar-row { grid-template-columns: 90px minmax(0, 1fr) 72px; }
+      .bar-row { grid-template-columns: 102px minmax(0, 1fr) 80px; gap: 8px; }
       .heat-row { grid-template-columns: 88px repeat(var(--cols, 4), minmax(54px, 1fr)); }
       .drawer-grid { grid-template-columns: 1fr; }
       .actions { width: 100%; display: grid; grid-template-columns: 1fr; }
@@ -641,10 +645,10 @@
     </section>
 
     <nav class="tabs" aria-label="Dashboard sections">
-      <button class="tab active" data-view="overview" type="button">01 Executive Overview<small>Concentration and action</small></button>
-      <button class="tab" data-view="segments" type="button">02 Segment Explorer<small>Drivers and comparisons</small></button>
-      <button class="tab" data-view="model" type="button">03 Model Operations<small>Threshold and capacity</small></button>
-      <button class="tab" data-view="quality" type="button">04 Data Trust<small>Freshness and controls</small></button>
+      <button class="tab active" data-view="overview" type="button">Executive Overview<small>Concentration and action</small></button>
+      <button class="tab" data-view="segments" type="button">Segment Explorer<small>Drivers and comparisons</small></button>
+      <button class="tab" data-view="model" type="button">Model Operations<small>Threshold and capacity</small></button>
+      <button class="tab" data-view="quality" type="button">Data Trust<small>Freshness and controls</small></button>
     </nav>
 
     <main id="state" class="state">Connecting to the BigQuery reporting layer.</main>
@@ -653,10 +657,10 @@
       <div class="section-grid">
         <div class="kpi-grid" id="kpi-grid"></div>
         <div class="brief-grid" id="executive-brief"></div>
-        <div class="grid-3">
+        <div class="grid-large">
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Fraud rate trend</h2><p class="card-note">TransactionDT is treated as a relative day counter, not as a real calendar timestamp.</p></div></div>
-            <div class="chart short" id="daily-trend"></div>
+            <div class="chart focus" id="daily-trend"></div>
           </article>
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Fraud contribution waterfall</h2><p class="card-note">Top segments explain where fraud labels concentrate across business cuts.</p></div></div>
@@ -667,7 +671,7 @@
             <div class="chart short" id="pareto-chart"></div>
           </article>
         </div>
-        <div class="grid-3">
+        <div class="grid-large">
           <article class="card"><div class="card-head"><div><h2 class="card-title">Product risk</h2><p class="card-note">Fraud intensity by ProductCD.</p></div></div><div class="chart short" id="product-bars"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Risk band separation</h2><p class="card-note">Observed fraud rate by model score band.</p></div></div><div class="chart short" id="risk-bars"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Amount band risk</h2><p class="card-note">Non-linear amount behavior across ticket sizes.</p></div></div><div class="chart short" id="amount-bars"></div></article>
@@ -734,7 +738,7 @@
           <article class="card">
             <div class="card-head"><div><h2 class="card-title">Threshold what-if curve</h2><p class="card-note">Capture, precision, and workload move together as the review threshold changes.</p></div></div>
             <input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color: var(--blue);">
-            <div class="chart short" id="threshold-chart"></div>
+            <div class="chart focus" id="threshold-chart"></div>
           </article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Review queue strategy</h2><p class="card-note">Model scores are used as a prioritization layer, not as an autonomous decision engine.</p></div></div><div id="review-table"></div></article>
         </div>
@@ -1304,7 +1308,7 @@
 
     function renderThresholdRecommendation() {
       const target = document.getElementById('threshold-recommendation');
-      const rec = thresholdRecommendation();
+      const rec = selectedThresholdScenario();
       if (!rec) { target.innerHTML = emptyState('No threshold recommendation can be calculated.'); return; }
       const assumptions = operatingAssumptions();
       const k = kpis();
@@ -1318,10 +1322,10 @@
       const capacityStatus = dailyReview <= assumptions.capacity ? 'Within capacity' : 'Capacity breach';
       target.innerHTML = `
         <div class="grid-4">
-          <div class="kpi"><div class="kpi-label">Recommended threshold</div><div class="kpi-value">${df.format(rec.score_threshold || 0)}</div><div class="kpi-foot">${escapeHtml(rec.operating_mode || 'Balanced review mode')}</div></div>
+          <div class="kpi"><div class="kpi-label">Selected threshold</div><div class="kpi-value">${df.format(rec.score_threshold || 0)}</div><div class="kpi-foot">${escapeHtml(rec.operating_mode || 'Balanced review mode')}. Move the slider to compare scenarios.</div></div>
           <div class="kpi"><div class="kpi-label">Workload</div><div class="kpi-value">${fmtInt(rec.review_count)}</div><div class="kpi-foot">${fmtInt(dailyReview)} reviews per relative day. ${capacityStatus}.</div></div>
-          <div class="kpi"><div class="kpi-label">Precision</div><div class="kpi-value">${fmtPct(rec.precision_rate)}</div><div class="kpi-foot">${fmtInt(falsePositive)} expected false-positive reviews.</div></div>
-          <div class="kpi"><div class="kpi-label">Missed exposure</div><div class="kpi-value">${fmtMoney(missedExposure)}</div><div class="kpi-foot">Review cost estimate: ${fmtMoney(reviewCost)}.</div></div>
+          <div class="kpi"><div class="kpi-label">Capture / precision</div><div class="kpi-value">${fmtPct(rec.fraud_capture_rate)}</div><div class="kpi-foot">${fmtPct(rec.precision_rate)} precision; ${fmtInt(falsePositive)} expected false-positive reviews.</div></div>
+          <div class="kpi"><div class="kpi-label">Missed exposure</div><div class="kpi-value">${fmtMoney(missedExposure)}</div><div class="kpi-foot">Review cost estimate: ${fmtMoney(reviewCost)} for the selected scenario.</div></div>
         </div>`;
     }
 
@@ -1556,6 +1560,12 @@
       const feasible = rows.filter(row => (Number(row.review_count || 0) / days) <= assumptions.capacity);
       const candidates = feasible.length ? feasible : rows;
       return [...candidates].sort((a, b) => Number(b.fraud_capture_rate || 0) - Number(a.fraud_capture_rate || 0))[0];
+    }
+    function selectedThresholdScenario() {
+      const rows = state.data?.threshold_simulation || [];
+      if (!rows.length) return null;
+      const index = clamp(Number(state.thresholdIndex || 0), 0, rows.length - 1);
+      return rows[index];
     }
     function operatingAssumptions() {
       return {

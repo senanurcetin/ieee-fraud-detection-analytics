@@ -108,6 +108,10 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Segment Explorer" in html
     assert "Model Operations" in html
     assert "Data Trust" in html
+    assert "01 Executive Overview" not in html
+    assert "02 Segment Explorer" not in html
+    assert "03 Model Operations" not in html
+    assert "04 Data Trust" not in html
     assert "metric-select" in html
     assert "family-select" in html
     assert "priority-select" in html
@@ -131,6 +135,22 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "export-json-btn" in html
     assert "print-btn" in html
     assert "copy-summary-btn" in html
+    assert "selectedThresholdScenario" in html
+    assert "Selected threshold" in html
+    assert "Move the slider to compare scenarios" in html
+    assert "chart focus" in html
+
+
+def test_threshold_slider_updates_selected_scenario_cards() -> None:
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    section = html.split("function renderThresholdRecommendation()", 1)[1].split(
+        "function renderReviewTable()",
+        1,
+    )[0]
+
+    assert "selectedThresholdScenario()" in section
+    assert "thresholdRecommendation()" not in section
+    assert "Capture / precision" in section
 
 
 def test_web_dashboard_public_ui_is_english_only() -> None:
