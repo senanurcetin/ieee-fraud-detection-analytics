@@ -27,11 +27,26 @@ Latest development result:
 PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133
 ```
 
-Production validation must be run by an operator with a service-account credential supplied through the local environment:
+Production validation:
 
 ```bash
 dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target prod
 ```
+
+Latest production result:
+
+```text
+PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133
+```
+
+Production datasets rebuilt by dbt:
+
+| Dataset | Role | Status |
+|---|---|---|
+| `fraud_project_staging` | Typed source views | PASS |
+| `fraud_project_intermediate` | Joined and engineered feature layer | PASS |
+| `fraud_project_mart` | Analytical marts and model support tables | PASS |
+| `fraud_project_reporting` | Web-dashboard reporting layer | PASS |
 
 Credential files are never stored in the repository. Use `GOOGLE_APPLICATION_CREDENTIALS` or an equivalent secret manager entry in the deployment environment.
 
@@ -45,4 +60,3 @@ The dashboard can be presented only when all of the following are true:
 4. The local dbt build passes before commit.
 5. Production dbt build is rerun after any material SQL model change.
 6. The public dashboard contains no legacy presentation-layer references and no non-English public UI copy.
-
