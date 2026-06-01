@@ -1,64 +1,60 @@
-# Fraud Risk Intelligence Platform
+# Fraud Analytics Web Report
 
-This web application is the only public presentation layer for the fraud analytics project. It turns the dbt-built BigQuery reporting layer into an English-first enterprise fraud intelligence platform for executives, fraud analysts, risk teams, and model monitoring stakeholders.
+This web application is the public presentation layer for the fraud analytics project. It recreates a professional BI-style fraud report as a modern browser dashboard, using FastAPI plus a static HTML/CSS/JavaScript frontend connected to the governed reporting marts.
 
-The interface is intentionally web-only and does not depend on any paid visualization service.
+The application is analytical by design. It is not an operations workflow, ticketing tool, or monitoring console.
 
-## Product Scope
+## Report Pages
 
-The platform answers four operational questions:
+1. **Executive Fraud Overview**
+   - Portfolio KPIs, exposure, trend, product risk, segment contribution, and executive takeaways.
 
-- What happened: fraud volume, loss exposure, and drift movement.
-- Why it happened: segment concentration, model drivers, and masked entity context.
-- How serious it is: review workload, capture potential, precision, and alert severity.
-- What to do next: analyst queue priority, case action, threshold policy, and monitoring response.
+2. **Fraud Trend Analysis**
+   - Relative-day fraud movement, transaction volume context, hourly patterns, and drift interpretation.
 
-## Enterprise Pages
+3. **Transaction Amount Analysis**
+   - Amount-band risk, product x amount heatmaps, amount-score scatter, and amount distribution comparison.
 
-1. **Executive Command Center**
-   - Focused KPI strip: total transactions, fraud rate, loss exposure, capturable exposure, high-risk workload, and precision/recall.
-   - Large visuals for fraud trend, loss trend, segment contribution, Pareto concentration, and risk score distribution.
+4. **Customer Risk Analysis**
+   - Masked customer proxies using identity status, email group, device type, and product context.
 
-2. **Analyst Investigation Queue**
-   - Case queue grouped by Critical, High Risk, Medium Risk, and Low Risk.
-   - Columns include transaction ID, risk score, category, amount, product, device, email group, identity status, prior-fraud proxy, model confidence, recommended action, and SLA priority.
+5. **Geographic Fraud Analysis**
+   - Geography readiness page. IEEE-CIS does not contain native country, city, or IP-location fields, so maps are disabled until enrichment exists.
 
-3. **Transaction Detail**
-   - Case workspace for one transaction.
-   - Includes risk score, transaction summary, top risk factors, feature contribution cards, recommended analyst action, and an audit-trail placeholder.
+6. **Behavioral Pattern Analysis**
+   - Relative-hour, payment, email, device, score, and amount behavior patterns.
 
-4. **Fraud Intelligence Center**
-   - Hierarchical segment drilldowns instead of unrelated segment comparisons.
-   - Supported paths include Product -> Amount band, Amount band -> Product, Payment -> Email group, Email group -> Product, and Identity -> Product.
-   - Includes contribution waterfall, segment Pareto, heatmaps, relative-time signals, and masked entity relationship context.
+7. **Feature Importance Analysis**
+   - Feature importance, feature family contribution, missingness versus importance, and masked-feature interpretation.
 
-5. **Model Monitoring**
-   - Model KPIs: ROC-AUC, PR-AUC, precision, recall, false positive rate, and top-decile lift.
-   - Threshold simulator for analyst capacity, review cost, missed-fraud loss, workload, capture, precision, and estimated exposure.
-   - Feature importance, risk distribution, prediction distribution, and drift proxy visuals.
+8. **Model Performance Analysis**
+   - ROC-AUC, PR-AUC, precision, recall, top-decile lift, risk band distribution, confusion matrix, and threshold simulation.
 
-6. **Alert Management**
-   - Historical replay alert simulation from IEEE-CIS relative time.
-   - Covers fraud drift, critical queue pressure, missingness spikes, segment concentration, and model-confidence indicators.
+9. **Key Insights & Recommendations**
+   - Recommendation matrix, expected exposure reduction, analyst summary, and business action register.
 
-Data Trust is embedded as a drawer and appendix rather than a main presentation page. It shows readiness, data source, table count, model metadata, methodology limits, and compliance notes.
+## Interaction Model
+
+- Sidebar page navigation.
+- Global slicers for relative day window, product, amount band, email group, identity status, and risk band.
+- Chart click cross-filtering for product, amount, email, identity, and risk-band visuals.
+- Hover tooltips for chart values.
+- Drill-through tables for segment and transaction-level analytical samples.
+- Export current report page to PDF through browser print.
+- Export filtered data to CSV.
+- Dark and light mode toggle.
 
 ## Data Contract
 
-The platform keeps `/api/dashboard` backward compatible and adds enterprise endpoints:
+The frontend reads:
 
-- `/api/enterprise/summary`
-- `/api/enterprise/cases`
-- `/api/enterprise/cases/{transaction_id}`
-- `/api/enterprise/segments`
-- `/api/enterprise/alerts`
-- `/api/enterprise/model-monitoring`
-- `/api/enterprise/metadata`
+- `/api/dashboard`
+- `/api/metadata`
+- `/api/enterprise/cases?limit=240` for a transaction-level analytical sample used in scatter plots and drill-through tables.
 
-Core reporting tables:
+Core reporting groups:
 
 - `rpt_executive_kpis`
-- `rpt_segment_watchlist`
 - `rpt_product_risk`
 - `rpt_identity_risk`
 - `rpt_identity_product_coverage`
@@ -70,13 +66,17 @@ Core reporting tables:
 - `rpt_model_risk_bands`
 - `rpt_feature_importance`
 - `rpt_data_quality_scorecard`
-- `rpt_review_strategy`
+- `rpt_segment_watchlist`
 - `rpt_threshold_simulation`
-- `rpt_quality_contract`
-- `rpt_report_readiness`
-- `fact_train_transactions`
+- `fact_train_transactions` for governed niche drilldowns
 
-The application does not show country, user age, or real customer network fields because IEEE-CIS does not provide those attributes. Masked entity relationships are shown only as anonymized analytical proxies.
+## Analytical Guardrails
+
+- `TransactionDT` is relative elapsed time, not a calendar timestamp.
+- Geography is not visualized as a map until external enrichment exists.
+- Customer risk uses masked proxies, not real customer profile attributes.
+- Masked Vesta features are presented as statistical signals, not confirmed business definitions.
+- Model output is presented as analytical prioritization and threshold simulation, not autonomous decisioning.
 
 ## Local Run
 
@@ -91,7 +91,7 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-For zero-cost local QA from the DuckDB development build:
+For local DuckDB QA:
 
 ```powershell
 $env:WEB_DATA_BACKEND="duckdb"
@@ -113,11 +113,10 @@ Deploy the `webapp` folder as the Vercel project root:
 
 ```powershell
 cd webapp
-npx vercel link --yes --project fraud-project-web
 npx vercel deploy --prod --yes
 ```
 
-Vercel cannot read local credential files. Configure these environment variables in the Vercel project:
+Required environment variables:
 
 - `GCP_PROJECT_ID`
 - `BQ_DATASET`
@@ -125,17 +124,4 @@ Vercel cannot read local credential files. Configure these environment variables
 - `BIGQUERY_MAX_BYTES_BILLED`
 - `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`
 
-`GOOGLE_APPLICATION_CREDENTIALS_JSON_B64` must contain the base64-encoded service-account JSON content. Never commit credential files to the repository.
-
-## Export Options
-
-- `Export JSON` downloads the current API payload for audit or offline review.
-- `Print / Save PDF` uses browser print styles.
-- `Copy executive summary` creates a short presentation-ready narrative from the live data.
-
-## Cost and Quota Guardrails
-
-- API responses are cached in memory.
-- `WEB_CACHE_SECONDS` controls cache duration.
-- `BIGQUERY_MAX_BYTES_BILLED` limits query size.
-- Expensive interactions are served from pre-aggregated reporting marts or constrained reporting fact queries.
+Never commit credential files to the repository.

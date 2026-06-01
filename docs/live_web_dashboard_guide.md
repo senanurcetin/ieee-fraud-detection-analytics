@@ -1,6 +1,6 @@
-# Live Fraud Intelligence Platform Guide
+# Live Fraud Analytics Report Guide
 
-The live web application is the primary presentation layer for the IEEE-CIS fraud analytics project. It exposes the dbt-built reporting layer through a FastAPI backend and a browser-based enterprise fraud intelligence interface.
+The live web application is the primary presentation layer for the IEEE-CIS fraud analytics project. It is structured as a BI-style analytical report embedded in a web app.
 
 ## Production URL
 
@@ -8,130 +8,84 @@ The live web application is the primary presentation layer for the IEEE-CIS frau
 https://fraud-project-web.vercel.app
 ```
 
-## Platform Story
+## Report Story
 
-The platform is structured as a decision workflow, not a static report:
+The report answers nine executive and analytical questions:
 
-1. Executives see where fraud is concentrated and how much exposure is at stake.
-2. Analysts receive a prioritized investigation queue.
-3. A transaction detail workspace explains why one case is risky.
-4. Fraud strategy teams explore nested segment behavior.
-5. Model-risk users monitor performance, threshold trade-offs, and drift.
-6. Operations teams review historical replay alerts.
+1. What is the total fraud exposure?
+2. Is fraud increasing or decreasing?
+3. Which transaction amounts are most risky?
+4. Which masked customer proxy groups are riskier?
+5. Where could fraud be analyzed geographically if enrichment existed?
+6. Which behaviors indicate fraud?
+7. Which features explain prediction?
+8. How well does the model perform?
+9. What should the business do next?
 
-The application is English-first and web-only. No external reporting desktop dependency is part of the presentation path.
+## Page Flow
 
-## Data Contract
+1. **Executive Fraud Overview**
+   - Start here for total population, fraud rate, exposure, capturable exposure, and concentration.
 
-The dashboard reads only governed reporting tables from `fraud_project_reporting`. It does not query raw Kaggle tables directly.
+2. **Fraud Trend Analysis**
+   - Use relative-day and relative-hour visuals to discuss drift and time-window risk.
 
-Backward-compatible endpoint:
+3. **Transaction Amount Analysis**
+   - Show amount-band fraud rate, product x amount heatmaps, and amount-score outliers.
 
-```text
-/api/dashboard
-```
+4. **Customer Risk Analysis**
+   - Explain identity, email, device, and product risk using masked dataset proxies.
 
-Enterprise endpoints:
+5. **Geographic Fraud Analysis**
+   - Show that geography is a valid business question but cannot be mapped without enrichment.
 
-```text
-/api/enterprise/summary
-/api/enterprise/cases
-/api/enterprise/cases/{transaction_id}
-/api/enterprise/segments
-/api/enterprise/alerts
-/api/enterprise/model-monitoring
-/api/enterprise/metadata
-```
+6. **Behavioral Pattern Analysis**
+   - Link payment, email, hour, score, and amount behavior into actionable risk patterns.
 
-Main data groups:
+7. **Feature Importance Analysis**
+   - Explain which features and feature families drive model scoring.
 
-- Executive: `rpt_executive_kpis`, `rpt_segment_watchlist`, `rpt_daily_drift`
-- Investigation: `fact_train_transactions`, `rpt_model_risk_bands`
-- Segment intelligence: `rpt_product_risk`, `rpt_identity_risk`, `rpt_amount_bands`, `rpt_payment_heatmap`, `rpt_email_domain_risk`
-- Model operations: `rpt_threshold_simulation`, `rpt_review_strategy`, `rpt_feature_importance`
-- Data trust: `rpt_quality_contract`, `rpt_report_readiness`, `rpt_data_quality_scorecard`
+8. **Model Performance Analysis**
+   - Present ROC-AUC, PR-AUC, precision, recall, threshold tradeoffs, risk bands, and confusion matrix.
 
-## Page Guide
+9. **Key Insights & Recommendations**
+   - Close with a recommendation matrix and expected exposure reduction logic.
 
-### Executive Command Center
+## Interactions
 
-Use this page for the first 30 seconds of a presentation.
-
-Key points:
-
-- Fraud is rare at portfolio level, but concentrated in specific pockets.
-- Loss exposure and capturable exposure convert the technical result into business terms.
-- Pareto and contribution charts show where controls should focus first.
-
-### Analyst Investigation Queue
-
-Use this page to show how the model output becomes an operational workflow.
-
-Key points:
-
-- Cases are grouped by calibrated risk category.
-- The queue avoids automatic rejection language and frames the model as review prioritization.
-- Clicking a case opens the detailed investigation workspace.
-
-### Transaction Detail
-
-Use this page to answer "why was this transaction flagged?"
-
-Key points:
-
-- Risk score and category are separated from raw probability.
-- Explanation cards show top contributing signals.
-- Audit trail and action blocks make the page look like an analyst case workspace.
-
-### Fraud Intelligence Center
-
-Use this page to explain segmentation depth.
-
-Key points:
-
-- Drilldowns compare related populations instead of unrelated segment types.
-- Product, amount, payment, email, device, and identity signals are read as nested risk pockets.
-- Heatmaps and Pareto charts support targeted control design.
-
-### Model Monitoring
-
-Use this page for model credibility.
-
-Key points:
-
-- ROC-AUC, PR-AUC, precision, recall, false positive rate, and top-decile lift are visible.
-- The threshold simulator shows the trade-off between capture, workload, precision, review cost, and missed exposure.
-- Feature importance and drift proxy views support explainability.
-
-### Alert Management
-
-Use this page to show operational monitoring.
-
-Key points:
-
-- Alerts are historical replay from IEEE-CIS relative time, not a real-time stream.
-- The alert table links severity, trigger, current value, threshold, and recommended action.
-- This page demonstrates how the platform would support monitoring routines in a production environment.
+- Global slicers filter report visuals by relative day window, product, amount band, email group, identity status, and risk band.
+- Clicking chart segments applies cross-filtering.
+- Hover tooltips expose count, rate, lift, share, score, and exposure context.
+- Drill-through tables show the analytical rows behind a selected segment.
+- CSV export downloads the active page data.
+- PDF export uses browser print styles for the current report state.
+- Dark and light mode support presentation environments.
 
 ## Dataset Limits
 
-The interface explicitly avoids unsupported claims:
+- `TransactionDT` is relative elapsed time and must not be presented as a calendar date.
+- IEEE-CIS does not contain native country, city, IP-location, or user-age fields.
+- Geography requires external enrichment before a map can be enabled.
+- Customer analysis uses masked proxy fields, not real customer master data.
+- Model scores are used for analytical prioritization and threshold simulation.
 
-- `TransactionDT` is relative elapsed time, not a calendar timestamp.
-- IEEE-CIS does not provide real country, IP geolocation, or user age.
-- Product, card, email, device, and identity fields are masked or anonymized.
-- Masked entity relationships are analytical proxies, not verified customer networks.
-- The model supports review prioritization, not automatic decline decisions.
+## Recommended Presentation Sequence
 
-## Presentation Flow
+For a short presentation:
 
-Recommended 3-minute sequence:
+1. Executive Fraud Overview
+2. Transaction Amount Analysis
+3. Customer Risk Analysis
+4. Model Performance Analysis
+5. Key Insights & Recommendations
 
-1. Start with the Executive Command Center and explain concentration plus exposure.
-2. Move to Fraud Intelligence Center and show nested segment logic.
-3. Open Analyst Investigation Queue and click one case.
-4. Use Transaction Detail to explain why the case is risky.
-5. Close with Model Monitoring threshold trade-offs.
+For a detailed technical review:
+
+1. Fraud Trend Analysis
+2. Behavioral Pattern Analysis
+3. Feature Importance Analysis
+4. Model Performance Analysis
+5. Geographic Fraud Analysis data-gap discussion
 
 ## Operational Notes
 
@@ -139,4 +93,4 @@ Recommended 3-minute sequence:
 - BigQuery remains the production source of truth.
 - DuckDB is used for zero-cost local QA.
 - Service-account credentials must be stored as environment variables, never in Git.
-- API cache settings protect free-tier usage and reduce unnecessary BigQuery scans.
+- The app uses cached reporting data to control query cost.

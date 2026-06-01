@@ -1318,12 +1318,15 @@ def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[st
 def enterprise_metadata() -> dict[str, Any]:
     base = metadata()
     base["enterprise_pages"] = [
-        "Executive Command Center",
-        "Analyst Investigation Queue",
-        "Transaction Detail",
-        "Fraud Intelligence Center",
-        "Model Monitoring",
-        "Alert Management",
+        "Executive Fraud Overview",
+        "Fraud Trend Analysis",
+        "Transaction Amount Analysis",
+        "Customer Risk Analysis",
+        "Geographic Fraud Analysis",
+        "Behavioral Pattern Analysis",
+        "Feature Importance Analysis",
+        "Model Performance Analysis",
+        "Key Insights & Recommendations",
     ]
     base["unsupported_fields"] = {
         "country": "Not available in IEEE-CIS without external IP or geo enrichment.",

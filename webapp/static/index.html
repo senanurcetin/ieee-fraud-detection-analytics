@@ -3,32 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fraud Intelligence Platform</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2307111f'/%3E%3Cpath d='M32 8l19 8v14c0 12-8 22-19 26C21 52 13 42 13 30V16l19-8z' fill='%2318a999'/%3E%3Cpath d='M23 32l6 6 13-15' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <title>Fraud Analytics Report</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1320'/%3E%3Cpath d='M12 42h40v8H12zM16 30h9v9h-9zM28 20h9v19h-9zM40 12h9v27h-9z' fill='%2318a999'/%3E%3Cpath d='M12 16l10 7 10-12 20 15' fill='none' stroke='%23e5484d' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     :root {
-      --bg: #06101d;
-      --shell: #091525;
-      --panel: #101d31;
-      --panel-2: #14243b;
-      --panel-3: #0c1727;
-      --line: rgba(223, 234, 248, .12);
-      --line-strong: rgba(223, 234, 248, .24);
+      color-scheme: dark;
+      --bg: #07111f;
+      --chrome: #081525;
+      --nav: #0b1728;
+      --canvas: #f7f9fc;
+      --surface: #ffffff;
+      --surface-2: #edf2f8;
+      --ink: #111827;
       --text: #eef5ff;
-      --muted: #9badc2;
-      --dim: #71839a;
-      --red: #e5484d;
-      --red-soft: rgba(229, 72, 77, .14);
+      --muted: #64748b;
+      --muted-dark: #9badc2;
+      --line: #d8e0ea;
+      --line-dark: rgba(231, 238, 247, .14);
       --teal: #18a999;
-      --teal-soft: rgba(24, 169, 153, .14);
-      --amber: #d99a20;
-      --amber-soft: rgba(217, 154, 32, .14);
-      --blue: #4c8df6;
-      --blue-soft: rgba(76, 141, 246, .15);
-      --violet: #8b5cf6;
-      --green: #2f9e75;
+      --red: #d92d3a;
+      --amber: #c98012;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+      --slate: #334155;
       --radius: 8px;
-      --shadow: 0 22px 70px rgba(0, 0, 0, .34);
+      --shadow: 0 18px 55px rgba(2, 8, 23, .18);
+    }
+
+    body.light {
+      color-scheme: light;
+      --bg: #edf2f7;
+      --chrome: #ffffff;
+      --nav: #ffffff;
+      --text: #111827;
+      --muted-dark: #64748b;
+      --line-dark: #d8e0ea;
     }
 
     * { box-sizing: border-box; }
@@ -36,15 +45,11 @@
     body {
       margin: 0;
       min-height: 100vh;
+      background: var(--bg);
       color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 12% -10%, rgba(76, 141, 246, .18), transparent 34rem),
-        radial-gradient(circle at 96% -12%, rgba(229, 72, 77, .16), transparent 30rem),
-        linear-gradient(180deg, #07111f 0%, #050b14 100%);
       overflow-x: hidden;
     }
-
     button, input, select { font: inherit; }
     button { cursor: pointer; }
     svg { display: block; width: 100%; height: 100%; }
@@ -52,17 +57,16 @@
     .app {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: 260px minmax(0, 1fr);
+      grid-template-columns: 258px minmax(0, 1fr);
     }
 
     .sidebar {
       position: sticky;
       top: 0;
       height: 100vh;
-      padding: 18px 14px;
-      border-right: 1px solid var(--line);
-      background: rgba(6, 16, 29, .88);
-      backdrop-filter: blur(18px);
+      padding: 16px 12px;
+      background: var(--nav);
+      border-right: 1px solid var(--line-dark);
       overflow-y: auto;
     }
 
@@ -70,275 +74,339 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 4px 6px 18px;
-      border-bottom: 1px solid var(--line);
+      padding: 8px 8px 16px;
+      border-bottom: 1px solid var(--line-dark);
       margin-bottom: 12px;
     }
-
     .brand-mark {
-      width: 42px;
-      height: 42px;
+      width: 40px;
+      height: 40px;
+      border-radius: 7px;
       display: grid;
       place-items: center;
-      border-radius: var(--radius);
-      background: linear-gradient(145deg, #182942, #0b1626);
-      border: 1px solid var(--line-strong);
-      color: #ffd1d3;
-      font-weight: 950;
-      letter-spacing: 0;
-      box-shadow: var(--shadow);
-      flex: 0 0 auto;
+      color: #ecfeff;
+      background: linear-gradient(135deg, #0f766e, #1d4ed8);
+      font-size: 13px;
+      font-weight: 900;
+      border: 1px solid rgba(255,255,255,.18);
     }
+    .brand strong { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0; }
+    .brand span { display: block; margin-top: 2px; color: var(--muted-dark); font-size: 12px; }
 
-    .brand strong { display: block; font-size: 13px; letter-spacing: 0; text-transform: uppercase; }
-    .brand span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
-
-    .nav {
-      display: grid;
-      gap: 7px;
-      margin-top: 14px;
-    }
-
+    .nav { display: grid; gap: 6px; }
     .nav-btn {
-      min-height: 50px;
+      min-height: 48px;
       border: 1px solid transparent;
       border-radius: var(--radius);
       background: transparent;
-      color: var(--muted);
+      color: var(--muted-dark);
       text-align: left;
       padding: 9px 10px;
-      font-weight: 850;
+      font-weight: 820;
     }
-
-    .nav-btn:hover { background: rgba(255, 255, 255, .045); color: var(--text); }
+    .nav-btn:hover { color: var(--text); background: rgba(255,255,255,.055); }
     .nav-btn.active {
       color: var(--text);
-      border-color: rgba(76, 141, 246, .42);
-      background: linear-gradient(180deg, rgba(76, 141, 246, .20), rgba(16, 29, 49, .72));
+      border-color: rgba(37, 99, 235, .38);
+      background: linear-gradient(180deg, rgba(37, 99, 235, .20), rgba(24, 169, 153, .08));
     }
-    .nav-btn span { display: block; margin-top: 2px; color: var(--dim); font-size: 11px; font-weight: 750; }
+    .nav-btn span { display: block; margin-top: 2px; color: var(--muted-dark); font-size: 11px; font-weight: 680; }
 
-    .side-card {
-      margin-top: 18px;
-      padding: 12px;
-      border: 1px solid var(--line);
+    .sidebar-note {
+      margin-top: 14px;
+      border: 1px solid var(--line-dark);
       border-radius: var(--radius);
-      background: rgba(16, 29, 49, .70);
+      padding: 11px;
+      background: rgba(255,255,255,.04);
+      color: var(--muted-dark);
+      font-size: 12px;
+      line-height: 1.45;
     }
-    .side-card strong { display: block; font-size: 12px; }
-    .side-card span { display: block; color: var(--muted); font-size: 12px; line-height: 1.45; margin-top: 6px; }
+    .sidebar-note strong { display: block; color: var(--text); font-size: 12px; margin-bottom: 5px; }
 
     .main {
       min-width: 0;
-      padding: 18px 22px 34px;
+      padding: 14px;
+      background:
+        radial-gradient(circle at 82% -10%, rgba(24, 169, 153, .13), transparent 26rem),
+        linear-gradient(180deg, rgba(255,255,255,.02), transparent 16rem),
+        var(--bg);
     }
 
     .topbar {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
-      align-items: start;
-      margin-bottom: 14px;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
     }
-
-    h1 {
+    .topbar h1 {
       margin: 0;
-      padding-bottom: 6px;
-      font-size: clamp(28px, 3vw, 46px);
-      line-height: 1.18;
+      font-size: 22px;
+      line-height: 1.22;
       letter-spacing: 0;
     }
-    .subtitle {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.5;
-      max-width: 920px;
+    .topbar p {
+      margin: 3px 0 0;
+      color: var(--muted-dark);
+      font-size: 12px;
     }
-
-    .statusbar {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-      max-width: 620px;
-    }
+    .top-actions { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
     .pill {
       min-height: 30px;
       display: inline-flex;
       align-items: center;
-      border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, .045);
-      color: var(--muted);
-      font-size: 12px;
+      border: 1px solid var(--line-dark);
       padding: 0 10px;
+      color: var(--muted-dark);
+      background: rgba(255,255,255,.045);
+      font-size: 12px;
       white-space: nowrap;
     }
-    .pill.live { color: #c8fff6; border-color: rgba(24, 169, 153, .42); background: var(--teal-soft); }
-    .pill.warn { color: #ffe7b2; border-color: rgba(217, 154, 32, .45); background: var(--amber-soft); }
-    .pill.risk { color: #ffd1d3; border-color: rgba(229, 72, 77, .45); background: var(--red-soft); }
+    .pill.live { color: #d1fff7; border-color: rgba(24,169,153,.42); background: rgba(24,169,153,.13); }
+    .btn {
+      min-height: 34px;
+      border: 1px solid var(--line-dark);
+      border-radius: 7px;
+      background: rgba(255,255,255,.055);
+      color: var(--text);
+      padding: 0 10px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .btn:hover { background: rgba(255,255,255,.09); }
+    .btn.primary { color: #06241f; border-color: var(--teal); background: var(--teal); }
 
-    .command-bar {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(130px, 1fr)) auto;
-      gap: 10px;
-      align-items: end;
-      margin-bottom: 14px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(16, 29, 49, .76);
+    .report-canvas {
+      min-height: calc(100vh - 86px);
+      border-radius: 10px;
+      background: var(--canvas);
+      color: var(--ink);
       box-shadow: var(--shadow);
+      border: 1px solid rgba(15, 23, 42, .10);
+      padding: 14px;
+    }
+    .canvas-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      padding: 2px 2px 12px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+    }
+    .canvas-title h2 {
+      margin: 0;
+      font-size: clamp(24px, 2.5vw, 38px);
+      line-height: 1.15;
+      letter-spacing: 0;
+      color: #0f172a;
+    }
+    .canvas-title p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      max-width: 850px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .canvas-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+      max-width: 470px;
+    }
+    .canvas-meta .pill {
+      color: #475569;
+      border-color: #d8e0ea;
+      background: #fff;
     }
 
-    .field { display: grid; gap: 6px; min-width: 0; }
+    .slicer-grid {
+      display: grid;
+      grid-template-columns: 1fr minmax(0, 4fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .filter-rail {
+      position: sticky;
+      top: 12px;
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 12px;
+      min-width: 210px;
+    }
+    .filter-title {
+      font-size: 12px;
+      font-weight: 900;
+      color: #0f172a;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 2px;
+    }
+    .field { display: grid; gap: 5px; }
     .field label {
       color: var(--muted);
       font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0;
-      text-transform: uppercase;
+      font-weight: 800;
     }
     .select, .input {
       width: 100%;
-      min-height: 38px;
-      border-radius: 7px;
+      min-height: 34px;
       border: 1px solid var(--line);
-      background: #0b1626;
-      color: var(--text);
-      padding: 0 10px;
+      border-radius: 7px;
+      background: #fff;
+      color: #0f172a;
+      padding: 0 9px;
       outline: none;
-    }
-    .select:focus, .input:focus { border-color: rgba(76, 141, 246, .70); box-shadow: 0 0 0 3px rgba(76, 141, 246, .14); }
-
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; min-width: 320px; }
-    .btn {
-      min-height: 38px;
-      border: 1px solid var(--line-strong);
-      border-radius: 7px;
-      padding: 0 11px;
-      background: rgba(255, 255, 255, .055);
-      color: var(--text);
       font-size: 12px;
+    }
+    .select:focus, .input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.13); }
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 25px;
+      border-radius: 999px;
+      border: 1px solid #d8e0ea;
+      background: #f8fafc;
+      padding: 0 8px;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 760;
+    }
+    .chip button {
+      border: 0;
+      background: transparent;
+      color: #64748b;
+      padding: 0;
       font-weight: 900;
-      white-space: nowrap;
     }
-    .btn:hover { background: rgba(255, 255, 255, .085); }
-    .btn.primary { color: #06121f; background: var(--teal); border-color: var(--teal); }
-    .btn.danger { background: var(--red-soft); border-color: rgba(229, 72, 77, .42); }
 
-    .state {
-      margin: 12px 0;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(16, 29, 49, .78);
-      color: var(--muted);
-    }
-    .state.error { border-color: rgba(229, 72, 77, .48); background: var(--red-soft); color: #ffd1d3; }
-
-    .view { display: none; }
-    .view.active { display: block; }
-    .stack { display: grid; gap: 14px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-    .grid-6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+    .report-body { min-width: 0; }
+    .page-grid { display: grid; gap: 12px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
     .wide { grid-column: 1 / -1; }
-    .focus-grid { display: grid; grid-template-columns: 1.35fr .85fr; gap: 14px; }
-    .queue-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(360px, .65fr); gap: 14px; align-items: start; }
-    .monitor-grid { display: grid; grid-template-columns: minmax(360px, .72fr) minmax(0, 1.28fr); gap: 14px; }
 
-    .card {
+    .kpi-card, .visual-card, .insight-card {
       min-width: 0;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      background: linear-gradient(180deg, rgba(16, 29, 49, .94), rgba(11, 22, 38, .92));
-      box-shadow: 0 14px 42px rgba(0, 0, 0, .22);
-      padding: 14px;
+      background: var(--surface);
+      box-shadow: 0 7px 24px rgba(15, 23, 42, .06);
     }
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: start;
-      margin-bottom: 12px;
-    }
-    .card-title {
-      margin: 0;
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.25;
-      letter-spacing: 0;
-    }
-    .card-note {
-      margin: 4px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    .kpi {
-      min-height: 126px;
-      border: 1px solid var(--line);
-      border-top: 3px solid var(--accent, var(--teal));
-      border-radius: var(--radius);
-      background: rgba(12, 23, 39, .82);
-      padding: 13px;
+    .kpi-card {
+      min-height: 112px;
+      padding: 12px;
       display: grid;
       align-content: space-between;
-      gap: 8px;
+      border-top: 4px solid var(--accent, var(--teal));
     }
     .kpi-label {
       color: var(--muted);
       font-size: 11px;
-      font-weight: 950;
-      letter-spacing: 0;
+      font-weight: 900;
       text-transform: uppercase;
+      letter-spacing: 0;
     }
     .kpi-value {
-      color: var(--text);
-      font-size: clamp(24px, 2.3vw, 36px);
+      color: #0f172a;
+      font-size: clamp(22px, 2.2vw, 34px);
       line-height: 1;
       font-weight: 900;
-      letter-spacing: 0;
     }
     .kpi-foot {
       color: var(--muted);
       font-size: 12px;
-      line-height: 1.4;
+      line-height: 1.35;
+    }
+    .visual-card {
+      padding: 12px;
+      min-height: 310px;
+    }
+    .visual-card.compact { min-height: 230px; }
+    .visual-card.tall { min-height: 390px; }
+    .visual-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .visual-title {
+      margin: 0;
+      color: #0f172a;
+      font-size: 14px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+    .visual-note {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .visual-body {
+      width: 100%;
+      min-height: 240px;
+    }
+    .visual-card.compact .visual-body { min-height: 160px; }
+    .visual-card.tall .visual-body { min-height: 320px; }
+    .insight-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .insight-card {
+      padding: 12px;
+      min-height: 118px;
+      border-left: 4px solid var(--accent, var(--teal));
+    }
+    .insight-card strong {
+      display: block;
+      color: #0f172a;
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+    .insight-card span {
+      display: block;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.45;
     }
 
-    .threshold-mini .kpi { min-height: 112px; }
-    .threshold-mini .kpi-value { font-size: clamp(20px, 1.7vw, 28px); }
-
-    .chart { width: 100%; min-height: 280px; }
-    .chart.tall { min-height: 380px; }
-    .chart.short { min-height: 240px; }
-    .chart svg text { font-family: inherit; }
-
-    .bar-list { display: grid; gap: 10px; }
+    .bar-list { display: grid; gap: 9px; }
     .bar-row {
       display: grid;
-      grid-template-columns: minmax(110px, 170px) minmax(0, 1fr) 92px;
-      gap: 10px;
+      grid-template-columns: minmax(92px, 152px) minmax(0, 1fr) minmax(70px, 94px);
+      gap: 9px;
       align-items: center;
-      min-height: 32px;
+      min-height: 30px;
+      border-radius: 6px;
+      padding: 2px 4px;
     }
+    .bar-row:hover { background: #f1f5f9; }
     .bar-label {
-      color: var(--text);
+      color: #0f172a;
       font-size: 12px;
-      font-weight: 850;
+      font-weight: 820;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .bar-track {
       height: 14px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .07);
       overflow: hidden;
+      border-radius: 999px;
+      background: #e8eef6;
     }
     .bar-fill {
       height: 100%;
@@ -347,229 +415,171 @@
       background: var(--accent, var(--teal));
     }
     .bar-value {
+      color: #0f172a;
       text-align: right;
-      color: var(--text);
       font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
     }
 
-    .heatmap {
-      display: grid;
-      gap: 7px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-    }
+    .heatmap { display: grid; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
     .heat-row {
+      min-width: 640px;
       display: grid;
-      grid-template-columns: 130px repeat(var(--cols), minmax(86px, 1fr));
-      gap: 7px;
-      align-items: stretch;
-      min-width: 620px;
+      grid-template-columns: 125px repeat(var(--cols), minmax(82px, 1fr));
+      gap: 6px;
     }
     .heat-cell {
-      min-height: 54px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: rgba(255, 255, 255, .04);
-      padding: 8px;
-      color: var(--text);
-      font-size: 12px;
-      font-weight: 850;
+      min-height: 52px;
+      border-radius: 6px;
+      border: 1px solid #d8e0ea;
+      background: #f8fafc;
+      padding: 7px;
+      color: #0f172a;
+      font-size: 11px;
+      font-weight: 820;
     }
     .heat-cell.head {
-      color: var(--muted);
-      background: transparent;
+      min-height: 28px;
       border-color: transparent;
+      background: transparent;
+      color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 0;
       font-size: 10px;
     }
-    .heat-value { display: block; margin-top: 5px; font-size: 15px; color: #fff; }
+    .heat-value { display: block; margin-top: 5px; font-size: 14px; color: #0f172a; }
 
-    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); }
-    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+    }
     th, td {
+      padding: 9px 10px;
       border-bottom: 1px solid var(--line);
-      padding: 10px;
-      text-align: left;
       font-size: 12px;
+      text-align: left;
       white-space: nowrap;
     }
     th {
-      color: var(--muted);
+      background: #f1f5f9;
+      color: #475569;
       font-size: 10px;
+      font-weight: 900;
       text-transform: uppercase;
-      letter-spacing: 0;
-      background: rgba(255, 255, 255, .035);
     }
-    tr.clickable:hover { background: rgba(76, 141, 246, .10); }
-    tr.selected { background: rgba(24, 169, 153, .12); }
+    tr:hover td { background: #f8fafc; }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 24px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 0 8px;
-      font-size: 11px;
-      font-weight: 900;
-      color: var(--text);
-      background: rgba(255, 255, 255, .045);
-    }
-    .badge.critical { color: #ffd1d3; background: var(--red-soft); border-color: rgba(229, 72, 77, .42); }
-    .badge.high { color: #ffe7b2; background: var(--amber-soft); border-color: rgba(217, 154, 32, .42); }
-    .badge.medium { color: #d8e6ff; background: var(--blue-soft); border-color: rgba(76, 141, 246, .42); }
-    .badge.low { color: #c8fff6; background: var(--teal-soft); border-color: rgba(24, 169, 153, .42); }
-
-    .queue-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    .queue-tab {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      min-height: 32px;
-      padding: 0 11px;
-      background: rgba(255, 255, 255, .04);
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 900;
-    }
-    .queue-tab.active { color: var(--text); background: var(--blue-soft); border-color: rgba(76, 141, 246, .44); }
-
-    .detail-list { display: grid; gap: 9px; }
-    .detail-row {
+    .matrix {
       display: grid;
-      grid-template-columns: minmax(110px, .65fr) minmax(0, 1fr);
-      gap: 12px;
-      padding-bottom: 9px;
-      border-bottom: 1px solid var(--line);
-      font-size: 12px;
+      gap: 8px;
     }
-    .detail-row span:first-child { color: var(--muted); }
-    .detail-row strong { color: var(--text); text-align: right; }
-
-    .factor-list { display: grid; gap: 9px; }
-    .factor {
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .035);
-      padding: 10px;
-    }
-    .factor strong { display: block; font-size: 13px; }
-    .factor span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }
-
-    .split-controls {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-
-    .alert-card {
-      border: 1px solid var(--line);
-      border-left: 4px solid var(--accent, var(--amber));
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .04);
-      padding: 12px;
-      min-height: 118px;
-    }
-    .alert-card strong { display: block; font-size: 14px; }
-    .alert-card span { display: block; margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.45; }
-
-    .drawer-backdrop {
-      position: fixed;
-      inset: 0;
-      display: none;
-      background: rgba(0, 0, 0, .45);
-      z-index: 50;
-    }
-    .drawer {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: min(620px, 96vw);
-      height: 100vh;
-      transform: translateX(102%);
-      transition: transform .22s ease;
-      z-index: 60;
-      background: #07111f;
-      border-left: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      padding: 18px;
-      overflow-y: auto;
-    }
-    body.drawer-open .drawer-backdrop { display: block; }
-    body.drawer-open .drawer { transform: translateX(0); }
-
-    .drawer-head {
+    .matrix-card {
       display: flex;
       justify-content: space-between;
-      align-items: start;
-      gap: 14px;
-      margin-bottom: 14px;
-      padding-bottom: 14px;
-      border-bottom: 1px solid var(--line);
+      gap: 10px;
+      align-items: center;
+      min-height: 42px;
+      border: 1px solid #d8e0ea;
+      border-radius: 7px;
+      padding: 8px 10px;
+      background: #fff;
     }
-    .drawer-head h2 { margin: 0; font-size: 22px; letter-spacing: 0; }
+    .matrix-card strong { color: #0f172a; font-size: 12px; }
+    .matrix-card span { color: #475569; font-size: 12px; font-weight: 820; }
+
+    .map-placeholder {
+      min-height: 320px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, transparent 24px, rgba(37,99,235,.05) 25px),
+        linear-gradient(transparent 24px, rgba(37,99,235,.05) 25px),
+        #f8fafc;
+      background-size: 25px 25px;
+      color: #475569;
+      padding: 28px;
+    }
+    .map-placeholder strong {
+      display: block;
+      color: #0f172a;
+      font-size: 22px;
+      margin-bottom: 8px;
+    }
 
     .tooltip {
       position: fixed;
       display: none;
       z-index: 100;
-      max-width: 320px;
-      border: 1px solid var(--line-strong);
+      max-width: 330px;
+      border: 1px solid rgba(15,23,42,.18);
       border-radius: 7px;
-      background: #07111f;
-      color: var(--text);
+      background: #0f172a;
+      color: #eef5ff;
       padding: 8px 10px;
       font-size: 12px;
       line-height: 1.4;
       pointer-events: none;
-      box-shadow: var(--shadow);
+      box-shadow: 0 18px 45px rgba(15,23,42,.32);
     }
-
     .empty {
       min-height: 90px;
       display: grid;
       place-items: center;
       text-align: center;
-      border: 1px dashed var(--line-strong);
+      border: 1px dashed #cbd5e1;
       border-radius: var(--radius);
-      color: var(--muted);
-      font-size: 13px;
+      color: #64748b;
       padding: 14px;
+      font-size: 13px;
     }
+    .state {
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(217,45,58,.30);
+      background: #fff1f2;
+      color: #991b1b;
+      font-size: 13px;
+    }
+    .state.hidden { display: none; }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1240px) {
       .app { grid-template-columns: 1fr; }
       .sidebar { position: relative; height: auto; }
       .nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .command-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .actions { min-width: 0; justify-content: flex-start; }
-      .focus-grid, .queue-grid, .monitor-grid { grid-template-columns: 1fr; }
-      .grid-6, .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .slicer-grid { grid-template-columns: 1fr; }
+      .filter-rail { position: relative; top: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+      .filter-title, .filter-chips { grid-column: 1 / -1; }
+      .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
-
-    @media (max-width: 720px) {
-      .main { padding: 14px; }
-      .topbar { grid-template-columns: 1fr; }
-      .statusbar { justify-content: flex-start; }
-      .nav { grid-template-columns: 1fr; }
-      .command-bar, .split-controls { grid-template-columns: 1fr; }
-      .bar-row { grid-template-columns: 1fr; gap: 6px; }
+    @media (max-width: 820px) {
+      .main { padding: 10px; }
+      .report-canvas { padding: 10px; }
+      .topbar, .canvas-head { display: grid; grid-template-columns: 1fr; }
+      .top-actions, .canvas-meta { justify-content: flex-start; }
+      .nav, .filter-rail, .kpi-row, .grid-2, .grid-3, .grid-4, .insight-row { grid-template-columns: 1fr; }
+      .span-2, .span-3 { grid-column: auto; }
+      .bar-row { grid-template-columns: 1fr; }
       .bar-value { text-align: left; }
     }
-
     @media print {
       body { background: #fff; color: #111827; }
-      .sidebar, .command-bar, .drawer, .drawer-backdrop, .btn { display: none !important; }
+      .sidebar, .topbar, .filter-rail, .btn { display: none !important; }
       .app { display: block; }
       .main { padding: 0; }
-      .view { display: none !important; }
-      .view.active { display: block !important; }
-      .card, .kpi { break-inside: avoid; color: #111827; background: #fff; border-color: #d1d5db; box-shadow: none; }
-      .card-title, .kpi-value, h1 { color: #111827; }
-      .card-note, .kpi-foot, .subtitle { color: #4b5563; }
+      .report-canvas { box-shadow: none; border: 0; }
+      .visual-card, .kpi-card, .insight-card { break-inside: avoid; box-shadow: none; }
     }
   </style>
 </head>
@@ -577,211 +587,101 @@
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">FI</div>
+        <div class="brand-mark">FR</div>
         <div>
-          <strong>Fraud Intelligence</strong>
-          <span>Enterprise analytics platform</span>
+          <strong>Fraud Analytics</strong>
+          <span>BI-style report suite</span>
         </div>
       </div>
-      <nav class="nav" aria-label="Platform navigation">
-        <button class="nav-btn active" data-view="command" type="button">Executive Command Center<span>Exposure and concentration</span></button>
-        <button class="nav-btn" data-view="queue" type="button">Analyst Investigation Queue<span>Daily case prioritization</span></button>
-        <button class="nav-btn" data-view="case" type="button">Transaction Detail<span>Explain one decision</span></button>
-        <button class="nav-btn" data-view="intelligence" type="button">Fraud Intelligence Center<span>Nested segment logic</span></button>
-        <button class="nav-btn" data-view="monitoring" type="button">Model Monitoring<span>Threshold and drift control</span></button>
-        <button class="nav-btn" data-view="alerts" type="button">Alert Management<span>Historical replay monitor</span></button>
-      </nav>
-      <div class="side-card">
-        <strong>Dataset constraint</strong>
-        <span>Country and user age are intentionally excluded because IEEE-CIS does not provide those fields without external enrichment.</span>
+      <nav class="nav" id="page-nav" aria-label="Report pages"></nav>
+      <div class="sidebar-note">
+        <strong>Report mode</strong>
+        This dashboard is an analytical report canvas. It is not an operations, ticketing, or monitoring workflow.
       </div>
-      <div class="side-card">
-        <strong>Model policy</strong>
-        <span>Scores prioritize analyst review queues. They are not autonomous decline decisions.</span>
+      <div class="sidebar-note">
+        <strong>Dataset limit</strong>
+        Geography requires external enrichment. IEEE-CIS does not provide native country, city, or IP-location fields.
       </div>
     </aside>
 
     <main class="main">
       <header class="topbar">
         <div>
-          <h1 id="page-title">Executive Command Center</h1>
-          <p class="subtitle" id="page-subtitle">Where fraud concentrates, how much exposure it creates, and which operating policy should be used first.</p>
+          <h1>Fraud Analytics Dashboard</h1>
+          <p>Interactive web report built from governed fraud reporting marts.</p>
         </div>
-        <div class="statusbar">
+        <div class="top-actions">
           <span class="pill live" id="backend-pill">Connecting</span>
           <span class="pill" id="dataset-pill">Dataset pending</span>
           <span class="pill" id="freshness-pill">Freshness pending</span>
-          <span class="pill warn" id="readiness-pill">Readiness pending</span>
+          <button class="btn" id="theme-btn" type="button">Light Mode</button>
+          <button class="btn" id="csv-btn" type="button">Export CSV</button>
+          <button class="btn primary" id="pdf-btn" type="button">Export PDF</button>
         </div>
       </header>
 
-      <section class="command-bar" aria-label="Global controls">
-        <div class="field">
-          <label for="global-risk-filter">Risk category</label>
-          <select class="select" id="global-risk-filter">
-            <option value="All">All</option>
-            <option value="Critical">Critical</option>
-            <option value="High Risk">High Risk</option>
-            <option value="Medium Risk">Medium Risk</option>
-            <option value="Low Risk">Low Risk</option>
-            <option value="Safe">Safe</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="global-product-filter">Product</label>
-          <select class="select" id="global-product-filter"><option value="All">All</option></select>
-        </div>
-        <div class="field">
-          <label for="capacity-input">Daily analyst capacity</label>
-          <input class="input" id="capacity-input" type="number" min="1" step="1" value="180">
-        </div>
-        <div class="field">
-          <label for="review-cost-input">Review cost</label>
-          <input class="input" id="review-cost-input" type="number" min="0" step="1" value="4">
-        </div>
-        <div class="field">
-          <label for="loss-input">Missed fraud loss</label>
-          <input class="input" id="loss-input" type="number" min="0" step="10" value="120">
-        </div>
-        <div class="actions">
-          <button class="btn primary" id="refresh-btn" type="button">Refresh</button>
-          <button class="btn" id="trust-btn" type="button">Data Trust</button>
-          <button class="btn" id="copy-btn" type="button">Copy Summary</button>
-          <button class="btn" id="print-btn" type="button">Print</button>
-        </div>
-      </section>
-
-      <div id="state" class="state">Loading BigQuery reporting data.</div>
-
-      <section class="view active" id="view-command">
-        <div class="stack">
-          <div class="grid-6" id="executive-kpis"></div>
-          <div class="focus-grid">
-            <article class="card">
-              <div class="card-head"><div><h2 class="card-title">Fraud rate trend</h2><p class="card-note">Relative TransactionDT day. Not a calendar date.</p></div></div>
-              <div class="chart tall" id="fraud-rate-trend"></div>
-            </article>
-            <article class="card">
-              <div class="card-head"><div><h2 class="card-title">Risk score distribution</h2><p class="card-note">Operational score bands used for review prioritization.</p></div></div>
-              <div class="chart tall" id="risk-score-distribution"></div>
-            </article>
+      <section class="report-canvas" aria-label="Fraud analytics report canvas">
+        <div class="canvas-head">
+          <div class="canvas-title">
+            <h2 id="page-title">Executive Fraud Overview</h2>
+            <p id="page-purpose">What is the total fraud exposure and where is fraud concentrated?</p>
           </div>
-          <div class="grid-3">
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Fraud loss trend</h2><p class="card-note">Exposure proxy based on fraud count and selected loss assumption.</p></div></div><div class="chart short" id="fraud-loss-trend"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Segment contribution waterfall</h2><p class="card-note">Top segments explain concentration.</p></div></div><div class="chart short" id="segment-waterfall"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Top risk concentration Pareto</h2><p class="card-note">Fraud share by watchlist rank.</p></div></div><div class="chart short" id="segment-pareto"></div></article>
+          <div class="canvas-meta">
+            <span class="pill" id="readiness-pill">Readiness pending</span>
+            <span class="pill">Relative time model</span>
+            <span class="pill">No synthetic geography</span>
           </div>
         </div>
-      </section>
 
-      <section class="view" id="view-queue">
-        <div class="queue-grid">
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Investigation queue</h2><p class="card-note">Case priority from operational risk bands. Country and user age are excluded by design.</p></div></div>
-            <div class="queue-tabs" id="queue-tabs"></div>
-            <div id="case-table"></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Selected case</h2><p class="card-note">Click a row to open the case workspace.</p></div></div>
-            <div id="selected-case-summary"></div>
-          </article>
-        </div>
-      </section>
+        <div class="state hidden" id="state"></div>
 
-      <section class="view" id="view-case">
-        <div class="queue-grid">
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Transaction workspace</h2><p class="card-note">One transaction, its risk score, top factors, and recommended action.</p></div></div>
-            <div id="case-workspace"></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Decision explanation</h2><p class="card-note">Case-level explainability from available model and segment signals.</p></div></div>
-            <div id="case-explanation"></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="view" id="view-intelligence">
-        <div class="stack">
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Hierarchical segment drilldown</h2><p class="card-note">Compare subgroups inside one selected parent population.</p></div></div>
-            <div class="split-controls">
-              <div class="field"><label for="parent-family-select">Parent family</label><select class="select" id="parent-family-select"></select></div>
-              <div class="field"><label for="parent-segment-select">Parent segment</label><select class="select" id="parent-segment-select"></select></div>
-              <div class="field"><label for="child-family-select">Child family</label><select class="select" id="child-family-select"></select></div>
+        <div class="slicer-grid">
+          <aside class="filter-rail" aria-label="Report filters">
+            <div class="filter-title">Global slicers</div>
+            <div class="field">
+              <label for="day-filter">Relative day window</label>
+              <select class="select" id="day-filter">
+                <option value="all">All days</option>
+                <option value="30">Last 30 relative days</option>
+                <option value="60">Last 60 relative days</option>
+                <option value="90">Last 90 relative days</option>
+              </select>
             </div>
-            <div class="chart short" id="nested-drilldown-chart"></div>
-          </article>
-          <div class="grid-2">
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Product x amount heatmap</h2><p class="card-note">Nested risk pockets, not shallow product-only comparison.</p></div></div><div id="product-amount-heatmap"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Payment x email heatmap</h2><p class="card-note">Operational combinations for targeted verification.</p></div></div><div id="payment-email-heatmap"></div></article>
-          </div>
-          <div class="grid-2">
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Device x identity heatmap</h2><p class="card-note">Device/identity coverage intersections.</p></div></div><div id="device-identity-heatmap"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Masked entity graph</h2><p class="card-note">Product and email proxy relationships. Not a real customer graph.</p></div></div><div class="chart short" id="entity-graph"></div></article>
-          </div>
-          <div class="grid-2">
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Relative hour fraud pattern</h2><p class="card-note">Staffing and monitoring windows.</p></div></div><div id="hour-heatmap"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Relative day drift</h2><p class="card-note">Historical drift monitor.</p></div></div><div class="chart short" id="relative-day-drift"></div></article>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="view-monitoring">
-        <div class="stack">
-          <div class="grid-6" id="model-kpis"></div>
-          <div class="monitor-grid">
-            <article class="card">
-              <div class="card-head"><div><h2 class="card-title">Threshold simulator</h2><p class="card-note">Workload, capture, precision, and cost update from the selected threshold.</p></div></div>
-              <div class="field"><label for="threshold-slider">Selected threshold</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color: var(--blue);"></div>
-              <div id="threshold-summary" style="margin-top:12px;"></div>
-            </article>
-            <article class="card">
-              <div class="card-head"><div><h2 class="card-title">Precision-recall threshold curve</h2><p class="card-note">Higher thresholds reduce workload and improve precision, but lower capture.</p></div></div>
-              <div class="chart tall" id="threshold-curve"></div>
-            </article>
-          </div>
-          <div class="grid-2">
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Prediction distribution by risk band</h2><p class="card-note">Queue volume and observed fraud rate.</p></div></div><div class="chart short" id="risk-band-distribution"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Feature importance</h2><p class="card-note">Top model signals for explainability.</p></div></div><div class="chart short" id="feature-importance"></div></article>
-          </div>
-          <div class="grid-2">
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Feature drift proxy</h2><p class="card-note">Data quality by feature family.</p></div></div><div class="chart short" id="feature-drift"></div></article>
-            <article class="card"><div class="card-head"><div><h2 class="card-title">Model governance controls</h2><p class="card-note">Trust signals before production decision use.</p></div></div><div id="governance-controls"></div></article>
-          </div>
-        </div>
-      </section>
-
-      <section class="view" id="view-alerts">
-        <div class="stack">
-          <article class="card">
-            <div class="card-head">
-              <div><h2 class="card-title">Historical replay monitor</h2><p class="card-note">This historical replay simulation uses static IEEE-CIS data for operational design. It is not live streaming.</p></div>
-              <span class="pill warn">Simulation mode</span>
+            <div class="field">
+              <label for="product-filter">Product</label>
+              <select class="select" id="product-filter"><option value="All">All</option></select>
             </div>
-            <div class="grid-4" id="alert-cards"></div>
-          </article>
-          <article class="card">
-            <div class="card-head"><div><h2 class="card-title">Alert register</h2><p class="card-note">Severity, trigger, current value, threshold, and next action.</p></div></div>
-            <div id="alert-table"></div>
-          </article>
+            <div class="field">
+              <label for="amount-filter">Amount band</label>
+              <select class="select" id="amount-filter"><option value="All">All</option></select>
+            </div>
+            <div class="field">
+              <label for="email-filter">Email group</label>
+              <select class="select" id="email-filter"><option value="All">All</option></select>
+            </div>
+            <div class="field">
+              <label for="identity-filter">Identity status</label>
+              <select class="select" id="identity-filter">
+                <option value="All">All</option>
+                <option value="Identity present">Identity present</option>
+                <option value="Identity missing">Identity missing</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="risk-filter">Risk band</label>
+              <select class="select" id="risk-filter"><option value="All">All</option></select>
+            </div>
+            <div class="filter-title">Active cross-filters</div>
+            <div class="filter-chips" id="active-filters"></div>
+            <button class="btn" id="clear-btn" type="button">Reset Filters</button>
+          </aside>
+
+          <div class="report-body" id="report-body"></div>
         </div>
       </section>
     </main>
   </div>
 
-  <div class="drawer-backdrop" id="drawer-backdrop"></div>
-  <aside class="drawer" id="trust-drawer" aria-label="Data trust drawer">
-    <div class="drawer-head">
-      <div><h2>Data Trust Appendix</h2><p class="subtitle">Release gates, methodology controls, and model-risk notes.</p></div>
-      <button class="btn" id="drawer-close" type="button">Close</button>
-    </div>
-    <div class="stack">
-      <article class="card"><div class="card-head"><div><h2 class="card-title">Readiness gate</h2><p class="card-note">All checks must pass before executive presentation.</p></div></div><div id="readiness-table"></div></article>
-      <article class="card"><div class="card-head"><div><h2 class="card-title">Data quality contract</h2><p class="card-note">Row-count and reporting layer controls.</p></div></div><div id="quality-contract"></div></article>
-      <article class="card"><div class="card-head"><div><h2 class="card-title">Methodology notes</h2><p class="card-note">Dataset limitations that protect the analysis from overclaiming.</p></div></div><div id="methodology-notes"></div></article>
-    </div>
-  </aside>
   <div class="tooltip" id="tooltip"></div>
 
   <script>
@@ -790,454 +690,678 @@
     const pf2 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const cf = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
     const df = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const colors = ['#e5484d', '#d99a20', '#8b5cf6', '#4c8df6', '#18a999', '#2f9e75', '#90a4c3'];
+    const palette = ['#d92d3a', '#c98012', '#2563eb', '#18a999', '#7c3aed', '#0f766e', '#475569'];
+
+    const pages = [
+      { id: 'overview', title: 'Executive Fraud Overview', short: 'Portfolio exposure', purpose: 'What is the total fraud exposure and where is fraud concentrated?' },
+      { id: 'trend', title: 'Fraud Trend Analysis', short: 'Trend and drift', purpose: 'Is fraud increasing or decreasing over relative time?' },
+      { id: 'amount', title: 'Transaction Amount Analysis', short: 'Amount risk', purpose: 'Which transaction amount ranges create the highest risk and exposure?' },
+      { id: 'customer', title: 'Customer Risk Analysis', short: 'Masked customer proxies', purpose: 'Which identity, email, device, and product groups are riskier?' },
+      { id: 'geo', title: 'Geographic Fraud Analysis', short: 'Geo enrichment readiness', purpose: 'Where would fraud be concentrated if reliable geography enrichment is added?' },
+      { id: 'behavior', title: 'Behavioral Pattern Analysis', short: 'Behavioral signals', purpose: 'Which time, payment, device, and score behaviors indicate fraud?' },
+      { id: 'features', title: 'Feature Importance Analysis', short: 'Model drivers', purpose: 'Which features and feature families explain fraud prediction?' },
+      { id: 'model', title: 'Model Performance Analysis', short: 'Model quality', purpose: 'How well does the fraud model perform and which threshold is viable?' },
+      { id: 'insights', title: 'Key Insights & Recommendations', short: 'Business actions', purpose: 'What should the business do next?' }
+    ];
+
     const state = {
+      page: 'overview',
       dashboard: null,
       meta: null,
-      cases: [],
-      caseDetail: null,
-      segments: null,
-      alerts: null,
-      monitoring: null,
-      activeView: 'command',
-      activeQueue: 'Critical',
-      riskFilter: 'All',
-      productFilter: 'All',
-      thresholdIndex: 0,
-      parentFamily: 'Product',
-      parentSegment: '',
-      childFamily: 'Amount band'
+      transactions: [],
+      selectedThreshold: 0,
+      filters: {
+        day: 'all',
+        product: 'All',
+        amount: 'All',
+        email: 'All',
+        identity: 'All',
+        risk: 'All'
+      },
+      cross: null
     };
 
-    const pageCopy = {
-      command: ['Executive Command Center', 'Where fraud concentrates, how much exposure it creates, and which operating policy should be used first.'],
-      queue: ['Analyst Investigation Queue', 'Prioritize daily review cases by calibrated risk category, workload, and recommended action.'],
-      case: ['Transaction Detail', 'Explain one transaction and convert the score into an analyst decision.'],
-      intelligence: ['Fraud Intelligence Center', 'Move from broad segments into nested subgroups that can become monitoring rules.'],
-      monitoring: ['Model Monitoring', 'Track model quality, threshold tradeoffs, drift proxies, and governance controls.'],
-      alerts: ['Alert Management', 'Historical replay simulation of fraud alerts for operational monitoring design.']
-    };
+    document.getElementById('page-nav').innerHTML = pages.map(page => `
+      <button class="nav-btn ${page.id === state.page ? 'active' : ''}" data-page="${page.id}" type="button">
+        ${page.title}<span>${page.short}</span>
+      </button>
+    `).join('');
 
-    document.getElementById('refresh-btn').addEventListener('click', () => loadAll(true));
-    document.getElementById('trust-btn').addEventListener('click', () => document.body.classList.add('drawer-open'));
-    document.getElementById('drawer-close').addEventListener('click', () => document.body.classList.remove('drawer-open'));
-    document.getElementById('drawer-backdrop').addEventListener('click', () => document.body.classList.remove('drawer-open'));
-    document.getElementById('print-btn').addEventListener('click', () => window.print());
-    document.getElementById('copy-btn').addEventListener('click', copySummary);
-    document.getElementById('global-risk-filter').addEventListener('change', event => { state.riskFilter = event.target.value; renderQueue(); renderScoreDistribution(); });
-    document.getElementById('global-product-filter').addEventListener('change', event => { state.productFilter = event.target.value; renderQueue(); renderScoreDistribution(); });
-    document.getElementById('capacity-input').addEventListener('input', renderModelOperations);
-    document.getElementById('review-cost-input').addEventListener('input', renderModelOperations);
-    document.getElementById('loss-input').addEventListener('input', () => { renderCommandCenter(); renderModelOperations(); });
-    document.getElementById('threshold-slider').addEventListener('input', event => { state.thresholdIndex = Number(event.target.value || 0); renderModelOperations(); });
-    document.getElementById('parent-family-select').addEventListener('change', event => { state.parentFamily = event.target.value; refreshDrilldownControls(true); renderIntelligenceCenter(); });
-    document.getElementById('parent-segment-select').addEventListener('change', event => { state.parentSegment = event.target.value; renderNestedDrilldown(); });
-    document.getElementById('child-family-select').addEventListener('change', event => { state.childFamily = event.target.value; renderNestedDrilldown(); });
-    document.querySelectorAll('.nav-btn').forEach(button => {
-      button.addEventListener('click', () => setView(button.dataset.view));
+    document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => {
+      state.page = button.dataset.page;
+      render();
+    }));
+
+    ['day', 'product', 'amount', 'email', 'identity', 'risk'].forEach(key => {
+      document.getElementById(key + '-filter').addEventListener('change', event => {
+        state.filters[key] = event.target.value;
+        render();
+      });
     });
+    document.getElementById('clear-btn').addEventListener('click', () => {
+      state.filters = { day: 'all', product: 'All', amount: 'All', email: 'All', identity: 'All', risk: 'All' };
+      state.cross = null;
+      syncFilterControls();
+      render();
+    });
+    document.getElementById('pdf-btn').addEventListener('click', () => window.print());
+    document.getElementById('csv-btn').addEventListener('click', exportCsv);
+    document.getElementById('theme-btn').addEventListener('click', () => {
+      document.body.classList.toggle('light');
+      document.getElementById('theme-btn').textContent = document.body.classList.contains('light') ? 'Dark Mode' : 'Light Mode';
+    });
+
     document.addEventListener('mouseover', showTooltip);
     document.addEventListener('mousemove', moveTooltip);
     document.addEventListener('mouseout', hideTooltip);
+    document.addEventListener('click', event => {
+      const node = event.target.closest('[data-filter-key]');
+      if (!node) return;
+      state.filters[node.dataset.filterKey] = node.dataset.filterValue;
+      state.cross = { key: node.dataset.filterKey, value: node.dataset.filterValue };
+      syncFilterControls();
+      render();
+    });
 
-    loadAll(false);
+    loadAll();
 
-    async function loadAll(refresh) {
-      const box = document.getElementById('state');
-      box.style.display = 'block';
-      box.className = 'state';
-      box.textContent = refresh ? 'Refreshing enterprise reporting data.' : 'Loading BigQuery reporting data.';
+    async function loadAll() {
+      showState('Loading governed reporting data.');
       try {
-        const suffix = refresh ? '?refresh=true' : '';
-        const [dashboard, meta, cases, segments, alerts, monitoring] = await Promise.all([
-          fetchJson('/api/dashboard' + suffix),
-          fetchJson('/api/enterprise/metadata'),
-          fetchJson('/api/enterprise/cases?limit=180'),
-          fetchJson('/api/enterprise/segments' + suffix),
-          fetchJson('/api/enterprise/alerts' + suffix),
-          fetchJson('/api/enterprise/model-monitoring' + suffix)
+        const [dashboard, meta, tx] = await Promise.all([
+          fetchJson('/api/dashboard'),
+          fetchJson('/api/metadata'),
+          fetchJson('/api/enterprise/cases?limit=240').catch(() => ({ cases: [] }))
         ]);
         state.dashboard = dashboard;
         state.meta = meta;
-        state.cases = cases.cases || [];
-        state.segments = segments;
-        state.alerts = alerts;
-        state.monitoring = monitoring;
-        state.caseDetail = state.cases[0] ? await fetchJson('/api/enterprise/cases/' + state.cases[0].transaction_id) : null;
-        state.thresholdIndex = recommendedThresholdIndex();
-        initializeControls();
-        renderAll();
-        box.style.display = 'none';
+        state.transactions = tx.cases || [];
+        state.selectedThreshold = recommendedThresholdIndex();
+        populateFilterOptions();
+        syncFilterControls();
+        updateStatus();
+        hideState();
+        render();
       } catch (error) {
-        box.className = 'state error';
-        box.innerHTML = '<strong>Enterprise dashboard could not be loaded.</strong><br>' + escapeHtml(error.message) + '<br><br>Check BigQuery credentials, dataset permissions, and Vercel environment variables.';
+        showState(error.message || 'Dashboard data could not be loaded.', true);
       }
     }
 
     async function fetchJson(url) {
-      const response = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!response.ok) throw new Error(url + ' returned HTTP ' + response.status);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(url + ' failed with ' + response.status);
       return response.json();
     }
 
-    function initializeControls() {
-      const products = [...new Set(state.cases.map(row => row.product_cd).filter(Boolean))].sort();
-      document.getElementById('global-product-filter').innerHTML = ['All', ...products].map(value => '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>').join('');
-      refreshDrilldownControls(true);
+    function populateFilterOptions() {
+      fillSelect('product-filter', ['All', ...unique(getRows('product_risk').map(row => row.product_cd).filter(Boolean))]);
+      fillSelect('amount-filter', ['All', ...unique(getRows('amount_bands').map(row => row.amount_band).filter(Boolean))]);
+      fillSelect('email-filter', ['All', ...unique(getRows('email_domain_risk').map(row => row.purchaser_email_group).filter(Boolean))]);
+      fillSelect('risk-filter', ['All', ...unique(getRows('model_risk_bands').map(row => row.risk_band).filter(Boolean))]);
     }
 
-    function setView(view) {
-      state.activeView = view;
-      document.querySelectorAll('.nav-btn').forEach(item => item.classList.toggle('active', item.dataset.view === view));
-      document.querySelectorAll('.view').forEach(item => item.classList.toggle('active', item.id === 'view-' + view));
-      document.getElementById('page-title').textContent = pageCopy[view][0];
-      document.getElementById('page-subtitle').textContent = pageCopy[view][1];
+    function fillSelect(id, values) {
+      document.getElementById(id).innerHTML = values.map(value => '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>').join('');
     }
 
-    function renderAll() {
-      renderStatus();
-      renderCommandCenter();
-      renderQueue();
-      renderCaseWorkspace();
-      renderIntelligenceCenter();
-      renderModelOperations();
-      renderAlerts();
-      renderTrust();
-    }
-
-    function renderStatus() {
-      const meta = state.dashboard.meta || {};
-      document.getElementById('backend-pill').textContent = meta.backend === 'duckdb' ? 'DuckDB local' : 'BigQuery live';
-      document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'unknown');
-      document.getElementById('freshness-pill').textContent = meta.refreshed_at ? 'Fresh: ' + new Date(meta.refreshed_at).toLocaleString('en-US') : 'Freshness unavailable';
-      const ready = (meta.readiness_passed || 0) + '/' + (meta.readiness_total || 0) + ' checks passed';
-      const readiness = document.getElementById('readiness-pill');
-      readiness.textContent = ready;
-      readiness.className = 'pill ' + (meta.readiness_passed === meta.readiness_total ? 'live' : 'warn');
-    }
-
-    function renderCommandCenter() {
-      const k = executiveKpis();
-      const rec = selectedThreshold();
-      const impact = thresholdImpact(rec);
-      const highCases = filteredCases().filter(row => ['Critical', 'High Risk'].includes(row.risk_category)).length;
-      const capture = rec ? Number(rec.fraud_capture_rate || 0) : 0;
-      const cards = [
-        ['Total Transactions', fmtInt(k.total_transactions), 'Governed reporting population.', '#4c8df6'],
-        ['Fraud Rate', fmtPct2(k.fraud_rate), fmtInt(k.fraud_transactions) + ' labeled fraud cases.', '#e5484d'],
-        ['Fraud Loss Exposure', fmtMoney(k.fraud_transaction_amount || estimatedFraudExposure()), 'Observed fraud amount or aggregate proxy.', '#d99a20'],
-        ['Capturable Exposure', fmtMoney((k.fraud_transaction_amount || estimatedFraudExposure()) * capture), fmtPct(capture) + ' fraud capture at selected threshold.', '#18a999'],
-        ['Review Workload', fmtInt(rec?.review_count || highCases), fmtPct(rec?.workload_share || 0) + ' of transactions routed to review.', '#8b5cf6'],
-        ['Precision / Recall', fmtPct(rec?.precision_rate || 0) + ' / ' + fmtPct(capture), 'Selected threshold operating quality.', '#2f9e75']
-      ];
-      document.getElementById('executive-kpis').innerHTML = cards.map(kpiCard).join('');
-      lineChart('fraud-rate-trend', state.dashboard.daily_drift || [], 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#e5484d', volumeKey: 'transaction_count' });
-      lineChart('fraud-loss-trend', state.dashboard.daily_drift || [], 'transaction_day', row => Number(row.fraud_count || 0) * lossAssumption(), { yFormat: fmtMoney, color: '#d99a20' });
-      renderScoreDistribution();
-      waterfallChart('segment-waterfall', watchlist().slice(0, 8));
-      paretoChart('segment-pareto', watchlist().slice(0, 12));
-    }
-
-    function renderQueue() {
-      const categories = ['Critical', 'High Risk', 'Medium Risk', 'Low Risk'];
-      document.getElementById('queue-tabs').innerHTML = categories.map(item => '<button class="queue-tab ' + (state.activeQueue === item ? 'active' : '') + '" data-risk="' + item + '" type="button">' + item + '</button>').join('');
-      document.querySelectorAll('.queue-tab').forEach(button => button.addEventListener('click', () => {
-        state.activeQueue = button.dataset.risk;
-        renderQueue();
-      }));
-
-      const rows = filteredCases().filter(row => row.risk_category === state.activeQueue).slice(0, 80);
-      const html = table(rows, [
-        ['Transaction ID', row => row.transaction_id],
-        ['Risk Score', row => fmtScore(row.risk_score)],
-        ['Risk', row => badge(row.risk_category)],
-        ['Amount', row => fmtMoney(row.transaction_amount)],
-        ['Product', row => row.product_cd],
-        ['Device', row => row.device_type || 'Unknown'],
-        ['Email Group', row => row.purchaser_email_group || 'Unknown'],
-        ['Identity', row => row.identity_status],
-        ['Prior Fraud Proxy', row => fmtInt(row.entity_prior_fraud_proxy)],
-        ['Confidence', row => fmtPct(row.model_confidence)],
-        ['Action', row => row.recommended_action],
-        ['SLA', row => row.sla_priority]
-      ], row => 'data-transaction-id="' + row.transaction_id + '"');
-      document.getElementById('case-table').innerHTML = html;
-      document.querySelectorAll('[data-transaction-id]').forEach(row => row.addEventListener('click', async () => {
-        const id = row.dataset.transactionId;
-        state.caseDetail = await fetchJson('/api/enterprise/cases/' + id);
-        setView('case');
-        renderQueue();
-        renderCaseWorkspace();
-      }));
-      renderSelectedCaseSummary();
-    }
-
-    function renderSelectedCaseSummary() {
-      const target = document.getElementById('selected-case-summary');
-      const row = state.caseDetail?.transaction || state.cases[0];
-      if (!row) { target.innerHTML = empty('No case selected.'); return; }
-      target.innerHTML = '<div class="detail-list">' + [
-        ['Transaction ID', row.transaction_id],
-        ['Risk score', fmtScore(row.risk_score)],
-        ['Category', badge(row.risk_category)],
-        ['Amount', fmtMoney(row.transaction_amount)],
-        ['Product', row.product_cd],
-        ['Recommended action', row.recommended_action || 'Review case workspace']
-      ].map(detailRow).join('') + '</div>';
-    }
-
-    function renderCaseWorkspace() {
-      const detail = state.caseDetail;
-      const row = detail?.transaction;
-      const workspace = document.getElementById('case-workspace');
-      const explanation = document.getElementById('case-explanation');
-      if (!row) {
-        workspace.innerHTML = empty('Select a transaction from the investigation queue.');
-        explanation.innerHTML = empty('Case explanation will appear here.');
-        return;
-      }
-      workspace.innerHTML = '<div class="grid-2">' +
-        '<div class="kpi" style="--accent:' + riskColor(row.risk_category) + '"><div class="kpi-label">Risk Score</div><div class="kpi-value">' + fmtScore(row.risk_score) + '</div><div class="kpi-foot">' + row.risk_category + ' | ' + fmtPct(row.model_probability) + ' model probability</div></div>' +
-        '<div class="kpi" style="--accent:#18a999"><div class="kpi-label">Recommended Action</div><div class="kpi-value" style="font-size:24px">' + escapeHtml(detail.recommended_action) + '</div><div class="kpi-foot">Analyst decision remains manual.</div></div>' +
-        '</div><div class="detail-list" style="margin-top:14px">' + [
-          ['Transaction ID', row.transaction_id],
-          ['Relative day / hour', row.transaction_day + ' / ' + row.transaction_hour],
-          ['Amount', fmtMoney(row.transaction_amount)],
-          ['Amount band', row.amount_band],
-          ['Product', row.product_cd],
-          ['Payment', (row.card_network || 'Unknown') + ' / ' + (row.card_type || 'Unknown')],
-          ['Device', row.device_type || 'Unknown'],
-          ['Email group', row.purchaser_email_group || 'Unknown'],
-          ['Identity', row.identity_status],
-          ['Fraud label', Number(row.is_fraud) === 1 ? 'Fraud' : 'Legitimate']
-        ].map(detailRow).join('') + '</div>';
-
-      explanation.innerHTML = '<div class="factor-list">' + (detail.explanation || []).map((item, index) => `
-        <div class="factor" style="border-left:4px solid ${colors[index % colors.length]}">
-          <strong>${escapeHtml(item.factor)} - ${escapeHtml(item.impact)}</strong>
-          <span>${escapeHtml(item.direction)}. ${escapeHtml(item.detail)}</span>
-        </div>
-      `).join('') + '</div><div class="factor" style="margin-top:12px"><strong>Audit trail</strong><span>' + (detail.audit_trail || []).map(item => item.step + ': ' + item.status).join(' | ') + '</span></div>';
-    }
-
-    function renderIntelligenceCenter() {
-      refreshDrilldownControls(false);
-      renderNestedDrilldown();
-      heatmap('product-amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2);
-      heatmap('payment-email-heatmap', drillRows('Payment', 'Email domain'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2);
-      heatmap('device-identity-heatmap', state.segments?.device_identity_heatmap || [], 'device_type', 'identity_status', 'fraud_rate', fmtPct2);
-      heatmap('hour-heatmap', state.dashboard.time_amount_signals || [], 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
-      lineChart('relative-day-drift', state.dashboard.daily_drift || [], 'transaction_day', 'fraud_rate_ma7', { yFormat: fmtPct2, color: '#d99a20' });
-      renderEntityGraph();
-    }
-
-    function renderModelOperations() {
-      const metrics = state.monitoring?.metrics || [];
-      const metricMap = Object.fromEntries(metrics.map(item => [item.metric, item.value]));
-      const cards = [
-        ['ROC-AUC', metricMap['ROC-AUC'] || '0.9167', 'Ranking quality.', '#4c8df6'],
-        ['PR-AUC', metricMap['Average precision'] || '0.5308', 'Imbalanced-class metric.', '#18a999'],
-        ['Precision', metricMap['p95 precision'] || '40.72%', 'Top review queue.', '#d99a20'],
-        ['Recall', metricMap['p95 recall'] || '59.18%', 'Fraud capture.', '#8b5cf6'],
-        ['False Positive Rate', '3.12%', 'Validation p95 threshold.', '#e5484d'],
-        ['Top Decile Lift', metricMap['Top decile lift'] || '7.24x', 'Risk concentration.', '#2f9e75']
-      ];
-      document.getElementById('model-kpis').innerHTML = cards.map(kpiCard).join('');
-      thresholdCurve();
-      renderThresholdSummary();
-      barChart('risk-band-distribution', state.dashboard.model_risk_bands || [], row => row.risk_band, row => row.transaction_count, fmtInt);
-      barChart('feature-importance', state.dashboard.feature_importance || [], row => row.feature, row => row.importance, fmtInt);
-      barChart('feature-drift', state.dashboard.data_quality || [], row => row.column_family, row => row.avg_missing_rate, fmtPct2);
-      renderGovernanceControls();
-    }
-
-    function renderAlerts() {
-      const alerts = state.alerts?.alerts || [];
-      document.getElementById('alert-cards').innerHTML = alerts.slice(0, 4).map(alert => `
-        <div class="alert-card" style="--accent:${riskColor(alert.severity)}">
-          <strong>${escapeHtml(alert.trigger)}</strong>
-          <span>${escapeHtml(alert.segment || 'Portfolio')} | ${escapeHtml(alert.recommended_action || 'Review')}</span>
-        </div>
-      `).join('') || empty('No alert signals available.');
-      document.getElementById('alert-table').innerHTML = table(alerts, [
-        ['Alert ID', row => row.alert_id],
-        ['Severity', row => badge(row.severity)],
-        ['Segment', row => row.segment],
-        ['Trigger', row => row.trigger],
-        ['Current Value', row => formatMaybePercent(row.current_value)],
-        ['Threshold', row => formatMaybePercent(row.threshold)],
-        ['Recommended Action', row => row.recommended_action],
-        ['Status', row => row.status]
-      ]);
-    }
-
-    function renderTrust() {
-      document.getElementById('readiness-table').innerHTML = table(state.dashboard.report_readiness || [], [
-        ['Area', row => row.readiness_area],
-        ['Check', row => row.check_name],
-        ['Status', row => badge(row.status)],
-        ['Result', row => row.readiness_result]
-      ]);
-      document.getElementById('quality-contract').innerHTML = table(state.dashboard.quality_contract || [], [
-        ['Object', row => row.object_name],
-        ['Expected', row => fmtInt(row.expected_count)],
-        ['Actual', row => fmtInt(row.actual_count)],
-        ['Status', row => badge(row.status)]
-      ]);
-      document.getElementById('methodology-notes').innerHTML = '<div class="factor-list">' + (state.meta?.methodology_notes || []).map(item => `
-        <div class="factor"><strong>${escapeHtml(item.topic)}</strong><span>${escapeHtml(item.control)}</span></div>
-      `).join('') + '</div>';
-    }
-
-    function refreshDrilldownControls(reset) {
-      if (!state.segments) return;
-      const rows = state.segments.niche_drilldown || [];
-      const families = [...new Set(rows.map(row => row.parent_family))].sort();
-      const familySelect = document.getElementById('parent-family-select');
-      familySelect.innerHTML = families.map(item => '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>').join('');
-      if (!families.includes(state.parentFamily)) state.parentFamily = families[0] || 'Product';
-      familySelect.value = state.parentFamily;
-
-      const parents = [...new Set(rows.filter(row => row.parent_family === state.parentFamily).map(row => row.parent_segment))].sort();
-      if (reset || !parents.includes(state.parentSegment)) state.parentSegment = parents[0] || '';
-      document.getElementById('parent-segment-select').innerHTML = parents.map(item => '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>').join('');
-      document.getElementById('parent-segment-select').value = state.parentSegment;
-
-      const childFamilies = [...new Set(rows.filter(row => row.parent_family === state.parentFamily && row.parent_segment === state.parentSegment).map(row => row.child_family))].sort();
-      if (!childFamilies.includes(state.childFamily)) state.childFamily = childFamilies[0] || '';
-      document.getElementById('child-family-select').innerHTML = childFamilies.map(item => '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>').join('');
-      document.getElementById('child-family-select').value = state.childFamily;
-    }
-
-    function renderNestedDrilldown() {
-      const rows = (state.segments?.niche_drilldown || [])
-        .filter(row => row.parent_family === state.parentFamily && row.parent_segment === state.parentSegment && row.child_family === state.childFamily)
-        .sort((a, b) => Number(b.fraud_count || 0) - Number(a.fraud_count || 0));
-      barChart('nested-drilldown-chart', rows.slice(0, 12), row => row.child_segment, row => row.fraud_rate, fmtPct2);
-    }
-
-    function renderEntityGraph() {
-      const rows = (state.segments?.masked_entity_edges || []).slice(0, 10);
-      const target = document.getElementById('entity-graph');
-      if (!rows.length) { target.innerHTML = empty('No entity proxy edges available.'); return; }
-      const w = 680, h = 260;
-      const leftX = 120, rightX = 520;
-      const max = Math.max(...rows.map(row => Number(row.edge_weight || 0)), 1);
-      const lines = rows.map((row, index) => {
-        const y = 26 + index * 22;
-        const stroke = 1 + (Number(row.edge_weight || 0) / max) * 8;
-        return `<g data-tooltip="${escapeHtml(row.source)} to ${escapeHtml(row.target)} | fraud ${fmtPct2(row.fraud_rate)} | volume ${fmtInt(row.edge_weight)}">
-          <line x1="${leftX}" y1="${y}" x2="${rightX}" y2="${y}" stroke="${colors[index % colors.length]}" stroke-width="${stroke}" opacity=".72" />
-          <text x="${leftX - 8}" y="${y + 4}" text-anchor="end" fill="#eef5ff" font-size="11">${escapeHtml(short(row.source, 18))}</text>
-          <text x="${rightX + 8}" y="${y + 4}" fill="#9badc2" font-size="11">${escapeHtml(short(row.target, 18))}</text>
-        </g>`;
-      }).join('');
-      target.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Masked entity graph">${lines}</svg>`;
-    }
-
-    function renderScoreDistribution() {
-      const rows = filteredCases();
-      const bins = [
-        { label: 'Safe', min: 0, max: 19 },
-        { label: 'Low', min: 20, max: 39 },
-        { label: 'Medium', min: 40, max: 59 },
-        { label: 'High', min: 60, max: 79 },
-        { label: 'Critical', min: 80, max: 100 }
-      ].map(bin => ({ ...bin, count: rows.filter(row => Number(row.risk_score || 0) >= bin.min && Number(row.risk_score || 0) <= bin.max).length }));
-      barChart('risk-score-distribution', bins, row => row.label, row => row.count, fmtInt);
-    }
-
-    function thresholdCurve() {
-      const rows = state.dashboard.threshold_simulation || [];
-      const slider = document.getElementById('threshold-slider');
-      slider.max = Math.max(rows.length - 1, 0);
-      slider.value = state.thresholdIndex;
-      const target = document.getElementById('threshold-curve');
-      if (!rows.length) { target.innerHTML = empty('Threshold data unavailable.'); return; }
-      const w = 720, h = 340, pad = 38;
-      const x = index => pad + (index / Math.max(rows.length - 1, 1)) * (w - pad * 2);
-      const y = value => h - pad - Number(value || 0) * (h - pad * 2);
-      const capture = rows.map((row, index) => `${x(index)},${y(row.fraud_capture_rate)}`).join(' ');
-      const precision = rows.map((row, index) => `${x(index)},${y(row.precision_rate)}`).join(' ');
-      const workload = rows.map((row, index) => `${x(index)},${y(row.workload_share)}`).join(' ');
-      const selectedX = x(state.thresholdIndex);
-      target.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Threshold curve">
-        <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.16)" />
-        <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" stroke="rgba(255,255,255,.12)" />
-        <polyline points="${capture}" fill="none" stroke="#18a999" stroke-width="3" />
-        <polyline points="${precision}" fill="none" stroke="#d99a20" stroke-width="3" />
-        <polyline points="${workload}" fill="none" stroke="#4c8df6" stroke-width="3" />
-        <line x1="${selectedX}" y1="${pad}" x2="${selectedX}" y2="${h - pad}" stroke="#e5484d" stroke-width="2" stroke-dasharray="5 5" />
-        <text x="${pad}" y="18" fill="#18a999" font-size="12">Capture</text>
-        <text x="${pad + 80}" y="18" fill="#d99a20" font-size="12">Precision</text>
-        <text x="${pad + 170}" y="18" fill="#4c8df6" font-size="12">Workload</text>
-      </svg>`;
-    }
-
-    function renderThresholdSummary() {
-      const row = selectedThreshold();
-      const target = document.getElementById('threshold-summary');
-      if (!row) { target.innerHTML = empty('Select a threshold.'); return; }
-      const impact = thresholdImpact(row);
-      const daily = Number(row.review_count || 0) / 182;
-      const capacity = capacityAssumption();
-      const cards = [
-        ['Threshold', df.format(row.score_threshold), row.operating_mode, '#4c8df6'],
-        ['Fraud Capture', fmtPct(row.fraud_capture_rate), fmtInt(row.captured_fraud_count) + ' fraud labels captured.', '#18a999'],
-        ['Precision', fmtPct(row.precision_rate), 'Expected review efficiency.', '#d99a20'],
-        ['Daily Workload', fmtInt(daily), daily > capacity ? 'Capacity breach' : 'Inside capacity', daily > capacity ? '#e5484d' : '#2f9e75'],
-        ['Review Cost', fmtMoney(impact.reviewCost), fmtInt(impact.falsePositives) + ' false positives.', '#8b5cf6'],
-        ['Missed Exposure', fmtMoney(impact.missedExposure), fmtInt(impact.missedFraud) + ' missed fraud labels.', '#e5484d']
-      ];
-      target.innerHTML = '<div class="grid-2 threshold-mini">' + cards.map(kpiCard).join('') + '</div>';
-    }
-
-    function renderGovernanceControls() {
-      document.getElementById('governance-controls').innerHTML = '<div class="factor-list">' + (state.monitoring?.controls || []).map(item => `
-        <div class="factor"><strong>${escapeHtml(item.control)}</strong><span>${escapeHtml(item.owner)} | ${escapeHtml(item.evidence)}</span></div>
-      `).join('') + '</div>';
-    }
-
-    function filteredCases() {
-      return state.cases.filter(row => {
-        const riskOk = state.riskFilter === 'All' || row.risk_category === state.riskFilter;
-        const productOk = state.productFilter === 'All' || row.product_cd === state.productFilter;
-        return riskOk && productOk;
+    function syncFilterControls() {
+      Object.entries(state.filters).forEach(([key, value]) => {
+        const control = document.getElementById(key + '-filter');
+        if (control) control.value = value;
       });
     }
 
-    function watchlist() { return state.dashboard?.segment_watchlist || []; }
-    function executiveKpis() { return (state.dashboard?.executive_kpis || [{}])[0]; }
-    function lossAssumption() { return Number(document.getElementById('loss-input').value || 120); }
-    function reviewCostAssumption() { return Number(document.getElementById('review-cost-input').value || 4); }
-    function capacityAssumption() { return Number(document.getElementById('capacity-input').value || 180); }
-    function estimatedFraudExposure() { return Number(executiveKpis().fraud_transactions || 0) * lossAssumption(); }
+    function updateStatus() {
+      const meta = state.dashboard?.meta || {};
+      document.getElementById('backend-pill').textContent = meta.backend === 'duckdb' ? 'DuckDB local' : 'BigQuery live';
+      document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'fraud_project_reporting');
+      document.getElementById('freshness-pill').textContent = 'Fresh: ' + new Date(meta.refreshed_at || Date.now()).toLocaleString('en-US');
+      document.getElementById('readiness-pill').textContent = (meta.readiness_pass || 0) + '/' + (meta.readiness_total || 0) + ' checks passed';
+    }
 
+    function render() {
+      if (!state.dashboard) return;
+      pages.forEach(page => {
+        document.querySelector('[data-page="' + page.id + '"]').classList.toggle('active', page.id === state.page);
+      });
+      const page = pages.find(item => item.id === state.page);
+      document.getElementById('page-title').textContent = page.title;
+      document.getElementById('page-purpose').textContent = page.purpose;
+      renderActiveFilters();
+      const target = document.getElementById('report-body');
+      target.innerHTML = ({
+        overview: renderOverview,
+        trend: renderTrend,
+        amount: renderAmount,
+        customer: renderCustomer,
+        geo: renderGeo,
+        behavior: renderBehavior,
+        features: renderFeatures,
+        model: renderModel,
+        insights: renderInsights
+      })[state.page]();
+      bindDynamicControls();
+      hydrateCharts();
+    }
+
+    function renderOverview() {
+      const k = executiveKpis();
+      const threshold = selectedThreshold();
+      const exposure = fraudExposure();
+      return pageGrid([
+        kpiRow([
+          kpi('Total Transactions', fmtInt(k.total_transactions), 'Governed reporting population.', '#2563eb'),
+          kpi('Fraud Rate', fmtPct2(k.fraud_rate), fmtInt(k.fraud_transactions) + ' labeled fraud transactions.', '#d92d3a'),
+          kpi('Fraud Exposure', fmtMoney(exposure), 'Observed fraud amount or exposure proxy.', '#c98012'),
+          kpi('Capturable Exposure', fmtMoney(exposure * num(threshold.fraud_capture_rate)), fmtPct(threshold.fraud_capture_rate) + ' capture at selected threshold.', '#18a999'),
+          kpi('Model Recall', fmtPct(threshold.fraud_capture_rate), 'Fraud share captured by policy threshold.', '#7c3aed')
+        ]),
+        grid2([
+          chartCard('Fraud rate trend', 'Relative TransactionDT days, not calendar dates.', '<div class="visual-body" id="overview-trend"></div>', 'span-2'),
+          chartCard('Fraud exposure by segment', 'Fraud share by watchlist segment family.', '<div class="visual-body" id="overview-donut"></div>'),
+          chartCard('Product risk ranking', 'Click a product to cross-filter the report.', '<div class="visual-body" id="overview-product"></div>')
+        ]),
+        grid2([
+          chartCard('Top risk concentration Pareto', 'Fraud share by highest-priority segments.', '<div class="visual-body" id="overview-pareto"></div>'),
+          chartCard('Drill-down table', 'Selected high-risk segments with lift and fraud share.', '<div id="overview-table"></div>')
+        ]),
+        insightRow([
+          insight('Concentration', 'Fraud is rare at portfolio level but concentrated in a small number of controllable product, identity, amount, and payment pockets.', '#d92d3a'),
+          insight('Management focus', 'Prioritize segments with both high lift and high fraud share, not only the highest raw fraud rate.', '#2563eb'),
+          insight('Model role', 'Model scores should support prioritization and review policy, not autonomous rejection.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderTrend() {
+      const rows = filteredDaily();
+      const latest = rows[rows.length - 1] || {};
+      const peak = rows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, rows[0] || {});
+      const avg = average(rows, 'fraud_rate');
+      return pageGrid([
+        kpiRow([
+          kpi('Latest Fraud Rate', fmtPct2(latest.fraud_rate), 'Most recent relative day in the selected window.', '#d92d3a'),
+          kpi('Average Fraud Rate', fmtPct2(avg), 'Mean daily fraud rate in current filter.', '#2563eb'),
+          kpi('Peak Relative Day', String(peak.transaction_day ?? '-'), fmtPct2(peak.fraud_rate) + ' at daily peak.', '#c98012'),
+          kpi('Fraud Transactions', fmtInt(sum(rows, 'fraud_count')), 'Fraud labels in selected relative period.', '#7c3aed'),
+          kpi('Volume', fmtInt(sum(rows, 'transaction_count')), 'Transactions in selected relative period.', '#18a999')
+        ]),
+        grid2([
+          chartCard('Fraud rate trend', 'Line chart supports day-window filtering.', '<div class="visual-body" id="trend-line"></div>', 'span-2'),
+          chartCard('Fraud count and transaction volume', 'Combined view separates rate movement from traffic volume.', '<div class="visual-body" id="trend-combo"></div>'),
+          chartCard('Relative hour fraud pattern', 'Hourly intensity by relative transaction hour.', '<div class="visual-body" id="trend-hour"></div>')
+        ]),
+        chartCard('Trend drill-down matrix', 'Relative days ranked by fraud rate.', '<div id="trend-table"></div>'),
+        insightRow([
+          insight('Trend readout', 'Use relative-time movement as drift evidence, not calendar-seasonality evidence.', '#2563eb'),
+          insight('Volume control', 'A fraud-rate spike should be read with transaction volume before changing policy.', '#c98012'),
+          insight('Action', 'Investigate product and amount mix on peak relative days before adjusting score thresholds.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderAmount() {
+      const amountRows = filteredAmountRows();
+      const top = amountRows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, amountRows[0] || {});
+      const tx = filteredTransactions();
+      return pageGrid([
+        kpiRow([
+          kpi('Highest-Risk Amount Band', top.amount_band || '-', fmtPct2(top.fraud_rate) + ' fraud rate.', '#d92d3a'),
+          kpi('Amount Exposure Proxy', fmtMoney(sum(amountRows, 'fraud_transaction_amount') || sum(amountRows, 'fraud_count') * 120), 'Observed amount where available.', '#c98012'),
+          kpi('Fraud Count', fmtInt(sum(amountRows, 'fraud_count')), 'Fraud labels by amount bands.', '#7c3aed'),
+          kpi('Avg Sample Amount', fmtMoney(average(tx, 'transaction_amount')), 'Filtered transaction sample average.', '#2563eb'),
+          kpi('Bands Compared', fmtInt(amountRows.length), 'Amount bands in current filter.', '#18a999')
+        ]),
+        grid2([
+          chartCard('Amount band fraud rate', 'Click a band to cross-filter the report.', '<div class="visual-body" id="amount-bar"></div>'),
+          chartCard('Product x amount heatmap', 'Nested risk pockets, not a single product-only story.', '<div class="visual-body" id="amount-heatmap"></div>'),
+          chartCard('Amount vs model score scatter', 'Shows whether high scores cluster by transaction value.', '<div class="visual-body" id="amount-scatter"></div>'),
+          chartCard('Fraud vs normal amount distribution', 'Boxplot-style comparison from filtered transaction sample.', '<div class="visual-body" id="amount-boxplot"></div>')
+        ]),
+        chartCard('Amount drill-through table', 'Amount bands ranked by rate, volume, and lift.', '<div id="amount-table"></div>'),
+        insightRow([
+          insight('Frequency vs exposure', 'Low-value bands can carry frequency risk while higher bands drive financial exposure.', '#c98012'),
+          insight('Nested segmentation', 'Amount risk should be interpreted together with product and payment type.', '#2563eb'),
+          insight('Policy', 'Use amount-specific thresholds where workload and exposure diverge.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderCustomer() {
+      const tx = filteredTransactions();
+      return pageGrid([
+        kpiRow([
+          kpi('Identity Coverage', fmtPct2(executiveKpis().identity_coverage_rate), 'Share of transactions with identity join.', '#2563eb'),
+          kpi('Identity Risk Lift', bestLift(getRows('identity_risk')), 'Identity signal versus portfolio baseline.', '#d92d3a'),
+          kpi('Email Groups', fmtInt(filteredEmailRows().length), 'Purchaser email groups profiled.', '#18a999'),
+          kpi('Device Segments', fmtInt(groupBy(tx, 'device_type').length), 'Device groups in transaction sample.', '#7c3aed'),
+          kpi('Sample Transactions', fmtInt(tx.length), 'Filtered drill-through sample.', '#c98012')
+        ]),
+        grid2([
+          chartCard('Identity status fraud rate', 'Identity availability is a segmentation signal.', '<div class="visual-body" id="customer-identity"></div>'),
+          chartCard('Email group risk ranking', 'Click an email group to cross-filter the report.', '<div class="visual-body" id="customer-email"></div>'),
+          chartCard('Device type fraud proxy', 'Derived from filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>'),
+          chartCard('Product x identity matrix', 'Coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>')
+        ]),
+        chartCard('Customer proxy drill-through table', 'Analytical transaction sample; no ticket or workflow behavior.', '<div id="customer-table"></div>'),
+        insightRow([
+          insight('Masked proxies', 'IEEE-CIS does not expose real customers, so this page uses identity, email, device, card, and product proxies.', '#2563eb'),
+          insight('Risk signal', 'Identity presence and email domain groups should be read as risk segmentation variables, not only data quality fields.', '#d92d3a'),
+          insight('Decision', 'Apply policy to nested groups such as product plus identity plus email group.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderGeo() {
+      return pageGrid([
+        kpiRow([
+          kpi('Geo Coverage', '0%', 'No native country, city, IP, or region field.', '#d92d3a'),
+          kpi('Map Status', 'Disabled', 'Avoids synthetic geography and unsupported claims.', '#c98012'),
+          kpi('Required Enrichment', 'IP/Country', 'External source needed for valid geo reporting.', '#2563eb'),
+          kpi('Usable Now', '0 fields', 'No geographic columns in IEEE-CIS.', '#7c3aed'),
+          kpi('Governance', 'Required', 'Coverage and source quality must be visible.', '#18a999')
+        ]),
+        grid2([
+          chartCard('Geographic fraud map', 'Map is intentionally unavailable until enrichment exists.', '<div class="map-placeholder"><div><strong>Geographic enrichment required</strong><span>IEEE-CIS is masked e-commerce transaction data. A country map would be misleading without an external IP or geography source.</span></div></div>', 'span-2'),
+          chartCard('Recommended geo schema', 'Fields needed before a map can be enabled.', '<div id="geo-schema"></div>'),
+          chartCard('Geo readiness checklist', 'Minimum controls before geographic reporting.', '<div id="geo-checklist"></div>')
+        ]),
+        insightRow([
+          insight('Analytical integrity', 'This page is included because geographic fraud is a valid business question, but no synthetic map is shown.', '#d92d3a'),
+          insight('Next data need', 'Add IP or country enrichment with source, coverage, freshness, and confidence fields.', '#2563eb'),
+          insight('Decision rule', 'Do not make geographic policy decisions until enrichment coverage and bias checks pass.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderBehavior() {
+      const tx = filteredTransactions();
+      return pageGrid([
+        kpiRow([
+          kpi('Peak Relative Hour', peakHourLabel(), 'Highest hourly fraud-rate signal.', '#d92d3a'),
+          kpi('Payment Groups', fmtInt(getRows('payment_heatmap').length), 'Card network/type combinations.', '#2563eb'),
+          kpi('Email Risk Groups', fmtInt(filteredEmailRows().length), 'Purchaser email domains profiled.', '#18a999'),
+          kpi('High Score Sample', fmtInt(tx.filter(row => num(row.risk_score) >= 80).length), 'Filtered transactions above score 80.', '#7c3aed'),
+          kpi('Avg Risk Score', fmtScore(average(tx, 'risk_score')), 'Filtered transaction sample.', '#c98012')
+        ]),
+        grid2([
+          chartCard('Relative hour x amount behavior', 'Heatmap of hour and amount-decimal fraud signals.', '<div class="visual-body" id="behavior-hour"></div>'),
+          chartCard('Payment x email heatmap', 'Payment and purchaser email combinations.', '<div class="visual-body" id="behavior-payment-email"></div>'),
+          chartCard('Amount x score anomaly scatter', 'Outlier behavior across transaction amount and score.', '<div class="visual-body" id="behavior-scatter"></div>'),
+          chartCard('Risk band behavior distribution', 'Operational score bands as analytical bins.', '<div class="visual-body" id="behavior-risk"></div>')
+        ]),
+        chartCard('Behavioral pattern matrix', 'Signals that can become monitoring rules.', '<div id="behavior-table"></div>'),
+        insightRow([
+          insight('Time behavior', 'Relative hour patterns can inform monitoring windows, but they are not calendar-time effects.', '#2563eb'),
+          insight('Payment behavior', 'Payment and email intersections reveal more usable controls than broad product-only views.', '#d92d3a'),
+          insight('Outliers', 'High score plus unusual amount combinations should be investigated as policy calibration candidates.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderFeatures() {
+      const features = getRows('feature_importance');
+      const top = features[0] || {};
+      return pageGrid([
+        kpiRow([
+          kpi('Top Feature', top.feature || '-', 'Highest LightGBM importance rank.', '#2563eb'),
+          kpi('Feature Families', fmtInt(unique(features.map(row => row.feature_family)).length), 'Grouped model driver families.', '#18a999'),
+          kpi('Top Features', fmtInt(features.length), 'Displayed by importance rank.', '#7c3aed'),
+          kpi('Highest Missingness', fmtPct2(max(getRows('data_quality'), 'avg_missing_rate')), 'Feature-family missingness profile.', '#c98012'),
+          kpi('Interpretation Mode', 'Observational', 'Masked fields are not confirmed business definitions.', '#d92d3a')
+        ]),
+        grid2([
+          chartCard('Top 15 feature importance', 'Most influential model features.', '<div class="visual-body" id="feature-bar"></div>', 'span-2'),
+          chartCard('Feature family treemap', 'Importance grouped by feature family.', '<div class="visual-body" id="feature-family"></div>'),
+          chartCard('Missingness vs importance', 'Data quality and model signal together.', '<div class="visual-body" id="feature-scatter"></div>')
+        ]),
+        chartCard('Feature interpretation matrix', 'How model features should be described in a business setting.', '<div id="feature-table"></div>'),
+        insightRow([
+          insight('Explainability', 'Feature importance gives direction, not causal proof.', '#2563eb'),
+          insight('Masked features', 'Vesta-engineered variables must be framed as statistical signals.', '#d92d3a'),
+          insight('Data quality', 'High importance plus high missingness should trigger feature monitoring before production use.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderModel() {
+      return pageGrid([
+        kpiRow([
+          kpi('ROC-AUC', '0.9167', 'Strong rank ordering across thresholds.', '#2563eb'),
+          kpi('PR-AUC', '0.5308', 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
+          kpi('Precision', fmtPct(selectedThreshold().precision_rate), 'Review efficiency at selected threshold.', '#c98012'),
+          kpi('Recall', fmtPct(selectedThreshold().fraud_capture_rate), 'Fraud capture at selected threshold.', '#7c3aed'),
+          kpi('Top Decile Lift', '7.24x', 'High-score decile versus baseline.', '#d92d3a')
+        ]),
+        chartCard('Threshold simulator', 'Select an operating point to compare capture, precision, workload, and exposure.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
+        grid2([
+          chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
+          chartCard('Risk band distribution', 'Score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>'),
+          chartCard('Confusion matrix approximation', 'Selected-threshold classification view.', '<div class="visual-body" id="model-confusion"></div>'),
+          chartCard('Feature importance recap', 'Model drivers behind the score.', '<div class="visual-body" id="model-features"></div>')
+        ]),
+        insightRow([
+          insight('Threshold tradeoff', 'Higher thresholds reduce workload and usually improve precision, but lower fraud capture.', '#c98012'),
+          insight('Model use', 'The score is a prioritization input for business review, not an automated customer decision.', '#2563eb'),
+          insight('Governance', 'Track PR-AUC, calibration, and drift before changing production policy.', '#18a999')
+        ])
+      ]);
+    }
+
+    function renderInsights() {
+      return pageGrid([
+        kpiRow([
+          kpi('Primary Finding', 'Concentration', 'Fraud is clustered, not evenly distributed.', '#d92d3a'),
+          kpi('Priority Lever', 'Segment Rules', 'Use nested controls by product, amount, identity, and payment.', '#2563eb'),
+          kpi('Model Value', 'Ranking', 'The model improves review prioritization.', '#18a999'),
+          kpi('Data Gap', 'Geo', 'Location requires enrichment.', '#c98012'),
+          kpi('Next Step', 'Pilot Policy', 'Test threshold and segment controls together.', '#7c3aed')
+        ]),
+        grid2([
+          chartCard('Recommendation impact matrix', 'Prioritize actions by business impact and implementation effort.', '<div class="visual-body" id="insight-matrix"></div>'),
+          chartCard('Expected exposure reduction waterfall', 'Estimated value from targeting top risk pockets.', '<div class="visual-body" id="insight-waterfall"></div>')
+        ]),
+        chartCard('Recommendation register', 'Senior analyst action list for business review.', '<div id="insight-table"></div>'),
+        insightRow([
+          insight('What happened?', 'Fraud is low in aggregate but concentrated across product, amount, identity, email, and score segments.', '#d92d3a'),
+          insight('Why serious?', 'Concentration means a small number of targeted controls can affect a large share of exposure.', '#c98012'),
+          insight('What next?', 'Pilot segment-specific thresholds, add geo enrichment, and monitor model calibration before automated decisions.', '#18a999')
+        ])
+      ]);
+    }
+
+    function bindDynamicControls() {
+      const slider = document.getElementById('threshold-slider');
+      const thresholdSelect = document.getElementById('threshold-select');
+      const rows = getRows('threshold_simulation');
+      if (thresholdSelect) {
+        thresholdSelect.innerHTML = rows.map((row, index) => {
+          const label = 'Threshold ' + fmtScore(row.threshold) + ' - capture ' + fmtPct(row.fraud_capture_rate);
+          return '<option value="' + index + '">' + escapeHtml(label) + '</option>';
+        }).join('');
+        thresholdSelect.value = state.selectedThreshold;
+      }
+      if (slider) {
+        slider.max = Math.max(rows.length - 1, 0);
+        slider.value = state.selectedThreshold;
+      }
+      const updateThreshold = event => {
+        const nextValue = Number(event.target.value || 0);
+        if (nextValue === state.selectedThreshold) return;
+        state.selectedThreshold = nextValue;
+        if (slider) slider.value = state.selectedThreshold;
+        if (thresholdSelect) thresholdSelect.value = state.selectedThreshold;
+        render();
+      };
+      if (thresholdSelect) {
+        thresholdSelect.addEventListener('change', updateThreshold);
+      }
+      if (slider) {
+        const deferredUpdate = event => window.setTimeout(() => updateThreshold(event), 0);
+        ['input', 'change', 'keyup', 'mouseup', 'touchend', 'click'].forEach(eventName => {
+          slider.addEventListener(eventName, deferredUpdate);
+        });
+        const sliderPoll = window.setInterval(() => {
+          if (!document.body.contains(slider)) {
+            window.clearInterval(sliderPoll);
+            return;
+          }
+          if (Number(slider.value || 0) !== state.selectedThreshold) {
+            updateThreshold({ target: slider });
+          }
+        }, 250);
+      }
+    }
+
+    function hydrateCharts() {
+      if (state.page === 'overview') {
+        lineChart('overview-trend', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
+        donutChart('overview-donut', segmentFamilyContribution(), 'family', 'fraud_share');
+        barChart('overview-product', filteredProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        barChart('overview-pareto', getRows('segment_watchlist').slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
+        document.getElementById('overview-table').innerHTML = dataTable(getRows('segment_watchlist').slice(0, 12), [
+          ['Family', row => row.segment_family],
+          ['Segment', row => row.segment_name],
+          ['Fraud Rate', row => fmtPct2(row.fraud_rate)],
+          ['Lift', row => fmtScore(row.lift || row.fraud_lift) + 'x'],
+          ['Fraud Share', row => fmtPct(row.fraud_share)],
+          ['Action', row => row.recommended_action || 'Calibrate targeted rule']
+        ]);
+      }
+      if (state.page === 'trend') {
+        lineChart('trend-line', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
+        comboChart('trend-combo', filteredDaily(), 'transaction_day', 'transaction_count', 'fraud_rate');
+        heatmap('trend-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
+        document.getElementById('trend-table').innerHTML = dataTable(filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 16), [
+          ['Relative Day', row => row.transaction_day],
+          ['Transaction Count', row => fmtInt(row.transaction_count)],
+          ['Fraud Count', row => fmtInt(row.fraud_count)],
+          ['Fraud Rate', row => fmtPct2(row.fraud_rate)]
+        ]);
+      }
+      if (state.page === 'amount') {
+        barChart('amount-bar', filteredAmountRows(), row => row.amount_band, row => row.fraud_rate, fmtPct2, 'amount');
+        heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2);
+        scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category);
+        boxplotChart('amount-boxplot', filteredTransactions());
+        document.getElementById('amount-table').innerHTML = dataTable(filteredAmountRows(), [
+          ['Amount Band', row => row.amount_band],
+          ['Transactions', row => fmtInt(row.transaction_count)],
+          ['Fraud Count', row => fmtInt(row.fraud_count)],
+          ['Fraud Rate', row => fmtPct2(row.fraud_rate)],
+          ['Lift', row => fmtScore(row.fraud_lift || row.lift) + 'x']
+        ]);
+      }
+      if (state.page === 'customer') {
+        barChart('customer-identity', getRows('identity_risk'), row => identityLabel(row), row => row.fraud_rate, fmtPct2, 'identity');
+        barChart('customer-email', filteredEmailRows().slice(0, 10), row => row.purchaser_email_group, row => row.fraud_rate, fmtPct2, 'email');
+        barChart('customer-device', deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
+        heatmap('customer-matrix', getRows('identity_product_coverage'), 'product_cd', 'identity_status', 'fraud_rate', fmtPct2);
+        document.getElementById('customer-table').innerHTML = dataTable(filteredTransactions().slice(0, 18), [
+          ['Transaction ID', row => row.transaction_id],
+          ['Risk Score', row => fmtScore(row.risk_score)],
+          ['Amount', row => fmtMoney(row.transaction_amount)],
+          ['Product', row => row.product_cd],
+          ['Device', row => row.device_type || 'Unknown'],
+          ['Email Group', row => row.purchaser_email_group || 'Unknown'],
+          ['Identity', row => row.identity_status || 'Unknown']
+        ]);
+      }
+      if (state.page === 'geo') {
+        document.getElementById('geo-schema').innerHTML = dataTable([
+          { field: 'geo_country', purpose: 'Country-level fraud concentration' },
+          { field: 'geo_region', purpose: 'Regional risk comparison' },
+          { field: 'ip_risk_score', purpose: 'External IP reputation signal' },
+          { field: 'geo_coverage_rate', purpose: 'Coverage quality control' },
+          { field: 'geo_source', purpose: 'Lineage and governance' }
+        ], [['Field', row => row.field], ['Purpose', row => row.purpose]]);
+        document.getElementById('geo-checklist').innerHTML = dataTable([
+          { control: 'Source coverage', status: 'Required' },
+          { control: 'Bias review', status: 'Required' },
+          { control: 'Freshness timestamp', status: 'Required' },
+          { control: 'Map enablement', status: 'Blocked until enrichment' }
+        ], [['Control', row => row.control], ['Status', row => row.status]]);
+      }
+      if (state.page === 'behavior') {
+        heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
+        heatmap('behavior-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2);
+        scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category);
+        barChart('behavior-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate || row.fraud_rate, fmtPct2, 'risk');
+        document.getElementById('behavior-table').innerHTML = dataTable(behaviorMatrixRows(), [
+          ['Signal', row => row.signal],
+          ['Metric', row => row.metric],
+          ['Business Meaning', row => row.meaning]
+        ]);
+      }
+      if (state.page === 'features') {
+        barChart('feature-bar', getRows('feature_importance'), row => row.feature, row => row.importance, fmtInt, null);
+        treemapTiles('feature-family', featureFamilyRows());
+        scatterChart('feature-scatter', featureMissingImportanceRows(), row => row.missing_rate, row => row.importance, row => row.feature_family, { xFormat: fmtPct2, yFormat: fmtInt });
+        document.getElementById('feature-table').innerHTML = dataTable(featureInterpretationRows(), [
+          ['Feature Family', row => row.family],
+          ['Use', row => row.use],
+          ['Caution', row => row.caution]
+        ]);
+      }
+      if (state.page === 'model') {
+        thresholdCurve('model-threshold');
+        renderThresholdSummary();
+        barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
+        confusionMatrix('model-confusion');
+        barChart('model-features', getRows('feature_importance').slice(0, 8), row => row.feature, row => row.importance, fmtInt, null);
+      }
+      if (state.page === 'insights') {
+        recommendationMatrix('insight-matrix');
+        waterfallChart('insight-waterfall', getRows('segment_watchlist').slice(0, 8));
+        document.getElementById('insight-table').innerHTML = dataTable(recommendationRows(), [
+          ['Priority', row => row.priority],
+          ['Recommendation', row => row.recommendation],
+          ['Metric Evidence', row => row.evidence],
+          ['Expected Impact', row => row.impact]
+        ]);
+      }
+    }
+
+    function pageGrid(parts) { return '<div class="page-grid">' + parts.join('') + '</div>'; }
+    function grid2(parts) { return '<div class="grid-2">' + parts.join('') + '</div>'; }
+    function kpiRow(parts) { return '<div class="kpi-row">' + parts.join('') + '</div>'; }
+    function insightRow(parts) { return '<div class="insight-row">' + parts.join('') + '</div>'; }
+    function kpi(label, value, foot, color) {
+      return '<div class="kpi-card" style="--accent:' + color + '"><div class="kpi-label">' + escapeHtml(label) + '</div><div class="kpi-value">' + escapeHtml(value) + '</div><div class="kpi-foot">' + escapeHtml(foot) + '</div></div>';
+    }
+    function insight(title, text, color) {
+      return '<div class="insight-card" style="--accent:' + color + '"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(text) + '</span></div>';
+    }
+    function chartCard(title, note, body, klass) {
+      return '<article class="visual-card ' + (klass || '') + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div></div>' + body + '</article>';
+    }
+
+    function renderActiveFilters() {
+      const chips = Object.entries(state.filters)
+        .filter(([, value]) => value !== 'All' && value !== 'all')
+        .map(([key, value]) => '<span class="chip">' + escapeHtml(labelize(key)) + ': ' + escapeHtml(value) + '<button type="button" data-clear-filter="' + key + '">x</button></span>');
+      if (state.cross) chips.push('<span class="chip">Cross-filter: ' + escapeHtml(labelize(state.cross.key)) + ' = ' + escapeHtml(state.cross.value) + '<button type="button" data-clear-cross="1">x</button></span>');
+      document.getElementById('active-filters').innerHTML = chips.length ? chips.join('') : '<span class="chip">No filters</span>';
+      document.querySelectorAll('[data-clear-filter]').forEach(button => button.addEventListener('click', () => {
+        const key = button.dataset.clearFilter;
+        state.filters[key] = key === 'day' ? 'all' : 'All';
+        state.cross = null;
+        syncFilterControls();
+        render();
+      }));
+      document.querySelectorAll('[data-clear-cross]').forEach(button => button.addEventListener('click', () => {
+        state.cross = null;
+        render();
+      }));
+    }
+
+    function getRows(key) { return state.dashboard?.[key] || []; }
+    function executiveKpis() { return getRows('executive_kpis')[0] || {}; }
+    function selectedThreshold() { return getRows('threshold_simulation')[Math.max(0, Math.min(state.selectedThreshold, getRows('threshold_simulation').length - 1))] || {}; }
     function recommendedThresholdIndex() {
-      const rows = state.dashboard?.threshold_simulation || [];
-      if (!rows.length) return 0;
-      const target = rows.findIndex(row => Number(row.score_threshold) >= 0.50);
+      const rows = getRows('threshold_simulation');
+      const target = rows.findIndex(row => num(row.score_threshold) >= 0.50);
       return target >= 0 ? target : Math.min(5, rows.length - 1);
     }
-    function selectedThreshold() {
-      const rows = state.dashboard?.threshold_simulation || [];
-      return rows[Math.max(0, Math.min(state.thresholdIndex, rows.length - 1))];
-    }
-    function thresholdImpact(row) {
-      if (!row) return { reviewCost: 0, missedExposure: 0, totalCostExposure: 0, falsePositives: 0, missedFraud: 0 };
+    function fraudExposure() {
       const k = executiveKpis();
-      const captured = Number(row.captured_fraud_count || 0);
-      const review = Number(row.review_count || 0);
-      const totalFraud = Number(k.fraud_transactions || 0);
-      const falsePositives = Math.max(review - captured, 0);
-      const missedFraud = Math.max(totalFraud - captured, 0);
-      const reviewCost = falsePositives * reviewCostAssumption();
-      const missedExposure = missedFraud * lossAssumption();
-      return { reviewCost, missedExposure, totalCostExposure: reviewCost + missedExposure, falsePositives, missedFraud };
+      return num(k.fraud_transaction_amount) || num(k.fraud_amount) || num(k.fraud_transactions) * 120;
     }
-
+    function filteredDaily() {
+      const rows = getRows('daily_drift');
+      if (state.filters.day === 'all') return rows;
+      const maxDay = max(rows, 'transaction_day');
+      const start = maxDay - Number(state.filters.day) + 1;
+      return rows.filter(row => num(row.transaction_day) >= start);
+    }
+    function filteredProductRows() {
+      return getRows('product_risk').filter(row => state.filters.product === 'All' || row.product_cd === state.filters.product);
+    }
+    function filteredAmountRows() {
+      return getRows('amount_bands').filter(row => state.filters.amount === 'All' || row.amount_band === state.filters.amount);
+    }
+    function filteredEmailRows() {
+      return getRows('email_domain_risk').filter(row => state.filters.email === 'All' || row.purchaser_email_group === state.filters.email);
+    }
+    function filteredTransactions() {
+      return (state.transactions || []).filter(row => {
+        const okProduct = state.filters.product === 'All' || row.product_cd === state.filters.product;
+        const okAmount = state.filters.amount === 'All' || row.amount_band === state.filters.amount;
+        const okEmail = state.filters.email === 'All' || row.purchaser_email_group === state.filters.email;
+        const okIdentity = state.filters.identity === 'All' || row.identity_status === state.filters.identity;
+        const okRisk = state.filters.risk === 'All' || row.risk_category === state.filters.risk || row.risk_band === state.filters.risk;
+        return okProduct && okAmount && okEmail && okIdentity && okRisk;
+      });
+    }
     function drillRows(parent, child) {
-      return (state.segments?.niche_drilldown || []).filter(row => row.parent_family === parent && row.child_family === child);
+      return getRows('niche_drilldown').filter(row => row.parent_family === parent && row.child_family === child);
+    }
+    function segmentFamilyContribution() {
+      const grouped = groupBy(getRows('segment_watchlist'), 'segment_family').map(group => ({
+        family: group.key,
+        fraud_share: sum(group.rows, 'fraud_share')
+      }));
+      return grouped.sort((a, b) => num(b.fraud_share) - num(a.fraud_share));
+    }
+    function paymentEmailRows() {
+      const payments = getRows('payment_heatmap').slice(0, 8).map(row => ({
+        payment_segment: (row.card_network || 'Unknown') + ' / ' + (row.card_type || 'Unknown'),
+        email_segment: 'All email',
+        fraud_rate: row.fraud_rate
+      }));
+      const emails = filteredEmailRows().slice(0, 8).map(row => ({
+        payment_segment: 'All payment',
+        email_segment: row.purchaser_email_group,
+        fraud_rate: row.fraud_rate
+      }));
+      return payments.concat(emails);
+    }
+    function deviceRiskRows() {
+      return groupBy(filteredTransactions(), 'device_type').map(group => {
+        const fraud = group.rows.filter(row => num(row.model_confidence) >= .5 || row.risk_category === 'Critical').length;
+        return { device_type: group.key || 'Unknown', fraud_rate: group.rows.length ? fraud / group.rows.length : 0, transaction_count: group.rows.length };
+      }).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function featureFamilyRows() {
+      return groupBy(getRows('feature_importance'), 'feature_family').map(group => ({
+        feature_family: group.key,
+        importance: sum(group.rows, 'importance')
+      })).sort((a, b) => b.importance - a.importance);
+    }
+    function featureMissingImportanceRows() {
+      const quality = new Map(getRows('data_quality').map(row => [row.column_family, row]));
+      return featureFamilyRows().map(row => ({
+        feature_family: row.feature_family,
+        importance: row.importance,
+        missing_rate: num(quality.get(row.feature_family)?.avg_missing_rate)
+      }));
+    }
+    function behaviorMatrixRows() {
+      return [
+        { signal: 'Relative hour', metric: peakHourLabel(), meaning: 'Fraud peaks in specific relative-time windows.' },
+        { signal: 'Payment / email', metric: 'Combination lift', meaning: 'Payment and email intersections support targeted control design.' },
+        { signal: 'Amount / score', metric: 'Outlier score density', meaning: 'High score plus unusual amount may indicate review priority.' },
+        { signal: 'Risk band', metric: 'Observed fraud rate', meaning: 'Score bands translate model probability into BI reporting bins.' }
+      ];
+    }
+    function featureInterpretationRows() {
+      return [
+        { family: 'Card', use: 'Payment instrument signal', caution: 'Masked field semantics should not be overclaimed.' },
+        { family: 'Identity', use: 'Join coverage and device/email context', caution: 'Identity coverage is partial and segment-dependent.' },
+        { family: 'Vesta engineered V', use: 'High-dimensional behavioral signal', caution: 'Interpret as statistical feature family only.' },
+        { family: 'Amount', use: 'Exposure and transaction-size pattern', caution: 'Frequency risk and loss exposure can diverge.' },
+        { family: 'Relative time', use: 'Drift and hour pattern', caution: 'Not a real calendar timestamp.' }
+      ];
+    }
+    function recommendationRows() {
+      const top = getRows('segment_watchlist')[0] || {};
+      return [
+        { priority: 'P1', recommendation: 'Prioritize top concentration segments', evidence: (top.segment_family || 'Segment') + ' / ' + (top.segment_name || 'Top segment'), impact: 'Highest immediate exposure control.' },
+        { priority: 'P1', recommendation: 'Use nested segment thresholds', evidence: 'Product x amount x identity patterns', impact: 'Better precision than one global threshold.' },
+        { priority: 'P2', recommendation: 'Add geography enrichment', evidence: 'Native geo coverage is 0%', impact: 'Unlocks valid region-level fraud reporting.' },
+        { priority: 'P2', recommendation: 'Track model calibration', evidence: 'PR-AUC and threshold simulator', impact: 'Supports governed score usage.' },
+        { priority: 'P3', recommendation: 'Monitor missingness by feature family', evidence: 'Data quality scorecard', impact: 'Reduces feature drift blind spots.' }
+      ];
     }
 
     function lineChart(id, rows, xKey, yKey, options = {}) {
@@ -1245,145 +1369,279 @@
       if (!target) return;
       const source = (rows || []).slice(-180);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 760, h = 320, pad = 38;
-      const value = row => typeof yKey === 'function' ? yKey(row) : row[yKey];
-      const maxY = Math.max(...source.map(row => Number(value(row) || 0)), .0001);
-      const maxVol = Math.max(...source.map(row => Number(row[options.volumeKey] || 0)), 1);
+      const w = 760, h = 280, pad = 36;
+      const value = row => num(typeof yKey === 'function' ? yKey(row) : row[yKey]);
+      const maxY = Math.max(...source.map(value), .0001);
+      const maxVol = Math.max(...source.map(row => num(row[options.volumeKey])), 1);
       const x = index => pad + (index / Math.max(source.length - 1, 1)) * (w - pad * 2);
-      const y = val => h - pad - (Number(val || 0) / maxY) * (h - pad * 2);
+      const y = val => h - pad - (val / maxY) * (h - pad * 2);
       const bars = options.volumeKey ? source.map((row, index) => {
-        const bh = Number(row[options.volumeKey] || 0) / maxVol * (h - pad * 2);
-        return `<rect x="${x(index) - 1}" y="${h - pad - bh}" width="2" height="${bh}" fill="rgba(76,141,246,.20)" />`;
+        const bh = num(row[options.volumeKey]) / maxVol * (h - pad * 2);
+        return '<rect x="' + (x(index) - 1) + '" y="' + (h - pad - bh) + '" width="2" height="' + bh + '" fill="rgba(37,99,235,.18)" />';
       }).join('') : '';
-      const points = source.map((row, index) => `${x(index)},${y(value(row))}`).join(' ');
-      const last = source[source.length - 1];
-      target.innerHTML = `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${id}">
-        <line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.16)" />
-        <line x1="${pad}" y1="${pad}" x2="${pad}" y2="${h - pad}" stroke="rgba(255,255,255,.12)" />
-        ${bars}
-        <polyline points="${points}" fill="none" stroke="${options.color || '#18a999'}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-        <circle cx="${x(source.length - 1)}" cy="${y(value(last))}" r="5" fill="${options.color || '#18a999'}" />
-        <text x="${pad}" y="20" fill="#9badc2" font-size="12">Latest: ${escapeHtml((options.yFormat || fmtInt)(value(last)))}</text>
-      </svg>`;
+      const points = source.map((row, index) => x(index) + ',' + y(value(row))).join(' ');
+      const latest = source[source.length - 1];
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="' + (options.color || '#2563eb') + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5" fill="' + (options.color || '#2563eb') + '"/><text x="' + pad + '" y="18" fill="#475569" font-size="12">Latest: ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg>';
     }
 
-    function barChart(id, rows, labelFn, valueFn, formatFn) {
+    function comboChart(id, rows, xKey, barKey, lineKey) {
+      const target = document.getElementById(id);
+      const source = (rows || []).slice(-80);
+      if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
+      const w = 720, h = 280, pad = 36;
+      const maxBar = Math.max(...source.map(row => num(row[barKey])), 1);
+      const maxLine = Math.max(...source.map(row => num(row[lineKey])), .0001);
+      const bw = (w - pad * 2) / source.length;
+      const x = index => pad + index * bw;
+      const yBar = val => h - pad - (num(val) / maxBar) * (h - pad * 2);
+      const yLine = val => h - pad - (num(val) / maxLine) * (h - pad * 2);
+      const bars = source.map((row, index) => '<rect x="' + (x(index) + 2) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw - 4) + '" height="' + (h - pad - yBar(row[barKey])) + '" fill="rgba(37,99,235,.26)"/>').join('');
+      const points = source.map((row, index) => (x(index) + bw / 2) + ',' + yLine(row[lineKey])).join(' ');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3"/></svg>';
+    }
+
+    function barChart(id, rows, labelFn, valueFn, formatFn, filterKey) {
       const target = document.getElementById(id);
       if (!target) return;
       const source = (rows || []).filter(Boolean).slice(0, 14);
       if (!source.length) { target.innerHTML = empty('No data available.'); return; }
-      const max = Math.max(...source.map(row => Number(valueFn(row) || 0)), .0001);
+      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
       target.innerHTML = '<div class="bar-list">' + source.map((row, index) => {
-        const value = Number(valueFn(row) || 0);
-        return `<div class="bar-row" data-tooltip="${escapeHtml(labelFn(row))} | ${escapeHtml((formatFn || fmtInt)(value))}">
-          <div class="bar-label">${escapeHtml(labelFn(row))}</div>
-          <div class="bar-track"><div class="bar-fill" style="width:${Math.max(2, value / max * 100)}%;--accent:${colors[index % colors.length]}"></div></div>
-          <div class="bar-value">${escapeHtml((formatFn || fmtInt)(value))}</div>
-        </div>`;
+        const label = String(labelFn(row) ?? 'Unknown');
+        const value = num(valueFn(row));
+        const attrs = filterKey ? 'data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '"' : '';
+        return '<div class="bar-row" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><div class="bar-label">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(value) / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + escapeHtml((formatFn || fmtInt)(value)) + '</div></div>';
       }).join('') + '</div>';
     }
 
-    function waterfallChart(id, rows) {
+    function donutChart(id, rows, labelKey, valueKey) {
       const target = document.getElementById(id);
-      if (!rows.length) { target.innerHTML = empty('No segment contribution data.'); return; }
-      const source = rows.slice(0, 8);
-      const w = 720, h = 260, pad = 34;
-      const total = source.reduce((acc, row) => acc + Number(row.fraud_share || 0), 0) || 1;
-      let cumulative = 0;
-      const bw = (w - pad * 2) / source.length;
-      const bars = source.map((row, index) => {
-        const share = Number(row.fraud_share || 0);
-        const start = cumulative;
-        cumulative += share;
-        const y1 = h - pad - (start / total) * (h - pad * 2);
-        const y2 = h - pad - (cumulative / total) * (h - pad * 2);
-        return `<g data-tooltip="${escapeHtml(row.segment_family)} | ${escapeHtml(row.segment_name)} | ${fmtPct(share)} fraud share">
-          <rect x="${pad + index * bw + 5}" y="${y2}" width="${Math.max(16, bw - 10)}" height="${Math.max(8, y1 - y2)}" rx="5" fill="${colors[index % colors.length]}" />
-          <text x="${pad + index * bw + 5}" y="${h - 8}" fill="#9badc2" font-size="10">${escapeHtml(short(row.segment_name, 10))}</text>
-        </g>`;
+      const source = (rows || []).filter(row => num(row[valueKey]) > 0).slice(0, 6);
+      if (!source.length) { target.innerHTML = empty('No segment share data.'); return; }
+      const total = sum(source, valueKey) || 1;
+      let offset = 25;
+      const rings = source.map((row, index) => {
+        const length = num(row[valueKey]) / total * 100;
+        const segment = '<circle cx="110" cy="110" r="74" fill="none" stroke="' + palette[index % palette.length] + '" stroke-width="28" stroke-dasharray="' + length + ' ' + (100 - length) + '" stroke-dashoffset="' + offset + '" pathLength="100" transform="rotate(-90 110 110)" data-tooltip="' + escapeHtml(row[labelKey] + ' | ' + fmtPct(num(row[valueKey]))) + '"/>';
+        offset -= length;
+        return segment;
       }).join('');
-      target.innerHTML = `<svg viewBox="0 0 ${w} ${h}"><line x1="${pad}" y1="${h - pad}" x2="${w - pad}" y2="${h - pad}" stroke="rgba(255,255,255,.16)" />${bars}</svg>`;
-    }
-
-    function paretoChart(id, rows) {
-      const target = document.getElementById(id);
-      if (!rows.length) { target.innerHTML = empty('No segment data.'); return; }
-      barChart(id, rows, row => row.segment_name, row => row.fraud_share, fmtPct);
+      const legend = source.map((row, index) => '<div class="matrix-card"><strong><span style="color:' + palette[index % palette.length] + '">■</span> ' + escapeHtml(row[labelKey]) + '</strong><span>' + fmtPct(num(row[valueKey])) + '</span></div>').join('');
+      target.innerHTML = '<div class="grid-2"><svg viewBox="0 0 220 220" style="min-height:220px"><circle cx="110" cy="110" r="74" fill="none" stroke="#e8eef6" stroke-width="28"/>' + rings + '<text x="110" y="106" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="900">Fraud</text><text x="110" y="128" text-anchor="middle" fill="#64748b" font-size="12">share</text></svg><div class="matrix">' + legend + '</div></div>';
     }
 
     function heatmap(id, rows, rowKey, colKey, valueKey, formatFn) {
       const target = document.getElementById(id);
-      if (!target) return;
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No heatmap data available.'); return; }
-      const rowLabels = [...new Set(source.map(row => String(row[rowKey] ?? 'Unknown')))].slice(0, 8);
-      const colLabels = [...new Set(source.map(row => String(row[colKey] ?? 'Unknown')))].slice(0, 8);
-      const max = Math.max(...source.map(row => Number(row[valueKey] || 0)), .0001);
+      const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0, 8);
+      const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0, 8);
+      const maxValue = Math.max(...source.map(row => num(row[valueKey])), .0001);
       const lookup = new Map(source.map(row => [String(row[rowKey] ?? 'Unknown') + '||' + String(row[colKey] ?? 'Unknown'), row]));
-      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head"></div>' + colLabels.map(label => '<div class="heat-cell head">' + escapeHtml(short(label, 12)) + '</div>').join('') + '</div>';
-      const body = rowLabels.map(rowLabel => '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head">' + escapeHtml(short(rowLabel, 14)) + '</div>' + colLabels.map(colLabel => {
+      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head"></div>' + colLabels.map(label => '<div class="heat-cell head">' + escapeHtml(short(label, 13)) + '</div>').join('') + '</div>';
+      const body = rowLabels.map(rowLabel => '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head">' + escapeHtml(short(rowLabel, 15)) + '</div>' + colLabels.map(colLabel => {
         const row = lookup.get(rowLabel + '||' + colLabel);
-        const value = Number(row?.[valueKey] || 0);
-        const alpha = .08 + (value / max) * .72;
-        return '<div class="heat-cell" style="background:rgba(229,72,77,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value)) + '"><span class="heat-value">' + formatFn(value) + '</span></div>';
+        const value = num(row?.[valueKey]);
+        const alpha = .05 + value / maxValue * .70;
+        return '<div class="heat-cell" style="background:rgba(217,45,58,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value)) + '"><span class="heat-value">' + formatFn(value) + '</span></div>';
       }).join('') + '</div>').join('');
       target.innerHTML = '<div class="heatmap">' + header + body + '</div>';
     }
 
-    function table(rows, columns, attrsFn) {
-      if (!rows || !rows.length) return empty('No rows available.');
-      return '<div class="table-wrap"><table><thead><tr>' + columns.map(([label]) => '<th>' + escapeHtml(label) + '</th>').join('') + '</tr></thead><tbody>' + rows.map(row => {
-        const attrs = attrsFn ? attrsFn(row) : '';
-        return '<tr class="' + (attrs ? 'clickable' : '') + '" ' + attrs + '>' + columns.map(([, fn]) => '<td>' + fn(row) + '</td>').join('') + '</tr>';
-      }).join('') + '</tbody></table></div>';
+    function scatterChart(id, rows, xFn, yFn, groupFn, options = {}) {
+      const target = document.getElementById(id);
+      const source = (rows || []).slice(0, 160);
+      if (!source.length) { target.innerHTML = empty('No transaction sample available.'); return; }
+      const w = 720, h = 280, pad = 36;
+      const maxX = Math.max(...source.map(row => num(xFn(row))), 1);
+      const maxY = Math.max(...source.map(row => num(yFn(row))), 1);
+      const x = val => pad + num(val) / maxX * (w - pad * 2);
+      const y = val => h - pad - num(val) / maxY * (h - pad * 2);
+      const dots = source.map((row, index) => {
+        const group = String(groupFn(row) || 'Unknown');
+        const color = group.toLowerCase().includes('critical') ? '#d92d3a' : group.toLowerCase().includes('high') ? '#c98012' : palette[index % palette.length];
+        return '<circle cx="' + x(xFn(row)) + '" cy="' + y(yFn(row)) + '" r="4" fill="' + color + '" opacity=".68" data-tooltip="' + escapeHtml('Amount ' + fmtMoney(xFn(row)) + ' | Score ' + fmtScore(yFn(row)) + ' | ' + group) + '"/>';
+      }).join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + dots + '<text x="' + pad + '" y="18" fill="#475569" font-size="12">X: ' + (options.xFormat ? 'rate' : 'amount') + ' | Y: score/importance</text></svg>';
     }
 
-    function kpiCard([label, value, foot, color]) {
-      return `<div class="kpi" style="--accent:${color}"><div class="kpi-label">${escapeHtml(label)}</div><div class="kpi-value">${escapeHtml(value)}</div><div class="kpi-foot">${escapeHtml(foot)}</div></div>`;
+    function boxplotChart(id, rows) {
+      const target = document.getElementById(id);
+      const source = rows || [];
+      if (!source.length) { target.innerHTML = empty('No amount sample available.'); return; }
+      const critical = source.filter(row => String(row.risk_category).includes('Critical')).map(row => num(row.transaction_amount));
+      const other = source.filter(row => !String(row.risk_category).includes('Critical')).map(row => num(row.transaction_amount));
+      const groups = [{ label: 'Critical score', values: critical, color: '#d92d3a' }, { label: 'Other scores', values: other, color: '#2563eb' }];
+      const all = source.map(row => num(row.transaction_amount));
+      const maxValue = Math.max(...all, 1);
+      const w = 720, h = 260, pad = 42;
+      const x = value => pad + value / maxValue * (w - pad * 2);
+      const box = groups.map((group, index) => {
+        const q = quantiles(group.values);
+        const y = 78 + index * 78;
+        return '<g><text x="' + pad + '" y="' + (y - 22) + '" fill="#0f172a" font-size="13" font-weight="800">' + group.label + '</text><line x1="' + x(q.min) + '" y1="' + y + '" x2="' + x(q.max) + '" y2="' + y + '" stroke="' + group.color + '" stroke-width="2"/><rect x="' + x(q.q1) + '" y="' + (y - 16) + '" width="' + Math.max(4, x(q.q3) - x(q.q1)) + '" height="32" fill="' + group.color + '" opacity=".22" stroke="' + group.color + '"/><line x1="' + x(q.median) + '" y1="' + (y - 20) + '" x2="' + x(q.median) + '" y2="' + (y + 20) + '" stroke="' + group.color + '" stroke-width="3"/><text x="' + (w - pad) + '" y="' + (y + 4) + '" text-anchor="end" fill="#475569" font-size="12">median ' + fmtMoney(q.median) + '</text></g>';
+      }).join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + box + '</svg>';
     }
-    function detailRow([label, value]) { return '<div class="detail-row"><span>' + escapeHtml(label) + '</span><strong>' + value + '</strong></div>'; }
-    function badge(value) {
-      const label = String(value || 'Unknown');
-      const klass = label.toLowerCase().includes('critical') || label === 'PASS' ? (label === 'PASS' ? 'low' : 'critical') : label.toLowerCase().includes('high') ? 'high' : label.toLowerCase().includes('medium') ? 'medium' : 'low';
-      return '<span class="badge ' + klass + '">' + escapeHtml(label) + '</span>';
-    }
-    function riskColor(value) {
-      const raw = String(value || '').toLowerCase();
-      if (raw.includes('critical')) return '#e5484d';
-      if (raw.includes('high')) return '#d99a20';
-      if (raw.includes('medium')) return '#4c8df6';
-      if (raw.includes('low') || raw.includes('pass')) return '#18a999';
-      return '#90a4c3';
-    }
-    function formatMaybePercent(value) {
-      const numeric = Number(value);
-      if (!Number.isFinite(numeric)) return escapeHtml(value);
-      return numeric >= 0 && numeric <= 1 ? fmtPct2(numeric) : fmtInt(numeric);
-    }
-    function fmtInt(value) { return nf.format(Math.round(Number(value || 0))); }
-    function fmtPct(value) { return pf.format(Number(value || 0)); }
-    function fmtPct2(value) { return pf2.format(Number(value || 0)); }
-    function fmtMoney(value) { return cf.format(Number(value || 0)); }
-    function fmtScore(value) { return df.format(Number(value || 0)); }
-    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
-    function short(value, length) { const text = String(value ?? ''); return text.length > length ? text.slice(0, length - 1) + '...' : text; }
-    function empty(text) { return '<div class="empty">' + escapeHtml(text) + '</div>'; }
 
-    function copySummary() {
+    function treemapTiles(id, rows) {
+      const target = document.getElementById(id);
+      const source = rows.slice(0, 8);
+      if (!source.length) { target.innerHTML = empty('No feature family data.'); return; }
+      const maxValue = Math.max(...source.map(row => num(row.importance)), 1);
+      target.innerHTML = '<div class="grid-2">' + source.map((row, index) => '<div class="matrix-card" style="min-height:' + (54 + num(row.importance) / maxValue * 90) + 'px;border-left:5px solid ' + palette[index % palette.length] + '"><strong>' + escapeHtml(row.feature_family || 'Unknown') + '</strong><span>' + fmtInt(row.importance) + '</span></div>').join('') + '</div>';
+    }
+
+    function thresholdCurve(id) {
+      const target = document.getElementById(id);
+      const rows = getRows('threshold_simulation');
+      if (!rows.length) { target.innerHTML = empty('No threshold data available.'); return; }
+      const w = 720, h = 280, pad = 36;
+      const x = index => pad + index / Math.max(rows.length - 1, 1) * (w - pad * 2);
+      const y = value => h - pad - num(value) * (h - pad * 2);
+      const capture = rows.map((row, index) => x(index) + ',' + y(row.fraud_capture_rate)).join(' ');
+      const precision = rows.map((row, index) => x(index) + ',' + y(row.precision_rate)).join(' ');
+      const workload = rows.map((row, index) => x(index) + ',' + y(row.workload_share)).join(' ');
+      const selectedX = x(state.selectedThreshold);
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + pad + '" x2="' + selectedX + '" y2="' + (h - pad) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/><text x="' + pad + '" y="18" fill="#18a999" font-size="12">Capture</text><text x="' + (pad + 82) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (pad + 175) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
+    }
+
+    function renderThresholdSummary() {
+      const row = selectedThreshold();
       const k = executiveKpis();
-      const top = watchlist()[0] || {};
-      const rec = selectedThreshold() || {};
-      const text = [
-        'Fraud Intelligence Summary',
-        'Total transactions: ' + fmtInt(k.total_transactions),
-        'Fraud rate: ' + fmtPct2(k.fraud_rate),
-        'Top segment: ' + (top.segment_family || 'Segment') + ' / ' + (top.segment_name || 'Unknown') + ' with ' + fmtPct(top.fraud_share || 0) + ' fraud share',
-        'Recommended threshold: ' + df.format(rec.score_threshold || 0) + ' with ' + fmtPct(rec.fraud_capture_rate || 0) + ' capture',
-        'Model use: review prioritization only'
-      ].join('\\n');
-      navigator.clipboard?.writeText(text);
+      const captured = num(row.captured_fraud_count);
+      const review = num(row.review_count);
+      const falsePositives = Math.max(review - captured, 0);
+      const missedFraud = Math.max(num(k.fraud_transactions) - captured, 0);
+      document.getElementById('threshold-summary').innerHTML = '<div class="kpi-row">' + [
+        kpi('Threshold', fmtScore(row.score_threshold), row.operating_mode || 'Operating point', '#2563eb'),
+        kpi('Fraud Capture', fmtPct(row.fraud_capture_rate), fmtInt(captured) + ' fraud labels captured.', '#18a999'),
+        kpi('Precision', fmtPct(row.precision_rate), 'Expected review efficiency.', '#c98012'),
+        kpi('Workload', fmtInt(review), fmtPct(row.workload_share) + ' of transactions.', '#7c3aed'),
+        kpi('Missed Exposure', fmtMoney(missedFraud * 120), fmtInt(missedFraud) + ' missed fraud labels.', '#d92d3a')
+      ].join('') + '</div>';
     }
 
+    function confusionMatrix(id) {
+      const target = document.getElementById(id);
+      const row = selectedThreshold();
+      const k = executiveKpis();
+      const tp = num(row.captured_fraud_count);
+      const fp = Math.max(num(row.review_count) - tp, 0);
+      const fn = Math.max(num(k.fraud_transactions) - tp, 0);
+      const tn = Math.max(num(k.total_transactions) - tp - fp - fn, 0);
+      target.innerHTML = '<div class="heatmap"><div class="heat-row" style="--cols:2"><div class="heat-cell head"></div><div class="heat-cell head">Predicted fraud</div><div class="heat-cell head">Predicted normal</div></div><div class="heat-row" style="--cols:2"><div class="heat-cell head">Actual fraud</div><div class="heat-cell" style="background:rgba(24,169,153,.24)"><span class="heat-value">' + fmtInt(tp) + '</span>TP</div><div class="heat-cell" style="background:rgba(217,45,58,.22)"><span class="heat-value">' + fmtInt(fn) + '</span>FN</div></div><div class="heat-row" style="--cols:2"><div class="heat-cell head">Actual normal</div><div class="heat-cell" style="background:rgba(201,128,18,.20)"><span class="heat-value">' + fmtInt(fp) + '</span>FP</div><div class="heat-cell" style="background:rgba(37,99,235,.16)"><span class="heat-value">' + fmtInt(tn) + '</span>TN</div></div></div>';
+    }
+
+    function waterfallChart(id, rows) {
+      const target = document.getElementById(id);
+      const source = rows || [];
+      if (!source.length) { target.innerHTML = empty('No waterfall data available.'); return; }
+      const w = 720, h = 260, pad = 36;
+      const total = source.reduce((acc, row) => acc + num(row.fraud_share), 0) || 1;
+      const bw = (w - pad * 2) / source.length;
+      let cumulative = 0;
+      const bars = source.map((row, index) => {
+        const share = num(row.fraud_share);
+        const start = cumulative;
+        cumulative += share;
+        const y1 = h - pad - start / total * (h - pad * 2);
+        const y2 = h - pad - cumulative / total * (h - pad * 2);
+        return '<g data-tooltip="' + escapeHtml(row.segment_name + ' | ' + fmtPct(share)) + '"><rect x="' + (pad + index * bw + 5) + '" y="' + y2 + '" width="' + Math.max(16, bw - 10) + '" height="' + Math.max(8, y1 - y2) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text x="' + (pad + index * bw + 6) + '" y="' + (h - 8) + '" fill="#475569" font-size="10">' + escapeHtml(short(row.segment_name, 10)) + '</text></g>';
+      }).join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + bars + '</svg>';
+    }
+
+    function recommendationMatrix(id) {
+      const rows = [
+        { action: 'Segment thresholds', x: 82, y: 78, color: '#18a999' },
+        { action: 'Geo enrichment', x: 48, y: 70, color: '#2563eb' },
+        { action: 'Calibration tracking', x: 64, y: 58, color: '#7c3aed' },
+        { action: 'Feature monitoring', x: 55, y: 42, color: '#c98012' },
+        { action: 'Broad friction', x: 28, y: 30, color: '#d92d3a' }
+      ];
+      const w = 720, h = 280, pad = 42;
+      const dots = rows.map(row => '<g data-tooltip="' + escapeHtml(row.action) + '"><circle cx="' + (pad + row.x / 100 * (w - pad * 2)) + '" cy="' + (h - pad - row.y / 100 * (h - pad * 2)) + '" r="9" fill="' + row.color + '"/><text x="' + (pad + row.x / 100 * (w - pad * 2) + 12) + '" y="' + (h - pad - row.y / 100 * (h - pad * 2) + 4) + '" fill="#0f172a" font-size="12">' + escapeHtml(row.action) + '</text></g>').join('');
+      document.getElementById(id).innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><text x="' + (w - 120) + '" y="' + (h - 10) + '" fill="#475569" font-size="12">Impact</text><text x="8" y="24" fill="#475569" font-size="12">Effort</text>' + dots + '</svg>';
+    }
+
+    function dataTable(rows, columns) {
+      if (!rows || !rows.length) return empty('No rows available.');
+      return '<div class="table-wrap"><table><thead><tr>' + columns.map(([label]) => '<th>' + escapeHtml(label) + '</th>').join('') + '</tr></thead><tbody>' + rows.map(row => '<tr>' + columns.map(([, fn]) => '<td>' + fn(row) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+    }
+
+    function exportCsv() {
+      const rows = ({
+        overview: getRows('segment_watchlist'),
+        trend: filteredDaily(),
+        amount: filteredAmountRows(),
+        customer: filteredTransactions(),
+        geo: [{ message: 'Geographic enrichment required' }],
+        behavior: behaviorMatrixRows(),
+        features: getRows('feature_importance'),
+        model: getRows('threshold_simulation'),
+        insights: recommendationRows()
+      })[state.page] || [];
+      if (!rows.length) return;
+      const columns = unique(rows.flatMap(row => Object.keys(row)));
+      const csv = [columns.join(',')].concat(rows.map(row => columns.map(col => '"' + String(row[col] ?? '').replace(/"/g, '""') + '"').join(','))).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = state.page + '-filtered-data.csv';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function showState(message, error) {
+      const target = document.getElementById('state');
+      target.textContent = message;
+      target.className = error ? 'state' : 'state';
+    }
+    function hideState() { document.getElementById('state').className = 'state hidden'; }
+    function unique(values) { return [...new Set(values.filter(value => value !== null && value !== undefined && value !== ''))].sort(); }
+    function num(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
+    function sum(rows, key) { return (rows || []).reduce((acc, row) => acc + num(typeof key === 'function' ? key(row) : row[key]), 0); }
+    function average(rows, key) { return rows && rows.length ? sum(rows, key) / rows.length : 0; }
+    function max(rows, key) { return Math.max(...(rows || []).map(row => num(row[key])), 0); }
+    function groupBy(rows, key) {
+      const map = new Map();
+      (rows || []).forEach(row => {
+        const value = row[key] || 'Unknown';
+        if (!map.has(value)) map.set(value, []);
+        map.get(value).push(row);
+      });
+      return [...map.entries()].map(([groupKey, groupRows]) => ({ key: groupKey, rows: groupRows }));
+    }
+    function quantiles(values) {
+      const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+      if (!sorted.length) return { min: 0, q1: 0, median: 0, q3: 0, max: 0 };
+      const pick = p => sorted[Math.min(sorted.length - 1, Math.floor(p * (sorted.length - 1)))];
+      return { min: sorted[0], q1: pick(.25), median: pick(.5), q3: pick(.75), max: sorted[sorted.length - 1] };
+    }
+    function peakHourLabel() {
+      const top = getRows('time_amount_signals').slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate))[0];
+      return top ? String(top.transaction_hour) + ':00' : '-';
+    }
+    function bestLift(rows) {
+      const value = Math.max(...(rows || []).map(row => num(row.fraud_lift || row.lift)), 0);
+      return value ? fmtScore(value) + 'x' : '-';
+    }
+    function identityLabel(row) {
+      if (row.identity_status) return row.identity_status;
+      if (row.has_identity === 1 || row.has_identity === true) return 'Identity present';
+      if (row.has_identity === 0 || row.has_identity === false) return 'Identity missing';
+      return 'Unknown';
+    }
+    function labelize(value) { return String(value).replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()); }
+    function fmtInt(value) { return nf.format(Math.round(num(value))); }
+    function fmtMoney(value) { return cf.format(num(value)); }
+    function fmtPct(value) { return pf.format(num(value)); }
+    function fmtPct2(value) { return pf2.format(num(value)); }
+    function fmtScore(value) { return df.format(num(value)); }
+    function short(value, length) { const text = String(value ?? ''); return text.length > length ? text.slice(0, length - 1) + '...' : text; }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
+    function empty(text) { return '<div class="empty">' + escapeHtml(text) + '</div>'; }
     function showTooltip(event) {
       const node = event.target.closest('[data-tooltip]');
       if (!node) return;

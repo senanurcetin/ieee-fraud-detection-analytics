@@ -122,12 +122,16 @@ def test_enterprise_metadata_contract_is_explicit_about_dataset_limits() -> None
     payload = main.enterprise_metadata()
 
     assert payload["presentation_layer"] == "web_dashboard"
-    assert "Executive Command Center" in payload["enterprise_pages"]
-    assert "Analyst Investigation Queue" in payload["enterprise_pages"]
-    assert "Transaction Detail" in payload["enterprise_pages"]
-    assert "Fraud Intelligence Center" in payload["enterprise_pages"]
-    assert "Model Monitoring" in payload["enterprise_pages"]
-    assert "Alert Management" in payload["enterprise_pages"]
+    assert "Executive Fraud Overview" in payload["enterprise_pages"]
+    assert "Fraud Trend Analysis" in payload["enterprise_pages"]
+    assert "Transaction Amount Analysis" in payload["enterprise_pages"]
+    assert "Customer Risk Analysis" in payload["enterprise_pages"]
+    assert "Geographic Fraud Analysis" in payload["enterprise_pages"]
+    assert "Behavioral Pattern Analysis" in payload["enterprise_pages"]
+    assert "Feature Importance Analysis" in payload["enterprise_pages"]
+    assert "Model Performance Analysis" in payload["enterprise_pages"]
+    assert "Key Insights & Recommendations" in payload["enterprise_pages"]
+    assert "Alert Management" not in payload["enterprise_pages"]
     assert "country" in payload["unsupported_fields"]
     assert "user_age" in payload["unsupported_fields"]
 
@@ -172,81 +176,85 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
 
     assert '<html lang="en">' in html
-    assert "Executive Command Center" in html
-    assert "Analyst Investigation Queue" in html
-    assert "Transaction Detail" in html
-    assert "Fraud Intelligence Center" in html
-    assert "Model Monitoring" in html
-    assert "Alert Management" in html
+    assert "Executive Fraud Overview" in html
+    assert "Fraud Trend Analysis" in html
+    assert "Transaction Amount Analysis" in html
+    assert "Customer Risk Analysis" in html
+    assert "Geographic Fraud Analysis" in html
+    assert "Behavioral Pattern Analysis" in html
+    assert "Feature Importance Analysis" in html
+    assert "Model Performance Analysis" in html
+    assert "Key Insights & Recommendations" in html
+    assert "Analyst Investigation Queue" not in html
+    assert "Alert Management" not in html
+    assert "SOC" not in html
+    assert "ticketing" in html
     assert 'data-view="quality"' not in html
     assert "01 Executive Overview" not in html
     assert "02 Segment Explorer" not in html
     assert "03 Model Operations" not in html
     assert "04 Data Trust" not in html
-    assert "global-risk-filter" in html
-    assert "global-product-filter" in html
-    assert "review-cost-input" in html
-    assert "loss-input" in html
-    assert "trust-drawer" in html
+    assert "day-filter" in html
+    assert "product-filter" in html
+    assert "amount-filter" in html
+    assert "email-filter" in html
+    assert "identity-filter" in html
+    assert "risk-filter" in html
+    assert "clear-btn" in html
+    assert "theme-btn" in html
+    assert "csv-btn" in html
+    assert "pdf-btn" in html
+    assert "threshold-select" in html
     assert "threshold-slider" in html
-    assert "fraud-rate-trend" in html
-    assert "fraud-loss-trend" in html
-    assert "segment-waterfall" in html
-    assert "segment-pareto" in html
-    assert "risk-score-distribution" in html
-    assert "case-table" in html
-    assert "selected-case-summary" in html
-    assert "case-workspace" in html
-    assert "case-explanation" in html
-    assert "parent-family-select" in html
-    assert "parent-segment-select" in html
-    assert "child-family-select" in html
-    assert "nested-drilldown-chart" in html
-    assert "product-amount-heatmap" in html
-    assert "payment-email-heatmap" in html
-    assert "device-identity-heatmap" in html
-    assert "entity-graph" in html
-    assert "hour-heatmap" in html
-    assert "relative-day-drift" in html
-    assert "model-kpis" in html
-    assert "threshold-curve" in html
-    assert "threshold-summary" in html
-    assert "risk-band-distribution" in html
-    assert "feature-importance" in html
-    assert "feature-drift" in html
-    assert "governance-controls" in html
-    assert "alert-cards" in html
-    assert "alert-table" in html
-    assert "readiness-table" in html
-    assert "quality-contract" in html
-    assert "methodology-notes" in html
-    assert "/api/enterprise/cases" in html
-    assert "/api/enterprise/segments" in html
-    assert "/api/enterprise/alerts" in html
-    assert "/api/enterprise/model-monitoring" in html
-    assert "/api/enterprise/metadata" in html
-    assert "print-btn" in html
-    assert "copy-btn" in html
+    assert "overview-trend" in html
+    assert "overview-donut" in html
+    assert "overview-product" in html
+    assert "overview-pareto" in html
+    assert "trend-line" in html
+    assert "trend-combo" in html
+    assert "trend-hour" in html
+    assert "amount-bar" in html
+    assert "amount-heatmap" in html
+    assert "amount-scatter" in html
+    assert "amount-boxplot" in html
+    assert "customer-identity" in html
+    assert "customer-email" in html
+    assert "customer-device" in html
+    assert "customer-matrix" in html
+    assert "geo-schema" in html
+    assert "geo-checklist" in html
+    assert "behavior-hour" in html
+    assert "behavior-payment-email" in html
+    assert "feature-bar" in html
+    assert "feature-family" in html
+    assert "feature-scatter" in html
+    assert "model-threshold" in html
+    assert "model-risk" in html
+    assert "model-confusion" in html
+    assert "insight-matrix" in html
+    assert "insight-waterfall" in html
+    assert "/api/dashboard" in html
+    assert "/api/metadata" in html
+    assert "/api/enterprise/cases?limit=240" in html
     assert "Selected threshold" in html
-    assert "Fraud Loss Exposure" in html
+    assert "Fraud Exposure" in html
     assert "Capturable Exposure" in html
-    assert "Precision / Recall" in html
-    assert "Historical replay monitor" in html
-    assert "Country and user age are intentionally excluded" in html
+    assert "Geographic enrichment required" in html
+    assert "No synthetic geography" in html
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
     section = html.split("function renderThresholdSummary()", 1)[1].split(
-        "function renderGovernanceControls()",
+        "function confusionMatrix",
         1,
     )[0]
 
     assert "selectedThreshold()" in section
-    assert "thresholdImpact(row)" in section
     assert "Fraud Capture" in section
-    assert "Review Cost" in section
     assert "Missed Exposure" in section
+    assert "Precision" in section
+    assert "Workload" in section
 
 
 def test_metadata_contains_full_analysis_coverage() -> None:
