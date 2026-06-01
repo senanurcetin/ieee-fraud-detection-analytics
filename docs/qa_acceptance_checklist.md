@@ -39,7 +39,7 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 
 - [x] Production URL opens successfully.
 - [x] API uses the `fraud_project_reporting` dataset.
-- [x] Dashboard payload contract covers 18 table groups.
+- [x] Dashboard payload contract covers reporting groups and niche drilldown group.
 - [x] UI language is English-first.
 - [x] No visible legacy presentation-tool references remain in the dashboard.
 - [x] Global slicers cover metric, segment family, and operational priority.

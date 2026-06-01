@@ -8,7 +8,7 @@ This document records the release checks required before the public web dashboar
 |---|---|---|
 | API backend | Live BigQuery reporting backend | PASS |
 | Reporting dataset | `fraud_project_reporting` | PASS |
-| Reporting table groups | 18 allowlisted groups | PASS |
+| Reporting API groups | Reporting groups plus niche drilldown group | PASS |
 | Transaction population | 590,540 transactions | PASS |
 | Fraud population | 20,663 labeled fraud transactions | PASS |
 | Readiness gate | 6 of 6 checks pass | PASS |
@@ -54,7 +54,7 @@ Credential files are never stored in the repository. Use `GOOGLE_APPLICATION_CRE
 
 The dashboard can be presented only when all of the following are true:
 
-1. The public API returns the expected reporting dataset and 18 table groups.
+1. The public API returns the expected reporting dataset, reporting groups, and niche drilldown group.
 2. The reporting population reconciles to 590,540 transactions and 20,663 fraud labels.
 3. Readiness checks return 6/6 PASS.
 4. The local dbt build passes before commit.

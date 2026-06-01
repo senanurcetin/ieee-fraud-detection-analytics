@@ -5,7 +5,7 @@ This backlog tracks the remaining work for the live web analytics layer. The goa
 ## P0 - Presentation and Data Trust
 
 1. Production smoke test
-   - `/api/dashboard?refresh=true` must return all 18 reporting table groups.
+   - `/api/dashboard?refresh=true` must return all reporting groups and the niche drilldown group.
    - Total transactions must remain 590,540.
    - `rpt_report_readiness` must show 6/6 passing checks.
 

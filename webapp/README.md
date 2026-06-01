@@ -4,8 +4,9 @@ This web application is the only public presentation layer for the fraud analyti
 
 ## What It Shows
 
-- Executive KPI strip for transaction volume, fraud volume, fraud rate, identity coverage, review workload, and fraud capture.
-- Segment comparison between two risk cuts with fraud rate, lift, fraud share, transaction share, average amount, and priority.
+- Focused executive KPI strip for population, baseline fraud rate, top concentration, and recommended review queue.
+- Same-family segment comparison with fraud rate, lift, fraud share, transaction share, average amount, and priority.
+- Niche segment drilldown that opens any selected segment family into narrower product, amount, payment, email, identity, and risk-band subgroups.
 - Drill-through drawer with workload impact, recommended action, and copy-ready presentation insight.
 - Fraud contribution waterfall and Pareto concentration view from `rpt_segment_watchlist`.
 - Model operations simulator with analyst capacity, false-positive review cost, and false-negative loss assumptions.
@@ -15,7 +16,7 @@ This web application is the only public presentation layer for the fraud analyti
 
 ## Data Contract
 
-The API reads these 18 reporting tables:
+The API reads 18 dbt-built reporting tables plus 1 allowlisted niche drilldown query group:
 
 - `rpt_executive_kpis`
 - `rpt_product_risk`
@@ -30,13 +31,14 @@ The API reads these 18 reporting tables:
 - `rpt_feature_importance`
 - `rpt_data_quality_scorecard`
 - `rpt_segment_watchlist`
+- `fact_train_transactions` for scoped niche drilldowns across product, amount, payment, email, identity, and risk-band cuts
 - `rpt_review_strategy`
 - `rpt_threshold_simulation`
 - `rpt_report_narrative`
 - `rpt_quality_contract`
 - `rpt_report_readiness`
 
-No raw transaction table is queried by the dashboard. All visible analytics come from pre-aggregated reporting marts or client-side calculations over the API payload.
+Raw ingestion tables are never queried by the dashboard. Public analytics come from pre-aggregated reporting marts, with narrowly scoped niche drilldowns computed from the governed reporting fact table.
 
 The API also exposes `/api/metadata`, which publishes:
 

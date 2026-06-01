@@ -31,6 +31,57 @@ DEFAULT_CACHE_SECONDS = 600
 DEFAULT_DUCKDB_PATH = "data/processed/ieee_fraud.duckdb"
 DUCKDB_SCHEMA = "reporting"
 
+
+NICHE_DIMENSIONS: dict[str, str] = {
+    "Product": "product_segment",
+    "Amount band": "amount_segment",
+    "Payment": "payment_segment",
+    "Email domain": "email_segment",
+    "Identity": "identity_segment",
+    "Risk band": "risk_segment",
+}
+
+
+def niche_select(parent_family: str, child_family: str) -> str:
+    parent_col = NICHE_DIMENSIONS[parent_family]
+    child_col = NICHE_DIMENSIONS[child_family]
+    return (
+        "select "
+        f"'{parent_family}' as parent_family, "
+        f"{parent_col} as parent_segment, "
+        f"'{child_family}' as child_family, "
+        f"{child_col} as child_segment, "
+        "count(*) as transaction_count, "
+        "sum(is_fraud) as fraud_count, "
+        "case when count(*) = 0 then 0 else sum(is_fraud) * 1.0 / count(*) end as fraud_rate, "
+        "avg(transaction_amount) as avg_transaction_amount "
+        "from base "
+        f"group by {parent_col}, {child_col}"
+    )
+
+
+NICHE_DRILLDOWN_QUERY = (
+    "with base as ("
+    "select "
+    "coalesce(product_cd, 'Unknown') as product_segment, "
+    "coalesce(amount_band, 'Unknown') as amount_segment, "
+    "concat(coalesce(card_network, 'Unknown'), ' / ', coalesce(card_type, 'Unknown')) as payment_segment, "
+    "coalesce(purchaser_email_group, 'Unknown') as email_segment, "
+    "case when has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_segment, "
+    "coalesce(risk_band, 'Unscored') as risk_segment, "
+    "transaction_amount, "
+    "is_fraud "
+    "from {table}"
+    ") "
+    + " union all ".join(
+        niche_select(parent_family, child_family)
+        for parent_family in NICHE_DIMENSIONS
+        for child_family in NICHE_DIMENSIONS
+        if parent_family != child_family
+    )
+)
+
+
 TABLE_QUERIES: dict[str, str] = {
     "executive_kpis": "select * from {table} limit 1",
     "product_risk": "select * from {table} order by fraud_rate desc",
@@ -65,6 +116,7 @@ TABLE_QUERIES: dict[str, str] = {
         "order by avg_missing_rate desc"
     ),
     "segment_watchlist": "select * from {table} order by watchlist_rank",
+    "niche_drilldown": NICHE_DRILLDOWN_QUERY,
     "review_strategy": "select * from {table} order by band_rank",
     "threshold_simulation": "select * from {table} order by score_threshold",
     "report_narrative": "select * from {table} order by page_order",
@@ -86,6 +138,7 @@ BIGQUERY_TABLES: dict[str, str] = {
     "feature_importance": "rpt_feature_importance",
     "data_quality": "rpt_data_quality_scorecard",
     "segment_watchlist": "rpt_segment_watchlist",
+    "niche_drilldown": "fact_train_transactions",
     "review_strategy": "rpt_review_strategy",
     "threshold_simulation": "rpt_threshold_simulation",
     "report_narrative": "rpt_report_narrative",
@@ -319,7 +372,7 @@ PRODUCTION_VALIDATION: list[dict[str, str]] = [
     {
         "gate": "Live API contract",
         "status": "PASS",
-        "evidence": "Production API returns 18 reporting table groups from fraud_project_reporting.",
+        "evidence": "Production API returns allowlisted reporting groups and the niche drilldown group from fraud_project_reporting.",
     },
     {
         "gate": "Population reconciliation",

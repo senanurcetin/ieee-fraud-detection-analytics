@@ -32,6 +32,7 @@ def test_dashboard_table_contract_is_allowlisted() -> None:
     assert "rpt_identity_product_coverage" in set(main.BIGQUERY_TABLES.values())
     assert "rpt_time_amount_signals" in set(main.BIGQUERY_TABLES.values())
     assert "rpt_report_narrative" in set(main.BIGQUERY_TABLES.values())
+    assert main.BIGQUERY_TABLES["niche_drilldown"] == "fact_train_transactions"
 
 
 def test_qualified_table_rejects_unexpected_tables(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -90,7 +91,7 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
 
     assert payload["presentation_layer"] == "web_dashboard"
     assert payload["dataset"] == "fraud_project_reporting"
-    assert payload["table_count"] == 18
+    assert payload["table_count"] == 19
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
     assert len(payload["executive_takeaways"]) >= 3
@@ -139,7 +140,9 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "feature-treemap" in html
     assert "compare-a-select" in html
     assert "compare-b-select" in html
+    assert "compare-family-select" in html
     assert "comparison-panel" in html
+    assert "niche-drilldown" in html
     assert "analyst-capacity" in html
     assert "fp-cost" in html
     assert "fn-loss" in html
