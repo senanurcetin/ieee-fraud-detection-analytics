@@ -16,7 +16,7 @@ This backlog tracks the remaining work for the live web analytics layer. The goa
 
 3. Public portfolio evidence
    - Refresh dashboard screenshots after each major UI iteration.
-   - README preview images should show Executive Overview, Segment Explorer, Model Operations, and Data Trust.
+   - README preview images should show Executive Overview, Segment Lab, Niche Signals, and Model Operations.
 
 ## P1 - Analytical Depth
 

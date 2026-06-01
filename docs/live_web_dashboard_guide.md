@@ -30,25 +30,32 @@ Main table groups:
 
 1. Executive Overview
    - portfolio KPIs
-   - key risk influencers
+   - cost exposure KPI
    - fraud contribution Pareto
-   - product, risk-band and amount-band comparisons
+   - product, risk-band, queue-mix, amount-band and amount-exposure visuals
 
-2. Deep Segment Analysis
-   - global metric and priority slicers
-   - decomposition tree
+2. Segment Lab
+   - same-family peer comparison
+   - selected segment niche drilldown
    - segment watchlist
-   - identity/product coverage matrix
-   - relative hour and amount-decimal heatmap
+   - risk driver tree
 
-3. Model and Threshold Simulation
+3. Niche Signals
+   - identity/product coverage matrix
+   - payment heatmap
+   - relative hour and amount-decimal heatmap
+   - email domain risk
+   - segment action playbook
+
+4. Model Operations
    - threshold what-if slider
-   - workload, capture and precision simulation
-   - review strategy table
+   - workload, capture, precision, cost and missed exposure simulation
+   - confusion matrix
    - feature importance
    - feature-family treemap
+   - embedded Data Trust appendix
 
-4. Data Trust and Lineage
+5. Data Trust appendix
    - data quality contract
    - report readiness scorecard
    - missingness profile

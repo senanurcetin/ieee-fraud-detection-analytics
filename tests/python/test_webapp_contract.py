@@ -123,9 +123,10 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
 
     assert '<html lang="en">' in html
     assert "Executive Overview" in html
-    assert "Segment Explorer" in html
+    assert "Segment Lab" in html
+    assert "Niche Signals" in html
     assert "Model Operations" in html
-    assert "Data Trust" in html
+    assert 'data-view="quality"' not in html
     assert "01 Executive Overview" not in html
     assert "02 Segment Explorer" not in html
     assert "03 Model Operations" not in html
@@ -147,7 +148,12 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "segmentation-model" in html
     assert "segment-peer-chart" in html
     assert "decision-story" in html
+    assert "hidden-panel" in html
     assert "family-concentration-bars" in html
+    assert "risk-donut" in html
+    assert "amount-bubble" in html
+    assert "model-board" in html
+    assert "Data trust appendix" in html
     assert "analyst-capacity" in html
     assert "fp-cost" in html
     assert "fn-loss" in html
@@ -187,8 +193,11 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Selected threshold" in html
     assert "Move the slider to compare scenarios" in html
     assert "chart focus" in html
+    assert "Policy cost exposure" in html
+    assert "Peer-to-peer inside one segment family" in html
+    assert "Risk intensity leader" in html
     assert "Fraud amount exposure" in html
-    assert "Selected-threshold confusion matrix" in html
+    assert "Confusion matrix" in html
     assert "Analysis coverage matrix" in html
 
 
