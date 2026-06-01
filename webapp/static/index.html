@@ -216,6 +216,61 @@
     .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .wide { grid-column: 1 / -1; }
 
+    .segment-workbench {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+    .segment-main { display: grid; gap: 12px; min-width: 0; }
+    .segment-rail { position: sticky; top: 12px; }
+    .rail-title {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.25;
+      font-weight: 900;
+      letter-spacing: -.01em;
+    }
+    .rail-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 12px 0;
+    }
+    .seg-model { display: grid; gap: 8px; }
+    .seg-step {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent, var(--blue));
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .03);
+      padding: 9px;
+    }
+    .seg-step strong {
+      display: block;
+      color: var(--accent, var(--text));
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    .seg-step span {
+      display: block;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+    .seg-step small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+      margin-top: 4px;
+    }
+    .segment-rail .bar-list { gap: 7px; }
+    .segment-rail .bar-row { grid-template-columns: minmax(78px, 1fr) minmax(0, 1fr) 58px; gap: 7px; }
+    .segment-rail .bar-label, .segment-rail .bar-value { font-size: 11px; }
+
     .story-card {
       border: 1px solid rgba(76, 141, 246, .32);
       border-radius: var(--radius);
@@ -676,8 +731,9 @@
     }
 
     @media (max-width: 1120px) {
-      .app-header, .command-bar, .grid-2, .grid-3, .grid-large { grid-template-columns: 1fr; }
+      .app-header, .command-bar, .grid-2, .grid-3, .grid-large, .segment-workbench { grid-template-columns: 1fr; }
       .grid-large .card:first-child { grid-column: auto; }
+      .segment-rail { position: static; }
       .actions { min-width: 0; justify-content: flex-start; }
       .storyline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .kpi-grid, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -878,30 +934,41 @@
     <section class="view" id="view-segments">
       <div class="section-grid">
         <div id="segment-action-banner"></div>
-        <article class="card">
-          <div class="card-head">
-            <div>
-              <h2 class="card-title">Segment comparison panel</h2>
-              <p class="card-note">Same family only.</p>
-            </div>
+        <div class="segment-workbench">
+          <aside class="card segment-rail">
+            <h2 class="rail-title">Segmentation model</h2>
+            <div id="segmentation-model" class="seg-model"></div>
+            <div class="rail-divider"></div>
+            <h2 class="rail-title">Peer ranking</h2>
+            <div id="segment-peer-chart"></div>
+          </aside>
+          <div class="segment-main">
+            <article class="card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">Segment comparison panel</h2>
+                  <p class="card-note">Same family only.</p>
+                </div>
+              </div>
+              <div class="grid-3">
+                <div class="field"><label for="compare-family-select">Comparison scope</label><select class="select" id="compare-family-select"></select></div>
+                <div class="field"><label for="compare-a-select">Segment A</label><select class="select" id="compare-a-select"></select></div>
+                <div class="field"><label for="compare-b-select">Segment B</label><select class="select" id="compare-b-select"></select></div>
+              </div>
+              <div id="comparison-scope-note" class="scope-note"></div>
+              <div id="comparison-panel" style="margin-top:12px;"></div>
+            </article>
+            <article class="card">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">Selected niche drilldown</h2>
+                  <p class="card-note">Subgroups ranked by impact.</p>
+                </div>
+              </div>
+              <div id="niche-drilldown"></div>
+            </article>
           </div>
-          <div class="grid-3">
-            <div class="field"><label for="compare-family-select">Comparison scope</label><select class="select" id="compare-family-select"></select></div>
-            <div class="field"><label for="compare-a-select">Segment A</label><select class="select" id="compare-a-select"></select></div>
-            <div class="field"><label for="compare-b-select">Segment B</label><select class="select" id="compare-b-select"></select></div>
-          </div>
-          <div id="comparison-scope-note" class="scope-note"></div>
-          <div id="comparison-panel" style="margin-top:12px;"></div>
-        </article>
-        <article class="card">
-          <div class="card-head">
-            <div>
-              <h2 class="card-title">Selected niche drilldown</h2>
-              <p class="card-note">Subgroups ranked by impact.</p>
-            </div>
-          </div>
-          <div id="niche-drilldown"></div>
-        </article>
+        </div>
         <div class="grid-2">
           <article class="card"><div class="card-head"><div><h2 class="card-title">Operational watchlist</h2><p class="card-note">Filtered segments ordered by priority score.</p></div></div><div id="watchlist-table"></div></article>
           <article class="card">
@@ -1127,11 +1194,13 @@
     document.getElementById('compare-family-select').addEventListener('change', event => {
       state.compareFamily = event.target.value;
       refreshComparisonSelectors(true);
+      renderSegmentationModel();
+      renderSegmentPeerChart();
       renderComparison();
       renderNicheDrilldown();
     });
-    document.getElementById('compare-a-select').addEventListener('change', event => { state.compareA = event.target.value; renderComparison(); renderNicheDrilldown(); });
-    document.getElementById('compare-b-select').addEventListener('change', event => { state.compareB = event.target.value; renderComparison(); renderNicheDrilldown(); });
+    document.getElementById('compare-a-select').addEventListener('change', event => { state.compareA = event.target.value; renderSegmentationModel(); renderComparison(); renderNicheDrilldown(); });
+    document.getElementById('compare-b-select').addEventListener('change', event => { state.compareB = event.target.value; renderSegmentationModel(); renderComparison(); renderNicheDrilldown(); });
     document.getElementById('threshold-slider').addEventListener('input', event => {
       state.thresholdIndex = Number(event.target.value || 0);
       renderThreshold();
@@ -1229,6 +1298,8 @@
       renderBars('risk-bars', state.data.model_risk_bands, 'risk_band', 'observed_fraud_rate', riskTooltip, row => segmentRow('Risk band', row.risk_band, row));
       renderBars('amount-bars', state.data.amount_bands, 'amount_band', state.metric, amountTooltip, row => segmentRow('Amount band', row.amount_band, row));
       renderSegmentFamilyMap();
+      renderSegmentationModel();
+      renderSegmentPeerChart();
       renderComparison();
       renderNicheDrilldown();
       renderDriverTree();
@@ -1342,7 +1413,6 @@
         target.innerHTML = `<div class="action-banner">
           <div>
             <strong>${escapeHtml(item.action)}</strong>
-            <span>${escapeHtml(item.message)}</span>
           </div>
           <div class="banner-tag">${escapeHtml(page)}</div>
         </div>`;
@@ -1605,6 +1675,45 @@
         <div class="bar-row" data-tooltip="${escapeHtml(row.family)} | Top: ${escapeHtml(row.top_segment)} | Max lift ${fmtX(row.max_lift)}">
           <div class="bar-label">${escapeHtml(row.family)}</div>
           <div class="bar-track"><div class="bar-fill" style="width:${Math.max(3, (row.fraud_share / max) * 100)}%;--accent:${colorScale[index % colorScale.length]}"></div></div>
+          <div class="bar-value">${fmtPct(row.fraud_share)}</div>
+        </div>
+      `).join('')}</div>`;
+    }
+
+    function renderSegmentationModel() {
+      const target = document.getElementById('segmentation-model');
+      if (!target) return;
+      const peers = comparisonRows();
+      const a = peers.find(row => segmentKey(row) === state.compareA) || peers[0] || {};
+      const b = peers.find(row => segmentKey(row) === state.compareB) || peers[1] || a;
+      const drillGroups = new Set((state.data.niche_drilldown || [])
+        .filter(row => row.parent_family === state.compareFamily && row.parent_segment === a.segment_name)
+        .map(row => row.child_family));
+      const steps = [
+        ['Lens', state.compareFamily, `${fmtInt(peers.length)} peers`],
+        ['Compare', `${a.segment_name || '-'} vs ${b.segment_name || '-'}`, 'same family'],
+        ['Drill', `${drillGroups.size || 0} dimensions`, 'cross-cuts'],
+        ['Rank', `${fmtPct(a.fraud_share)} share`, `${fmtX(a.lift)} lift`]
+      ];
+      target.innerHTML = steps.map(([label, value, note], index) => `
+        <div class="seg-step" style="--accent:${colorScale[index % colorScale.length]}">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value)}</span>
+          <small>${escapeHtml(note)}</small>
+        </div>
+      `).join('');
+    }
+
+    function renderSegmentPeerChart() {
+      const target = document.getElementById('segment-peer-chart');
+      if (!target) return;
+      const rows = comparisonRows();
+      if (!rows.length) { target.innerHTML = emptyState('No peers.'); return; }
+      const max = Math.max(...rows.map(row => Number(row.fraud_share || 0)), 0.001);
+      target.innerHTML = `<div class="bar-list">${rows.slice(0, 7).map((row, index) => `
+        <div class="bar-row" data-drill-id="${registerDrill(row)}" data-tooltip="${escapeHtml(displaySegment(row))} | Rate ${fmtPct(row.fraud_rate)} | Share ${fmtPct(row.fraud_share)} | Lift ${fmtX(row.lift)}">
+          <div class="bar-label">${escapeHtml(row.segment_name)}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, (Number(row.fraud_share || 0) / max) * 100)}%;--accent:${colorScale[index % colorScale.length]}"></div></div>
           <div class="bar-value">${fmtPct(row.fraud_share)}</div>
         </div>
       `).join('')}</div>`;
