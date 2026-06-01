@@ -118,99 +118,135 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
     assert "\u00c4" not in payload_text
 
 
+def test_enterprise_metadata_contract_is_explicit_about_dataset_limits() -> None:
+    payload = main.enterprise_metadata()
+
+    assert payload["presentation_layer"] == "web_dashboard"
+    assert "Executive Command Center" in payload["enterprise_pages"]
+    assert "Analyst Investigation Queue" in payload["enterprise_pages"]
+    assert "Transaction Detail" in payload["enterprise_pages"]
+    assert "Fraud Intelligence Center" in payload["enterprise_pages"]
+    assert "Model Monitoring" in payload["enterprise_pages"]
+    assert "Alert Management" in payload["enterprise_pages"]
+    assert "country" in payload["unsupported_fields"]
+    assert "user_age" in payload["unsupported_fields"]
+
+
+def test_enterprise_case_helpers_create_operational_risk_contract() -> None:
+    assert main.risk_category_from_band("Critical") == "Critical"
+    assert main.risk_category_from_band("High") == "High Risk"
+    assert main.risk_category_from_band("Elevated") == "Medium Risk"
+    assert main.risk_category_from_band("Low") == "Low Risk"
+    assert main.recommended_action_from_band("Critical") == "Immediate manual review"
+
+    explanation = main.build_transaction_explanation(
+        {
+            "risk_band": "Critical",
+            "model_probability": 0.42,
+            "transaction_amount": 600,
+            "identity_status": "Identity present",
+            "purchaser_email_group": "anonymous.com",
+        },
+    )
+
+    assert len(explanation) >= 4
+    assert any(item["factor"] == "Model risk band" for item in explanation)
+    assert any(item["factor"] == "High ticket size" for item in explanation)
+
+
+def test_enterprise_case_sql_omits_unsupported_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GCP_PROJECT_ID", "portfolio-project")
+    monkeypatch.setenv("BQ_DATASET", "fraud_project_reporting")
+
+    sql = main.case_queue_sql(limit=20).lower()
+
+    assert "risk_score" in sql
+    assert "risk_category" in sql
+    assert "entity_prior_fraud_proxy" in sql
+    assert "model_confidence" in sql
+    assert "country" not in sql
+    assert "user_age" not in sql
+
+
 def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
 
     assert '<html lang="en">' in html
-    assert "Executive Overview" in html
-    assert "Segment Lab" in html
-    assert "Niche Signals" in html
-    assert "Model Operations" in html
+    assert "Executive Command Center" in html
+    assert "Analyst Investigation Queue" in html
+    assert "Transaction Detail" in html
+    assert "Fraud Intelligence Center" in html
+    assert "Model Monitoring" in html
+    assert "Alert Management" in html
     assert 'data-view="quality"' not in html
     assert "01 Executive Overview" not in html
     assert "02 Segment Explorer" not in html
     assert "03 Model Operations" not in html
     assert "04 Data Trust" not in html
-    assert "metric-select" in html
-    assert "family-select" in html
-    assert "priority-select" in html
-    assert "drill-drawer" in html
+    assert "global-risk-filter" in html
+    assert "global-product-filter" in html
+    assert "review-cost-input" in html
+    assert "loss-input" in html
+    assert "trust-drawer" in html
     assert "threshold-slider" in html
-    assert "pareto-chart" in html
-    assert "driver-tree" in html
-    assert "feature-treemap" in html
-    assert "compare-a-select" in html
-    assert "compare-b-select" in html
-    assert "compare-family-select" in html
-    assert "comparison-panel" in html
-    assert "niche-drilldown" in html
-    assert "segment-workbench" in html
-    assert "segmentation-model" in html
-    assert "segment-peer-chart" in html
-    assert "decision-story" in html
-    assert "hidden-panel" in html
-    assert "family-concentration-bars" in html
-    assert "risk-donut" in html
-    assert "amount-bubble" in html
-    assert "model-board" in html
-    assert "Data trust appendix" in html
-    assert "analyst-capacity" in html
-    assert "fp-cost" in html
-    assert "fn-loss" in html
-    assert "alert-list" in html
-    assert "waterfall-chart" in html
-    assert "action-register" in html
-    assert "portfolio-exposure" in html
-    assert "model-validation-scorecard" in html
-    assert "threshold-confusion-matrix" in html
-    assert "analysis-coverage-matrix" in html
-    assert "hypothesis-register" in html
-    assert "executive-takeaways" in html
-    assert "segment-action-playbook" in html
-    assert "operating-point-recommendation" in html
-    assert "business-impact-sensitivity" in html
-    assert "calibration-analysis" in html
-    assert "overview-action-banner" in html
-    assert "segment-action-banner" in html
-    assert "model-action-banner" in html
-    assert "quality-action-banner" in html
-    assert "segment-interaction-insights" in html
-    assert "threshold-decision-policy" in html
-    assert "monitoring-playbook" in html
-    assert "model-governance-controls" in html
-    assert "production-validation-gate" in html
-    assert "feature-family-explainability" in html
-    assert "data-dictionary" in html
-    assert "model-reproducibility" in html
-    assert "download-memo-btn" in html
-    assert "kpi-dictionary" in html
+    assert "fraud-rate-trend" in html
+    assert "fraud-loss-trend" in html
+    assert "segment-waterfall" in html
+    assert "segment-pareto" in html
+    assert "risk-score-distribution" in html
+    assert "case-table" in html
+    assert "selected-case-summary" in html
+    assert "case-workspace" in html
+    assert "case-explanation" in html
+    assert "parent-family-select" in html
+    assert "parent-segment-select" in html
+    assert "child-family-select" in html
+    assert "nested-drilldown-chart" in html
+    assert "product-amount-heatmap" in html
+    assert "payment-email-heatmap" in html
+    assert "device-identity-heatmap" in html
+    assert "entity-graph" in html
+    assert "hour-heatmap" in html
+    assert "relative-day-drift" in html
+    assert "model-kpis" in html
+    assert "threshold-curve" in html
+    assert "threshold-summary" in html
+    assert "risk-band-distribution" in html
+    assert "feature-importance" in html
+    assert "feature-drift" in html
+    assert "governance-controls" in html
+    assert "alert-cards" in html
+    assert "alert-table" in html
+    assert "readiness-table" in html
+    assert "quality-contract" in html
     assert "methodology-notes" in html
-    assert "/api/metadata" in html
-    assert "export-json-btn" in html
+    assert "/api/enterprise/cases" in html
+    assert "/api/enterprise/segments" in html
+    assert "/api/enterprise/alerts" in html
+    assert "/api/enterprise/model-monitoring" in html
+    assert "/api/enterprise/metadata" in html
     assert "print-btn" in html
-    assert "copy-summary-btn" in html
-    assert "selectedThresholdScenario" in html
+    assert "copy-btn" in html
     assert "Selected threshold" in html
-    assert "Move the slider to compare scenarios" in html
-    assert "chart focus" in html
-    assert "Policy cost exposure" in html
-    assert "Peer-to-peer inside one segment family" in html
-    assert "Risk intensity leader" in html
-    assert "Fraud amount exposure" in html
-    assert "Confusion matrix" in html
-    assert "Analysis coverage matrix" in html
+    assert "Fraud Loss Exposure" in html
+    assert "Capturable Exposure" in html
+    assert "Precision / Recall" in html
+    assert "Historical replay monitor" in html
+    assert "Country and user age are intentionally excluded" in html
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
-    section = html.split("function renderThresholdRecommendation()", 1)[1].split(
-        "function renderReviewTable()",
+    section = html.split("function renderThresholdSummary()", 1)[1].split(
+        "function renderGovernanceControls()",
         1,
     )[0]
 
-    assert "selectedThresholdScenario()" in section
-    assert "thresholdRecommendation()" not in section
-    assert "Capture / precision" in section
+    assert "selectedThreshold()" in section
+    assert "thresholdImpact(row)" in section
+    assert "Fraud Capture" in section
+    assert "Review Cost" in section
+    assert "Missed Exposure" in section
 
 
 def test_metadata_contains_full_analysis_coverage() -> None:

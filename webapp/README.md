@@ -1,24 +1,64 @@
-# Fraud Risk Intelligence Web Dashboard
+# Fraud Risk Intelligence Platform
 
-This web application is the only public presentation layer for the fraud analytics project. It serves an English-first executive dashboard from a FastAPI backend and reads only the dbt-built BigQuery reporting tables in `fraud_project_reporting`.
+This web application is the only public presentation layer for the fraud analytics project. It turns the dbt-built BigQuery reporting layer into an English-first enterprise fraud intelligence platform for executives, fraud analysts, risk teams, and model monitoring stakeholders.
 
-## What It Shows
+The interface is intentionally web-only and does not depend on any paid visualization service.
 
-- Focused executive KPI strip for population, baseline fraud rate, top concentration, and recommended review queue.
-- Same-family segment comparison with fraud rate, lift, fraud share, transaction share, average amount, and priority.
-- Niche segment drilldown that opens any selected segment family into narrower product, amount, payment, email, identity, and risk-band subgroups.
-- Drill-through drawer with workload impact, recommended action, and copy-ready presentation insight.
-- Fraud contribution waterfall and Pareto concentration view from `rpt_segment_watchlist`.
-- Model operations simulator with analyst capacity, false-positive review cost, and false-negative loss assumptions.
-- Alert simulation for fraud drift, critical queue pressure, missingness, and readiness status.
-- Data trust page with row-count contract, readiness gate, missingness scorecard, and live lineage.
-- KPI dictionary, methodology limitations, and analyst action register for executive-ready interpretation.
+## Product Scope
+
+The platform answers four operational questions:
+
+- What happened: fraud volume, loss exposure, and drift movement.
+- Why it happened: segment concentration, model drivers, and masked entity context.
+- How serious it is: review workload, capture potential, precision, and alert severity.
+- What to do next: analyst queue priority, case action, threshold policy, and monitoring response.
+
+## Enterprise Pages
+
+1. **Executive Command Center**
+   - Focused KPI strip: total transactions, fraud rate, loss exposure, capturable exposure, high-risk workload, and precision/recall.
+   - Large visuals for fraud trend, loss trend, segment contribution, Pareto concentration, and risk score distribution.
+
+2. **Analyst Investigation Queue**
+   - Case queue grouped by Critical, High Risk, Medium Risk, and Low Risk.
+   - Columns include transaction ID, risk score, category, amount, product, device, email group, identity status, prior-fraud proxy, model confidence, recommended action, and SLA priority.
+
+3. **Transaction Detail**
+   - Case workspace for one transaction.
+   - Includes risk score, transaction summary, top risk factors, feature contribution cards, recommended analyst action, and an audit-trail placeholder.
+
+4. **Fraud Intelligence Center**
+   - Hierarchical segment drilldowns instead of unrelated segment comparisons.
+   - Supported paths include Product -> Amount band, Amount band -> Product, Payment -> Email group, Email group -> Product, and Identity -> Product.
+   - Includes contribution waterfall, segment Pareto, heatmaps, relative-time signals, and masked entity relationship context.
+
+5. **Model Monitoring**
+   - Model KPIs: ROC-AUC, PR-AUC, precision, recall, false positive rate, and top-decile lift.
+   - Threshold simulator for analyst capacity, review cost, missed-fraud loss, workload, capture, precision, and estimated exposure.
+   - Feature importance, risk distribution, prediction distribution, and drift proxy visuals.
+
+6. **Alert Management**
+   - Historical replay alert simulation from IEEE-CIS relative time.
+   - Covers fraud drift, critical queue pressure, missingness spikes, segment concentration, and model-confidence indicators.
+
+Data Trust is embedded as a drawer and appendix rather than a main presentation page. It shows readiness, data source, table count, model metadata, methodology limits, and compliance notes.
 
 ## Data Contract
 
-The API reads 18 dbt-built reporting tables plus 1 allowlisted niche drilldown query group:
+The platform keeps `/api/dashboard` backward compatible and adds enterprise endpoints:
+
+- `/api/enterprise/summary`
+- `/api/enterprise/cases`
+- `/api/enterprise/cases/{transaction_id}`
+- `/api/enterprise/segments`
+- `/api/enterprise/alerts`
+- `/api/enterprise/model-monitoring`
+- `/api/enterprise/metadata`
+
+Core reporting tables:
 
 - `rpt_executive_kpis`
+- `rpt_segment_watchlist`
 - `rpt_product_risk`
 - `rpt_identity_risk`
 - `rpt_identity_product_coverage`
@@ -30,24 +70,17 @@ The API reads 18 dbt-built reporting tables plus 1 allowlisted niche drilldown q
 - `rpt_model_risk_bands`
 - `rpt_feature_importance`
 - `rpt_data_quality_scorecard`
-- `rpt_segment_watchlist`
-- `fact_train_transactions` for scoped niche drilldowns across product, amount, payment, email, identity, and risk-band cuts
 - `rpt_review_strategy`
 - `rpt_threshold_simulation`
-- `rpt_report_narrative`
 - `rpt_quality_contract`
 - `rpt_report_readiness`
+- `fact_train_transactions`
 
-Raw ingestion tables are never queried by the dashboard. Public analytics come from pre-aggregated reporting marts, with narrowly scoped niche drilldowns computed from the governed reporting fact table.
-
-The API also exposes `/api/metadata`, which publishes:
-
-- KPI definitions used by the dashboard.
-- Dataset methodology notes and analytical limitations.
-- Operating assumptions for capacity, review cost, missed-loss exposure, and API caching.
-- Release quality gates and data contract metadata.
+The application does not show country, user age, or real customer network fields because IEEE-CIS does not provide those attributes. Masked entity relationships are shown only as anonymized analytical proxies.
 
 ## Local Run
+
+For BigQuery:
 
 ```powershell
 $env:GCP_PROJECT_ID="your-gcp-project"
@@ -58,22 +91,21 @@ $env:GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
 uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
+For zero-cost local QA from the DuckDB development build:
+
+```powershell
+$env:WEB_DATA_BACKEND="duckdb"
+$env:FRAUD_PROJECT_DUCKDB_PATH="data/processed/ieee_fraud.duckdb"
+$env:WEB_CACHE_SECONDS="30"
+
+uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
+```
+
 Open:
 
 ```text
 http://127.0.0.1:8000
 ```
-
-For zero-cost local QA after `dbt build --target dev`, the API can read the local DuckDB reporting schema instead of BigQuery:
-
-```powershell
-$env:WEB_DATA_BACKEND="duckdb"
-$env:FRAUD_PROJECT_DUCKDB_PATH="data/processed/ieee_fraud.duckdb"
-
-uvicorn webapp.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-Production keeps the default `bigquery` backend.
 
 ## Vercel Runtime
 
@@ -98,12 +130,12 @@ Vercel cannot read local credential files. Configure these environment variables
 ## Export Options
 
 - `Export JSON` downloads the current API payload for audit or offline review.
-- `Print / Save PDF` uses browser print styles for the active dashboard tab.
-- `Copy executive summary` creates a short presentation-ready narrative from the current live data.
+- `Print / Save PDF` uses browser print styles.
+- `Copy executive summary` creates a short presentation-ready narrative from the live data.
 
 ## Cost and Quota Guardrails
 
-- API responses are cached in memory for 10 minutes by default.
-- Set `WEB_CACHE_SECONDS` to tune cache duration.
-- Set `BIGQUERY_MAX_BYTES_BILLED` to enforce a query cost limit.
-- The dashboard reads only small `rpt_*` reporting tables, which keeps BigQuery usage cost-controlled for portfolio traffic.
+- API responses are cached in memory.
+- `WEB_CACHE_SECONDS` controls cache duration.
+- `BIGQUERY_MAX_BYTES_BILLED` limits query size.
+- Expensive interactions are served from pre-aggregated reporting marts or constrained reporting fact queries.

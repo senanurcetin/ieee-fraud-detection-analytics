@@ -904,6 +904,204 @@ def build_dashboard_payload() -> dict[str, Any]:
     return data
 
 
+def cached_dashboard_payload(refresh: bool = False) -> dict[str, Any]:
+    now = time.time()
+    if not refresh and _CACHE["payload"] is not None and _CACHE["expires_at"] > now:
+        return _CACHE["payload"]
+
+    payload = build_dashboard_payload()
+    cache_seconds = int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS)))
+    _CACHE["payload"] = payload
+    _CACHE["expires_at"] = now + cache_seconds
+    return payload
+
+
+def enterprise_table(table_name: str) -> str:
+    return qualified_duckdb_table(table_name) if data_backend() == "duckdb" else qualified_table(table_name)
+
+
+def risk_category_from_band(value: Any) -> str:
+    return {
+        "Critical": "Critical",
+        "High": "High Risk",
+        "Elevated": "Medium Risk",
+        "Low": "Low Risk",
+    }.get(str(value or ""), "Safe")
+
+
+def recommended_action_from_band(value: Any) -> str:
+    return {
+        "Critical": "Immediate manual review",
+        "High": "Same-day analyst review",
+        "Elevated": "Sample and monitor",
+        "Low": "Standard monitoring",
+    }.get(str(value or ""), "Standard monitoring")
+
+
+def risk_score_sql() -> str:
+    return (
+        "case "
+        "when risk_band = 'Critical' then least(100, 90 + coalesce(predicted_fraud_probability, 0) * 10) "
+        "when risk_band = 'High' then least(89, 72 + coalesce(predicted_fraud_probability, 0) * 18) "
+        "when risk_band = 'Elevated' then least(69, 45 + coalesce(predicted_fraud_probability, 0) * 25) "
+        "when risk_band = 'Low' then least(44, 15 + coalesce(predicted_fraud_probability, 0) * 25) "
+        "else least(19, coalesce(predicted_fraud_probability, 0) * 100) "
+        "end"
+    )
+
+
+def case_queue_sql(limit: int = 150) -> str:
+    table = enterprise_table("fact_train_transactions")
+    safe_limit = max(10, min(int(limit), 500))
+    score = risk_score_sql()
+    return f"""
+with base as (
+    select
+        transaction_id,
+        transaction_day,
+        transaction_hour,
+        transaction_amount,
+        amount_band,
+        product_cd,
+        card_network,
+        card_type,
+        device_type,
+        purchaser_email_group,
+        has_identity,
+        synthetic_uid_card_addr,
+        is_fraud,
+        predicted_fraud_probability,
+        coalesce(risk_band, 'Unscored') as risk_band
+    from {table}
+    where predicted_fraud_probability is not null
+),
+entity_stats as (
+    select
+        synthetic_uid_card_addr,
+        count(*) as entity_transaction_count,
+        sum(coalesce(is_fraud, 0)) as entity_prior_fraud_proxy
+    from base
+    where synthetic_uid_card_addr is not null
+    group by 1
+)
+select
+    b.transaction_id,
+    b.transaction_day,
+    b.transaction_hour,
+    b.transaction_amount,
+    b.amount_band,
+    b.product_cd,
+    b.card_network,
+    b.card_type,
+    b.device_type,
+    b.purchaser_email_group,
+    case when b.has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_status,
+    b.is_fraud,
+    b.predicted_fraud_probability as model_probability,
+    b.risk_band,
+    {score} as risk_score,
+    case
+        when b.risk_band = 'Critical' then 'Critical'
+        when b.risk_band = 'High' then 'High Risk'
+        when b.risk_band = 'Elevated' then 'Medium Risk'
+        when b.risk_band = 'Low' then 'Low Risk'
+        else 'Safe'
+    end as risk_category,
+    abs(coalesce(b.predicted_fraud_probability, 0) - 0.5) * 2 as model_confidence,
+    coalesce(e.entity_prior_fraud_proxy, 0) as entity_prior_fraud_proxy,
+    coalesce(e.entity_transaction_count, 1) as entity_transaction_count,
+    case
+        when b.risk_band = 'Critical' then 'Immediate manual review'
+        when b.risk_band = 'High' then 'Same-day analyst review'
+        when b.risk_band = 'Elevated' then 'Sample and monitor'
+        else 'Standard monitoring'
+    end as recommended_action,
+    case
+        when b.risk_band = 'Critical' then 'P0'
+        when b.risk_band = 'High' then 'P1'
+        when b.risk_band = 'Elevated' then 'P2'
+        else 'P3'
+    end as sla_priority
+from base as b
+left join entity_stats as e
+    on b.synthetic_uid_card_addr = e.synthetic_uid_card_addr
+order by
+    case b.risk_band
+        when 'Critical' then 1
+        when 'High' then 2
+        when 'Elevated' then 3
+        when 'Low' then 4
+        else 5
+    end,
+    b.predicted_fraud_probability desc,
+    b.transaction_amount desc
+limit {safe_limit}
+"""
+
+
+def transaction_detail_sql(transaction_id: int) -> str:
+    table = enterprise_table("fact_train_transactions")
+    score = risk_score_sql()
+    return f"""
+select
+    transaction_id,
+    transaction_day,
+    transaction_week,
+    transaction_hour,
+    relative_day_of_week,
+    time_window,
+    transaction_amount,
+    transaction_amount_cents,
+    is_round_amount,
+    amount_band,
+    product_cd,
+    card_network,
+    card_type,
+    device_type,
+    purchaser_email_group,
+    purchaser_email_risk_group,
+    case when has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_status,
+    synthetic_uid_card_addr,
+    is_fraud,
+    predicted_fraud_probability as model_probability,
+    coalesce(risk_band, 'Unscored') as risk_band,
+    {score} as risk_score,
+    case
+        when risk_band = 'Critical' then 'Critical'
+        when risk_band = 'High' then 'High Risk'
+        when risk_band = 'Elevated' then 'Medium Risk'
+        when risk_band = 'Low' then 'Low Risk'
+        else 'Safe'
+    end as risk_category
+from {table}
+where transaction_id = {int(transaction_id)}
+limit 1
+"""
+
+
+def direct_aggregate(sql: str) -> list[dict[str, Any]]:
+    return run_query(sql)
+
+
+def build_transaction_explanation(row: dict[str, Any]) -> list[dict[str, Any]]:
+    factors: list[dict[str, Any]] = []
+    probability = float(row.get("model_probability") or 0)
+    amount = float(row.get("transaction_amount") or 0)
+    if row.get("risk_band") in {"Critical", "High"}:
+        factors.append({"factor": "Model risk band", "direction": "Raises risk", "impact": "High", "detail": f"{row.get('risk_band')} queue priority"})
+    if amount >= 250:
+        factors.append({"factor": "High ticket size", "direction": "Raises risk", "impact": "Medium", "detail": f"Amount {amount:,.0f}"})
+    if row.get("identity_status") == "Identity present":
+        factors.append({"factor": "Identity signal present", "direction": "Requires review", "impact": "Medium", "detail": "Identity availability is monitored as a risk signal"})
+    if str(row.get("purchaser_email_group") or "").lower() in {"anonymous.com", "unknown", "other"}:
+        factors.append({"factor": "Email domain group", "direction": "Raises uncertainty", "impact": "Medium", "detail": str(row.get("purchaser_email_group") or "Unknown")})
+    if probability >= 0.2:
+        factors.append({"factor": "Model probability", "direction": "Raises risk", "impact": "High", "detail": f"{probability:.2%} fraud probability"})
+    if not factors:
+        factors.append({"factor": "Low operational score", "direction": "Standard monitoring", "impact": "Low", "detail": "No critical driver exceeded the review threshold"})
+    return factors[:5]
+
+
 @app.get("/api/metadata")
 def metadata() -> dict[str, Any]:
     return {
@@ -942,17 +1140,201 @@ def metadata() -> dict[str, Any]:
     }
 
 
+@app.get("/api/enterprise/summary")
+def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
+    payload = cached_dashboard_payload(refresh=refresh)
+    kpis = (payload.get("executive_kpis") or [{}])[0]
+    threshold_rows = payload.get("threshold_simulation") or []
+    risk_rows = payload.get("model_risk_bands") or []
+    watchlist = payload.get("segment_watchlist") or []
+    recommended_threshold = next(
+        (row for row in threshold_rows if 0.04 <= float(row.get("score_threshold") or 0) <= 0.10),
+        threshold_rows[min(len(threshold_rows) - 1, 5)] if threshold_rows else {},
+    )
+    return {
+        "meta": payload.get("meta", {}),
+        "kpis": kpis,
+        "recommended_threshold": recommended_threshold,
+        "top_segments": watchlist[:8],
+        "risk_distribution": risk_rows,
+        "model_metrics": MODEL_VALIDATION_METRICS,
+        "trust_signals": {
+            "model_version": "lightgbm-v1",
+            "validation_design": "time-based holdout",
+            "data_source": "IEEE-CIS masked e-commerce transaction data",
+            "model_use": "review prioritization only",
+        },
+    }
+
+
+@app.get("/api/enterprise/cases")
+def enterprise_cases(limit: int = Query(default=150, ge=10, le=500)) -> dict[str, Any]:
+    rows = direct_aggregate(case_queue_sql(limit=limit))
+    return {
+        "cases": rows,
+        "count": len(rows),
+        "risk_categories": ["Critical", "High Risk", "Medium Risk", "Low Risk", "Safe"],
+        "unsupported_fields": ["country", "user_age"],
+        "note": "Country and user age are not native IEEE-CIS fields and are intentionally omitted.",
+    }
+
+
+@app.get("/api/enterprise/cases/{transaction_id}")
+def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
+    rows = direct_aggregate(transaction_detail_sql(transaction_id))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Transaction not found in reporting fact table.")
+    row = rows[0]
+    return {
+        "transaction": row,
+        "explanation": build_transaction_explanation(row),
+        "recommended_action": recommended_action_from_band(row.get("risk_band")),
+        "audit_trail": [
+            {"step": "Scored", "status": "Complete", "owner": "Model pipeline"},
+            {"step": "Queued", "status": risk_category_from_band(row.get("risk_band")), "owner": "Fraud operations"},
+            {"step": "Analyst decision", "status": "Pending", "owner": "Manual review"},
+        ],
+    }
+
+
+@app.get("/api/enterprise/segments")
+def enterprise_segments(refresh: bool = Query(default=False)) -> dict[str, Any]:
+    payload = cached_dashboard_payload(refresh=refresh)
+    fact_table = enterprise_table("fact_train_transactions")
+    device_identity_sql = f"""
+select
+    coalesce(device_type, 'Unknown') as device_type,
+    case when has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_status,
+    count(*) as transaction_count,
+    sum(is_fraud) as fraud_count,
+    sum(is_fraud) * 1.0 / nullif(count(*), 0) as fraud_rate
+from {fact_table}
+group by 1, 2
+order by fraud_rate desc
+"""
+    entity_network_sql = f"""
+select
+    concat('Product: ', coalesce(product_cd, 'Unknown')) as source,
+    concat('Email: ', coalesce(purchaser_email_group, 'Unknown')) as target,
+    count(*) as edge_weight,
+    sum(is_fraud) as fraud_count,
+    sum(is_fraud) * 1.0 / nullif(count(*), 0) as fraud_rate,
+    'masked_product_email' as edge_type
+from {fact_table}
+group by 1, 2
+having count(*) >= 1000
+order by fraud_count desc, fraud_rate desc
+limit 20
+"""
+    return {
+        "segment_watchlist": payload.get("segment_watchlist", []),
+        "niche_drilldown": payload.get("niche_drilldown", []),
+        "payment_heatmap": payload.get("payment_heatmap", []),
+        "time_amount_signals": payload.get("time_amount_signals", []),
+        "daily_drift": payload.get("daily_drift", []),
+        "device_identity_heatmap": direct_aggregate(device_identity_sql),
+        "masked_entity_edges": direct_aggregate(entity_network_sql),
+        "note": "Entity graph is built from masked product, email, device, and identity proxies; it is not a real customer network.",
+    }
+
+
+@app.get("/api/enterprise/alerts")
+def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
+    payload = cached_dashboard_payload(refresh=refresh)
+    alerts: list[dict[str, Any]] = []
+    drift_rows = payload.get("daily_drift", [])
+    drift = next((row for row in reversed(drift_rows) if row.get("drift_flag") != "Normal band"), None)
+    if drift:
+        alerts.append({
+            "alert_id": "FD-DRIFT-001",
+            "severity": "High",
+            "segment": f"Relative day {drift.get('transaction_day')}",
+            "trigger": "Fraud drift",
+            "current_value": drift.get("fraud_rate_ma7") or drift.get("fraud_rate"),
+            "threshold": drift.get("baseline_fraud_rate"),
+            "recommended_action": "Review segment mix before changing customer friction.",
+            "status": "Open",
+        })
+    queue = next((row for row in payload.get("review_strategy", []) if row.get("risk_band") == "Critical"), None)
+    if queue:
+        alerts.append({
+            "alert_id": "FD-QUEUE-002",
+            "severity": "Critical",
+            "segment": "Critical risk queue",
+            "trigger": "Queue pressure",
+            "current_value": queue.get("estimated_daily_review_volume"),
+            "threshold": "Analyst capacity input",
+            "recommended_action": "Reserve same-day analyst capacity for critical queue.",
+            "status": "Open",
+        })
+    missing = next(iter(payload.get("data_quality", [])), None)
+    if missing:
+        alerts.append({
+            "alert_id": "FD-DQ-003",
+            "severity": "Medium",
+            "segment": missing.get("column_family"),
+            "trigger": "Feature missingness",
+            "current_value": missing.get("avg_missing_rate"),
+            "threshold": "Feature family baseline",
+            "recommended_action": "Validate ingestion and imputation policy before expanding rules.",
+            "status": "Monitoring",
+        })
+    top_segment = next(iter(payload.get("segment_watchlist", [])), None)
+    if top_segment:
+        alerts.append({
+            "alert_id": "FD-SEG-004",
+            "severity": top_segment.get("risk_priority", "High"),
+            "segment": top_segment.get("segment_name"),
+            "trigger": "Segment concentration",
+            "current_value": top_segment.get("fraud_share"),
+            "threshold": "Top watchlist rank",
+            "recommended_action": top_segment.get("recommended_action"),
+            "status": "Open",
+        })
+    return {
+        "mode": "historical_replay",
+        "note": "IEEE-CIS is a static dataset; alert stream is a historical replay simulation from reporting tables.",
+        "alerts": alerts,
+    }
+
+
+@app.get("/api/enterprise/model-monitoring")
+def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[str, Any]:
+    payload = cached_dashboard_payload(refresh=refresh)
+    return {
+        "model_version": "lightgbm-v1",
+        "last_training_date": "portfolio training artifact",
+        "validation_window": "time-based holdout",
+        "metrics": MODEL_VALIDATION_METRICS,
+        "thresholds": payload.get("threshold_simulation", []),
+        "risk_bands": payload.get("model_risk_bands", []),
+        "feature_importance": payload.get("feature_importance", []),
+        "data_quality": payload.get("data_quality", []),
+        "controls": MODEL_GOVERNANCE_CONTROLS,
+    }
+
+
+@app.get("/api/enterprise/metadata")
+def enterprise_metadata() -> dict[str, Any]:
+    base = metadata()
+    base["enterprise_pages"] = [
+        "Executive Command Center",
+        "Analyst Investigation Queue",
+        "Transaction Detail",
+        "Fraud Intelligence Center",
+        "Model Monitoring",
+        "Alert Management",
+    ]
+    base["unsupported_fields"] = {
+        "country": "Not available in IEEE-CIS without external IP or geo enrichment.",
+        "user_age": "Not available in IEEE-CIS without customer profile enrichment.",
+    }
+    return base
+
+
 @app.get("/api/dashboard")
 def dashboard(refresh: bool = Query(default=False)) -> dict[str, Any]:
-    now = time.time()
-    if not refresh and _CACHE["payload"] is not None and _CACHE["expires_at"] > now:
-        return _CACHE["payload"]
-
-    payload = build_dashboard_payload()
-    cache_seconds = int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS)))
-    _CACHE["payload"] = payload
-    _CACHE["expires_at"] = now + cache_seconds
-    return payload
+    return cached_dashboard_payload(refresh=refresh)
 
 
 @app.get("/api/health")
