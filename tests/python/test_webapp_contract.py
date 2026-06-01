@@ -143,6 +143,8 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "compare-family-select" in html
     assert "comparison-panel" in html
     assert "niche-drilldown" in html
+    assert "decision-story" in html
+    assert "family-concentration-bars" in html
     assert "analyst-capacity" in html
     assert "fp-cost" in html
     assert "fn-loss" in html

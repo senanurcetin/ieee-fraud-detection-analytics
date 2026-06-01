@@ -216,6 +216,72 @@
     .grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
     .wide { grid-column: 1 / -1; }
 
+    .story-card {
+      border: 1px solid rgba(76, 141, 246, .32);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(76, 141, 246, .12), rgba(24, 169, 153, .06)),
+        rgba(16, 27, 43, .86);
+      padding: 14px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .14);
+    }
+    .story-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .story-head h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+      color: var(--text);
+      letter-spacing: -.02em;
+    }
+    .story-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      max-width: 780px;
+    }
+    .storyline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .story-step {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent, var(--blue));
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .034);
+      padding: 11px;
+      min-height: 108px;
+    }
+    .story-step strong {
+      display: block;
+      color: var(--accent, var(--text));
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 7px;
+    }
+    .story-step span {
+      display: block;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+    .story-step small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
     .card {
       min-width: 0;
       border: 1px solid var(--line);
@@ -613,6 +679,7 @@
       .app-header, .command-bar, .grid-2, .grid-3, .grid-large { grid-template-columns: 1fr; }
       .grid-large .card:first-child { grid-column: auto; }
       .actions { min-width: 0; justify-content: flex-start; }
+      .storyline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .kpi-grid, .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .action-register { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -627,6 +694,8 @@
       h1 { font-size: 28px; line-height: 1.1; }
       .subtitle { font-size: 13px; overflow-wrap: anywhere; }
       .pill { white-space: normal; }
+      .story-head { display: block; }
+      .storyline { grid-template-columns: 1fr; }
       .kpi-grid, .brief-grid, .comparison-grid, .grid-4, .tabs, .action-register { grid-template-columns: 1fr; }
       .niche-grid { grid-template-columns: 1fr; }
       .niche-row { grid-template-columns: minmax(92px, 1fr) minmax(0, 1fr) 76px; }
@@ -746,17 +815,23 @@
     <section class="view active" id="view-overview">
       <div class="section-grid">
         <div id="overview-action-banner"></div>
-        <div class="kpi-grid" id="kpi-grid"></div>
-        <div class="brief-grid" id="executive-brief"></div>
-        <article class="card">
-          <div class="card-head">
+        <article class="story-card">
+          <div class="story-head">
             <div>
-              <h2 class="card-title">Executive takeaways</h2>
-              <p class="card-note">Board-ready messages that translate the analysis into operating decisions.</p>
+              <h2>Decision flow</h2>
+              <p>Signal -> focus -> policy.</p>
             </div>
           </div>
-          <div id="executive-takeaways"></div>
+          <div class="storyline" id="decision-story"></div>
         </article>
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="brief-grid" id="executive-brief"></div>
+        <details class="evidence-accordion">
+          <summary>Decision cues</summary>
+          <div class="evidence-body">
+            <div id="executive-takeaways"></div>
+          </div>
+        </details>
         <details class="evidence-accordion">
           <summary>Supporting evidence: exposure, concentration, and score-band diagnostics</summary>
           <div class="evidence-body">
@@ -789,16 +864,14 @@
           </article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Risk band separation</h2><p class="card-note">Observed fraud rate by model score band.</p></div></div><div class="chart short" id="risk-bars"></div></article>
           <article class="card"><div class="card-head"><div><h2 class="card-title">Amount band risk</h2><p class="card-note">Non-linear amount behavior across ticket sizes.</p></div></div><div class="chart short" id="amount-bars"></div></article>
+          <article class="card"><div class="card-head"><div><h2 class="card-title">Segment family mix</h2><p class="card-note">Fraud share grouped by family.</p></div></div><div class="chart short" id="family-concentration-bars"></div></article>
         </div>
-        <article class="card">
-          <div class="card-head">
-            <div>
-              <h2 class="card-title">Analyst action register</h2>
-              <p class="card-note">Decision-ready actions generated from the current risk concentration, model threshold, identity coverage, and readiness gates.</p>
-            </div>
+        <details class="evidence-accordion">
+          <summary>Action register</summary>
+          <div class="evidence-body">
+            <div id="action-register" class="action-register"></div>
           </div>
-          <div id="action-register" class="action-register"></div>
-        </article>
+        </details>
       </div>
     </section>
 
@@ -809,7 +882,7 @@
           <div class="card-head">
             <div>
               <h2 class="card-title">Segment comparison panel</h2>
-              <p class="card-note">Compare two segments from the same family, then drill into the selected product's own subgroups.</p>
+              <p class="card-note">Same family only.</p>
             </div>
           </div>
           <div class="grid-3">
@@ -824,7 +897,7 @@
           <div class="card-head">
             <div>
               <h2 class="card-title">Selected niche drilldown</h2>
-              <p class="card-note">Open the selected segment into its strongest subgroups. Rankings favor operational impact, not tiny high-rate pockets.</p>
+              <p class="card-note">Subgroups ranked by impact.</p>
             </div>
           </div>
           <div id="niche-drilldown"></div>
@@ -1143,6 +1216,7 @@
       document.getElementById('readiness-pill').className = `pill ${(meta.readiness_passed === meta.readiness_total && meta.readiness_total) ? 'pass' : 'warn'}`;
       document.getElementById('readiness-chip').textContent = readinessText;
       renderPageActionBanners();
+      renderDecisionStory();
       renderKpis();
       renderExecutiveBrief();
       renderExecutiveTakeaways();
@@ -1154,6 +1228,7 @@
       renderBars('product-bars', state.data.product_risk, 'product_cd', state.metric, productTooltip, row => segmentRow('Product', row.product_cd, row));
       renderBars('risk-bars', state.data.model_risk_bands, 'risk_band', 'observed_fraud_rate', riskTooltip, row => segmentRow('Risk band', row.risk_band, row));
       renderBars('amount-bars', state.data.amount_bands, 'amount_band', state.metric, amountTooltip, row => segmentRow('Amount band', row.amount_band, row));
+      renderSegmentFamilyMap();
       renderComparison();
       renderNicheDrilldown();
       renderDriverTree();
@@ -1293,14 +1368,33 @@
       `).join('');
     }
 
+    function renderDecisionStory() {
+      const k = kpis();
+      const top = normalizedWatchlist()[0] || {};
+      const rec = thresholdRecommendation();
+      const steps = [
+        ['Signal', fmtPct(k.fraud_rate), 'Rare baseline', '#e5484d'],
+        ['Concentration', displaySegment(top), `${fmtPct(top.fraud_share)} fraud share`, '#d99a20'],
+        ['Niche', 'Same-family drilldown', 'No mixed comparisons', '#8b5cf6'],
+        ['Policy', rec ? fmtPct(rec.fraud_capture_rate) : 'Pending', 'Capture target', '#18a999']
+      ];
+      document.getElementById('decision-story').innerHTML = steps.map(([label, value, note, color]) => `
+        <div class="story-step" style="--accent:${color}">
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(value)}</span>
+          <small>${escapeHtml(note)}</small>
+        </div>
+      `).join('');
+    }
+
     function renderExecutiveBrief() {
       const k = kpis();
       const top = normalizedWatchlist()[0] || {};
       const risk = (state.data.model_risk_bands || [])[0] || {};
       const rows = [
-        ['Board message', `${fmtInt(k.total_transactions)} transactions show a ${fmtPct(k.fraud_rate)} fraud base rate; risk is concentrated enough to manage through prioritized segment queues.`, '#e5484d'],
-        ['Evidence', `${displaySegment(top)} carries ${fmtPct(top.fraud_share)} of fraud labels with ${fmtX(top.lift)} lift versus baseline.`, '#8b5cf6'],
-        ['Decision', `${risk.risk_band || 'Critical'} risk cases should be reviewed first; product, identity, amount, and payment cuts should define weekly monitoring rules.`, '#18a999']
+        ['Signal', `${fmtPct(k.fraud_rate)} baseline fraud rate.`, '#e5484d'],
+        ['Focus', `${displaySegment(top)} | ${fmtX(top.lift)} lift.`, '#8b5cf6'],
+        ['Action', `${risk.risk_band || 'Critical'} queue first.`, '#18a999']
       ];
       document.getElementById('executive-brief').innerHTML = rows.map(([title, text, color]) => `
         <div class="brief" style="--accent:${color}"><strong>${escapeHtml(title)}</strong><span>${escapeHtml(text)}</span></div>
@@ -1314,8 +1408,7 @@
       target.innerHTML = `<div class="action-register">${rows.map((item, index) => `
         <div class="action-card" style="--accent:${colorScale[index % colorScale.length]}">
           <h3>${escapeHtml(item.takeaway)}</h3>
-          <p><strong>Evidence:</strong> ${escapeHtml(item.evidence)}</p>
-          <p><strong>Decision:</strong> ${escapeHtml(item.decision)}</p>
+          <p>${escapeHtml(item.decision)}</p>
         </div>
       `).join('')}</div>`;
     }
@@ -1495,13 +1588,35 @@
       </svg>`;
     }
 
+    function renderSegmentFamilyMap() {
+      const rows = normalizedWatchlist();
+      const target = document.getElementById('family-concentration-bars');
+      if (!rows.length) { target.innerHTML = emptyState('No segment family data available.'); return; }
+      const groups = Object.entries(groupBy(rows, row => row.segment_family_display))
+        .map(([family, items]) => ({
+          family,
+          fraud_share: sum(items, 'fraud_share'),
+          max_lift: Math.max(...items.map(row => Number(row.lift || 0)), 0),
+          top_segment: [...items].sort((a, b) => Number(b.fraud_share || 0) - Number(a.fraud_share || 0))[0]?.segment_name || 'Segment'
+        }))
+        .sort((a, b) => b.fraud_share - a.fraud_share);
+      const max = Math.max(...groups.map(row => row.fraud_share), 0.001);
+      target.innerHTML = `<div class="bar-list">${groups.map((row, index) => `
+        <div class="bar-row" data-tooltip="${escapeHtml(row.family)} | Top: ${escapeHtml(row.top_segment)} | Max lift ${fmtX(row.max_lift)}">
+          <div class="bar-label">${escapeHtml(row.family)}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.max(3, (row.fraud_share / max) * 100)}%;--accent:${colorScale[index % colorScale.length]}"></div></div>
+          <div class="bar-value">${fmtPct(row.fraud_share)}</div>
+        </div>
+      `).join('')}</div>`;
+    }
+
     function renderComparison() {
       const target = document.getElementById('comparison-panel');
       const rows = comparisonRows();
       const a = rows.find(row => segmentKey(row) === state.compareA) || rows[0];
       const b = rows.find(row => segmentKey(row) === state.compareB) || rows[1] || a;
       const note = document.getElementById('comparison-scope-note');
-      if (note) note.textContent = `Scope is locked to ${state.compareFamily}. This avoids comparing unrelated segment families and keeps the decision question consistent.`;
+      if (note) note.textContent = `Scope: ${state.compareFamily}. Same-family comparison only.`;
       if (!a || !b) { target.innerHTML = emptyState('Select two segments to compare.'); return; }
       const delta = Number(a.fraud_rate || 0) - Number(b.fraud_rate || 0);
       const leader = delta >= 0 ? a : b;
@@ -1511,7 +1626,7 @@
           ${comparisonCard('Segment B', b)}
         </div>
         <div class="recommendation">
-          Within the ${escapeHtml(state.compareFamily)} scope, ${escapeHtml(displaySegment(leader))} carries the stronger fraud-rate signal by ${fmtPct(Math.abs(delta))}. Use this as a same-family ranking decision, then validate with lift, fraud share, and workload before adding operational friction.
+          Stronger signal: ${escapeHtml(displaySegment(leader))} by ${fmtPct(Math.abs(delta))}.
         </div>`;
     }
 
@@ -1551,7 +1666,7 @@
         .sort((a, b) => sum(b.rows, 'fraud_count') - sum(a.rows, 'fraud_count'));
       target.innerHTML = `
         <div class="recommendation">
-          ${escapeHtml(displaySegment(selected))} is opened into narrower subgroups. Bars are ranked by fraud count first, then fraud rate, so the panel highlights operationally meaningful pockets instead of tiny high-percentage outliers.
+          ${escapeHtml(displaySegment(selected))} -> subgroups. Ranked by fraud count, then rate.
         </div>
         <div class="niche-grid">
           ${groups.map(group => {
