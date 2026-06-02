@@ -2,7 +2,7 @@
 
 This web application is the public presentation layer for the fraud analytics project. It recreates a professional BI-style fraud report as a modern browser dashboard, using FastAPI plus a static HTML/CSS/JavaScript frontend connected to the governed reporting marts.
 
-The application is analytical by design. It is not an operations workflow, ticketing tool, or monitoring console.
+The application is analytical by design and focuses on BI-style report pages, chart interactions, and executive storytelling.
 
 ## Report Pages
 
@@ -18,8 +18,8 @@ The application is analytical by design. It is not an operations workflow, ticke
 4. **Customer Risk Analysis**
    - Masked customer proxies using identity status, email group, device type, and product context.
 
-5. **Geographic Fraud Analysis**
-   - Geography readiness page. IEEE-CIS does not contain native country, city, or IP-location fields, so maps are disabled until enrichment exists.
+5. **Masked Address & Distance Analysis**
+   - Address, distance, and masked entity proxy signals. No country, city, IP, or map is inferred from the dataset.
 
 6. **Behavioral Pattern Analysis**
    - Relative-hour, payment, email, device, score, and amount behavior patterns.
@@ -39,9 +39,9 @@ The application is analytical by design. It is not an operations workflow, ticke
 - Central metric layer for fraud rate, exposure, capturable exposure, missed exposure, precision, recall, workload, and net benefit.
 - Global slicers for relative day window, product, amount band, email group, identity status, and risk band.
 - Chart click cross-filtering for product, amount, email, identity, and risk-band visuals.
-- BI-style segment drill-through drawer with fraud rate, lift, fraud share, exposure proxy, priority, and same-family nested drilldown.
+- BI-style segment drill-down drawer with fraud rate, lift, fraud share, exposure proxy, priority, and same-family nested bar charts.
 - Hover tooltips for chart values.
-- Drill-through tables for segment and transaction-level analytical samples.
+- Same-family drill-down charts replace row-heavy transaction tables.
 - Threshold dropdown and scrubber that recalculate capture, precision, review workload, and missed exposure.
 - Export current report page to PDF through browser print.
 - Export filtered data to CSV.
@@ -53,7 +53,7 @@ The frontend reads:
 
 - `/api/dashboard`
 - `/api/metadata`
-- `/api/enterprise/cases?limit=240` for a transaction-level analytical sample used in scatter plots and drill-through tables.
+- `/api/enterprise/cases?limit=240` for a governed analytical sample used in scatter plots, masked proxy charts, and nested drill-down visuals.
 
 Core reporting groups:
 
@@ -76,7 +76,7 @@ Core reporting groups:
 ## Analytical Guardrails
 
 - `TransactionDT` is relative elapsed time, not a calendar timestamp.
-- Geography is not visualized as a map until external enrichment exists.
+- Address and distance fields are masked proxy signals; geography is not visualized as a map without external enrichment.
 - Customer risk uses masked proxies, not real customer profile attributes.
 - Masked Vesta features are presented as statistical signals, not confirmed business definitions.
 - Model output is presented as analytical prioritization and threshold simulation, not autonomous decisioning.

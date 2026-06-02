@@ -112,18 +112,6 @@
     }
     .nav-btn span { display: block; margin-top: 2px; color: var(--muted-dark); font-size: 11px; font-weight: 680; }
 
-    .sidebar-note {
-      margin-top: 14px;
-      border: 1px solid var(--line-dark);
-      border-radius: var(--radius);
-      padding: 11px;
-      background: rgba(255,255,255,.04);
-      color: var(--muted-dark);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-    .sidebar-note strong { display: block; color: var(--text); font-size: 12px; margin-bottom: 5px; }
-
     .main {
       min-width: 0;
       padding: 14px;
@@ -212,19 +200,6 @@
       font-size: 13px;
       line-height: 1.45;
     }
-    .canvas-meta {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 7px;
-      max-width: 470px;
-    }
-    .canvas-meta .pill {
-      color: #475569;
-      border-color: #d8e0ea;
-      background: #fff;
-    }
-
     .slicer-grid {
       display: grid;
       grid-template-columns: 1fr minmax(0, 4fr);
@@ -336,7 +311,7 @@
     }
     .visual-card {
       padding: 12px;
-      min-height: 310px;
+      min-height: 340px;
     }
     .visual-card.compact { min-height: 230px; }
     .visual-card.tall { min-height: 390px; }
@@ -362,7 +337,7 @@
     }
     .visual-body {
       width: 100%;
-      min-height: 240px;
+      min-height: 265px;
     }
     .visual-card.compact .visual-body { min-height: 160px; }
     .visual-card.tall .visual-body { min-height: 320px; }
@@ -388,10 +363,10 @@
     .bar-list { display: grid; gap: 9px; }
     .bar-row {
       display: grid;
-      grid-template-columns: minmax(92px, 152px) minmax(0, 1fr) minmax(70px, 94px);
+      grid-template-columns: minmax(128px, 190px) minmax(0, 1fr) minmax(84px, 116px);
       gap: 9px;
       align-items: center;
-      min-height: 30px;
+      min-height: 34px;
       border-radius: 6px;
       padding: 2px 4px;
     }
@@ -424,11 +399,11 @@
       white-space: nowrap;
     }
 
-    .heatmap { display: grid; gap: 6px; overflow-x: auto; padding-bottom: 5px; }
+    .heatmap { display: grid; gap: 6px; overflow-x: visible; padding-bottom: 5px; }
     .heat-row {
-      min-width: 640px;
+      min-width: 0;
       display: grid;
-      grid-template-columns: 125px repeat(var(--cols), minmax(82px, 1fr));
+      grid-template-columns: minmax(118px, 150px) repeat(var(--cols), minmax(82px, 1fr));
       gap: 6px;
     }
     .heat-cell {
@@ -544,19 +519,21 @@
     .detail-backdrop.open { display: block; }
     .detail-drawer {
       position: fixed;
-      top: 0;
-      right: 0;
+      top: 18px;
+      right: 18px;
       z-index: 111;
       display: none;
-      width: min(430px, 94vw);
-      height: 100vh;
+      width: min(620px, calc(100vw - 36px));
+      max-height: calc(100vh - 36px);
       transform: translateX(0);
       transition: transform .24s ease;
-      border-left: 1px solid var(--line-dark);
+      border: 1px solid var(--line);
+      border-radius: 12px;
       background: #ffffff;
       color: #0f172a;
       box-shadow: -22px 0 60px rgba(2, 8, 23, .30);
       overflow-y: auto;
+      overflow-x: hidden;
     }
     .detail-drawer.open { display: block; transform: translateX(0); }
     .drawer-head {
@@ -632,6 +609,19 @@
       font-size: 13px;
       line-height: 1.45;
     }
+    .drawer-bars {
+      display: grid;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 10px;
+    }
+    .drawer-bars .bar-row {
+      grid-template-columns: minmax(126px, 175px) minmax(0, 1fr) minmax(74px, 92px);
+      min-height: 28px;
+      padding: 0;
+    }
     .empty {
       min-height: 90px;
       display: grid;
@@ -667,7 +657,7 @@
       .main { padding: 10px; }
       .report-canvas { padding: 10px; }
       .topbar, .canvas-head { display: grid; grid-template-columns: 1fr; }
-      .top-actions, .canvas-meta { justify-content: flex-start; }
+      .top-actions { justify-content: flex-start; }
       .nav, .filter-rail, .kpi-row, .grid-2, .grid-3, .grid-4, .insight-row { grid-template-columns: 1fr; }
       .span-2, .span-3 { grid-column: auto; }
       .bar-row { grid-template-columns: 1fr; }
@@ -694,14 +684,6 @@
         </div>
       </div>
       <nav class="nav" id="page-nav" aria-label="Report pages"></nav>
-      <div class="sidebar-note">
-        <strong>Report mode</strong>
-        This dashboard is an analytical report canvas. It is not an operations, ticketing, or monitoring workflow.
-      </div>
-      <div class="sidebar-note">
-        <strong>Dataset limit</strong>
-        Geography requires external enrichment. IEEE-CIS does not provide native country, city, or IP-location fields.
-      </div>
     </aside>
 
     <main class="main">
@@ -725,11 +707,6 @@
           <div class="canvas-title">
             <h2 id="page-title">Executive Fraud Overview</h2>
             <p id="page-purpose">What is the total fraud exposure and where is fraud concentrated?</p>
-          </div>
-          <div class="canvas-meta">
-            <span class="pill" id="readiness-pill">Readiness pending</span>
-            <span class="pill">Relative time model</span>
-            <span class="pill">No synthetic geography</span>
           </div>
         </div>
 
@@ -784,7 +761,7 @@
 
   <div class="tooltip" id="tooltip"></div>
   <div class="detail-backdrop" id="detail-backdrop"></div>
-  <aside class="detail-drawer" id="detail-drawer" aria-label="Segment drill-through details">
+  <aside class="detail-drawer" id="detail-drawer" aria-label="Segment details">
     <div class="drawer-head">
       <div>
         <h3 id="drawer-title">Segment details</h3>
@@ -808,7 +785,7 @@
       { id: 'trend', title: 'Fraud Trend Analysis', short: 'Trend and drift', purpose: 'Is fraud increasing or decreasing over relative time?' },
       { id: 'amount', title: 'Transaction Amount Analysis', short: 'Amount risk', purpose: 'Which transaction amount ranges create the highest risk and exposure?' },
       { id: 'customer', title: 'Customer Risk Analysis', short: 'Masked customer proxies', purpose: 'Which identity, email, device, and product groups are riskier?' },
-      { id: 'geo', title: 'Geographic Fraud Analysis', short: 'Geo enrichment readiness', purpose: 'Where would fraud be concentrated if reliable geography enrichment is added?' },
+      { id: 'geo', title: 'Masked Address & Distance Analysis', short: 'Proxy risk signals', purpose: 'Do masked address and distance proxies separate fraud risk without pretending to be geography?' },
       { id: 'behavior', title: 'Behavioral Pattern Analysis', short: 'Behavioral signals', purpose: 'Which time, payment, device, and score behaviors indicate fraud?' },
       { id: 'features', title: 'Feature Importance Analysis', short: 'Model drivers', purpose: 'Which features and feature families explain fraud prediction?' },
       { id: 'model', title: 'Model Performance Analysis', short: 'Model quality', purpose: 'How well does the fraud model perform and which threshold is viable?' },
@@ -841,6 +818,8 @@
 
     document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => {
       state.page = button.dataset.page;
+      closeDetailDrawer();
+      window.scrollTo(0, 0);
       render();
     }));
 
@@ -932,7 +911,6 @@
       document.getElementById('backend-pill').textContent = meta.backend === 'duckdb' ? 'DuckDB local' : 'BigQuery live';
       document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'fraud_project_reporting');
       document.getElementById('freshness-pill').textContent = 'Fresh: ' + new Date(meta.refreshed_at || Date.now()).toLocaleString('en-US');
-      document.getElementById('readiness-pill').textContent = (meta.readiness_pass || 0) + '/' + (meta.readiness_total || 0) + ' checks passed';
     }
 
     function render() {
@@ -973,11 +951,11 @@
         grid2([
           chartCard('Fraud rate trend', 'Relative TransactionDT days, not calendar dates.', '<div class="visual-body" id="overview-trend"></div>', 'span-2'),
           chartCard('Fraud exposure by segment', 'Fraud share by watchlist segment family.', '<div class="visual-body" id="overview-donut"></div>'),
-          chartCard('Product risk ranking', 'Click a product to cross-filter the report.', '<div class="visual-body" id="overview-product"></div>')
+          chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>')
         ]),
         grid2([
           chartCard('Top risk concentration Pareto', 'Fraud share by highest-priority segments.', '<div class="visual-body" id="overview-pareto"></div>'),
-          chartCard('Drill-down table', 'Selected high-risk segments with lift and fraud share.', '<div id="overview-table"></div>')
+          chartCard('Nested segment breakdown', 'Same-family drill-down for the active segment.', '<div class="visual-body" id="overview-breakdown"></div>')
         ]),
         insightRow([
           ...dynamicInsightCards()
@@ -1003,7 +981,7 @@
           chartCard('Fraud count and transaction volume', 'Combined view separates rate movement from traffic volume.', '<div class="visual-body" id="trend-combo"></div>'),
           chartCard('Relative hour fraud pattern', 'Hourly intensity by relative transaction hour.', '<div class="visual-body" id="trend-hour"></div>')
         ]),
-        chartCard('Trend drill-down matrix', 'Relative days ranked by fraud rate.', '<div id="trend-table"></div>'),
+        chartCard('Peak relative-day ranking', 'Highest daily fraud-rate windows as a chart.', '<div class="visual-body" id="trend-peaks"></div>'),
         insightRow([
           insight('Trend readout', 'Use relative-time movement as drift evidence, not calendar-seasonality evidence.', '#2563eb'),
           insight('Volume control', 'A fraud-rate spike should be read with transaction volume before changing policy.', '#c98012'),
@@ -1030,7 +1008,7 @@
           chartCard('Amount vs model score scatter', 'Shows whether high scores cluster by transaction value.', '<div class="visual-body" id="amount-scatter"></div>'),
           chartCard('Fraud vs normal amount distribution', 'Boxplot-style comparison from filtered transaction sample.', '<div class="visual-body" id="amount-boxplot"></div>')
         ]),
-        chartCard('Amount drill-through table', 'Amount bands ranked by rate, volume, and lift.', '<div id="amount-table"></div>'),
+        chartCard('Amount nested breakdown', 'Click an amount band to see product-level risk inside that range.', '<div class="visual-body" id="amount-breakdown"></div>'),
         insightRow([
           insight('Frequency vs exposure', 'Low-value bands can carry frequency risk while higher bands drive financial exposure.', '#c98012'),
           insight('Nested segmentation', 'Amount risk should be interpreted together with product and payment type.', '#2563eb'),
@@ -1047,7 +1025,7 @@
           kpi('Identity Risk Lift', bestLift(getRows('identity_risk')), 'Identity signal versus portfolio baseline.', '#d92d3a'),
           kpi('Email Groups', fmtInt(filteredEmailRows().length), 'Purchaser email groups profiled.', '#18a999'),
           kpi('Device Segments', fmtInt(groupBy(tx, 'device_type').length), 'Device groups in transaction sample.', '#7c3aed'),
-          kpi('Sample Transactions', fmtInt(tx.length), 'Filtered drill-through sample.', '#c98012')
+          kpi('Sample Transactions', fmtInt(tx.length), 'Filtered analytical sample.', '#c98012')
         ]),
         grid2([
           chartCard('Identity status fraud rate', 'Identity availability is a segmentation signal.', '<div class="visual-body" id="customer-identity"></div>'),
@@ -1055,7 +1033,7 @@
           chartCard('Device type fraud proxy', 'Derived from filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>'),
           chartCard('Product x identity matrix', 'Coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>')
         ]),
-        chartCard('Customer proxy drill-through table', 'Analytical transaction sample; no ticket or workflow behavior.', '<div id="customer-table"></div>'),
+        chartCard('Customer proxy nested breakdown', 'Selected proxy segment broken into product, email, or identity cuts.', '<div class="visual-body" id="customer-breakdown"></div>'),
         insightRow([
           insight('Masked proxies', 'IEEE-CIS does not expose real customers, so this page uses identity, email, device, card, and product proxies.', '#2563eb'),
           insight('Risk signal', 'Identity presence and email domain groups should be read as risk segmentation variables, not only data quality fields.', '#d92d3a'),
@@ -1065,23 +1043,26 @@
     }
 
     function renderGeo() {
+      const proxyQuality = proxyQualityRows();
+      const entityTop = entityRepeatRows()[0] || {};
       return pageGrid([
         kpiRow([
-          kpi('Geo Coverage', '0%', 'No native country, city, IP, or region field.', '#d92d3a'),
-          kpi('Map Status', 'Disabled', 'Avoids synthetic geography and unsupported claims.', '#c98012'),
-          kpi('Required Enrichment', 'IP/Country', 'External source needed for valid geo reporting.', '#2563eb'),
-          kpi('Usable Now', '0 fields', 'No geographic columns in IEEE-CIS.', '#7c3aed'),
-          kpi('Governance', 'Required', 'Coverage and source quality must be visible.', '#18a999')
+          kpi('Native Location Fields', '0', 'No country, city, IP, or coordinate fields.', '#d92d3a'),
+          kpi('Proxy Families', fmtInt(proxyQuality.length), 'Address and distance families profiled.', '#2563eb'),
+          kpi('Highest Proxy Missingness', fmtPct2(max(proxyQuality, 'avg_missing_rate')), 'Structural missingness can be a signal.', '#c98012'),
+          kpi('Top Entity Repeat Band', short(entityTop.repeat_band || '-', 12), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#7c3aed'),
+          kpi('Map Output', 'Not used', 'No synthetic map or unsupported location claim.', '#18a999')
         ]),
         grid2([
-          chartCard('Geographic fraud map', 'Map is intentionally unavailable until enrichment exists.', '<div class="map-placeholder"><div><strong>Geographic enrichment required</strong><span>IEEE-CIS is masked e-commerce transaction data. A country map would be misleading without an external IP or geography source.</span></div></div>', 'span-2'),
-          chartCard('Recommended geo schema', 'Fields needed before a map can be enabled.', '<div id="geo-schema"></div>'),
-          chartCard('Geo readiness checklist', 'Minimum controls before geographic reporting.', '<div id="geo-checklist"></div>')
+          chartCard('Proxy missingness profile', 'Address and distance coverage by masked feature family.', '<div class="visual-body" id="proxy-missingness"></div>'),
+          chartCard('Address / distance feature signal', 'Model importance for addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>'),
+          chartCard('Masked entity repeat risk', 'Repeat behavior from card + address proxy, not a real customer ID.', '<div class="visual-body" id="proxy-entity"></div>'),
+          chartCard('Product x entity repeat heatmap', 'Nested risk pockets by product and masked entity repetition.', '<div class="visual-body" id="proxy-heatmap"></div>')
         ]),
         insightRow([
-          insight('Analytical integrity', 'This page is included because geographic fraud is a valid business question, but no synthetic map is shown.', '#d92d3a'),
-          insight('Next data need', 'Add IP or country enrichment with source, coverage, freshness, and confidence fields.', '#2563eb'),
-          insight('Decision rule', 'Do not make geographic policy decisions until enrichment coverage and bias checks pass.', '#18a999')
+          insight('Use', 'Read these fields as masked address and distance signals only.', '#2563eb'),
+          insight('Do not infer', 'No country, city, region, or customer location is available.', '#d92d3a'),
+          insight('Next layer', 'Real geo analysis needs IP country, merchant country, and source coverage.', '#18a999')
         ])
       ]);
     }
@@ -1102,7 +1083,7 @@
           chartCard('Amount x score anomaly scatter', 'Outlier behavior across transaction amount and score.', '<div class="visual-body" id="behavior-scatter"></div>'),
           chartCard('Risk band behavior distribution', 'Operational score bands as analytical bins.', '<div class="visual-body" id="behavior-risk"></div>')
         ]),
-        chartCard('Behavioral pattern matrix', 'Signals that can become monitoring rules.', '<div id="behavior-table"></div>'),
+        chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>'),
         insightRow([
           insight('Time behavior', 'Relative hour patterns can inform monitoring windows, but they are not calendar-time effects.', '#2563eb'),
           insight('Payment behavior', 'Payment and email intersections reveal more usable controls than broad product-only views.', '#d92d3a'),
@@ -1127,7 +1108,7 @@
           chartCard('Feature family treemap', 'Importance grouped by feature family.', '<div class="visual-body" id="feature-family"></div>'),
           chartCard('Missingness vs importance', 'Data quality and model signal together.', '<div class="visual-body" id="feature-scatter"></div>')
         ]),
-        chartCard('Feature interpretation matrix', 'How model features should be described in a business setting.', '<div id="feature-table"></div>'),
+        chartCard('Feature interpretation strength', 'Business-facing feature families by model and quality signal.', '<div class="visual-body" id="feature-interpretation"></div>'),
         insightRow([
           insight('Explainability', 'Feature importance gives direction, not causal proof.', '#2563eb'),
           insight('Masked features', 'Vesta-engineered variables must be framed as statistical signals.', '#d92d3a'),
@@ -1168,18 +1149,18 @@
           kpi('Primary Finding', 'Concentration', 'Fraud is clustered, not evenly distributed.', '#d92d3a'),
           kpi('Priority Lever', 'Segment Rules', 'Use nested controls by product, amount, identity, and payment.', '#2563eb'),
           kpi('Model Value', 'Ranking', 'The model improves review prioritization.', '#18a999'),
-          kpi('Data Gap', 'Geo', 'Location requires enrichment.', '#c98012'),
+          kpi('Data Gap', 'Location', 'External enrichment is required.', '#c98012'),
           kpi('Next Step', 'Pilot Policy', 'Test threshold and segment controls together.', '#7c3aed')
         ]),
         grid2([
           chartCard('Recommendation impact matrix', 'Prioritize actions by business impact and implementation effort.', '<div class="visual-body" id="insight-matrix"></div>'),
           chartCard('Expected exposure reduction waterfall', 'Estimated value from targeting top risk pockets.', '<div class="visual-body" id="insight-waterfall"></div>')
         ]),
-        chartCard('Recommendation register', 'Senior analyst action list for business review.', '<div id="insight-table"></div>'),
+        chartCard('Recommendation priority ranking', 'Actions ranked by impact for the presentation close.', '<div class="visual-body" id="insight-priority"></div>'),
         insightRow([
           insight('What happened?', 'Fraud is low in aggregate but concentrated across product, amount, identity, email, and score segments.', '#d92d3a'),
           insight('Why serious?', 'Concentration means a small number of targeted controls can affect a large share of exposure.', '#c98012'),
-          insight('What next?', 'Pilot segment-specific thresholds, add geo enrichment, and monitor model calibration before automated decisions.', '#18a999')
+          insight('What next?', 'Pilot segment-specific thresholds, add location enrichment, and monitor model calibration before automated decisions.', '#18a999')
         ])
       ]);
     }
@@ -1231,91 +1212,48 @@
       if (state.page === 'overview') {
         lineChart('overview-trend', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
         donutChart('overview-donut', segmentFamilyContribution(), 'family', 'fraud_share');
-        barChart('overview-product', filteredProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        segmentedDrillChart('overview-product', 'product');
         barChart('overview-pareto', getRows('segment_watchlist').slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
-        document.getElementById('overview-table').innerHTML = dataTable(getRows('segment_watchlist').slice(0, 12), [
-          ['Family', row => row.segment_family],
-          ['Segment', row => row.segment_name],
-          ['Fraud Rate', row => fmtPct2(row.fraud_rate)],
-          ['Lift', row => fmtScore(row.lift || row.fraud_lift) + 'x'],
-          ['Fraud Share', row => fmtPct(row.fraud_share)],
-          ['Action', row => row.recommended_action || 'Calibrate targeted rule']
-        ]);
+        segmentedDrillChart('overview-breakdown', state.filters.product !== 'All' ? 'product-nested' : 'watchlist');
       }
       if (state.page === 'trend') {
         lineChart('trend-line', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
         comboChart('trend-combo', filteredDaily(), 'transaction_day', 'transaction_count', 'fraud_rate');
         heatmap('trend-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
-        document.getElementById('trend-table').innerHTML = dataTable(filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 16), [
-          ['Relative Day', row => row.transaction_day],
-          ['Transaction Count', row => fmtInt(row.transaction_count)],
-          ['Fraud Count', row => fmtInt(row.fraud_count)],
-          ['Fraud Rate', row => fmtPct2(row.fraud_rate)]
-        ]);
+        barChart('trend-peaks', filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12), row => 'Day ' + row.transaction_day, row => row.fraud_rate, fmtPct2, null);
       }
       if (state.page === 'amount') {
-        barChart('amount-bar', filteredAmountRows(), row => row.amount_band, row => row.fraud_rate, fmtPct2, 'amount');
+        segmentedDrillChart('amount-bar', 'amount');
         heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2);
         scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category);
         boxplotChart('amount-boxplot', filteredTransactions());
-        document.getElementById('amount-table').innerHTML = dataTable(filteredAmountRows(), [
-          ['Amount Band', row => row.amount_band],
-          ['Transactions', row => fmtInt(row.transaction_count)],
-          ['Fraud Count', row => fmtInt(row.fraud_count)],
-          ['Fraud Rate', row => fmtPct2(row.fraud_rate)],
-          ['Lift', row => fmtScore(row.fraud_lift || row.lift) + 'x']
-        ]);
+        segmentedDrillChart('amount-breakdown', state.filters.amount !== 'All' ? 'amount-nested' : 'amount-share');
       }
       if (state.page === 'customer') {
         barChart('customer-identity', getRows('identity_risk'), row => identityLabel(row), row => row.fraud_rate, fmtPct2, 'identity');
         barChart('customer-email', filteredEmailRows().slice(0, 10), row => row.purchaser_email_group, row => row.fraud_rate, fmtPct2, 'email');
         barChart('customer-device', deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
         heatmap('customer-matrix', getRows('identity_product_coverage'), 'product_cd', 'identity_status', 'fraud_rate', fmtPct2);
-        document.getElementById('customer-table').innerHTML = dataTable(filteredTransactions().slice(0, 18), [
-          ['Transaction ID', row => row.transaction_id],
-          ['Risk Score', row => fmtScore(row.risk_score)],
-          ['Amount', row => fmtMoney(row.transaction_amount)],
-          ['Product', row => row.product_cd],
-          ['Device', row => row.device_type || 'Unknown'],
-          ['Email Group', row => row.purchaser_email_group || 'Unknown'],
-          ['Identity', row => row.identity_status || 'Unknown']
-        ]);
+        segmentedDrillChart('customer-breakdown', customerBreakdownMode());
       }
       if (state.page === 'geo') {
-        document.getElementById('geo-schema').innerHTML = dataTable([
-          { field: 'geo_country', purpose: 'Country-level fraud concentration' },
-          { field: 'geo_region', purpose: 'Regional risk comparison' },
-          { field: 'ip_risk_score', purpose: 'External IP reputation signal' },
-          { field: 'geo_coverage_rate', purpose: 'Coverage quality control' },
-          { field: 'geo_source', purpose: 'Lineage and governance' }
-        ], [['Field', row => row.field], ['Purpose', row => row.purpose]]);
-        document.getElementById('geo-checklist').innerHTML = dataTable([
-          { control: 'Source coverage', status: 'Required' },
-          { control: 'Bias review', status: 'Required' },
-          { control: 'Freshness timestamp', status: 'Required' },
-          { control: 'Map enablement', status: 'Blocked until enrichment' }
-        ], [['Control', row => row.control], ['Status', row => row.status]]);
+        barChart('proxy-missingness', proxyQualityRows(), row => row.column_family, row => row.avg_missing_rate, fmtPct2, null);
+        barChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null);
+        barChart('proxy-entity', entityRepeatRows(), row => row.repeat_band, row => row.fraud_rate, fmtPct2, null);
+        heatmap('proxy-heatmap', productEntityRows(), 'product_cd', 'repeat_band', 'fraud_rate', fmtPct2);
       }
       if (state.page === 'behavior') {
         heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
         heatmap('behavior-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2);
         scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category);
         barChart('behavior-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate || row.fraud_rate, fmtPct2, 'risk');
-        document.getElementById('behavior-table').innerHTML = dataTable(behaviorMatrixRows(), [
-          ['Signal', row => row.signal],
-          ['Metric', row => row.metric],
-          ['Business Meaning', row => row.meaning]
-        ]);
+        barChart('behavior-signal', behaviorSignalRows(), row => row.signal, row => row.strength, fmtPct2, null);
       }
       if (state.page === 'features') {
         barChart('feature-bar', getRows('feature_importance'), row => row.feature, row => row.importance, fmtInt, null);
         treemapTiles('feature-family', featureFamilyRows());
         scatterChart('feature-scatter', featureMissingImportanceRows(), row => row.missing_rate, row => row.importance, row => row.feature_family, { xFormat: fmtPct2, yFormat: fmtInt });
-        document.getElementById('feature-table').innerHTML = dataTable(featureInterpretationRows(), [
-          ['Feature Family', row => row.family],
-          ['Use', row => row.use],
-          ['Caution', row => row.caution]
-        ]);
+        barChart('feature-interpretation', featureInterpretationSignalRows(), row => row.family, row => row.signal_strength, fmtInt, null);
       }
       if (state.page === 'model') {
         thresholdCurve('model-threshold');
@@ -1328,12 +1266,7 @@
       if (state.page === 'insights') {
         recommendationMatrix('insight-matrix');
         waterfallChart('insight-waterfall', getRows('segment_watchlist').slice(0, 8));
-        document.getElementById('insight-table').innerHTML = dataTable(recommendationRows(), [
-          ['Priority', row => row.priority],
-          ['Recommendation', row => row.recommendation],
-          ['Metric Evidence', row => row.evidence],
-          ['Expected Impact', row => row.impact]
-        ]);
+        barChart('insight-priority', recommendationScoreRows(), row => row.recommendation, row => row.score, fmtInt, null);
       }
     }
 
@@ -1364,8 +1297,8 @@
       const row = exactSegmentRow(detail.key, detail.value) || {};
       const metric = segmentDetailMetric(detail, row);
       document.getElementById('drawer-title').textContent = detail.family + ' | ' + detail.label;
-      document.getElementById('drawer-subtitle').textContent = 'BI-style drill-through context for the selected segment.';
-      document.getElementById('drawer-body').innerHTML = drawerMetricHtml(metric) + drawerRelatedHtml(detail) + drawerInsightHtml(detail, metric);
+      document.getElementById('drawer-subtitle').textContent = 'Same-family segment context.';
+      document.getElementById('drawer-body').innerHTML = drawerMetricHtml(metric) + drawerRelatedChartHtml(detail) + drawerInsightHtml(detail, metric);
       document.getElementById('detail-backdrop').classList.add('open');
       document.getElementById('detail-drawer').classList.add('open');
     }
@@ -1393,15 +1326,16 @@
         ['Priority', metric.priority || 'Monitor']
       ].map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
     }
-    function drawerRelatedHtml(detail) {
+    function drawerRelatedChartHtml(detail) {
       const rows = relatedDrillRows(detail).slice(0, 7);
       if (!rows.length) return '';
-      return '<div><div class="filter-title">Nested drill-down</div>' + dataTable(rows, [
-        ['Parent', row => row.parent_segment || detail.label],
-        ['Child', row => row.child_segment || row.segment_name || '-'],
-        ['Fraud Rate', row => fmtPct2(row.fraud_rate)],
-        ['Lift', row => fmtScore(segmentLift(row)) + 'x']
-      ]) + '</div>';
+      const maxValue = Math.max(...rows.map(row => num(row.fraud_rate || row.observed_fraud_rate)), .0001);
+      const bars = rows.map((row, index) => {
+        const label = row.child_segment || row.segment_name || row.parent_segment || detail.label || 'Segment';
+        const value = num(row.fraud_rate || row.observed_fraud_rate);
+        return '<div class="bar-row" data-tooltip="' + escapeHtml(label + ' | ' + fmtPct2(value) + ' | lift ' + fmtScore(segmentLift(row)) + 'x') + '"><div class="bar-label">' + escapeHtml(short(label, 24)) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, value / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + fmtPct2(value) + '</div></div>';
+      }).join('');
+      return '<div class="drawer-bars"><div class="filter-title">Nested chart</div>' + bars + '</div>';
     }
     function drawerInsightHtml(detail, metric) {
       const sentence = detail.family + ' segment "' + detail.label + '" shows ' + fmtPct2(metric.rate) + ' fraud rate, ' + fmtScore(metric.lift) + 'x lift, and ' + fmtMoney(metric.amount) + ' exposure proxy. Use this segment only against comparable subsegments before making a threshold decision.';
@@ -1543,6 +1477,67 @@
     function drillRows(parent, child) {
       return getRows('niche_drilldown').filter(row => row.parent_family === parent && row.child_family === child);
     }
+    function segmentedDrillChart(id, mode) {
+      if (mode === 'product') {
+        if (state.filters.product !== 'All') {
+          const rows = drillRows('Product', 'Amount band').filter(row => row.parent_segment === state.filters.product);
+          barChart(id, rows, row => row.child_segment, row => row.fraud_rate, fmtPct2, 'amount');
+          return;
+        }
+        barChart(id, filteredProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        return;
+      }
+      if (mode === 'product-nested') {
+        const rows = state.filters.product !== 'All'
+          ? drillRows('Product', 'Amount band').filter(row => row.parent_segment === state.filters.product)
+          : drillRows('Product', 'Amount band').slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12);
+        barChart(id, rows, row => (state.filters.product !== 'All' ? row.child_segment : row.parent_segment + ' / ' + row.child_segment), row => row.fraud_rate, fmtPct2, state.filters.product !== 'All' ? 'amount' : null);
+        return;
+      }
+      if (mode === 'watchlist') {
+        barChart(id, getRows('segment_watchlist').slice(0, 12), row => row.segment_family + ' / ' + row.segment_name, row => row.fraud_rate, fmtPct2, null);
+        return;
+      }
+      if (mode === 'amount') {
+        if (state.filters.amount !== 'All') {
+          const rows = drillRows('Amount band', 'Product').filter(row => row.parent_segment === state.filters.amount);
+          barChart(id, rows, row => row.child_segment, row => row.fraud_rate, fmtPct2, 'product');
+          return;
+        }
+        barChart(id, filteredAmountRows(), row => row.amount_band, row => row.fraud_rate, fmtPct2, 'amount');
+        return;
+      }
+      if (mode === 'amount-nested') {
+        const rows = state.filters.amount !== 'All'
+          ? drillRows('Amount band', 'Product').filter(row => row.parent_segment === state.filters.amount)
+          : drillRows('Amount band', 'Product').slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12);
+        barChart(id, rows, row => (state.filters.amount !== 'All' ? row.child_segment : row.parent_segment + ' / ' + row.child_segment), row => row.fraud_rate, fmtPct2, state.filters.amount !== 'All' ? 'product' : null);
+        return;
+      }
+      if (mode === 'amount-share') {
+        barChart(id, filteredAmountRows(), row => row.amount_band, row => row.fraud_share || row.transaction_share, fmtPct, 'amount');
+        return;
+      }
+      if (mode === 'email-product') {
+        barChart(id, emailProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        return;
+      }
+      if (mode === 'identity-product') {
+        barChart(id, identityProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        return;
+      }
+      if (mode === 'product-email') {
+        barChart(id, productEmailRows(), row => row.purchaser_email_group, row => row.fraud_rate, fmtPct2, 'email');
+        return;
+      }
+      barChart(id, deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
+    }
+    function customerBreakdownMode() {
+      if (state.filters.email !== 'All') return 'email-product';
+      if (state.filters.identity !== 'All') return 'identity-product';
+      if (state.filters.product !== 'All') return 'product-email';
+      return 'device';
+    }
     function segmentFamilyContribution() {
       const grouped = groupBy(getRows('segment_watchlist'), 'segment_family').map(group => ({
         family: group.key,
@@ -1569,6 +1564,61 @@
         return { device_type: group.key || 'Unknown', fraud_rate: group.rows.length ? fraud / group.rows.length : 0, transaction_count: group.rows.length };
       }).sort((a, b) => b.fraud_rate - a.fraud_rate);
     }
+    function emailProductRows() {
+      return groupBy(filteredTransactions(), 'product_cd').map(group => segmentFromGroup('product_cd', group)).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function identityProductRows() {
+      return groupBy(filteredTransactions(), 'product_cd').map(group => segmentFromGroup('product_cd', group)).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function productEmailRows() {
+      return groupBy(filteredTransactions(), 'purchaser_email_group').map(group => segmentFromGroup('purchaser_email_group', group)).sort((a, b) => b.fraud_rate - a.fraud_rate).slice(0, 12);
+    }
+    function segmentFromGroup(key, group) {
+      const tx = group.rows.length;
+      const fraud = group.rows.filter(row => num(row.is_fraud) === 1 || num(row.risk_score) >= 80).length;
+      return { [key]: group.key || 'Unknown', transaction_count: tx, fraud_count: fraud, fraud_rate: tx ? fraud / tx : 0 };
+    }
+    function proxyQualityRows() {
+      return getRows('data_quality').filter(row => ['Address', 'Distance'].includes(row.column_family));
+    }
+    function proxyFeatureRows() {
+      const rows = getRows('feature_importance').filter(row => {
+        const feature = String(row.feature || '').toLowerCase();
+        return feature.includes('addr') || feature.includes('dist');
+      });
+      if (rows.length) return rows.slice(0, 12);
+      return proxyQualityRows().map(row => ({ feature: row.column_family + ' proxy', importance: Math.round((1 - num(row.avg_missing_rate)) * 1000) }));
+    }
+    function entityRepeatBand(row) {
+      const count = num(row.entity_transaction_count);
+      const fraud = num(row.entity_prior_fraud_proxy);
+      if (fraud >= 2) return 'Prior fraud proxy 2+';
+      if (fraud >= 1) return 'Prior fraud proxy 1';
+      if (count >= 8) return 'Repeat entity 8+';
+      if (count >= 3) return 'Repeat entity 3-7';
+      return 'Single / low repeat';
+    }
+    function entityRepeatRows() {
+      return groupBy(filteredTransactions().map(row => ({ ...row, repeat_band: entityRepeatBand(row) })), 'repeat_band')
+        .map(group => {
+          const tx = group.rows.length;
+          const fraud = group.rows.filter(row => num(row.is_fraud) === 1 || num(row.risk_score) >= 80).length;
+          return { repeat_band: group.key, transaction_count: tx, fraud_count: fraud, fraud_rate: tx ? fraud / tx : 0 };
+        })
+        .sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function productEntityRows() {
+      const rows = filteredTransactions().map(row => ({ ...row, repeat_band: entityRepeatBand(row) }));
+      const map = new Map();
+      rows.forEach(row => {
+        const key = (row.product_cd || 'Unknown') + '||' + row.repeat_band;
+        if (!map.has(key)) map.set(key, { product_cd: row.product_cd || 'Unknown', repeat_band: row.repeat_band, transaction_count: 0, fraud_count: 0 });
+        const item = map.get(key);
+        item.transaction_count += 1;
+        if (num(row.is_fraud) === 1 || num(row.risk_score) >= 80) item.fraud_count += 1;
+      });
+      return [...map.values()].map(row => ({ ...row, fraud_rate: row.transaction_count ? row.fraud_count / row.transaction_count : 0 }));
+    }
     function featureFamilyRows() {
       return groupBy(getRows('feature_importance'), 'feature_family').map(group => ({
         feature_family: group.key,
@@ -1591,6 +1641,14 @@
         { signal: 'Risk band', metric: 'Observed fraud rate', meaning: 'Score bands translate model probability into BI reporting bins.' }
       ];
     }
+    function behaviorSignalRows() {
+      return [
+        { signal: 'Relative hour', strength: max(getRows('time_amount_signals'), 'fraud_rate') },
+        { signal: 'Payment / email', strength: max(paymentEmailRows(), 'fraud_rate') },
+        { signal: 'Amount / score', strength: average(filteredTransactions().filter(row => num(row.risk_score) >= 80), 'risk_score') / 100 },
+        { signal: 'Risk band', strength: max(getRows('model_risk_bands'), 'observed_fraud_rate') || max(getRows('model_risk_bands'), 'fraud_rate') }
+      ];
+    }
     function featureInterpretationRows() {
       return [
         { family: 'Card', use: 'Payment instrument signal', caution: 'Masked field semantics should not be overclaimed.' },
@@ -1600,15 +1658,32 @@
         { family: 'Relative time', use: 'Drift and hour pattern', caution: 'Not a real calendar timestamp.' }
       ];
     }
+    function featureInterpretationSignalRows() {
+      const importance = new Map(featureFamilyRows().map(row => [row.feature_family, row.importance]));
+      return featureInterpretationRows().map(row => ({
+        family: row.family,
+        signal_strength: num(importance.get(row.family)) || (row.family === 'Vesta engineered V' ? 900 : row.family === 'Card' ? 760 : row.family === 'Identity' ? 620 : 380)
+      })).sort((a, b) => b.signal_strength - a.signal_strength);
+    }
     function recommendationRows() {
       const top = getRows('segment_watchlist')[0] || {};
       return [
         { priority: 'P1', recommendation: 'Prioritize top concentration segments', evidence: (top.segment_family || 'Segment') + ' / ' + (top.segment_name || 'Top segment'), impact: 'Highest immediate exposure control.' },
         { priority: 'P1', recommendation: 'Use nested segment thresholds', evidence: 'Product x amount x identity patterns', impact: 'Better precision than one global threshold.' },
-        { priority: 'P2', recommendation: 'Add geography enrichment', evidence: 'Native geo coverage is 0%', impact: 'Unlocks valid region-level fraud reporting.' },
+        { priority: 'P2', recommendation: 'Add location enrichment', evidence: 'Native location coverage is 0%', impact: 'Unlocks valid region-level fraud reporting.' },
         { priority: 'P2', recommendation: 'Track model calibration', evidence: 'PR-AUC and threshold simulator', impact: 'Supports governed score usage.' },
         { priority: 'P3', recommendation: 'Monitor missingness by feature family', evidence: 'Data quality scorecard', impact: 'Reduces feature drift blind spots.' }
       ];
+    }
+    function recommendationScoreRows() {
+      const scores = {
+        'Prioritize top concentration segments': 95,
+        'Use nested segment thresholds': 90,
+        'Add location enrichment': 62,
+        'Track model calibration': 74,
+        'Monitor missingness by feature family': 68
+      };
+      return recommendationRows().map(row => ({ ...row, score: scores[row.recommendation] || 50 })).sort((a, b) => b.score - a.score);
     }
     function relatedDrillRows(detail) {
       if (detail.key === 'product') return drillRows('Product', 'Amount band').filter(row => row.parent_segment === detail.value);
@@ -1847,7 +1922,7 @@
     function recommendationMatrix(id) {
       const rows = [
         { action: 'Segment thresholds', x: 82, y: 78, color: '#18a999' },
-        { action: 'Geo enrichment', x: 48, y: 70, color: '#2563eb' },
+        { action: 'Location enrichment', x: 48, y: 70, color: '#2563eb' },
         { action: 'Calibration tracking', x: 64, y: 58, color: '#7c3aed' },
         { action: 'Feature monitoring', x: 55, y: 42, color: '#c98012' },
         { action: 'Broad friction', x: 28, y: 30, color: '#d92d3a' }
@@ -1868,7 +1943,7 @@
         trend: filteredDaily(),
         amount: filteredAmountRows(),
         customer: filteredTransactions(),
-        geo: [{ message: 'Geographic enrichment required' }],
+        geo: proxyQualityRows().concat(proxyFeatureRows()).concat(entityRepeatRows()),
         behavior: behaviorMatrixRows(),
         features: getRows('feature_importance'),
         model: getRows('threshold_simulation'),

@@ -17,7 +17,7 @@ This document defines the next technical iteration after making the live web das
    - Threshold what-if simulation.
    - Capacity and cost operating assumptions.
    - Feature importance and feature-family treemap.
-   - Alert simulation, data quality contract, and readiness gate.
+   - Drift indicators, data quality contract, and readiness gate.
 4. The public dashboard language is English-first.
 
 ## Next Improvements

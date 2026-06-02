@@ -16,7 +16,7 @@ The report answers nine executive and analytical questions:
 2. Is fraud increasing or decreasing?
 3. Which transaction amounts are most risky?
 4. Which masked customer proxy groups are riskier?
-5. Where could fraud be analyzed geographically if enrichment existed?
+5. Do masked address and distance proxies separate fraud risk without pretending to be geography?
 6. Which behaviors indicate fraud?
 7. Which features explain prediction?
 8. How well does the model perform?
@@ -36,8 +36,8 @@ The report answers nine executive and analytical questions:
 4. **Customer Risk Analysis**
    - Explain identity, email, device, and product risk using masked dataset proxies.
 
-5. **Geographic Fraud Analysis**
-   - Show that geography is a valid business question but cannot be mapped without enrichment.
+5. **Masked Address & Distance Analysis**
+   - Use address, distance, and masked entity proxies as analytical signals without inferring country or city.
 
 6. **Behavioral Pattern Analysis**
    - Link payment, email, hour, score, and amount behavior into actionable risk patterns.
@@ -56,7 +56,7 @@ The report answers nine executive and analytical questions:
 - Global slicers filter report visuals by relative day window, product, amount band, email group, identity status, and risk band.
 - Clicking chart segments applies cross-filtering.
 - Hover tooltips expose count, rate, lift, share, score, and exposure context.
-- Drill-through tables show the analytical rows behind a selected segment.
+- Same-family drill-down charts show the analytical breakdown behind a selected segment.
 - CSV export downloads the active page data.
 - PDF export uses browser print styles for the current report state.
 - Dark and light mode support presentation environments.
@@ -65,7 +65,7 @@ The report answers nine executive and analytical questions:
 
 - `TransactionDT` is relative elapsed time and must not be presented as a calendar date.
 - IEEE-CIS does not contain native country, city, IP-location, or user-age fields.
-- Geography requires external enrichment before a map can be enabled.
+- Address and distance fields are proxy signals only; geography requires external enrichment before maps can be enabled.
 - Customer analysis uses masked proxy fields, not real customer master data.
 - Model scores are used for analytical prioritization and threshold simulation.
 
@@ -85,7 +85,7 @@ For a detailed technical review:
 2. Behavioral Pattern Analysis
 3. Feature Importance Analysis
 4. Model Performance Analysis
-5. Geographic Fraud Analysis data-gap discussion
+5. Masked Address & Distance Analysis proxy-signal discussion
 
 ## Operational Notes
 

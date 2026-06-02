@@ -36,18 +36,18 @@ This backlog tracks the remaining work for the live web analytics layer. The goa
    - Show how product, identity, payment, email, and amount segments contribute to fraud concentration.
    - Keep the method transparent because segment shares can overlap.
 
-## P2 - Operational Maturity
+## P2 - Report Maturity
 
-1. Alert simulation
-   - Flag fraud drift, critical queue pressure, high missingness, and readiness failures.
-   - Attach a recommended monitoring action to each alert.
+1. Drift indicator panel
+   - Surface fraud drift, high missingness, and readiness failures as analytical indicators.
+   - Keep the language report-oriented rather than workflow-oriented.
 
 2. Export story
    - Keep JSON export for auditability.
    - Use browser print styles for PDF-ready executive views.
    - Keep copy-ready summary text for meetings.
 
-3. Monitoring runbook
+3. Production runbook
    - Document Vercel, BigQuery, dbt, and credential checks.
    - Add a clear recovery path for API errors and stale data.
 

@@ -1322,7 +1322,7 @@ def enterprise_metadata() -> dict[str, Any]:
         "Fraud Trend Analysis",
         "Transaction Amount Analysis",
         "Customer Risk Analysis",
-        "Geographic Fraud Analysis",
+        "Masked Address & Distance Analysis",
         "Behavioral Pattern Analysis",
         "Feature Importance Analysis",
         "Model Performance Analysis",

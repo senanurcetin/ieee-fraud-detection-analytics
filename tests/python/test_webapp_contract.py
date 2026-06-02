@@ -126,7 +126,7 @@ def test_enterprise_metadata_contract_is_explicit_about_dataset_limits() -> None
     assert "Fraud Trend Analysis" in payload["enterprise_pages"]
     assert "Transaction Amount Analysis" in payload["enterprise_pages"]
     assert "Customer Risk Analysis" in payload["enterprise_pages"]
-    assert "Geographic Fraud Analysis" in payload["enterprise_pages"]
+    assert "Masked Address & Distance Analysis" in payload["enterprise_pages"]
     assert "Behavioral Pattern Analysis" in payload["enterprise_pages"]
     assert "Feature Importance Analysis" in payload["enterprise_pages"]
     assert "Model Performance Analysis" in payload["enterprise_pages"]
@@ -180,7 +180,7 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Fraud Trend Analysis" in html
     assert "Transaction Amount Analysis" in html
     assert "Customer Risk Analysis" in html
-    assert "Geographic Fraud Analysis" in html
+    assert "Masked Address & Distance Analysis" in html
     assert "Behavioral Pattern Analysis" in html
     assert "Feature Importance Analysis" in html
     assert "Model Performance Analysis" in html
@@ -188,7 +188,7 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Analyst Investigation Queue" not in html
     assert "Alert Management" not in html
     assert "SOC" not in html
-    assert "ticketing" in html
+    assert "ticketing" not in html
     assert 'data-view="quality"' not in html
     assert "01 Executive Overview" not in html
     assert "02 Segment Explorer" not in html
@@ -223,8 +223,10 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "customer-email" in html
     assert "customer-device" in html
     assert "customer-matrix" in html
-    assert "geo-schema" in html
-    assert "geo-checklist" in html
+    assert "proxy-missingness" in html
+    assert "proxy-importance" in html
+    assert "proxy-entity" in html
+    assert "proxy-heatmap" in html
     assert "behavior-hour" in html
     assert "behavior-payment-email" in html
     assert "feature-bar" in html
@@ -242,8 +244,8 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Selected threshold" in html
     assert "Fraud Exposure" in html
     assert "Capturable Exposure" in html
-    assert "Geographic enrichment required" in html
-    assert "No synthetic geography" in html
+    assert "Native Location Fields" in html
+    assert "Map Output" in html
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:

@@ -47,7 +47,7 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 - [x] Drill-through drawer shows count, rate, lift, share, workload, and recommended action.
 - [x] Fraud contribution waterfall uses the segment watchlist.
 - [x] Threshold simulation recalculates workload, capture, precision, false-positive burden, and missed exposure.
-- [x] Alert simulation flags fraud drift, queue pressure, and data quality risk.
+- [x] Drift indicators surface fraud movement, readiness, and data quality risk without workflow screens.
 - [x] Export JSON, print/save as PDF, and copy executive summary actions are available.
 
 ## ML Evidence
