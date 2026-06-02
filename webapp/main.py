@@ -115,6 +115,48 @@ TABLE_QUERIES: dict[str, str] = {
         "group by column_family "
         "order by avg_missing_rate desc"
     ),
+    "proxy_signal_risk": "select * from {table} order by lift desc, fraud_share desc",
+    "proxy_product_matrix": (
+        "with base as ("
+        "select "
+        "coalesce(product_cd, 'Unknown') as product_cd, "
+        "coalesce(address_proxy_status, 'Address unknown') as address_proxy_status, "
+        "coalesce(distance_proxy_band, 'Distance unknown') as distance_proxy_band, "
+        "is_fraud "
+        "from {table}"
+        ") "
+        "select "
+        "'Address proxy' as proxy_family, "
+        "product_cd, "
+        "address_proxy_status as proxy_segment, "
+        "count(*) as transaction_count, "
+        "sum(is_fraud) as fraud_count, "
+        "case when count(*) = 0 then 0 else sum(is_fraud) * 1.0 / count(*) end as fraud_rate "
+        "from base "
+        "group by product_cd, address_proxy_status "
+        "union all "
+        "select "
+        "'Distance proxy' as proxy_family, "
+        "product_cd, "
+        "distance_proxy_band as proxy_segment, "
+        "count(*) as transaction_count, "
+        "sum(is_fraud) as fraud_count, "
+        "case when count(*) = 0 then 0 else sum(is_fraud) * 1.0 / count(*) end as fraud_rate "
+        "from base "
+        "group by product_cd, distance_proxy_band "
+        "order by fraud_rate desc"
+    ),
+    "proxy_cross_matrix": (
+        "select "
+        "coalesce(address_proxy_status, 'Address unknown') as address_proxy_status, "
+        "coalesce(distance_proxy_band, 'Distance unknown') as distance_proxy_band, "
+        "count(*) as transaction_count, "
+        "sum(is_fraud) as fraud_count, "
+        "case when count(*) = 0 then 0 else sum(is_fraud) * 1.0 / count(*) end as fraud_rate "
+        "from {table} "
+        "group by address_proxy_status, distance_proxy_band "
+        "order by fraud_rate desc"
+    ),
     "segment_watchlist": "select * from {table} order by watchlist_rank",
     "niche_drilldown": NICHE_DRILLDOWN_QUERY,
     "review_strategy": "select * from {table} order by band_rank",
@@ -137,6 +179,9 @@ BIGQUERY_TABLES: dict[str, str] = {
     "model_risk_bands": "rpt_model_risk_bands",
     "feature_importance": "rpt_feature_importance",
     "data_quality": "rpt_data_quality_scorecard",
+    "proxy_signal_risk": "rpt_proxy_signal_risk",
+    "proxy_product_matrix": "fact_train_transactions",
+    "proxy_cross_matrix": "fact_train_transactions",
     "segment_watchlist": "rpt_segment_watchlist",
     "niche_drilldown": "fact_train_transactions",
     "review_strategy": "rpt_review_strategy",

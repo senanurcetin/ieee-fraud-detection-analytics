@@ -32,6 +32,7 @@ def test_dashboard_table_contract_is_allowlisted() -> None:
     assert "rpt_identity_product_coverage" in set(main.BIGQUERY_TABLES.values())
     assert "rpt_time_amount_signals" in set(main.BIGQUERY_TABLES.values())
     assert "rpt_report_narrative" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_proxy_signal_risk" in set(main.BIGQUERY_TABLES.values())
     assert main.BIGQUERY_TABLES["niche_drilldown"] == "fact_train_transactions"
 
 
@@ -91,7 +92,7 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
 
     assert payload["presentation_layer"] == "web_dashboard"
     assert payload["dataset"] == "fraud_project_reporting"
-    assert payload["table_count"] == 19
+    assert payload["table_count"] == 22
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
     assert len(payload["executive_takeaways"]) >= 3
@@ -224,10 +225,12 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "customer-email" in html
     assert "customer-device" in html
     assert "customer-matrix" in html
-    assert "proxy-missingness" in html
+    assert "proxy-risk" in html
+    assert "proxy-lift" in html
+    assert "proxy-share" in html
+    assert "proxy-product-matrix" in html
+    assert "proxy-cross-matrix" in html
     assert "proxy-importance" in html
-    assert "proxy-entity" in html
-    assert "proxy-heatmap" in html
     assert "behavior-hour" in html
     assert "behavior-payment-email" in html
     assert "feature-bar" in html
@@ -246,7 +249,6 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Fraud Exposure" in html
     assert "Capturable Exposure" in html
     assert "Native Location Fields" in html
-    assert "Drill Path" in html
     assert "Segment Drill-through" in html
     assert "drill-back-btn" in html
     assert html.count("Fraud rate trend") == 1

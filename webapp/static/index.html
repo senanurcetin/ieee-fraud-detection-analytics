@@ -385,11 +385,27 @@
       border-radius: 999px;
       background: #e8eef6;
     }
+    .bar-track.dual {
+      position: relative;
+      height: 18px;
+      background: repeating-linear-gradient(90deg, #e8eef6, #e8eef6 1px, #f8fafc 1px, #f8fafc 18px);
+    }
     .bar-fill {
       height: 100%;
       min-width: 2px;
       border-radius: 999px;
       background: var(--accent, var(--teal));
+    }
+    .bar-track.dual .bar-fill {
+      position: absolute;
+      left: 0;
+      top: 2px;
+      height: 7px;
+      opacity: .92;
+    }
+    .bar-track.dual .bar-fill.ghost {
+      top: 10px;
+      opacity: .55;
     }
     .bar-value {
       color: #0f172a;
@@ -397,6 +413,22 @@
       font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
+    }
+    .mini-legend {
+      display: flex;
+      justify-content: flex-end;
+      gap: 14px;
+      color: #64748b;
+      font-size: 11px;
+      font-weight: 820;
+    }
+    .mini-legend b {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: -1px;
     }
 
     .heatmap { display: grid; gap: 6px; overflow-x: visible; padding-bottom: 5px; }
@@ -869,7 +901,8 @@
         amount: 'All',
         email: 'All',
         identity: 'All',
-        risk: 'All'
+        risk: 'All',
+        proxy: 'All'
       },
       cross: null,
       drawer: null,
@@ -897,7 +930,7 @@
       });
     });
     document.getElementById('clear-btn').addEventListener('click', () => {
-      state.filters = { day: 'all', product: 'All', amount: 'All', email: 'All', identity: 'All', risk: 'All' };
+      state.filters = { day: 'all', product: 'All', amount: 'All', email: 'All', identity: 'All', risk: 'All', proxy: 'All' };
       state.cross = null;
       state.drill = null;
       syncFilterControls();
@@ -1120,25 +1153,33 @@
 
     function renderGeo() {
       const proxyQuality = proxyQualityRows();
+      const proxyRisk = proxySignalRows();
+      const topProxy = proxyRisk[0] || {};
       const entityTop = entityRepeatRows()[0] || {};
       return pageGrid([
         kpiRow([
           kpi('Native Location Fields', '0', 'No country, city, IP, or coordinate fields.', '#d92d3a'),
-          kpi('Proxy Families', fmtInt(proxyQuality.length), 'Address and distance families profiled.', '#2563eb'),
-          kpi('Highest Proxy Missingness', fmtPct2(max(proxyQuality, 'avg_missing_rate')), 'Structural missingness can be a signal.', '#c98012'),
-          kpi('Top Entity Repeat Band', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#7c3aed'),
-          kpi('Drill Path', 'Product > Repeat', 'Nested proxy analysis stays inside available fields.', '#18a999')
+          kpi('Proxy Segments', fmtInt(proxyRisk.length), 'Address and distance risk cuts from reporting fact.', '#2563eb'),
+          kpi('Highest Proxy Lift', fmtScore(topProxy.lift || 0) + 'x', short(topProxy.proxy_segment || '-', 22), '#d92d3a'),
+          kpi('Top Proxy Fraud Share', fmtPct(num(topProxy.fraud_share)), 'Fraud concentration represented by the top proxy cut.', '#7c3aed'),
+          kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#18a999')
         ]),
         grid2([
-          chartCard('Proxy missingness by family', 'Address and distance coverage by masked feature family.', '<div class="visual-body" id="proxy-missingness"></div>'),
-          chartCard('Address / distance model signal', 'Importance of addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>'),
-          chartCard('Masked entity repeat distribution', 'Repeat behavior from card + address proxy, not a real customer ID.', '<div class="visual-body" id="proxy-entity"></div>'),
-          chartCard('Product x entity repeat heatmap', 'Nested risk pockets by product and masked entity repetition.', '<div class="visual-body" id="proxy-heatmap"></div>')
+          chartCard('Proxy segment risk ranking', 'Click a proxy segment to open its drill-through report.', '<div class="visual-body" id="proxy-risk"></div>'),
+          chartCard('Proxy lift vs portfolio', 'Address and distance cuts compared against baseline fraud rate.', '<div class="visual-body" id="proxy-lift"></div>')
+        ]),
+        grid2([
+          chartCard('Proxy fraud share vs volume share', 'Separates signal strength from population size.', '<div class="visual-body" id="proxy-share"></div>'),
+          chartCard('Product x proxy segment heatmap', 'Nested risk pockets by product and masked proxy segment.', '<div class="visual-body" id="proxy-product-matrix"></div>')
+        ]),
+        grid2([
+          chartCard('Address x distance proxy matrix', 'Joint proxy availability and distance bands by fraud rate.', '<div class="visual-body" id="proxy-cross-matrix"></div>'),
+          chartCard('Address / distance model signal', 'Importance of addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>')
         ]),
         insightRow([
-          insight('Use', 'Read these fields as masked address and distance signals only.', '#2563eb'),
-          insight('Do not infer', 'No country, city, region, or customer location is available.', '#d92d3a'),
-          insight('Next layer', 'Real geo analysis needs IP country, merchant country, and source coverage.', '#18a999')
+          insight('Read correctly', 'Address and distance fields are masked risk proxies, not geography.', '#2563eb'),
+          insight('Decision use', 'Use high-lift proxy segments only with product and amount context.', '#d92d3a'),
+          insight('Next layer', 'True geographic reporting requires external IP or merchant-country enrichment.', '#18a999')
         ])
       ]);
     }
@@ -1288,7 +1329,7 @@
       const related = relatedDrillRows(detail);
       const peers = peerRows(detail);
       if (related.length) {
-        barChart('drill-nested', related, row => row.child_segment || row.segment_name || row.parent_segment, row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, drillChildFilter(detail));
+        barChart('drill-nested', related, row => row.child_segment || row.product_cd || row.segment_name || row.parent_segment || row.proxy_segment, row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, drillChildFilter(detail));
       } else {
         document.getElementById('drill-nested').innerHTML = empty('No nested segment cut is available for this selection.');
       }
@@ -1373,10 +1414,12 @@
         segmentedDrillChart('customer-breakdown', customerBreakdownMode());
       }
       if (state.page === 'geo') {
-        columnChart('proxy-missingness', proxyQualityRows(), row => row.column_family, row => row.avg_missing_rate, fmtPct2, null, { axisTitle: 'Missingness rate by proxy family' });
+        barChart('proxy-risk', proxySignalRows(), row => proxySegmentLabel(row), row => row.fraud_rate, fmtPct2, 'proxy');
+        dotPlotChart('proxy-lift', proxySignalRows(), row => proxySegmentLabel(row), row => row.lift, value => fmtScore(value) + 'x', 'proxy', { axisTitle: 'Lift vs portfolio baseline', limit: 8 });
+        proxyShareChart('proxy-share');
+        heatmap('proxy-product-matrix', proxyProductMatrixRows(), 'product_cd', 'proxy_segment', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', detailFamily: 'Product within proxy segment', rowAxis: 'Product', colAxis: 'Proxy segment' });
+        heatmap('proxy-cross-matrix', proxyCrossMatrixRows(), 'address_proxy_status', 'distance_proxy_band', 'fraud_rate', fmtPct2, { rowAxis: 'Address proxy', colAxis: 'Distance proxy' });
         dotPlotChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null, { axisTitle: 'Model importance from masked proxy fields' });
-        donutChart('proxy-entity', entityRepeatRows(), 'repeat_band', 'transaction_count');
-        heatmap('proxy-heatmap', productEntityRows(), 'product_cd', 'repeat_band', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', detailFamily: 'Product within masked entity proxy', rowAxis: 'Product', colAxis: 'Masked entity repeat band' });
       }
       if (state.page === 'behavior') {
         heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
@@ -1468,7 +1511,8 @@
         amount: ['Amount band', detail.label, 'Product', 'Risk band'],
         email: ['Email group', detail.label, 'Product', 'Amount band'],
         identity: ['Identity status', detail.label, 'Product', 'Email group'],
-        risk: ['Risk band', detail.label, 'Product', 'Amount band']
+        risk: ['Risk band', detail.label, 'Product', 'Amount band'],
+        proxy: ['Masked proxy', detail.label, 'Product', 'Amount band']
       };
       const steps = paths[detail.key] || [detail.family, detail.label, 'Related segments'];
       return '<div class="drill-path">' + steps.map((step, index) => {
@@ -1498,6 +1542,7 @@
       if (detail.key === 'email') return filteredEmailRows();
       if (detail.key === 'identity') return getRows('identity_risk');
       if (detail.key === 'risk') return getRows('model_risk_bands').map(row => ({ ...row, fraud_rate: row.observed_fraud_rate || row.fraud_rate }));
+      if (detail.key === 'proxy') return proxySignalRows();
       return [];
     }
     function peerLabel(detail, row) {
@@ -1506,6 +1551,7 @@
       if (detail.key === 'email') return row.purchaser_email_group || row.segment_name || 'Unknown';
       if (detail.key === 'identity') return identityLabel(row);
       if (detail.key === 'risk') return row.risk_band || row.segment_name || 'Unknown';
+      if (detail.key === 'proxy') return proxySegmentLabel(row);
       return row.segment_name || row.child_segment || 'Unknown';
     }
     function drillChildFilter(detail) {
@@ -1514,6 +1560,7 @@
       if (detail.key === 'email') return 'product';
       if (detail.key === 'identity') return 'product';
       if (detail.key === 'risk') return 'product';
+      if (detail.key === 'proxy') return 'product';
       return null;
     }
 
@@ -1608,6 +1655,7 @@
       if (key === 'email') return getRows('email_domain_risk').find(row => row.purchaser_email_group === value);
       if (key === 'risk') return getRows('model_risk_bands').find(row => row.risk_band === value);
       if (key === 'identity') return getRows('identity_risk').find(row => identityLabel(row) === value || row.identity_status === value);
+      if (key === 'proxy') return proxySignalRows().find(row => proxySegmentLabel(row) === value || row.proxy_segment === value);
       return null;
     }
     function currentContextLabel() {
@@ -1758,6 +1806,18 @@
     function proxyQualityRows() {
       return getRows('data_quality').filter(row => ['Address', 'Distance'].includes(row.column_family));
     }
+    function proxySignalRows() {
+      return getRows('proxy_signal_risk').map(row => ({ ...row, proxy_key: proxySegmentLabel(row) }));
+    }
+    function proxySegmentLabel(row) {
+      return (row.proxy_family || 'Proxy') + ' | ' + (row.proxy_segment || 'Unknown');
+    }
+    function proxyProductMatrixRows() {
+      return getRows('proxy_product_matrix').filter(row => state.filters.proxy === 'All' || proxySegmentLabel(row) === state.filters.proxy);
+    }
+    function proxyCrossMatrixRows() {
+      return getRows('proxy_cross_matrix');
+    }
     function proxyFeatureRows() {
       const rows = getRows('feature_importance').filter(row => {
         const feature = String(row.feature || '').toLowerCase();
@@ -1868,6 +1928,7 @@
       if (detail.key === 'email') return getRows('niche_drilldown').filter(row => row.parent_segment === detail.value || row.child_segment === detail.value);
       if (detail.key === 'risk') return getRows('model_risk_bands').filter(row => row.risk_band === detail.value);
       if (detail.key === 'identity') return getRows('identity_product_coverage').filter(row => row.identity_status === detail.value);
+      if (detail.key === 'proxy') return proxyProductMatrixRows().filter(row => proxySegmentLabel(row) === detail.value || row.proxy_segment === detail.value);
       return [];
     }
     function segmentLift(row) {
@@ -1911,7 +1972,7 @@
       if (!target) return;
       const source = (rows || []).slice(-180);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 760, h = 300, padLeft = 58, padRight = 26, padTop = 34, padBottom = 42;
+      const w = 760, h = 300, padLeft = 58, padRight = 26, padTop = 48, padBottom = 42;
       const value = row => num(typeof yKey === 'function' ? yKey(row) : row[yKey]);
       const maxY = Math.max(...source.map(value), .0001);
       const maxVol = Math.max(...source.map(row => num(row[options.volumeKey])), 1);
@@ -1927,14 +1988,14 @@
       const latest = source[source.length - 1];
       const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, options.yFormat || fmtInt);
       const xTicks = indexedTicks(source, xKey).map(tick => '<g><line x1="' + x(tick.index) + '" y1="' + (h - padBottom) + '" x2="' + x(tick.index) + '" y2="' + (h - padBottom + 4) + '" stroke="#94a3b8"/><text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text></g>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="' + (options.color || '#2563eb') + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5" fill="' + (options.color || '#2563eb') + '"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="19">Latest: ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="' + (options.color || '#2563eb') + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5" fill="' + (options.color || '#2563eb') + '"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Latest: ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg>';
     }
 
     function comboChart(id, rows, xKey, barKey, lineKey) {
       const target = document.getElementById(id);
       const source = (rows || []).slice(-80);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 30, padTop = 34, padBottom = 42;
+      const w = 720, h = 300, padLeft = 58, padRight = 30, padTop = 54, padBottom = 42;
       const maxBar = Math.max(...source.map(row => num(row[barKey])), 1);
       const maxLine = Math.max(...source.map(row => num(row[lineKey])), .0001);
       const plotW = w - padLeft - padRight;
@@ -1947,7 +2008,7 @@
       const fixedBars = source.map((row, index) => '<rect x="' + (x(index) + 2) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw - 4) + '" height="' + (h - padBottom - yBar(row[barKey])) + '" fill="rgba(37,99,235,.26)"/>').join('');
       const yTicks = yAxisSvg(axisTicks(maxLine), yLine, padLeft, w - padRight, fmtPct2);
       const xTicks = indexedTicks(source, xKey, 5).map(tick => '<text class="svg-axis" x="' + (x(tick.index) + bw / 2) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + fixedBars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="19">Bars: transactions | Line: fraud rate</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + fixedBars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Bars: transactions | Line: fraud rate</text></svg>';
     }
 
     function barChart(id, rows, labelFn, valueFn, formatFn, filterKey) {
@@ -1971,7 +2032,7 @@
       if (!target) return;
       const source = (rows || []).filter(Boolean).slice(0, options.limit || 8);
       if (!source.length) { target.innerHTML = empty('No column chart data available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 62;
+      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 50, padBottom = 62;
       const plotW = w - padLeft - padRight;
       const plotH = h - padTop - padBottom;
       const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
@@ -1986,9 +2047,10 @@
         const value = num(valueFn(row));
         const x = padLeft + index * bw + Math.max(5, bw * .14);
         const width = Math.max(16, bw * .72);
-        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><rect' + attrsFor(label) + ' x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + (h - padBottom - y(value)) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + (y(value) - 7) + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
+        const valueY = Math.max(padTop + 15, y(value) - 7);
+        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><rect' + attrsFor(label) + ' x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + (h - padBottom - y(value)) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + valueY + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
       }).join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="19">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="21">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
     }
 
     function riskBandExposureChart(id) {
@@ -2000,7 +2062,7 @@
         capture: num(row.expected_fraud_capture || row.fraud_capture_rate)
       })).filter(row => row.label);
       if (!target || !rows.length) { if (target) target.innerHTML = empty('No risk band data available.'); return; }
-      const w = 760, h = 300, padLeft = 62, padRight = 34, padTop = 34, padBottom = 52;
+      const w = 760, h = 300, padLeft = 62, padRight = 34, padTop = 64, padBottom = 52;
       const maxTx = Math.max(...rows.map(row => row.transactions), 1);
       const maxRate = Math.max(...rows.map(row => row.fraudRate), .0001);
       const plotW = w - padLeft - padRight;
@@ -2013,10 +2075,25 @@
         const x = padLeft + index * bw + bw * .18;
         const width = bw * .64;
         const attrs = ' data-filter-key="risk" data-filter-value="' + escapeHtml(row.label) + '" data-detail-family="Risk band" data-detail-label="' + escapeHtml(row.label) + '"';
-        return '<g' + attrs + ' data-tooltip="' + escapeHtml(row.label + ' | ' + fmtInt(row.transactions) + ' tx | ' + fmtPct2(row.fraudRate)) + '"><rect' + attrs + ' x="' + x + '" y="' + yTx(row.transactions) + '" width="' + width + '" height="' + (h - padBottom - yTx(row.transactions)) + '" rx="5" fill="rgba(37,99,235,.28)"/><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 18) + '" text-anchor="middle">' + escapeHtml(row.label) + '</text><text class="svg-value" x="' + (x + width / 2) + '" y="' + (yRate(row.fraudRate) - 8) + '" text-anchor="middle">' + fmtPct2(row.fraudRate) + '</text></g>';
+        const labelY = Math.max(padTop + 18, yRate(row.fraudRate) - 8);
+        return '<g' + attrs + ' data-tooltip="' + escapeHtml(row.label + ' | ' + fmtInt(row.transactions) + ' tx | ' + fmtPct2(row.fraudRate)) + '"><rect' + attrs + ' x="' + x + '" y="' + yTx(row.transactions) + '" width="' + width + '" height="' + (h - padBottom - yTx(row.transactions)) + '" rx="5" fill="rgba(37,99,235,.28)"/><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 18) + '" text-anchor="middle">' + escapeHtml(row.label) + '</text><text class="svg-value" x="' + (x + width / 2) + '" y="' + labelY + '" text-anchor="middle">' + fmtPct2(row.fraudRate) + '</text></g>';
       }).join('');
       const points = rows.map((row, index) => (padLeft + index * bw + bw / 2) + ',' + yRate(row.fraudRate)).join(' ');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="' + padLeft + '" y="19">Bars: review volume | Line: fraud rate</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="' + padLeft + '" y="22">Volume bars + fraud-rate line</text></svg>';
+    }
+
+    function proxyShareChart(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const rows = proxySignalRows().slice(0, 8);
+      if (!rows.length) { target.innerHTML = empty('No proxy share data available.'); return; }
+      target.innerHTML = '<div class="bar-list">' + rows.map((row, index) => {
+        const label = proxySegmentLabel(row);
+        const fraudShare = num(row.fraud_share);
+        const txShare = num(row.transaction_share);
+        const attrs = 'data-filter-key="proxy" data-filter-value="' + escapeHtml(label) + '" data-detail-family="Proxy segment" data-detail-label="' + escapeHtml(label) + '"';
+        return '<div class="bar-row stacked" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | fraud share ' + fmtPct(fraudShare) + ' | volume share ' + fmtPct(txShare)) + '"><div class="bar-label">' + escapeHtml(short(label, 28)) + '</div><div class="bar-track dual"><div class="bar-fill" style="width:' + Math.max(3, fraudShare * 100) + '%;--accent:#d92d3a"></div><div class="bar-fill ghost" style="width:' + Math.max(3, txShare * 100) + '%;--accent:#2563eb"></div></div><div class="bar-value">' + fmtPct(fraudShare) + ' / ' + fmtPct(txShare) + '</div></div>';
+      }).join('') + '<div class="mini-legend"><span><b style="background:#d92d3a"></b>Fraud share</span><span><b style="background:#2563eb"></b>Volume share</span></div></div>';
     }
 
     function drillContributionChart(id, detail) {
@@ -2278,7 +2355,7 @@
         trend: filteredDaily(),
         amount: filteredAmountRows(),
         customer: filteredTransactions(),
-        geo: proxyQualityRows().concat(proxyFeatureRows()).concat(entityRepeatRows()),
+        geo: proxySignalRows().concat(proxyProductMatrixRows()).concat(proxyCrossMatrixRows()).concat(proxyFeatureRows()),
         behavior: behaviorMatrixRows(),
         features: getRows('feature_importance'),
         model: getRows('threshold_simulation'),
