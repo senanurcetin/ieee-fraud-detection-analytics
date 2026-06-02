@@ -22,6 +22,32 @@ models:
               arguments:
                 min_value: 0
                 max_value: 23
+      - name: has_address_proxy
+        description: "Flag showing whether at least one masked address proxy field is present."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: has_distance_proxy
+        description: "Flag showing whether at least one masked distance proxy field is present."
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: address_proxy_status
+        description: "Address proxy availability bucket; this is not a geographic location."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Address missing", "Address partial", "Address both present"]
+      - name: distance_proxy_band
+        description: "Masked distance proxy bucket; this is not a physical distance interpretation."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Distance missing", "Distance low", "Distance medium", "Distance high"]
 
   - name: rpt_executive_kpis
     description: "Single-row KPI table for executive summary reporting."
@@ -114,6 +140,43 @@ models:
     description: "Feature-family missingness scorecard for data quality reporting."
     config:
       tags: ["reporting", "data_quality"]
+
+  - name: rpt_proxy_signal_risk
+    description: "Address and distance proxy risk summary using masked fields without claiming real geography."
+    config:
+      tags: ["reporting", "proxy", "data_quality", "segment"]
+    tests:
+      - row_count_between:
+          arguments:
+            min_count: 3
+            max_count: 8
+    columns:
+      - name: proxy_family
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Address proxy", "Distance proxy"]
+      - name: proxy_segment
+        tests:
+          - not_null
+      - name: fraud_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: transaction_share
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: fraud_share
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
 
   - name: rpt_report_narrative
     description: "Executive message, analytical focus, and recommended action text for report pages."
@@ -247,6 +310,7 @@ exposures:
       - ref('rpt_model_risk_bands')
       - ref('rpt_feature_importance')
       - ref('rpt_data_quality_scorecard')
+      - ref('rpt_proxy_signal_risk')
       - ref('rpt_report_narrative')
       - ref('rpt_quality_contract')
       - ref('rpt_segment_watchlist')

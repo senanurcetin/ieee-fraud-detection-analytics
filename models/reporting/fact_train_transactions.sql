@@ -17,6 +17,19 @@ select
     f.purchaser_email_risk_group,
     f.has_identity,
     f.synthetic_uid_card_addr,
+    case when f.addr1 is not null or f.addr2 is not null then 1 else 0 end as has_address_proxy,
+    case when f.dist1 is not null or f.dist2 is not null then 1 else 0 end as has_distance_proxy,
+    case
+        when f.addr1 is null and f.addr2 is null then 'Address missing'
+        when f.addr1 is not null and f.addr2 is not null then 'Address both present'
+        else 'Address partial'
+    end as address_proxy_status,
+    case
+        when f.dist1 is null and f.dist2 is null then 'Distance missing'
+        when coalesce(abs(f.dist1), abs(f.dist2), 0) < 10 then 'Distance low'
+        when coalesce(abs(f.dist1), abs(f.dist2), 0) < 100 then 'Distance medium'
+        else 'Distance high'
+    end as distance_proxy_band,
     f.is_fraud,
     p.predicted_fraud_probability,
     p.risk_band,

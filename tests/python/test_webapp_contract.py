@@ -245,7 +245,7 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Fraud Exposure" in html
     assert "Capturable Exposure" in html
     assert "Native Location Fields" in html
-    assert "Map Output" in html
+    assert "Drill Path" in html
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:

@@ -400,10 +400,20 @@
     }
 
     .heatmap { display: grid; gap: 6px; overflow-x: visible; padding-bottom: 5px; }
+    .heat-axis {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      color: #64748b;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
     .heat-row {
       min-width: 0;
       display: grid;
-      grid-template-columns: minmax(118px, 150px) repeat(var(--cols), minmax(82px, 1fr));
+      grid-template-columns: minmax(138px, 190px) repeat(var(--cols), minmax(104px, 1fr));
       gap: 6px;
     }
     .heat-cell {
@@ -423,8 +433,16 @@
       color: var(--muted);
       text-transform: uppercase;
       font-size: 10px;
+      overflow-wrap: anywhere;
+      white-space: normal;
     }
     .heat-value { display: block; margin-top: 5px; font-size: 14px; color: #0f172a; }
+    .heat-cell[data-filter-key], svg [data-filter-key], .bar-row[data-filter-key] { cursor: pointer; }
+    .heat-cell[data-filter-key]:hover, .bar-row[data-filter-key]:hover { outline: 2px solid rgba(37,99,235,.34); }
+    .svg-axis { fill: #64748b; font-size: 10px; font-weight: 760; }
+    .svg-grid { stroke: #e2e8f0; stroke-width: 1; }
+    .svg-label { fill: #0f172a; font-size: 11px; font-weight: 900; }
+    .svg-value { fill: #0f172a; font-size: 10px; font-weight: 900; }
 
     .table-wrap {
       width: 100%;
@@ -608,6 +626,32 @@
       color: #0f172a;
       font-size: 13px;
       line-height: 1.45;
+    }
+    .drill-path {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      padding: 10px;
+    }
+    .drill-step {
+      min-height: 25px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: #eef6ff;
+      color: #1d4ed8;
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .drill-arrow {
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 900;
     }
     .drawer-bars {
       display: grid;
@@ -1050,13 +1094,13 @@
           kpi('Native Location Fields', '0', 'No country, city, IP, or coordinate fields.', '#d92d3a'),
           kpi('Proxy Families', fmtInt(proxyQuality.length), 'Address and distance families profiled.', '#2563eb'),
           kpi('Highest Proxy Missingness', fmtPct2(max(proxyQuality, 'avg_missing_rate')), 'Structural missingness can be a signal.', '#c98012'),
-          kpi('Top Entity Repeat Band', short(entityTop.repeat_band || '-', 12), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#7c3aed'),
-          kpi('Map Output', 'Not used', 'No synthetic map or unsupported location claim.', '#18a999')
+          kpi('Top Entity Repeat Band', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#7c3aed'),
+          kpi('Drill Path', 'Product > Repeat', 'Nested proxy analysis stays inside available fields.', '#18a999')
         ]),
         grid2([
-          chartCard('Proxy missingness profile', 'Address and distance coverage by masked feature family.', '<div class="visual-body" id="proxy-missingness"></div>'),
-          chartCard('Address / distance feature signal', 'Model importance for addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>'),
-          chartCard('Masked entity repeat risk', 'Repeat behavior from card + address proxy, not a real customer ID.', '<div class="visual-body" id="proxy-entity"></div>'),
+          chartCard('Proxy missingness by family', 'Address and distance coverage by masked feature family.', '<div class="visual-body" id="proxy-missingness"></div>'),
+          chartCard('Address / distance model signal', 'Importance of addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>'),
+          chartCard('Masked entity repeat distribution', 'Repeat behavior from card + address proxy, not a real customer ID.', '<div class="visual-body" id="proxy-entity"></div>'),
           chartCard('Product x entity repeat heatmap', 'Nested risk pockets by product and masked entity repetition.', '<div class="visual-body" id="proxy-heatmap"></div>')
         ]),
         insightRow([
@@ -1219,13 +1263,13 @@
       if (state.page === 'trend') {
         lineChart('trend-line', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
         comboChart('trend-combo', filteredDaily(), 'transaction_day', 'transaction_count', 'fraud_rate');
-        heatmap('trend-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
+        heatmap('trend-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
         barChart('trend-peaks', filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12), row => 'Day ' + row.transaction_day, row => row.fraud_rate, fmtPct2, null);
       }
       if (state.page === 'amount') {
         segmentedDrillChart('amount-bar', 'amount');
-        heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2);
-        scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category);
+        heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Amount band' });
+        scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
         boxplotChart('amount-boxplot', filteredTransactions());
         segmentedDrillChart('amount-breakdown', state.filters.amount !== 'All' ? 'amount-nested' : 'amount-share');
       }
@@ -1233,19 +1277,19 @@
         barChart('customer-identity', getRows('identity_risk'), row => identityLabel(row), row => row.fraud_rate, fmtPct2, 'identity');
         barChart('customer-email', filteredEmailRows().slice(0, 10), row => row.purchaser_email_group, row => row.fraud_rate, fmtPct2, 'email');
         barChart('customer-device', deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
-        heatmap('customer-matrix', getRows('identity_product_coverage'), 'product_cd', 'identity_status', 'fraud_rate', fmtPct2);
+        heatmap('customer-matrix', getRows('identity_product_coverage'), 'product_cd', 'identity_status', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Identity status' });
         segmentedDrillChart('customer-breakdown', customerBreakdownMode());
       }
       if (state.page === 'geo') {
-        barChart('proxy-missingness', proxyQualityRows(), row => row.column_family, row => row.avg_missing_rate, fmtPct2, null);
-        barChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null);
-        barChart('proxy-entity', entityRepeatRows(), row => row.repeat_band, row => row.fraud_rate, fmtPct2, null);
-        heatmap('proxy-heatmap', productEntityRows(), 'product_cd', 'repeat_band', 'fraud_rate', fmtPct2);
+        columnChart('proxy-missingness', proxyQualityRows(), row => row.column_family, row => row.avg_missing_rate, fmtPct2, null, { axisTitle: 'Missingness rate by proxy family' });
+        dotPlotChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null, { axisTitle: 'Model importance from masked proxy fields' });
+        donutChart('proxy-entity', entityRepeatRows(), 'repeat_band', 'transaction_count');
+        heatmap('proxy-heatmap', productEntityRows(), 'product_cd', 'repeat_band', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', detailFamily: 'Product within masked entity proxy', rowAxis: 'Product', colAxis: 'Masked entity repeat band' });
       }
       if (state.page === 'behavior') {
-        heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2);
-        heatmap('behavior-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2);
-        scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category);
+        heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
+        heatmap('behavior-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2, { rowAxis: 'Payment segment', colAxis: 'Email segment' });
+        scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
         barChart('behavior-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate || row.fraud_rate, fmtPct2, 'risk');
         barChart('behavior-signal', behaviorSignalRows(), row => row.signal, row => row.strength, fmtPct2, null);
       }
@@ -1297,8 +1341,8 @@
       const row = exactSegmentRow(detail.key, detail.value) || {};
       const metric = segmentDetailMetric(detail, row);
       document.getElementById('drawer-title').textContent = detail.family + ' | ' + detail.label;
-      document.getElementById('drawer-subtitle').textContent = 'Same-family segment context.';
-      document.getElementById('drawer-body').innerHTML = drawerMetricHtml(metric) + drawerRelatedChartHtml(detail) + drawerInsightHtml(detail, metric);
+      document.getElementById('drawer-subtitle').textContent = 'Drill-through keeps the comparison inside related populations.';
+      document.getElementById('drawer-body').innerHTML = drawerPathHtml(detail) + drawerMetricHtml(metric) + drawerRelatedChartHtml(detail) + drawerInsightHtml(detail, metric);
       document.getElementById('detail-backdrop').classList.add('open');
       document.getElementById('detail-drawer').classList.add('open');
     }
@@ -1325,6 +1369,20 @@
         ['Exposure Proxy', fmtMoney(metric.amount)],
         ['Priority', metric.priority || 'Monitor']
       ].map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
+    }
+    function drawerPathHtml(detail) {
+      const paths = {
+        product: ['Product', detail.label, 'Amount band', 'Payment / email'],
+        amount: ['Amount band', detail.label, 'Product', 'Risk band'],
+        email: ['Email group', detail.label, 'Product', 'Amount band'],
+        identity: ['Identity status', detail.label, 'Product', 'Email group'],
+        risk: ['Risk band', detail.label, 'Product', 'Amount band']
+      };
+      const steps = paths[detail.key] || [detail.family, detail.label, 'Related segments'];
+      return '<div class="drill-path">' + steps.map((step, index) => {
+        const chip = '<span class="drill-step">' + escapeHtml(step) + '</span>';
+        return index ? '<span class="drill-arrow">></span>' + chip : chip;
+      }).join('') + '</div>';
     }
     function drawerRelatedChartHtml(detail) {
       const rows = relatedDrillRows(detail).slice(0, 7);
@@ -1710,40 +1768,67 @@
       ];
     }
 
+    function axisTicks(maxValue, steps = 4) {
+      const safeMax = Math.max(num(maxValue), .0001);
+      return Array.from({ length: steps + 1 }, (_, index) => safeMax * index / steps);
+    }
+    function indexedTicks(source, xKey, count = 4) {
+      const last = Math.max((source || []).length - 1, 0);
+      const indexes = unique(Array.from({ length: Math.min(count, last + 1) }, (_, index) => Math.round(index * last / Math.max(Math.min(count, last + 1) - 1, 1))));
+      return indexes.map(index => ({ index, label: String(source[index]?.[xKey] ?? index) }));
+    }
+    function tickLabel(value, formatter) {
+      return escapeHtml((formatter || fmtInt)(value));
+    }
+    function yAxisSvg(ticks, yFn, x1, x2, formatter) {
+      return ticks.map(value => {
+        const y = yFn(value);
+        return '<g><line class="svg-grid" x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '"/><text class="svg-axis" x="' + (x1 - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + tickLabel(value, formatter) + '</text></g>';
+      }).join('');
+    }
+
     function lineChart(id, rows, xKey, yKey, options = {}) {
       const target = document.getElementById(id);
       if (!target) return;
       const source = (rows || []).slice(-180);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 760, h = 280, pad = 36;
+      const w = 760, h = 300, padLeft = 58, padRight = 26, padTop = 34, padBottom = 42;
       const value = row => num(typeof yKey === 'function' ? yKey(row) : row[yKey]);
       const maxY = Math.max(...source.map(value), .0001);
       const maxVol = Math.max(...source.map(row => num(row[options.volumeKey])), 1);
-      const x = index => pad + (index / Math.max(source.length - 1, 1)) * (w - pad * 2);
-      const y = val => h - pad - (val / maxY) * (h - pad * 2);
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+      const x = index => padLeft + (index / Math.max(source.length - 1, 1)) * plotW;
+      const y = val => h - padBottom - (val / maxY) * plotH;
       const bars = options.volumeKey ? source.map((row, index) => {
-        const bh = num(row[options.volumeKey]) / maxVol * (h - pad * 2);
-        return '<rect x="' + (x(index) - 1) + '" y="' + (h - pad - bh) + '" width="2" height="' + bh + '" fill="rgba(37,99,235,.18)" />';
+        const bh = num(row[options.volumeKey]) / maxVol * plotH;
+        return '<rect x="' + (x(index) - 1) + '" y="' + (h - padBottom - bh) + '" width="2" height="' + bh + '" fill="rgba(37,99,235,.18)" />';
       }).join('') : '';
       const points = source.map((row, index) => x(index) + ',' + y(value(row))).join(' ');
       const latest = source[source.length - 1];
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="' + (options.color || '#2563eb') + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5" fill="' + (options.color || '#2563eb') + '"/><text x="' + pad + '" y="18" fill="#475569" font-size="12">Latest: ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg>';
+      const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, options.yFormat || fmtInt);
+      const xTicks = indexedTicks(source, xKey).map(tick => '<g><line x1="' + x(tick.index) + '" y1="' + (h - padBottom) + '" x2="' + x(tick.index) + '" y2="' + (h - padBottom + 4) + '" stroke="#94a3b8"/><text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text></g>').join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="' + (options.color || '#2563eb') + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5" fill="' + (options.color || '#2563eb') + '"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="19">Latest: ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg>';
     }
 
     function comboChart(id, rows, xKey, barKey, lineKey) {
       const target = document.getElementById(id);
       const source = (rows || []).slice(-80);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 720, h = 280, pad = 36;
+      const w = 720, h = 300, padLeft = 58, padRight = 30, padTop = 34, padBottom = 42;
       const maxBar = Math.max(...source.map(row => num(row[barKey])), 1);
       const maxLine = Math.max(...source.map(row => num(row[lineKey])), .0001);
-      const bw = (w - pad * 2) / source.length;
-      const x = index => pad + index * bw;
-      const yBar = val => h - pad - (num(val) / maxBar) * (h - pad * 2);
-      const yLine = val => h - pad - (num(val) / maxLine) * (h - pad * 2);
-      const bars = source.map((row, index) => '<rect x="' + (x(index) + 2) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw - 4) + '" height="' + (h - pad - yBar(row[barKey])) + '" fill="rgba(37,99,235,.26)"/>').join('');
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+      const bw = plotW / source.length;
+      const x = index => padLeft + index * bw;
+      const yBar = val => h - padBottom - (num(val) / maxBar) * plotH;
+      const yLine = val => h - padBottom - (num(val) / maxLine) * plotH;
       const points = source.map((row, index) => (x(index) + bw / 2) + ',' + yLine(row[lineKey])).join(' ');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3"/></svg>';
+      const fixedBars = source.map((row, index) => '<rect x="' + (x(index) + 2) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw - 4) + '" height="' + (h - padBottom - yBar(row[barKey])) + '" fill="rgba(37,99,235,.26)"/>').join('');
+      const yTicks = yAxisSvg(axisTicks(maxLine), yLine, padLeft, w - padRight, fmtPct2);
+      const xTicks = indexedTicks(source, xKey, 5).map(tick => '<text class="svg-axis" x="' + (x(tick.index) + bw / 2) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + fixedBars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="19">Bars: transactions | Line: fraud rate</text></svg>';
     }
 
     function barChart(id, rows, labelFn, valueFn, formatFn, filterKey) {
@@ -1762,6 +1847,57 @@
       }).join('') + '</div>';
     }
 
+    function columnChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).filter(Boolean).slice(0, options.limit || 8);
+      if (!source.length) { target.innerHTML = empty('No column chart data available.'); return; }
+      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 62;
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
+      const bw = plotW / source.length;
+      const y = value => h - padBottom - (Math.abs(num(value)) / maxValue) * plotH;
+      const attrsFor = label => filterKey
+        ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
+        : '';
+      const yTicks = yAxisSvg(axisTicks(maxValue), y, padLeft, w - padRight, formatFn || fmtInt);
+      const bars = source.map((row, index) => {
+        const label = String(labelFn(row) ?? 'Unknown');
+        const value = num(valueFn(row));
+        const x = padLeft + index * bw + Math.max(5, bw * .14);
+        const width = Math.max(16, bw * .72);
+        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><rect x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + (h - padBottom - y(value)) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + (y(value) - 7) + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
+      }).join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="19">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
+    }
+
+    function dotPlotChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).filter(Boolean).slice(0, options.limit || 10);
+      if (!source.length) { target.innerHTML = empty('No dot plot data available.'); return; }
+      const w = 720, h = 300, padLeft = 135, padRight = 32, padTop = 34, padBottom = 42;
+      const plotW = w - padLeft - padRight;
+      const rowH = (h - padTop - padBottom) / Math.max(source.length, 1);
+      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
+      const x = value => padLeft + (Math.abs(num(value)) / maxValue) * plotW;
+      const axis = axisTicks(maxValue).map(value => {
+        const xPos = x(value);
+        return '<g><line class="svg-grid" x1="' + xPos + '" y1="' + padTop + '" x2="' + xPos + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + xPos + '" y="' + (h - 14) + '" text-anchor="middle">' + tickLabel(value, formatFn || fmtInt) + '</text></g>';
+      }).join('');
+      const rowsSvg = source.map((row, index) => {
+        const label = String(labelFn(row) ?? 'Unknown');
+        const value = num(valueFn(row));
+        const y = padTop + index * rowH + rowH / 2;
+        const attrs = filterKey
+          ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
+          : '';
+        return '<g' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><text class="svg-label" x="' + (padLeft - 10) + '" y="' + (y + 4) + '" text-anchor="end">' + escapeHtml(short(label, 18)) + '</text><line x1="' + padLeft + '" y1="' + y + '" x2="' + x(value) + '" y2="' + y + '" stroke="' + palette[index % palette.length] + '" stroke-width="5" stroke-linecap="round" opacity=".55"/><circle cx="' + x(value) + '" cy="' + y + '" r="7" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x(value) + 11) + '" y="' + (y + 4) + '">' + escapeHtml((formatFn || fmtInt)(value)) + '</text></g>';
+      }).join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + axis + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + rowsSvg + '<text class="svg-label" x="' + padLeft + '" y="19">' + escapeHtml(options.axisTitle || 'Signal strength') + '</text></svg>';
+    }
+
     function donutChart(id, rows, labelKey, valueKey) {
       const target = document.getElementById(id);
       const source = (rows || []).filter(row => num(row[valueKey]) > 0).slice(0, 6);
@@ -1774,11 +1910,11 @@
         offset -= length;
         return segment;
       }).join('');
-      const legend = source.map((row, index) => '<div class="matrix-card"><strong><span style="color:' + palette[index % palette.length] + '">■</span> ' + escapeHtml(row[labelKey]) + '</strong><span>' + fmtPct(num(row[valueKey])) + '</span></div>').join('');
+      const legend = source.map((row, index) => '<div class="matrix-card"><strong><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:' + palette[index % palette.length] + '"></span> ' + escapeHtml(row[labelKey]) + '</strong><span>' + fmtPct(num(row[valueKey])) + '</span></div>').join('');
       target.innerHTML = '<div class="grid-2"><svg viewBox="0 0 220 220" style="min-height:220px"><circle cx="110" cy="110" r="74" fill="none" stroke="#e8eef6" stroke-width="28"/>' + rings + '<text x="110" y="106" text-anchor="middle" fill="#0f172a" font-size="18" font-weight="900">Fraud</text><text x="110" y="128" text-anchor="middle" fill="#64748b" font-size="12">share</text></svg><div class="matrix">' + legend + '</div></div>';
     }
 
-    function heatmap(id, rows, rowKey, colKey, valueKey, formatFn) {
+    function heatmap(id, rows, rowKey, colKey, valueKey, formatFn, options = {}) {
       const target = document.getElementById(id);
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No heatmap data available.'); return; }
@@ -1786,31 +1922,42 @@
       const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0, 8);
       const maxValue = Math.max(...source.map(row => num(row[valueKey])), .0001);
       const lookup = new Map(source.map(row => [String(row[rowKey] ?? 'Unknown') + '||' + String(row[colKey] ?? 'Unknown'), row]));
-      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head"></div>' + colLabels.map(label => '<div class="heat-cell head">' + escapeHtml(short(label, 13)) + '</div>').join('') + '</div>';
-      const body = rowLabels.map(rowLabel => '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head">' + escapeHtml(short(rowLabel, 15)) + '</div>' + colLabels.map(colLabel => {
+      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head"></div>' + colLabels.map(label => '<div class="heat-cell head" title="' + escapeHtml(label) + '">' + escapeHtml(short(label, 24)) + '</div>').join('') + '</div>';
+      const body = rowLabels.map(rowLabel => '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" title="' + escapeHtml(rowLabel) + '">' + escapeHtml(short(rowLabel, 22)) + '</div>' + colLabels.map(colLabel => {
         const row = lookup.get(rowLabel + '||' + colLabel);
         const value = num(row?.[valueKey]);
         const alpha = .05 + value / maxValue * .70;
-        return '<div class="heat-cell" style="background:rgba(217,45,58,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value)) + '"><span class="heat-value">' + formatFn(value) + '</span></div>';
+        const filterValue = options.filterFrom === 'col' ? colLabel : rowLabel;
+        const attrs = options.filterKey
+          ? ' data-filter-key="' + escapeHtml(options.filterKey) + '" data-filter-value="' + escapeHtml(filterValue) + '" data-detail-family="' + escapeHtml(options.detailFamily || labelize(options.filterKey)) + '" data-detail-label="' + escapeHtml(filterValue) + '"'
+          : '';
+        return '<div class="heat-cell"' + attrs + ' style="background:rgba(217,45,58,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value)) + '"><span class="heat-value">' + formatFn(value) + '</span></div>';
       }).join('') + '</div>').join('');
-      target.innerHTML = '<div class="heatmap">' + header + body + '</div>';
+      const axes = '<div class="heat-axis"><span>Rows: ' + escapeHtml(options.rowAxis || labelize(rowKey)) + '</span><span>Columns: ' + escapeHtml(options.colAxis || labelize(colKey)) + '</span></div>';
+      target.innerHTML = axes + '<div class="heatmap">' + header + body + '</div>';
     }
 
     function scatterChart(id, rows, xFn, yFn, groupFn, options = {}) {
       const target = document.getElementById(id);
       const source = (rows || []).slice(0, 160);
       if (!source.length) { target.innerHTML = empty('No transaction sample available.'); return; }
-      const w = 720, h = 280, pad = 36;
+      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
       const maxX = Math.max(...source.map(row => num(xFn(row))), 1);
       const maxY = Math.max(...source.map(row => num(yFn(row))), 1);
-      const x = val => pad + num(val) / maxX * (w - pad * 2);
-      const y = val => h - pad - num(val) / maxY * (h - pad * 2);
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+      const x = val => padLeft + num(val) / maxX * plotW;
+      const y = val => h - padBottom - num(val) / maxY * plotH;
       const dots = source.map((row, index) => {
         const group = String(groupFn(row) || 'Unknown');
         const color = group.toLowerCase().includes('critical') ? '#d92d3a' : group.toLowerCase().includes('high') ? '#c98012' : palette[index % palette.length];
         return '<circle cx="' + x(xFn(row)) + '" cy="' + y(yFn(row)) + '" r="4" fill="' + color + '" opacity=".68" data-tooltip="' + escapeHtml('Amount ' + fmtMoney(xFn(row)) + ' | Score ' + fmtScore(yFn(row)) + ' | ' + group) + '"/>';
       }).join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + dots + '<text x="' + pad + '" y="18" fill="#475569" font-size="12">X: ' + (options.xFormat ? 'rate' : 'amount') + ' | Y: score/importance</text></svg>';
+      const xFormat = options.xFormat || fmtMoney;
+      const yFormat = options.yFormat || fmtScore;
+      const xTicks = axisTicks(maxX).map(value => '<g><line class="svg-grid" x1="' + x(value) + '" y1="' + padTop + '" x2="' + x(value) + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + x(value) + '" y="' + (h - 13) + '" text-anchor="middle">' + tickLabel(value, xFormat) + '</text></g>').join('');
+      const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, yFormat);
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + xTicks + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + dots + '<text class="svg-label" x="' + padLeft + '" y="19">X: ' + escapeHtml(options.xLabel || 'amount') + ' | Y: ' + escapeHtml(options.yLabel || 'score') + '</text></svg>';
     }
 
     function boxplotChart(id, rows) {
@@ -1822,14 +1969,15 @@
       const groups = [{ label: 'Critical score', values: critical, color: '#d92d3a' }, { label: 'Other scores', values: other, color: '#2563eb' }];
       const all = source.map(row => num(row.transaction_amount));
       const maxValue = Math.max(...all, 1);
-      const w = 720, h = 260, pad = 42;
+      const w = 720, h = 280, pad = 50;
       const x = value => pad + value / maxValue * (w - pad * 2);
+      const xTicks = axisTicks(maxValue).map(value => '<g><line class="svg-grid" x1="' + x(value) + '" y1="45" x2="' + x(value) + '" y2="' + (h - pad) + '"/><text class="svg-axis" x="' + x(value) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtMoney(value) + '</text></g>').join('');
       const box = groups.map((group, index) => {
         const q = quantiles(group.values);
         const y = 78 + index * 78;
         return '<g><text x="' + pad + '" y="' + (y - 22) + '" fill="#0f172a" font-size="13" font-weight="800">' + group.label + '</text><line x1="' + x(q.min) + '" y1="' + y + '" x2="' + x(q.max) + '" y2="' + y + '" stroke="' + group.color + '" stroke-width="2"/><rect x="' + x(q.q1) + '" y="' + (y - 16) + '" width="' + Math.max(4, x(q.q3) - x(q.q1)) + '" height="32" fill="' + group.color + '" opacity=".22" stroke="' + group.color + '"/><line x1="' + x(q.median) + '" y1="' + (y - 20) + '" x2="' + x(q.median) + '" y2="' + (y + 20) + '" stroke="' + group.color + '" stroke-width="3"/><text x="' + (w - pad) + '" y="' + (y + 4) + '" text-anchor="end" fill="#475569" font-size="12">median ' + fmtMoney(q.median) + '</text></g>';
       }).join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + box + '</svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + xTicks + '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/>' + box + '<text class="svg-label" x="' + pad + '" y="20">Transaction amount distribution</text></svg>';
     }
 
     function treemapTiles(id, rows) {
@@ -1844,22 +1992,24 @@
       const target = document.getElementById(id);
       const rows = getRows('threshold_simulation');
       if (!rows.length) { target.innerHTML = empty('No threshold data available.'); return; }
-      const w = 720, h = 280, pad = 36;
-      const x = index => pad + index / Math.max(rows.length - 1, 1) * (w - pad * 2);
-      const y = value => h - pad - num(value) * (h - pad * 2);
+      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
+      const x = index => padLeft + index / Math.max(rows.length - 1, 1) * (w - padLeft - padRight);
+      const y = value => h - padBottom - num(value) * (h - padTop - padBottom);
       const capture = rows.map((row, index) => x(index) + ',' + y(row.fraud_capture_rate)).join(' ');
       const precision = rows.map((row, index) => x(index) + ',' + y(row.precision_rate)).join(' ');
       const workload = rows.map((row, index) => x(index) + ',' + y(row.workload_share)).join(' ');
       const selectedX = x(state.selectedThreshold);
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + pad + '" x2="' + selectedX + '" y2="' + (h - pad) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/><text x="' + pad + '" y="18" fill="#18a999" font-size="12">Capture</text><text x="' + (pad + 82) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (pad + 175) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
+      const yTicks = yAxisSvg(axisTicks(1), y, padLeft, w - padRight, fmtPct);
+      const xTicks = indexedTicks(rows, 'score_threshold', 5).map(tick => '<text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtScore(rows[tick.index].score_threshold) + '</text>').join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + padTop + '" x2="' + selectedX + '" y2="' + (h - padBottom) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/>' + xTicks + '<text x="' + padLeft + '" y="18" fill="#18a999" font-size="12">Capture</text><text x="' + (padLeft + 82) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (padLeft + 175) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
     }
     function modelReferenceCurves(id) {
       const target = document.getElementById(id);
       const rows = getRows('threshold_simulation');
       if (!rows.length) { target.innerHTML = empty('No model curve data available.'); return; }
-      const w = 720, h = 280, pad = 38;
-      const x = value => pad + num(value) * (w - pad * 2);
-      const y = value => h - pad - num(value) * (h - pad * 2);
+      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 38, padBottom = 46;
+      const x = value => padLeft + num(value) * (w - padLeft - padRight);
+      const y = value => h - padBottom - num(value) * (h - padTop - padBottom);
       const roc = rows.map(row => {
         const recall = num(row.fraud_capture_rate);
         const fpr = num(row.false_positive_rate) || num(row.workload_share) * (1 - num(row.precision_rate));
@@ -1870,7 +2020,8 @@
         const precision = num(row.precision_rate);
         return x(recall) + ',' + y(precision);
       }).join(' ');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><rect x="' + pad + '" y="' + pad + '" width="' + (w - pad * 2) + '" height="' + (h - pad * 2) + '" fill="#f8fafc" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + pad + '" stroke="#cbd5e1" stroke-dasharray="4 5"/><polyline points="' + roc + '" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><polyline points="' + pr + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round"/><text x="' + pad + '" y="18" fill="#2563eb" font-size="12">ROC-AUC 0.9167</text><text x="' + (pad + 115) + '" y="18" fill="#d92d3a" font-size="12">PR-AUC 0.5308</text><text x="' + (w - pad) + '" y="' + (h - 10) + '" text-anchor="end" fill="#64748b" font-size="11">Recall / false positive tradeoff</text></svg>';
+      const ticks = axisTicks(1).map(value => '<g><line class="svg-grid" x1="' + x(value) + '" y1="' + padTop + '" x2="' + x(value) + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + x(value) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtPct(value) + '</text><text class="svg-axis" x="' + (padLeft - 8) + '" y="' + (y(value) + 4) + '" text-anchor="end">' + fmtPct(value) + '</text></g>').join('');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><rect x="' + padLeft + '" y="' + padTop + '" width="' + (w - padLeft - padRight) + '" height="' + (h - padTop - padBottom) + '" fill="#f8fafc" stroke="#d8e0ea"/>' + ticks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + padTop + '" stroke="#cbd5e1" stroke-dasharray="4 5"/><polyline points="' + roc + '" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><polyline points="' + pr + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round"/><text x="' + padLeft + '" y="18" fill="#2563eb" font-size="12">ROC-AUC 0.9167</text><text x="' + (padLeft + 115) + '" y="18" fill="#d92d3a" font-size="12">PR-AUC 0.5308</text><text x="' + (w - padRight) + '" y="' + (h - 10) + '" text-anchor="end" fill="#64748b" font-size="11">Recall / false positive tradeoff</text></svg>';
     }
 
     function renderThresholdSummary() {
@@ -1904,19 +2055,22 @@
       const target = document.getElementById(id);
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No waterfall data available.'); return; }
-      const w = 720, h = 260, pad = 36;
+      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 58;
       const total = source.reduce((acc, row) => acc + num(row.fraud_share), 0) || 1;
-      const bw = (w - pad * 2) / source.length;
+      const bw = (w - padLeft - padRight) / source.length;
       let cumulative = 0;
       const bars = source.map((row, index) => {
         const share = num(row.fraud_share);
         const start = cumulative;
         cumulative += share;
-        const y1 = h - pad - start / total * (h - pad * 2);
-        const y2 = h - pad - cumulative / total * (h - pad * 2);
-        return '<g data-tooltip="' + escapeHtml(row.segment_name + ' | ' + fmtPct(share)) + '"><rect x="' + (pad + index * bw + 5) + '" y="' + y2 + '" width="' + Math.max(16, bw - 10) + '" height="' + Math.max(8, y1 - y2) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text x="' + (pad + index * bw + 6) + '" y="' + (h - 8) + '" fill="#475569" font-size="10">' + escapeHtml(short(row.segment_name, 10)) + '</text></g>';
+        const y1 = h - padBottom - start / total * (h - padTop - padBottom);
+        const y2 = h - padBottom - cumulative / total * (h - padTop - padBottom);
+        const x = padLeft + index * bw + 5;
+        return '<g data-tooltip="' + escapeHtml(row.segment_name + ' | ' + fmtPct(share)) + '"><rect x="' + x + '" y="' + y2 + '" width="' + Math.max(16, bw - 10) + '" height="' + Math.max(8, y1 - y2) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + Math.max(16, bw - 10) / 2) + '" y="' + (y2 - 6) + '" text-anchor="middle">' + fmtPct(share) + '</text><text class="svg-axis" x="' + (x + 2) + '" y="' + (h - 30) + '">' + escapeHtml(short(row.segment_name, 13)) + '</text></g>';
       }).join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/>' + bars + '</svg>';
+      const y = value => h - padBottom - value / total * (h - padTop - padBottom);
+      const yTicks = yAxisSvg(axisTicks(total), y, padLeft, w - padRight, fmtPct);
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '</svg>';
     }
 
     function recommendationMatrix(id) {
@@ -1928,8 +2082,13 @@
         { action: 'Broad friction', x: 28, y: 30, color: '#d92d3a' }
       ];
       const w = 720, h = 280, pad = 42;
+      const scale = [0, 25, 50, 75, 100].map(value => {
+        const x = pad + value / 100 * (w - pad * 2);
+        const y = h - pad - value / 100 * (h - pad * 2);
+        return '<g><line class="svg-grid" x1="' + x + '" y1="' + pad + '" x2="' + x + '" y2="' + (h - pad) + '"/><line class="svg-grid" x1="' + pad + '" y1="' + y + '" x2="' + (w - pad) + '" y2="' + y + '"/><text class="svg-axis" x="' + x + '" y="' + (h - 13) + '" text-anchor="middle">' + value + '</text><text class="svg-axis" x="' + (pad - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + value + '</text></g>';
+      }).join('');
       const dots = rows.map(row => '<g data-tooltip="' + escapeHtml(row.action) + '"><circle cx="' + (pad + row.x / 100 * (w - pad * 2)) + '" cy="' + (h - pad - row.y / 100 * (h - pad * 2)) + '" r="9" fill="' + row.color + '"/><text x="' + (pad + row.x / 100 * (w - pad * 2) + 12) + '" y="' + (h - pad - row.y / 100 * (h - pad * 2) + 4) + '" fill="#0f172a" font-size="12">' + escapeHtml(row.action) + '</text></g>').join('');
-      document.getElementById(id).innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><text x="' + (w - 120) + '" y="' + (h - 10) + '" fill="#475569" font-size="12">Impact</text><text x="8" y="24" fill="#475569" font-size="12">Effort</text>' + dots + '</svg>';
+      document.getElementById(id).innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + scale + '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/><text x="' + (w - 120) + '" y="' + (h - 10) + '" fill="#475569" font-size="12">Impact</text><text x="8" y="24" fill="#475569" font-size="12">Effort</text>' + dots + '</svg>';
     }
 
     function dataTable(rows, columns) {
