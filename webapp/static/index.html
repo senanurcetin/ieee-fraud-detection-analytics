@@ -322,10 +322,12 @@
       letter-spacing: 0;
     }
     .kpi-value {
+      max-width: 100%;
       color: #0f172a;
-      font-size: clamp(22px, 2.2vw, 34px);
-      line-height: 1;
+      font-size: clamp(18px, 2vw, 34px);
+      line-height: 1.05;
       font-weight: 900;
+      overflow-wrap: anywhere;
     }
     .kpi-foot {
       color: var(--muted);
@@ -532,6 +534,104 @@
       pointer-events: none;
       box-shadow: 0 18px 45px rgba(15,23,42,.32);
     }
+    .detail-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      display: none;
+      background: rgba(2, 8, 23, .38);
+    }
+    .detail-backdrop.open { display: block; }
+    .detail-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      z-index: 111;
+      display: none;
+      width: min(430px, 94vw);
+      height: 100vh;
+      transform: translateX(0);
+      transition: transform .24s ease;
+      border-left: 1px solid var(--line-dark);
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: -22px 0 60px rgba(2, 8, 23, .30);
+      overflow-y: auto;
+    }
+    .detail-drawer.open { display: block; transform: translateX(0); }
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+    }
+    .drawer-head h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.15;
+    }
+    .drawer-head p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .drawer-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 900;
+    }
+    .drawer-body {
+      display: grid;
+      gap: 12px;
+      padding: 16px 18px 22px;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .metric-mini {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      padding: 10px;
+    }
+    .metric-mini span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .metric-mini strong {
+      display: block;
+      margin-top: 5px;
+      color: #0f172a;
+      font-size: 19px;
+      line-height: 1;
+    }
+    .drawer-copy {
+      border: 1px solid rgba(24, 169, 153, .24);
+      border-left: 4px solid var(--teal);
+      border-radius: 8px;
+      background: #ecfeff;
+      padding: 12px;
+      color: #0f172a;
+      font-size: 13px;
+      line-height: 1.45;
+    }
     .empty {
       min-height: 90px;
       display: grid;
@@ -683,6 +783,17 @@
   </div>
 
   <div class="tooltip" id="tooltip"></div>
+  <div class="detail-backdrop" id="detail-backdrop"></div>
+  <aside class="detail-drawer" id="detail-drawer" aria-label="Segment drill-through details">
+    <div class="drawer-head">
+      <div>
+        <h3 id="drawer-title">Segment details</h3>
+        <p id="drawer-subtitle">Drill-through context</p>
+      </div>
+      <button class="drawer-close" id="drawer-close" type="button" aria-label="Close segment details">x</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </aside>
 
   <script>
     const nf = new Intl.NumberFormat('en-US');
@@ -718,7 +829,8 @@
         identity: 'All',
         risk: 'All'
       },
-      cross: null
+      cross: null,
+      drawer: null
     };
 
     document.getElementById('page-nav').innerHTML = pages.map(page => `
@@ -759,9 +871,13 @@
       if (!node) return;
       state.filters[node.dataset.filterKey] = node.dataset.filterValue;
       state.cross = { key: node.dataset.filterKey, value: node.dataset.filterValue };
+      state.drawer = readDetailDataset(node);
       syncFilterControls();
       render();
+      openDetailDrawer(state.drawer);
     });
+    document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
+    document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
 
     loadAll();
 
@@ -845,16 +961,14 @@
     }
 
     function renderOverview() {
-      const k = executiveKpis();
-      const threshold = selectedThreshold();
-      const exposure = fraudExposure();
+      const m = metricLayer();
       return pageGrid([
         kpiRow([
-          kpi('Total Transactions', fmtInt(k.total_transactions), 'Governed reporting population.', '#2563eb'),
-          kpi('Fraud Rate', fmtPct2(k.fraud_rate), fmtInt(k.fraud_transactions) + ' labeled fraud transactions.', '#d92d3a'),
-          kpi('Fraud Exposure', fmtMoney(exposure), 'Observed fraud amount or exposure proxy.', '#c98012'),
-          kpi('Capturable Exposure', fmtMoney(exposure * num(threshold.fraud_capture_rate)), fmtPct(threshold.fraud_capture_rate) + ' capture at selected threshold.', '#18a999'),
-          kpi('Model Recall', fmtPct(threshold.fraud_capture_rate), 'Fraud share captured by policy threshold.', '#7c3aed')
+          kpi('Total Transactions', fmtInt(m.total_transactions), m.source + ' context.', '#2563eb'),
+          kpi('Fraud Rate', fmtPct2(m.fraud_rate), fmtInt(m.fraud_transactions) + ' labeled fraud transactions.', '#d92d3a'),
+          kpi('Fraud Exposure', fmtMoneyCompact(m.fraud_exposure), 'Observed fraud amount or exposure proxy.', '#c98012'),
+          kpi('Capturable Exposure', fmtMoneyCompact(m.capturable_exposure), fmtPct(m.recall) + ' capture at selected threshold.', '#18a999'),
+          kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Capture less review burden and missed exposure.', '#7c3aed')
         ]),
         grid2([
           chartCard('Fraud rate trend', 'Relative TransactionDT days, not calendar dates.', '<div class="visual-body" id="overview-trend"></div>', 'span-2'),
@@ -866,9 +980,7 @@
           chartCard('Drill-down table', 'Selected high-risk segments with lift and fraud share.', '<div id="overview-table"></div>')
         ]),
         insightRow([
-          insight('Concentration', 'Fraud is rare at portfolio level but concentrated in a small number of controllable product, identity, amount, and payment pockets.', '#d92d3a'),
-          insight('Management focus', 'Prioritize segments with both high lift and high fraud share, not only the highest raw fraud rate.', '#2563eb'),
-          insight('Model role', 'Model scores should support prioritization and review policy, not autonomous rejection.', '#18a999')
+          ...dynamicInsightCards()
         ])
       ]);
     }
@@ -907,7 +1019,7 @@
       return pageGrid([
         kpiRow([
           kpi('Highest-Risk Amount Band', top.amount_band || '-', fmtPct2(top.fraud_rate) + ' fraud rate.', '#d92d3a'),
-          kpi('Amount Exposure Proxy', fmtMoney(sum(amountRows, 'fraud_transaction_amount') || sum(amountRows, 'fraud_count') * 120), 'Observed amount where available.', '#c98012'),
+          kpi('Amount Exposure Proxy', fmtMoneyCompact(sum(amountRows, 'fraud_transaction_amount') || sum(amountRows, 'fraud_count') * 120), 'Observed amount where available.', '#c98012'),
           kpi('Fraud Count', fmtInt(sum(amountRows, 'fraud_count')), 'Fraud labels by amount bands.', '#7c3aed'),
           kpi('Avg Sample Amount', fmtMoney(average(tx, 'transaction_amount')), 'Filtered transaction sample average.', '#2563eb'),
           kpi('Bands Compared', fmtInt(amountRows.length), 'Amount bands in current filter.', '#18a999')
@@ -1025,17 +1137,19 @@
     }
 
     function renderModel() {
+      const m = metricLayer();
       return pageGrid([
         kpiRow([
           kpi('ROC-AUC', '0.9167', 'Strong rank ordering across thresholds.', '#2563eb'),
           kpi('PR-AUC', '0.5308', 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
-          kpi('Precision', fmtPct(selectedThreshold().precision_rate), 'Review efficiency at selected threshold.', '#c98012'),
-          kpi('Recall', fmtPct(selectedThreshold().fraud_capture_rate), 'Fraud capture at selected threshold.', '#7c3aed'),
-          kpi('Top Decile Lift', '7.24x', 'High-score decile versus baseline.', '#d92d3a')
+          kpi('Precision', fmtPct(m.precision), 'Review efficiency at selected threshold.', '#c98012'),
+          kpi('Recall', fmtPct(m.recall), 'Fraud capture at selected threshold.', '#7c3aed'),
+          kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Financial view of threshold tradeoff.', '#d92d3a')
         ]),
         chartCard('Threshold simulator', 'Select an operating point to compare capture, precision, workload, and exposure.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
         grid2([
           chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
+          chartCard('ROC / PR reference curves', 'Model separation and imbalanced-class precision-recall view.', '<div class="visual-body" id="model-curves"></div>'),
           chartCard('Risk band distribution', 'Score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>'),
           chartCard('Confusion matrix approximation', 'Selected-threshold classification view.', '<div class="visual-body" id="model-confusion"></div>'),
           chartCard('Feature importance recap', 'Model drivers behind the score.', '<div class="visual-body" id="model-features"></div>')
@@ -1205,6 +1319,7 @@
       }
       if (state.page === 'model') {
         thresholdCurve('model-threshold');
+        modelReferenceCurves('model-curves');
         renderThresholdSummary();
         barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
         confusionMatrix('model-confusion');
@@ -1235,6 +1350,63 @@
     function chartCard(title, note, body, klass) {
       return '<article class="visual-card ' + (klass || '') + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div></div>' + body + '</article>';
     }
+    function readDetailDataset(node) {
+      if (!node) return null;
+      return {
+        key: node.dataset.filterKey || '',
+        value: node.dataset.filterValue || '',
+        family: node.dataset.detailFamily || labelize(node.dataset.filterKey || 'Segment'),
+        label: node.dataset.detailLabel || node.dataset.filterValue || 'Segment'
+      };
+    }
+    function openDetailDrawer(detail) {
+      if (!detail || !detail.key) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      document.getElementById('drawer-title').textContent = detail.family + ' | ' + detail.label;
+      document.getElementById('drawer-subtitle').textContent = 'BI-style drill-through context for the selected segment.';
+      document.getElementById('drawer-body').innerHTML = drawerMetricHtml(metric) + drawerRelatedHtml(detail) + drawerInsightHtml(detail, metric);
+      document.getElementById('detail-backdrop').classList.add('open');
+      document.getElementById('detail-drawer').classList.add('open');
+    }
+    function closeDetailDrawer() {
+      document.getElementById('detail-backdrop').classList.remove('open');
+      document.getElementById('detail-drawer').classList.remove('open');
+    }
+    function segmentDetailMetric(detail, row) {
+      const tx = num(row.transaction_count) || num(row.total_transactions);
+      const fraudCount = num(row.fraud_count) || num(row.fraud_transactions) || tx * num(row.fraud_rate || row.observed_fraud_rate);
+      const rate = num(row.fraud_rate || row.observed_fraud_rate) || (tx ? fraudCount / tx : 0);
+      const lift = segmentLift({ ...row, fraud_rate: rate });
+      const fraudShare = num(row.fraud_share || row.expected_fraud_capture);
+      const amount = num(row.fraud_transaction_amount) || fraudCount * 120;
+      const priority = row.priority || row.review_priority || (lift >= 2 ? 'High' : lift >= 1.2 ? 'Monitor' : 'Standard');
+      return { tx, fraudCount, rate, lift, fraudShare, amount, priority };
+    }
+    function drawerMetricHtml(metric) {
+      return '<div class="metric-grid">' + [
+        ['Transactions', fmtInt(metric.tx || 0)],
+        ['Fraud Rate', fmtPct2(metric.rate)],
+        ['Lift', fmtScore(metric.lift) + 'x'],
+        ['Fraud Share', metric.fraudShare ? fmtPct(metric.fraudShare) : '-'],
+        ['Exposure Proxy', fmtMoney(metric.amount)],
+        ['Priority', metric.priority || 'Monitor']
+      ].map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
+    }
+    function drawerRelatedHtml(detail) {
+      const rows = relatedDrillRows(detail).slice(0, 7);
+      if (!rows.length) return '';
+      return '<div><div class="filter-title">Nested drill-down</div>' + dataTable(rows, [
+        ['Parent', row => row.parent_segment || detail.label],
+        ['Child', row => row.child_segment || row.segment_name || '-'],
+        ['Fraud Rate', row => fmtPct2(row.fraud_rate)],
+        ['Lift', row => fmtScore(segmentLift(row)) + 'x']
+      ]) + '</div>';
+    }
+    function drawerInsightHtml(detail, metric) {
+      const sentence = detail.family + ' segment "' + detail.label + '" shows ' + fmtPct2(metric.rate) + ' fraud rate, ' + fmtScore(metric.lift) + 'x lift, and ' + fmtMoney(metric.amount) + ' exposure proxy. Use this segment only against comparable subsegments before making a threshold decision.';
+      return '<div class="drawer-copy"><strong>Analyst insight</strong><br>' + escapeHtml(sentence) + '</div>';
+    }
 
     function renderActiveFilters() {
       const chips = Object.entries(state.filters)
@@ -1258,6 +1430,81 @@
     function getRows(key) { return state.dashboard?.[key] || []; }
     function executiveKpis() { return getRows('executive_kpis')[0] || {}; }
     function selectedThreshold() { return getRows('threshold_simulation')[Math.max(0, Math.min(state.selectedThreshold, getRows('threshold_simulation').length - 1))] || {}; }
+    function metricLayer() {
+      const k = executiveKpis();
+      const threshold = selectedThreshold();
+      const segment = segmentMetricContext();
+      const total = segment?.transactions ?? num(k.total_transactions);
+      const fraud = segment?.fraud_count ?? num(k.fraud_transactions);
+      const rate = total ? fraud / total : num(k.fraud_rate);
+      const exposure = segment?.fraud_amount ?? fraudExposure();
+      const captured = exposure * num(threshold.fraud_capture_rate);
+      const missed = Math.max(exposure - captured, 0);
+      const review = num(threshold.review_count);
+      const falsePositiveCost = Math.max(review - num(threshold.captured_fraud_count), 0) * 5;
+      const netBenefit = captured - falsePositiveCost - missed * 0.15;
+      return {
+        source: segment?.source || 'Portfolio',
+        total_transactions: total,
+        fraud_transactions: fraud,
+        fraud_rate: rate,
+        fraud_exposure: exposure,
+        capturable_exposure: captured,
+        missed_exposure: missed,
+        review_workload: review,
+        review_share: num(threshold.workload_share),
+        precision: num(threshold.precision_rate),
+        recall: num(threshold.fraud_capture_rate),
+        false_positive_cost: falsePositiveCost,
+        net_benefit: netBenefit,
+        threshold
+      };
+    }
+    function segmentMetricContext() {
+      const active = Object.entries(state.filters).filter(([key, value]) => key !== 'day' && value !== 'All');
+      if (!active.length) return null;
+      if (active.length === 1) {
+        const [key, value] = active[0];
+        const row = exactSegmentRow(key, value);
+        if (row) {
+          const fraudCount = num(row.fraud_count) || num(row.fraud_transactions);
+          const txCount = num(row.transaction_count) || num(row.total_transactions);
+          return {
+            source: labelize(key) + ' segment',
+            transactions: txCount,
+            fraud_count: fraudCount || txCount * num(row.fraud_rate),
+            fraud_amount: num(row.fraud_transaction_amount) || fraudCount * 120,
+            fraud_rate: num(row.fraud_rate || row.observed_fraud_rate),
+            row
+          };
+        }
+      }
+      const sample = filteredTransactions();
+      if (!sample.length) return null;
+      const fraudRows = sample.filter(row => num(row.is_fraud) === 1);
+      return {
+        source: 'Filtered transaction sample',
+        transactions: sample.length,
+        fraud_count: fraudRows.length,
+        fraud_amount: sum(fraudRows, 'transaction_amount'),
+        fraud_rate: sample.length ? fraudRows.length / sample.length : 0,
+        row: null
+      };
+    }
+    function exactSegmentRow(key, value) {
+      if (key === 'product') return getRows('product_risk').find(row => row.product_cd === value);
+      if (key === 'amount') return getRows('amount_bands').find(row => row.amount_band === value);
+      if (key === 'email') return getRows('email_domain_risk').find(row => row.purchaser_email_group === value);
+      if (key === 'risk') return getRows('model_risk_bands').find(row => row.risk_band === value);
+      if (key === 'identity') return getRows('identity_risk').find(row => identityLabel(row) === value || row.identity_status === value);
+      return null;
+    }
+    function currentContextLabel() {
+      const active = Object.entries(state.filters)
+        .filter(([, value]) => value !== 'All' && value !== 'all')
+        .map(([key, value]) => labelize(key) + ': ' + value);
+      return active.length ? active.join(' | ') : 'Full portfolio';
+    }
     function recommendedThresholdIndex() {
       const rows = getRows('threshold_simulation');
       const target = rows.findIndex(row => num(row.score_threshold) >= 0.50);
@@ -1363,6 +1610,30 @@
         { priority: 'P3', recommendation: 'Monitor missingness by feature family', evidence: 'Data quality scorecard', impact: 'Reduces feature drift blind spots.' }
       ];
     }
+    function relatedDrillRows(detail) {
+      if (detail.key === 'product') return drillRows('Product', 'Amount band').filter(row => row.parent_segment === detail.value);
+      if (detail.key === 'amount') return drillRows('Amount band', 'Product').filter(row => row.parent_segment === detail.value);
+      if (detail.key === 'email') return getRows('niche_drilldown').filter(row => row.parent_segment === detail.value || row.child_segment === detail.value);
+      if (detail.key === 'risk') return getRows('model_risk_bands').filter(row => row.risk_band === detail.value);
+      if (detail.key === 'identity') return getRows('identity_product_coverage').filter(row => row.identity_status === detail.value);
+      return [];
+    }
+    function segmentLift(row) {
+      return num(row.lift || row.fraud_lift || row.observed_lift) || (num(executiveKpis().fraud_rate) ? num(row.fraud_rate || row.observed_fraud_rate) / num(executiveKpis().fraud_rate) : 0);
+    }
+    function dynamicInsightCards() {
+      const m = metricLayer();
+      const top = getRows('segment_watchlist')[0] || {};
+      const context = currentContextLabel();
+      const topText = top.segment_name
+        ? top.segment_family + ' / ' + top.segment_name + ' carries ' + fmtPct(num(top.fraud_share)) + ' of fraud share.'
+        : 'Top segment concentration is available after reporting marts load.';
+      return [
+        insight('Current context', context + ' shows ' + fmtPct2(m.fraud_rate) + ' fraud rate and ' + fmtMoney(m.fraud_exposure) + ' exposure proxy.', '#d92d3a'),
+        insight('Concentration driver', topText + ' Prioritize high lift and high fraud share together.', '#2563eb'),
+        insight('Threshold economics', 'Selected threshold captures ' + fmtMoney(m.capturable_exposure) + ' with ' + fmtInt(m.review_workload) + ' reviews and ' + fmtMoney(m.missed_exposure) + ' missed exposure.', '#18a999')
+      ];
+    }
 
     function lineChart(id, rows, xKey, yKey, options = {}) {
       const target = document.getElementById(id);
@@ -1409,7 +1680,9 @@
       target.innerHTML = '<div class="bar-list">' + source.map((row, index) => {
         const label = String(labelFn(row) ?? 'Unknown');
         const value = num(valueFn(row));
-        const attrs = filterKey ? 'data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '"' : '';
+        const attrs = filterKey
+          ? 'data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
+          : '';
         return '<div class="bar-row" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><div class="bar-label">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(value) / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + escapeHtml((formatFn || fmtInt)(value)) + '</div></div>';
       }).join('') + '</div>';
     }
@@ -1505,6 +1778,25 @@
       const selectedX = x(state.selectedThreshold);
       target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#d8e0ea"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + pad + '" x2="' + selectedX + '" y2="' + (h - pad) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/><text x="' + pad + '" y="18" fill="#18a999" font-size="12">Capture</text><text x="' + (pad + 82) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (pad + 175) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
     }
+    function modelReferenceCurves(id) {
+      const target = document.getElementById(id);
+      const rows = getRows('threshold_simulation');
+      if (!rows.length) { target.innerHTML = empty('No model curve data available.'); return; }
+      const w = 720, h = 280, pad = 38;
+      const x = value => pad + num(value) * (w - pad * 2);
+      const y = value => h - pad - num(value) * (h - pad * 2);
+      const roc = rows.map(row => {
+        const recall = num(row.fraud_capture_rate);
+        const fpr = num(row.false_positive_rate) || num(row.workload_share) * (1 - num(row.precision_rate));
+        return x(Math.min(1, fpr)) + ',' + y(recall);
+      }).join(' ');
+      const pr = rows.map(row => {
+        const recall = num(row.fraud_capture_rate);
+        const precision = num(row.precision_rate);
+        return x(recall) + ',' + y(precision);
+      }).join(' ');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><rect x="' + pad + '" y="' + pad + '" width="' + (w - pad * 2) + '" height="' + (h - pad * 2) + '" fill="#f8fafc" stroke="#d8e0ea"/><line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + pad + '" stroke="#cbd5e1" stroke-dasharray="4 5"/><polyline points="' + roc + '" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><polyline points="' + pr + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round"/><text x="' + pad + '" y="18" fill="#2563eb" font-size="12">ROC-AUC 0.9167</text><text x="' + (pad + 115) + '" y="18" fill="#d92d3a" font-size="12">PR-AUC 0.5308</text><text x="' + (w - pad) + '" y="' + (h - 10) + '" text-anchor="end" fill="#64748b" font-size="11">Recall / false positive tradeoff</text></svg>';
+    }
 
     function renderThresholdSummary() {
       const row = selectedThreshold();
@@ -1518,7 +1810,7 @@
         kpi('Fraud Capture', fmtPct(row.fraud_capture_rate), fmtInt(captured) + ' fraud labels captured.', '#18a999'),
         kpi('Precision', fmtPct(row.precision_rate), 'Expected review efficiency.', '#c98012'),
         kpi('Workload', fmtInt(review), fmtPct(row.workload_share) + ' of transactions.', '#7c3aed'),
-        kpi('Missed Exposure', fmtMoney(missedFraud * 120), fmtInt(missedFraud) + ' missed fraud labels.', '#d92d3a')
+        kpi('Missed Exposure', fmtMoneyCompact(missedFraud * 120), fmtInt(missedFraud) + ' missed fraud labels.', '#d92d3a')
       ].join('') + '</div>';
     }
 
@@ -1636,6 +1928,13 @@
     function labelize(value) { return String(value).replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()); }
     function fmtInt(value) { return nf.format(Math.round(num(value))); }
     function fmtMoney(value) { return cf.format(num(value)); }
+    function fmtMoneyCompact(value) {
+      const n = num(value);
+      const abs = Math.abs(n);
+      if (abs >= 1000000) return '$' + df.format(n / 1000000) + 'M';
+      if (abs >= 1000) return '$' + df.format(n / 1000) + 'K';
+      return fmtMoney(n);
+    }
     function fmtPct(value) { return pf.format(num(value)); }
     function fmtPct2(value) { return pf2.format(num(value)); }
     function fmtScore(value) { return df.format(num(value)); }

@@ -36,10 +36,13 @@ The application is analytical by design. It is not an operations workflow, ticke
 ## Interaction Model
 
 - Sidebar page navigation.
+- Central metric layer for fraud rate, exposure, capturable exposure, missed exposure, precision, recall, workload, and net benefit.
 - Global slicers for relative day window, product, amount band, email group, identity status, and risk band.
 - Chart click cross-filtering for product, amount, email, identity, and risk-band visuals.
+- BI-style segment drill-through drawer with fraud rate, lift, fraud share, exposure proxy, priority, and same-family nested drilldown.
 - Hover tooltips for chart values.
 - Drill-through tables for segment and transaction-level analytical samples.
+- Threshold dropdown and scrubber that recalculate capture, precision, review workload, and missed exposure.
 - Export current report page to PDF through browser print.
 - Export filtered data to CSV.
 - Dark and light mode toggle.

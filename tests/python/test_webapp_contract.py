@@ -206,6 +206,8 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "pdf-btn" in html
     assert "threshold-select" in html
     assert "threshold-slider" in html
+    assert "detail-drawer" in html
+    assert "metricLayer()" in html
     assert "overview-trend" in html
     assert "overview-donut" in html
     assert "overview-product" in html
@@ -229,6 +231,7 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "feature-family" in html
     assert "feature-scatter" in html
     assert "model-threshold" in html
+    assert "model-curves" in html
     assert "model-risk" in html
     assert "model-confusion" in html
     assert "insight-matrix" in html
