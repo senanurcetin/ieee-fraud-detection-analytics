@@ -208,7 +208,8 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "threshold-slider" in html
     assert "detail-drawer" in html
     assert "metricLayer()" in html
-    assert "overview-trend" in html
+    assert "overview-trend" not in html
+    assert "overview-riskband" in html
     assert "overview-donut" in html
     assert "overview-product" in html
     assert "overview-pareto" in html
@@ -246,6 +247,9 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Capturable Exposure" in html
     assert "Native Location Fields" in html
     assert "Drill Path" in html
+    assert "Segment Drill-through" in html
+    assert "drill-back-btn" in html
+    assert html.count("Fraud rate trend") == 1
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:

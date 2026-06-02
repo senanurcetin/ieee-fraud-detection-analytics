@@ -666,6 +666,27 @@
       min-height: 28px;
       padding: 0;
     }
+    .drill-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      padding: 12px;
+    }
+    .drill-toolbar strong {
+      display: block;
+      color: #0f172a;
+      font-size: 15px;
+    }
+    .drill-toolbar span {
+      display: block;
+      margin-top: 3px;
+      color: #64748b;
+      font-size: 12px;
+    }
     .empty {
       min-height: 90px;
       display: grid;
@@ -851,7 +872,8 @@
         risk: 'All'
       },
       cross: null,
-      drawer: null
+      drawer: null,
+      drill: null
     };
 
     document.getElementById('page-nav').innerHTML = pages.map(page => `
@@ -862,6 +884,7 @@
 
     document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => {
       state.page = button.dataset.page;
+      state.drill = null;
       closeDetailDrawer();
       window.scrollTo(0, 0);
       render();
@@ -876,6 +899,7 @@
     document.getElementById('clear-btn').addEventListener('click', () => {
       state.filters = { day: 'all', product: 'All', amount: 'All', email: 'All', identity: 'All', risk: 'All' };
       state.cross = null;
+      state.drill = null;
       syncFilterControls();
       render();
     });
@@ -895,9 +919,9 @@
       state.filters[node.dataset.filterKey] = node.dataset.filterValue;
       state.cross = { key: node.dataset.filterKey, value: node.dataset.filterValue };
       state.drawer = readDetailDataset(node);
+      state.drill = state.drawer;
       syncFilterControls();
       render();
-      openDetailDrawer(state.drawer);
     });
     document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
@@ -967,6 +991,14 @@
       document.getElementById('page-purpose').textContent = page.purpose;
       renderActiveFilters();
       const target = document.getElementById('report-body');
+      if (state.drill) {
+        document.getElementById('page-title').textContent = 'Segment Drill-through';
+        document.getElementById('page-purpose').textContent = 'Focused report view for the selected segment and its comparable nested cuts.';
+        target.innerHTML = renderDrillThrough();
+        hydrateDrillThroughCharts();
+        bindDrillThroughControls();
+        return;
+      }
       target.innerHTML = ({
         overview: renderOverview,
         trend: renderTrend,
@@ -993,7 +1025,7 @@
           kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Capture less review burden and missed exposure.', '#7c3aed')
         ]),
         grid2([
-          chartCard('Fraud rate trend', 'Relative TransactionDT days, not calendar dates.', '<div class="visual-body" id="overview-trend"></div>', 'span-2'),
+          chartCard('Risk band exposure', 'How model score bands translate into review volume and fraud capture.', '<div class="visual-body" id="overview-riskband"></div>', 'span-2'),
           chartCard('Fraud exposure by segment', 'Fraud share by watchlist segment family.', '<div class="visual-body" id="overview-donut"></div>'),
           chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>')
         ]),
@@ -1209,6 +1241,66 @@
       ]);
     }
 
+    function renderDrillThrough() {
+      const detail = state.drill || {};
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const related = relatedDrillRows(detail);
+      const peers = peerRows(detail);
+      return pageGrid([
+        '<div class="drill-toolbar"><div><strong>' + escapeHtml(detail.family + ' | ' + detail.label) + '</strong><span>Drill-through context is restricted to related fields and comparable peer groups.</span></div><button class="btn primary" id="drill-back-btn" type="button">Back to report</button></div>',
+        drawerPathHtml(detail),
+        kpiRow([
+          kpi('Transactions', fmtInt(metric.tx || 0), 'Selected segment population.', '#2563eb'),
+          kpi('Fraud Rate', fmtPct2(metric.rate), 'Segment fraud rate under current slicers.', '#d92d3a'),
+          kpi('Lift', fmtScore(metric.lift) + 'x', 'Against portfolio baseline.', '#c98012'),
+          kpi('Fraud Share', metric.fraudShare ? fmtPct(metric.fraudShare) : '-', 'Share of fraud represented by segment.', '#7c3aed'),
+          kpi('Exposure Proxy', fmtMoney(metric.amount), 'Estimated fraud exposure for this segment.', '#18a999')
+        ]),
+        grid2([
+          chartCard('Nested segment breakdown', 'Comparable subsegments inside the selected context.', '<div class="visual-body" id="drill-nested"></div>'),
+          chartCard('Peer group comparison', 'Same family comparison, not unrelated segment mixing.', '<div class="visual-body" id="drill-peers"></div>')
+        ]),
+        grid2([
+          chartCard('Segment contribution profile', 'Fraud share and transaction share shown together.', '<div class="visual-body" id="drill-contribution"></div>'),
+          chartCard('Recommended interpretation', 'Charted decision support for this segment.', '<div class="visual-body" id="drill-recommendation"></div>')
+        ]),
+        insightRow([
+          insight('What changed?', detail.label + ' is isolated as its own filter context.', '#2563eb'),
+          insight('Why it matters', 'Use nested rates and fraud share together before changing thresholds.', '#c98012'),
+          insight('Next click', related.length ? 'Click a nested chart segment to continue drilling into the next cut.' : 'Use peer comparison to decide whether the signal is exceptional.', '#18a999')
+        ])
+      ]);
+    }
+
+    function bindDrillThroughControls() {
+      const button = document.getElementById('drill-back-btn');
+      if (!button) return;
+      button.addEventListener('click', () => {
+        state.drill = null;
+        closeDetailDrawer();
+        render();
+      });
+    }
+
+    function hydrateDrillThroughCharts() {
+      const detail = state.drill || {};
+      const related = relatedDrillRows(detail);
+      const peers = peerRows(detail);
+      if (related.length) {
+        barChart('drill-nested', related, row => row.child_segment || row.segment_name || row.parent_segment, row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, drillChildFilter(detail));
+      } else {
+        document.getElementById('drill-nested').innerHTML = empty('No nested segment cut is available for this selection.');
+      }
+      if (peers.length) {
+        columnChart('drill-peers', peers, row => peerLabel(detail, row), row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, detail.key, { axisTitle: 'Peer fraud rate', limit: 8 });
+      } else {
+        document.getElementById('drill-peers').innerHTML = empty('No same-family peer group is available.');
+      }
+      drillContributionChart('drill-contribution', detail);
+      drillRecommendationChart('drill-recommendation', detail);
+    }
+
     function bindDynamicControls() {
       const slider = document.getElementById('threshold-slider');
       const thresholdSelect = document.getElementById('threshold-select');
@@ -1254,7 +1346,7 @@
 
     function hydrateCharts() {
       if (state.page === 'overview') {
-        lineChart('overview-trend', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
+        riskBandExposureChart('overview-riskband');
         donutChart('overview-donut', segmentFamilyContribution(), 'family', 'fraud_share');
         segmentedDrillChart('overview-product', 'product');
         barChart('overview-pareto', getRows('segment_watchlist').slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
@@ -1400,6 +1492,31 @@
       return '<div class="drawer-copy"><strong>Analyst insight</strong><br>' + escapeHtml(sentence) + '</div>';
     }
 
+    function peerRows(detail) {
+      if (detail.key === 'product') return getRows('product_risk');
+      if (detail.key === 'amount') return getRows('amount_bands');
+      if (detail.key === 'email') return filteredEmailRows();
+      if (detail.key === 'identity') return getRows('identity_risk');
+      if (detail.key === 'risk') return getRows('model_risk_bands').map(row => ({ ...row, fraud_rate: row.observed_fraud_rate || row.fraud_rate }));
+      return [];
+    }
+    function peerLabel(detail, row) {
+      if (detail.key === 'product') return row.product_cd || row.segment_name || 'Unknown';
+      if (detail.key === 'amount') return row.amount_band || row.segment_name || 'Unknown';
+      if (detail.key === 'email') return row.purchaser_email_group || row.segment_name || 'Unknown';
+      if (detail.key === 'identity') return identityLabel(row);
+      if (detail.key === 'risk') return row.risk_band || row.segment_name || 'Unknown';
+      return row.segment_name || row.child_segment || 'Unknown';
+    }
+    function drillChildFilter(detail) {
+      if (detail.key === 'product') return 'amount';
+      if (detail.key === 'amount') return 'product';
+      if (detail.key === 'email') return 'product';
+      if (detail.key === 'identity') return 'product';
+      if (detail.key === 'risk') return 'product';
+      return null;
+    }
+
     function renderActiveFilters() {
       const chips = Object.entries(state.filters)
         .filter(([, value]) => value !== 'All' && value !== 'all')
@@ -1410,11 +1527,13 @@
         const key = button.dataset.clearFilter;
         state.filters[key] = key === 'day' ? 'all' : 'All';
         state.cross = null;
+        state.drill = null;
         syncFilterControls();
         render();
       }));
       document.querySelectorAll('[data-clear-cross]').forEach(button => button.addEventListener('click', () => {
         state.cross = null;
+        state.drill = null;
         render();
       }));
     }
@@ -1867,9 +1986,66 @@
         const value = num(valueFn(row));
         const x = padLeft + index * bw + Math.max(5, bw * .14);
         const width = Math.max(16, bw * .72);
-        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><rect x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + (h - padBottom - y(value)) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + (y(value) - 7) + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
+        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><rect' + attrsFor(label) + ' x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + (h - padBottom - y(value)) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + (y(value) - 7) + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
       }).join('');
       target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="19">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
+    }
+
+    function riskBandExposureChart(id) {
+      const target = document.getElementById(id);
+      const rows = getRows('model_risk_bands').map(row => ({
+        label: row.risk_band,
+        transactions: num(row.transaction_count || row.row_count),
+        fraudRate: num(row.observed_fraud_rate || row.fraud_rate),
+        capture: num(row.expected_fraud_capture || row.fraud_capture_rate)
+      })).filter(row => row.label);
+      if (!target || !rows.length) { if (target) target.innerHTML = empty('No risk band data available.'); return; }
+      const w = 760, h = 300, padLeft = 62, padRight = 34, padTop = 34, padBottom = 52;
+      const maxTx = Math.max(...rows.map(row => row.transactions), 1);
+      const maxRate = Math.max(...rows.map(row => row.fraudRate), .0001);
+      const plotW = w - padLeft - padRight;
+      const plotH = h - padTop - padBottom;
+      const bw = plotW / rows.length;
+      const yRate = value => h - padBottom - value / maxRate * plotH;
+      const yTx = value => h - padBottom - value / maxTx * plotH;
+      const yTicks = yAxisSvg(axisTicks(maxRate), yRate, padLeft, w - padRight, fmtPct2);
+      const bars = rows.map((row, index) => {
+        const x = padLeft + index * bw + bw * .18;
+        const width = bw * .64;
+        const attrs = ' data-filter-key="risk" data-filter-value="' + escapeHtml(row.label) + '" data-detail-family="Risk band" data-detail-label="' + escapeHtml(row.label) + '"';
+        return '<g' + attrs + ' data-tooltip="' + escapeHtml(row.label + ' | ' + fmtInt(row.transactions) + ' tx | ' + fmtPct2(row.fraudRate)) + '"><rect' + attrs + ' x="' + x + '" y="' + yTx(row.transactions) + '" width="' + width + '" height="' + (h - padBottom - yTx(row.transactions)) + '" rx="5" fill="rgba(37,99,235,.28)"/><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 18) + '" text-anchor="middle">' + escapeHtml(row.label) + '</text><text class="svg-value" x="' + (x + width / 2) + '" y="' + (yRate(row.fraudRate) - 8) + '" text-anchor="middle">' + fmtPct2(row.fraudRate) + '</text></g>';
+      }).join('');
+      const points = rows.map((row, index) => (padLeft + index * bw + bw / 2) + ',' + yRate(row.fraudRate)).join(' ');
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="' + padLeft + '" y="19">Bars: review volume | Line: fraud rate</text></svg>';
+    }
+
+    function drillContributionChart(id, detail) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const source = [
+        { label: 'Fraud share', value: metric.fraudShare || 0, color: '#d92d3a' },
+        { label: 'Transaction share', value: metric.tx / Math.max(num(executiveKpis().total_transactions), 1), color: '#2563eb' },
+        { label: 'Fraud rate', value: metric.rate || 0, color: '#c98012' },
+        { label: 'Baseline rate', value: num(executiveKpis().fraud_rate), color: '#18a999' }
+      ];
+      columnChart(id, source, row => row.label, row => row.value, fmtPct2, null, { axisTitle: 'Segment contribution profile', limit: 4 });
+    }
+
+    function drillRecommendationChart(id, detail) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const rows = [
+        { label: 'Risk intensity', value: Math.min(metric.lift / 4, 1), color: '#d92d3a' },
+        { label: 'Fraud concentration', value: Math.min(metric.fraudShare || 0, 1), color: '#7c3aed' },
+        { label: 'Workload control', value: Math.max(0, 1 - metric.tx / Math.max(num(executiveKpis().total_transactions), 1)), color: '#2563eb' },
+        { label: 'Action confidence', value: metric.lift >= 2 && (metric.fraudShare || 0) >= .05 ? .9 : metric.lift >= 1.2 ? .62 : .35, color: '#18a999' }
+      ];
+      const maxValue = 1;
+      target.innerHTML = '<div class="bar-list">' + rows.map(row => '<div class="bar-row" data-tooltip="' + escapeHtml(row.label + ' | ' + fmtPct(row.value)) + '"><div class="bar-label">' + escapeHtml(row.label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, row.value / maxValue * 100) + '%;--accent:' + row.color + '"></div></div><div class="bar-value">' + fmtPct(row.value) + '</div></div>').join('') + '</div>';
     }
 
     function dotPlotChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
@@ -1893,7 +2069,7 @@
         const attrs = filterKey
           ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
           : '';
-        return '<g' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><text class="svg-label" x="' + (padLeft - 10) + '" y="' + (y + 4) + '" text-anchor="end">' + escapeHtml(short(label, 18)) + '</text><line x1="' + padLeft + '" y1="' + y + '" x2="' + x(value) + '" y2="' + y + '" stroke="' + palette[index % palette.length] + '" stroke-width="5" stroke-linecap="round" opacity=".55"/><circle cx="' + x(value) + '" cy="' + y + '" r="7" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x(value) + 11) + '" y="' + (y + 4) + '">' + escapeHtml((formatFn || fmtInt)(value)) + '</text></g>';
+        return '<g' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><text class="svg-label" x="' + (padLeft - 10) + '" y="' + (y + 4) + '" text-anchor="end">' + escapeHtml(short(label, 18)) + '</text><line' + attrs + ' x1="' + padLeft + '" y1="' + y + '" x2="' + x(value) + '" y2="' + y + '" stroke="' + palette[index % palette.length] + '" stroke-width="5" stroke-linecap="round" opacity=".55"/><circle' + attrs + ' cx="' + x(value) + '" cy="' + y + '" r="7" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x(value) + 11) + '" y="' + (y + 4) + '">' + escapeHtml((formatFn || fmtInt)(value)) + '</text></g>';
       }).join('');
       target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + axis + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + rowsSvg + '<text class="svg-label" x="' + padLeft + '" y="19">' + escapeHtml(options.axisTitle || 'Signal strength') + '</text></svg>';
     }
