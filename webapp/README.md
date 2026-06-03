@@ -4,6 +4,12 @@ This web application is the public presentation layer for the fraud analytics pr
 
 The application is analytical by design and focuses on BI-style report pages, chart interactions, and executive storytelling.
 
+Current production URL:
+
+```text
+https://fraud-project-web.vercel.app
+```
+
 ## Report Pages
 
 1. **Executive Fraud Overview**
@@ -39,7 +45,9 @@ The application is analytical by design and focuses on BI-style report pages, ch
 - Central metric layer for fraud rate, exposure, capturable exposure, missed exposure, precision, recall, workload, and net benefit.
 - Global slicers for relative day window, product, amount band, email group, identity status, and risk band.
 - Chart click cross-filtering for product, amount, email, identity, and risk-band visuals.
-- BI-style segment drill-down drawer with fraud rate, lift, fraud share, exposure proxy, priority, and same-family nested bar charts.
+- BI-style segment drill-through for clickable product, amount, email, identity, risk, and proxy marks.
+- Chart-level drill-through for every visual through the visual header/card interaction.
+- Primary Analysis and Supporting Visuals layers on each page to keep the main presentation focused while preserving diagnostic evidence.
 - Hover tooltips for chart values.
 - Same-family drill-down charts replace row-heavy transaction tables.
 - Threshold dropdown and scrubber that recalculate capture, precision, review workload, and missed exposure.
@@ -77,6 +85,7 @@ Core reporting groups:
 
 - `TransactionDT` is relative elapsed time, not a calendar timestamp.
 - Address and distance fields are masked proxy signals; geography is not visualized as a map without external enrichment.
+- Payment x email analysis is rendered as a full-width heatmap because it is a primary customer-proxy story point.
 - Customer risk uses masked proxies, not real customer profile attributes.
 - Masked Vesta features are presented as statistical signals, not confirmed business definitions.
 - Model output is presented as analytical prioritization and threshold simulation, not autonomous decisioning.

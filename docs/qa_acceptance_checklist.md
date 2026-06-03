@@ -42,13 +42,15 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 - [x] Dashboard payload contract covers reporting groups and niche drilldown group.
 - [x] UI language is English-first.
 - [x] No visible legacy presentation-tool references remain in the dashboard.
-- [x] Global slicers cover metric, segment family, and operational priority.
-- [x] Segment comparison panel shows deltas and recommendations.
-- [x] Drill-through drawer shows count, rate, lift, share, workload, and recommended action.
+- [x] Global slicers cover relative day, product, amount band, email group, identity status, and risk band.
+- [x] Primary Analysis and Supporting Visuals layers are available across report pages.
+- [x] Segment drill-through shows count, rate, lift, share, exposure proxy, and comparable nested cuts.
+- [x] Chart-level drill-through is available from every visual header/card.
+- [x] Customer Risk Analysis renders the payment x email heatmap as a full-width primary visual without horizontal layout spillover.
 - [x] Fraud contribution waterfall uses the segment watchlist.
 - [x] Threshold simulation recalculates workload, capture, precision, false-positive burden, and missed exposure.
-- [x] Drift indicators surface fraud movement, readiness, and data quality risk without workflow screens.
-- [x] Export JSON, print/save as PDF, and copy executive summary actions are available.
+- [x] Drift indicators surface fraud movement and model-quality risk without workflow screens.
+- [x] CSV export and print/save as PDF actions are available.
 
 ## ML Evidence
 

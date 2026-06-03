@@ -540,7 +540,14 @@
       vertical-align: -1px;
     }
 
-    .heatmap { display: grid; gap: 6px; overflow-x: visible; padding-bottom: 5px; }
+    .heatmap {
+      display: grid;
+      gap: 6px;
+      max-width: 100%;
+      overflow-x: auto;
+      padding-bottom: 7px;
+      scrollbar-color: #94a3b8 #e8eef6;
+    }
     .heat-axis {
       display: flex;
       justify-content: space-between;
@@ -554,7 +561,9 @@
     .heat-row {
       min-width: 0;
       display: grid;
-      grid-template-columns: minmax(138px, 190px) repeat(var(--cols), minmax(104px, 1fr));
+      width: max-content;
+      min-width: 100%;
+      grid-template-columns: minmax(126px, 170px) repeat(var(--cols), minmax(92px, 1fr));
       gap: 6px;
     }
     .heat-cell {
@@ -573,7 +582,7 @@
       background: transparent;
       color: var(--muted);
       text-transform: uppercase;
-      font-size: 10px;
+      font-size: 9px;
       overflow-wrap: anywhere;
       white-space: normal;
     }
@@ -1333,15 +1342,13 @@
         visualPanels([
           grid2([
             chartCard('Identity status fraud rate', 'Identity availability is a segmentation signal.', '<div class="visual-body" id="customer-identity"></div>'),
-            chartCard('Email group risk ranking', 'Click an email group to cross-filter the report.', '<div class="visual-body" id="customer-email"></div>'),
-            chartCard('Payment x email heatmap', 'Payment and purchaser email combinations inside customer proxy context.', '<div class="visual-body" id="customer-payment-email"></div>')
+            chartCard('Email group risk ranking', 'Click an email group to cross-filter the report.', '<div class="visual-body" id="customer-email"></div>')
           ]),
-          grid2([
-            chartCard('Product x identity matrix', 'Coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>'),
-            chartCard('Customer proxy nested breakdown', 'Selected proxy segment broken into product, email, or identity cuts.', '<div class="visual-body" id="customer-breakdown"></div>')
-          ])
+          chartCard('Payment x email heatmap', 'Payment and purchaser email combinations inside customer proxy context.', '<div class="visual-body" id="customer-payment-email"></div>', 'wide')
         ], [
-          chartCard('Device type fraud proxy', 'Supporting device signal from the filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>')
+          chartCard('Product x identity matrix', 'Supporting coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>'),
+          chartCard('Device type fraud proxy', 'Supporting device signal from the filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>'),
+          chartCard('Customer proxy nested breakdown', 'Supporting breakdown for selected customer proxy segments.', '<div class="visual-body" id="customer-breakdown"></div>')
         ]),
         insightRow([
           insight('Masked proxies', 'IEEE-CIS does not expose real customers, so this page uses identity, email, device, card, and product proxies.', '#2563eb'),
@@ -1398,11 +1405,11 @@
         visualPanels([
           grid2([
             chartCard('Relative hour fraud pattern', 'Hourly fraud intensity by relative TransactionDT hour.', '<div class="visual-body" id="behavior-hour-risk"></div>'),
-            chartCard('Relative hour x amount behavior', 'Heatmap of hour and amount-decimal fraud signals.', '<div class="visual-body" id="behavior-hour"></div>'),
             chartCard('Risk band behavior distribution', 'Operational score bands as analytical bins.', '<div class="visual-body" id="behavior-risk"></div>')
           ]),
-          chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>')
+          chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>', 'wide')
         ], [
+          chartCard('Relative hour x amount behavior', 'Supporting heatmap of hour and amount-decimal fraud signals.', '<div class="visual-body" id="behavior-hour"></div>'),
           chartCard('Amount x score anomaly scatter', 'Supporting outlier diagnostic across transaction amount and score.', '<div class="visual-body" id="behavior-scatter"></div>')
         ]),
         insightRow([
@@ -1681,7 +1688,7 @@
     }
     function visualPanels(mainParts, supportParts) {
       const supportCount = supportParts.length;
-      const activeParts = state.visualMode === 'support' && supportCount ? [grid2(supportParts)] : mainParts;
+      const activeParts = state.visualMode === 'support' && supportCount ? (supportCount === 1 ? supportParts : [grid2(supportParts)]) : mainParts;
       return visualModeTabs(supportCount) + activeParts.join('');
     }
     function supportingVisuals(parts, title = 'Supporting visuals') {

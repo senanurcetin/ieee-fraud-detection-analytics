@@ -68,7 +68,7 @@ The presentation layer is the live web dashboard:
 - Deployment: Vercel hosted runtime.
 - API endpoint: `/api/dashboard`.
 
-The dashboard includes executive KPIs, segment comparison, chart-based drill-down evidence, waterfall contribution, threshold simulation, model explainability, and data trust scorecards.
+The dashboard includes executive KPIs, Primary Analysis and Supporting Visuals layers, chart-level drill-through, segment-level drill-through, heatmaps, waterfall contribution, threshold simulation, model explainability, and production validation evidence.
 
 ## Security and Versioning
 

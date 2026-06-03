@@ -12,6 +12,10 @@ This document records the release checks required before the public web dashboar
 | Transaction population | 590,540 transactions | PASS |
 | Fraud population | 20,663 labeled fraud transactions | PASS |
 | Readiness gate | 6 of 6 checks pass | PASS |
+| Public dashboard URL | `https://fraud-project-web.vercel.app` | PASS |
+| Report pages | 9 BI-style analytical pages | PASS |
+| Visual story mode | Primary Analysis plus Supporting Visuals | PASS |
+| Drill-through | Chart-level and segment-level drill-through | PASS |
 
 ## dbt Release Controls
 
@@ -60,3 +64,15 @@ The dashboard can be presented only when all of the following are true:
 4. The local dbt build passes before commit.
 5. Production dbt build is rerun after any material SQL model change.
 6. The public dashboard contains no legacy presentation-layer references and no non-English public UI copy.
+7. Dense support visuals are hidden behind Supporting Visuals when they are not part of the main presentation story.
+8. Heatmaps and mixed bar-line charts render with readable labels and no layout spillover.
+
+## Completion Status
+
+As of the latest release, the project is estimated at **95% complete** for portfolio and classroom presentation use.
+
+Remaining non-blocking improvements:
+
+1. Refresh public screenshot assets after each major visual redesign.
+2. Add optional external enrichment only if real country, IP, merchant-location, or customer-age fields become available.
+3. Add long-term model drift automation after a real recurring data feed exists.

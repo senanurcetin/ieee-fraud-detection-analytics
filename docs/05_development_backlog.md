@@ -1,66 +1,52 @@
 # Development Backlog
 
-This backlog tracks the remaining work for the live web analytics layer. The goal is to keep the dashboard credible for an executive banking fraud presentation while preserving a zero-cost, English-first, portfolio-ready delivery model.
+This backlog tracks the remaining non-blocking work after the web dashboard became the only active presentation layer.
 
-## P0 - Presentation and Data Trust
+## Completed in the Current Release
 
-1. Production smoke test
-   - `/api/dashboard?refresh=true` must return all reporting groups and the niche drilldown group.
-   - Total transactions must remain 590,540.
-   - `rpt_report_readiness` must show 6/6 passing checks.
+1. Production web report
+   - Vercel production URL: `https://fraud-project-web.vercel.app`.
+   - The public dashboard is English-first and web-only.
+   - The report uses nine BI-style analytical pages.
 
-2. Responsive visual review
-   - Validate desktop, tablet, and mobile viewports.
-   - No clipped titles, overlapping controls, empty charts, or unreadable labels.
-   - Slicers, segment comparison, drawer, threshold simulation, and export controls must work end to end.
+2. Presentation structure
+   - Every report page has a focused **Primary Analysis** layer.
+   - Diagnostic charts are preserved under **Supporting Visuals** instead of crowding the main story.
+   - Customer Risk Analysis now uses a full-width payment x email heatmap to avoid layout spillover.
+   - Behavioral Pattern Analysis keeps relative-hour risk as the primary story and moves diagnostic scatter/heatmap views into supporting visuals.
 
-3. Public portfolio evidence
-   - Refresh dashboard screenshots after each major UI iteration.
-   - README preview images should show Executive Overview, Segment Lab, Niche Signals, and Model Operations.
+3. Interaction model
+   - Global slicers filter relative day, product, amount band, email group, identity status, and risk band.
+   - Data marks open segment-level drill-through.
+   - Visual cards open chart-level drill-through.
+   - Same-family drill-through replaces row-heavy tables.
+   - Threshold simulation recalculates capture, precision, workload, missed exposure, and net benefit proxy.
 
-## P1 - Analytical Depth
+4. Data and governance
+   - BigQuery `fraud_project_reporting` remains the production source of truth.
+   - dbt build and reporting readiness checks are documented.
+   - Credential files, raw CSV files, DuckDB files, and large temporary outputs remain out of Git.
 
-1. Segment comparison mode
-   - Compare two segments side by side on fraud rate, lift, fraud share, transaction share, average amount, and priority.
-   - Generate a recommendation when one segment has materially higher risk concentration.
+## Remaining Non-Blocking Improvements
 
-2. Dynamic threshold policy
-   - Connect the threshold simulation to analyst capacity, false-positive review cost, and false-negative loss assumptions.
-   - Surface the recommended threshold and estimated missed fraud exposure.
+1. Screenshot refresh
+   - Refresh README screenshots after each visual redesign.
+   - Priority screenshots: Executive Overview, Customer Risk Analysis, Masked Address & Distance Analysis, Model Performance.
 
-3. Explainability narrative
-   - Extend feature importance with business-readable signal families.
-   - Label masked Vesta features as observational signals rather than confirmed business definitions.
+2. Optional visual refinement
+   - Continue reducing visual density if presentation feedback shows a page is still overloaded.
+   - Preserve hidden diagnostics under Supporting Visuals when they are useful for Q&A.
 
-4. Fraud contribution waterfall
-   - Show how product, identity, payment, email, and amount segments contribute to fraud concentration.
-   - Keep the method transparent because segment shares can overlap.
+3. Data enrichment only when real fields exist
+   - Do not add maps, country risk, user age, or IP-location visuals until a real enrichment source is available.
+   - Continue labeling address and distance fields as masked proxy signals.
 
-## P2 - Report Maturity
+4. Long-term model monitoring
+   - Add recurring drift automation only after a recurring data feed exists.
+   - Add model registry and calibration tracking if the project evolves beyond portfolio scope.
 
-1. Drift indicator panel
-   - Surface fraud drift, high missingness, and readiness failures as analytical indicators.
-   - Keep the language report-oriented rather than workflow-oriented.
+## Current Completion Estimate
 
-2. Export story
-   - Keep JSON export for auditability.
-   - Use browser print styles for PDF-ready executive views.
-   - Keep copy-ready summary text for meetings.
+The project is estimated at **95% complete** for portfolio and classroom presentation use.
 
-3. Production runbook
-   - Document Vercel, BigQuery, dbt, and credential checks.
-   - Add a clear recovery path for API errors and stale data.
-
-## P3 - Productization
-
-1. Multi-dataset template
-   - Make the dashboard structure reusable for additional fraud datasets.
-   - Keep dataset selection environment-driven to avoid paid infrastructure.
-
-2. Tenant-ready architecture note
-   - Plan dataset isolation for future multi-tenant usage while staying within cost-controlled public deployment constraints.
-   - Avoid assumptions about paid gateways or custom domains.
-
-3. Payment-independent validation
-   - Use waitlist, manual onboarding, and Merchant of Record compatible flows for future monetization.
-   - Do not depend on Stripe availability.
+The remaining 5% is not a blocker for presentation. It is mostly screenshot refresh, optional visual polish, and future enrichment/monitoring work that requires data not present in IEEE-CIS.

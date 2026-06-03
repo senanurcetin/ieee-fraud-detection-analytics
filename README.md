@@ -2,11 +2,11 @@
 
 End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive live web analytics dashboard.
 
-The business question is simple: where does fraud concentrate, and how should an operations team prioritize review capacity?
+The business question is simple: where does fraud concentrate, what is the exposure, and which segment-level controls should the business prioritize?
 
 ## Problem Statement
 
-Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate is only 3.50%, so portfolio averages hide the segments that actually drive operational exposure. This project builds an analytics and scoring layer that identifies where fraud concentrates and converts model scores into review queues an operations team can act on.
+Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate is only 3.50%, so portfolio averages hide the segments that actually drive exposure. This project builds an analytics and scoring layer that identifies where fraud concentrates and converts model scores into threshold and segment-control evidence.
 
 ## Key Findings
 
@@ -14,11 +14,11 @@ Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate i
 - Identity availability is an analytical signal: only 144,233 of 590,540 train transactions have identity records, creating a 24.42% identity coverage rate; identity-present transactions show 7.85% fraud rate and 2.24x lift.
 - Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9167 and the average precision / AUC-PR proxy is 0.5308.
 - The top-score region is operationally valuable: the top 10% validation score band has 7.24x lift versus the validation fraud baseline.
-- The recommended High + Critical queue reviews about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision.
+- The recommended High + Critical operating band covers about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision.
 
 ## Executive Summary
 
-Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final web dashboard is structured as a senior banking fraud analyst presentation: first the portfolio risk, then concentration drivers, then amount/time behavior, then payment and email segments, then model-based review queues, and finally data quality evidence.
+Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final web dashboard is structured as a senior banking fraud analyst presentation: first the portfolio exposure, then trend behavior, then amount risk, then masked customer and payment-email segmentation, then masked address/distance proxy signals, then model explainability, model threshold tradeoffs, and final recommendations.
 
 Portfolio snapshot:
 
@@ -27,7 +27,7 @@ Portfolio snapshot:
 - Baseline fraud rate: 3.50%
 - Total transaction amount: $79.7M
 - Fraud-labeled amount: $3.08M
-- Recommended review policy: start with the High + Critical queue, covering 5.06% of validation transactions and 59.4% of fraud labels in the validation holdout.
+- Recommended review policy: start with High + Critical model bands and segment-level controls, covering 5.06% of validation transactions and 59.4% of fraud labels in the validation holdout.
 
 ## Architecture Diagram
 
@@ -174,7 +174,7 @@ The final report is designed for executive review, not exploratory notebook brow
 | Where does risk concentrate? | `rpt_product_risk`, `rpt_identity_risk`, `rpt_segment_watchlist` |
 | Do amount and time patterns matter? | `rpt_amount_bands`, `rpt_time_amount_signals`, `rpt_daily_drift` |
 | Which payment and email segments need monitoring? | `rpt_payment_heatmap`, `rpt_email_domain_risk` |
-| Can the model prioritize review queues? | `rpt_model_risk_bands`, `rpt_threshold_simulation`, `rpt_review_strategy` |
+| Can the model support threshold policy? | `rpt_model_risk_bands`, `rpt_threshold_simulation`, `rpt_review_strategy` |
 | Is the data pipeline trustworthy? | `rpt_quality_contract`, `rpt_report_readiness`, dbt tests |
 
 Current validation snapshot:
@@ -249,18 +249,18 @@ https://fraud-project-web.vercel.app
 
 The live dashboard reads the dbt-built BigQuery reporting tables and is the main presentation layer. It includes:
 
-- Global slicers for metric, segment family, and operational priority
-- Cross-highlight style segment selection
-- Drill-through side panel for selected segments
-- Custom tooltips on bars, heatmaps, time series, and model curves
-- Pareto analysis for fraud contribution
-- Decomposition tree for segment risk drivers
-- Identity/product coverage matrix
-- Relative time and amount-pattern heatmap
-- Threshold what-if simulation with workload, capture, and precision
-- Feature importance and feature-family treemap
-- Data quality contract and readiness scorecards
-- KPI dictionary, methodology limitations, analyst action register, and public API metadata contract
+- BI-style report canvas with nine analytical pages
+- Global slicers for relative day, product, amount band, email group, identity status, and risk band
+- Primary Analysis / Supporting Visuals layer on every page to keep the main story focused
+- Chart-level drill-through for every report visual
+- Segment-level drill-through through clickable product, amount, email, identity, risk, and proxy marks
+- Custom tooltips on bars, heatmaps, time series, scatter plots, model curves, and risk-band visuals
+- Pareto, heatmap, waterfall, scatter, boxplot, treemap, matrix, and threshold-simulation visuals
+- Customer proxy analysis with full-width payment x email heatmap and supporting identity/device drilldowns
+- Masked address and distance analysis without unsupported geography claims
+- Threshold what-if simulation with workload, capture, precision, missed exposure, and net benefit proxy
+- Feature importance, feature-family treemap, missingness analysis, and model-quality evidence
+- KPI dictionary, methodology limitations, production validation, and public API metadata contract
 
 Run locally:
 
@@ -283,11 +283,11 @@ Vercel deploys the `webapp/` folder as the project root. The production runtime 
 
 ![Executive web overview](docs/assets/web_dashboard_executive_overview.png)
 
-![Segment analysis drilldown](docs/assets/web_dashboard_segment_analysis.png)
+![Customer risk heatmap](docs/assets/web_dashboard_customer_risk.png)
 
 ![Model threshold simulation](docs/assets/web_dashboard_model_threshold.png)
 
-![Data quality and lineage](docs/assets/web_dashboard_quality_lineage.png)
+![Masked proxy analysis](docs/assets/web_dashboard_masked_proxy.png)
 
 ![Mobile overview](docs/assets/web_dashboard_mobile_overview.png)
 
