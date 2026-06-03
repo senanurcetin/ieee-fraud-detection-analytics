@@ -92,7 +92,7 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
 
     assert payload["presentation_layer"] == "web_dashboard"
     assert payload["dataset"] == "fraud_project_reporting"
-    assert payload["table_count"] == 22
+    assert payload["table_count"] == 23
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
     assert len(payload["executive_takeaways"]) >= 3
@@ -209,21 +209,21 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "threshold-slider" in html
     assert "detail-drawer" in html
     assert "metricLayer()" in html
-    assert "overview-trend" not in html
+    assert "overview-trend" in html
     assert "overview-riskband" in html
-    assert "overview-donut" in html
     assert "overview-product" in html
     assert "overview-pareto" in html
-    assert "trend-line" in html
     assert "trend-combo" in html
-    assert "trend-hour" in html
+    assert "trend-drift" in html
     assert "amount-bar" in html
+    assert "amount-exposure" in html
     assert "amount-heatmap" in html
     assert "amount-scatter" in html
     assert "amount-boxplot" in html
     assert "customer-identity" in html
     assert "customer-email" in html
     assert "customer-device" in html
+    assert "customer-payment-email" in html
     assert "customer-matrix" in html
     assert "proxy-risk" in html
     assert "proxy-lift" in html
@@ -231,8 +231,8 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "proxy-product-matrix" in html
     assert "proxy-cross-matrix" in html
     assert "proxy-importance" in html
+    assert "behavior-hour-risk" in html
     assert "behavior-hour" in html
-    assert "behavior-payment-email" in html
     assert "feature-bar" in html
     assert "feature-family" in html
     assert "feature-scatter" in html
@@ -251,7 +251,7 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Native Location Fields" in html
     assert "Segment Drill-through" in html
     assert "drill-back-btn" in html
-    assert html.count("Fraud rate trend") == 1
+    assert html.count("Fraud trend snapshot") == 1
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:

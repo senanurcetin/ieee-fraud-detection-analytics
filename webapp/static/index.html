@@ -267,6 +267,35 @@
 
     .report-body { min-width: 0; }
     .page-grid { display: grid; gap: 12px; }
+    .story-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .story-step {
+      min-height: 82px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(248,250,252,.94), rgba(255,255,255,.98));
+      padding: 12px;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, .055);
+      border-top: 4px solid var(--accent, var(--blue));
+    }
+    .story-step strong {
+      display: block;
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 6px;
+    }
+    .story-step span {
+      display: block;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.45;
+    }
     .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
@@ -274,6 +303,38 @@
     .span-2 { grid-column: span 2; }
     .span-3 { grid-column: span 3; }
     .wide { grid-column: 1 / -1; }
+    .visual-mode-tabs {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      width: fit-content;
+      max-width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #ffffff;
+      padding: 4px;
+      box-shadow: 0 7px 24px rgba(15, 23, 42, .055);
+    }
+    .visual-tab-btn {
+      min-height: 32px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #64748b;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .visual-tab-btn.active {
+      color: #ffffff;
+      background: #0f172a;
+    }
+    .visual-tab-btn span {
+      margin-left: 5px;
+      color: inherit;
+      opacity: .76;
+    }
 
     .kpi-card, .visual-card, .insight-card {
       min-width: 0;
@@ -312,6 +373,54 @@
     .visual-card {
       padding: 12px;
       min-height: 340px;
+    }
+    .supporting-visuals {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f8fafc;
+      box-shadow: 0 7px 24px rgba(15, 23, 42, .045);
+      overflow: hidden;
+    }
+    .supporting-visuals summary {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 12px;
+      color: #0f172a;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      list-style: none;
+      cursor: pointer;
+      border-left: 4px solid var(--blue);
+    }
+    .supporting-visuals summary::-webkit-details-marker { display: none; }
+    .supporting-visuals summary span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: none;
+    }
+    .supporting-visuals summary::after {
+      content: '+';
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #e8eef6;
+      color: #0f172a;
+      font-size: 16px;
+      line-height: 1;
+    }
+    .supporting-visuals[open] summary::after { content: '-'; }
+    .supporting-body {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
     }
     .visual-card.compact { min-height: 230px; }
     .visual-card.tall { min-height: 390px; }
@@ -471,6 +580,15 @@
     .heat-value { display: block; margin-top: 5px; font-size: 14px; color: #0f172a; }
     .heat-cell[data-filter-key], svg [data-filter-key], .bar-row[data-filter-key] { cursor: pointer; }
     .heat-cell[data-filter-key]:hover, .bar-row[data-filter-key]:hover { outline: 2px solid rgba(37,99,235,.34); }
+    .visual-card[data-chart-title] { cursor: zoom-in; }
+    .visual-card[data-chart-title]:hover {
+      outline: 2px solid rgba(37,99,235,.18);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, .09);
+    }
+    .visual-card[data-chart-title]:has(select),
+    .visual-card[data-chart-title]:has(input) {
+      cursor: default;
+    }
     .svg-axis { fill: #64748b; font-size: 10px; font-weight: 760; }
     .svg-grid { stroke: #e2e8f0; stroke-width: 1; }
     .svg-label { fill: #0f172a; font-size: 11px; font-weight: 900; }
@@ -746,16 +864,19 @@
       .sidebar { position: relative; height: auto; }
       .nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .slicer-grid { grid-template-columns: 1fr; }
+      .report-body { order: 1; }
+      .filter-rail { order: 2; }
       .filter-rail { position: relative; top: 0; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
       .filter-title, .filter-chips { grid-column: 1 / -1; }
       .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .story-strip { grid-template-columns: 1fr; }
     }
     @media (max-width: 820px) {
       .main { padding: 10px; }
       .report-canvas { padding: 10px; }
       .topbar, .canvas-head { display: grid; grid-template-columns: 1fr; }
       .top-actions { justify-content: flex-start; }
-      .nav, .filter-rail, .kpi-row, .grid-2, .grid-3, .grid-4, .insight-row { grid-template-columns: 1fr; }
+      .nav, .filter-rail, .kpi-row, .grid-2, .grid-3, .grid-4, .insight-row, .story-strip { grid-template-columns: 1fr; }
       .span-2, .span-3 { grid-column: auto; }
       .bar-row { grid-template-columns: 1fr; }
       .bar-value { text-align: left; }
@@ -889,6 +1010,54 @@
       { id: 'insights', title: 'Key Insights & Recommendations', short: 'Business actions', purpose: 'What should the business do next?' }
     ];
 
+    const storyCues = {
+      overview: [
+        ['Show first', 'KPI strip, fraud trend snapshot, risk-band exposure.', '#2563eb'],
+        ['Message', 'Fraud is rare in the portfolio, but concentration makes it manageable.', '#d92d3a'],
+        ['Drill cue', 'Click a product or risk band to open same-context drill-through.', '#18a999']
+      ],
+      trend: [
+        ['Show first', 'Volume versus fraud-rate movement, then peak relative-day ranking.', '#2563eb'],
+        ['Message', 'TransactionDT is relative time; read this as behavioral drift, not calendar seasonality.', '#c98012'],
+        ['Drill cue', 'Use the relative-day slicer before comparing peak windows.', '#18a999']
+      ],
+      amount: [
+        ['Show first', 'Amount-band fraud rate, then fraud exposure by amount.', '#c98012'],
+        ['Message', 'Low-value bands show frequency risk; high-value bands create loss exposure.', '#d92d3a'],
+        ['Drill cue', 'Click Product x Amount cells to isolate nested risk pockets.', '#18a999']
+      ],
+      customer: [
+        ['Show first', 'Identity risk, device risk, email domain risk, and payment-email heatmap.', '#2563eb'],
+        ['Message', 'Identity, device, email, and payment act as masked customer behavior proxies.', '#d92d3a'],
+        ['Drill cue', 'Click Identity present or an email group, then read the payment-email intersection.', '#18a999']
+      ],
+      geo: [
+        ['Show first', 'Proxy risk ranking, fraud share versus volume, and Product x Proxy heatmap.', '#2563eb'],
+        ['Message', 'There is no native geography; address and distance are masked risk proxies.', '#d92d3a'],
+        ['Drill cue', 'Click Address missing or Distance high to compare product-level subsegments.', '#18a999']
+      ],
+      behavior: [
+        ['Show first', 'Relative-hour fraud pattern, amount-decimal heatmap, and score outliers.', '#c98012'],
+        ['Message', 'Fraud behavior clusters by relative time, payment, amount, and score context.', '#d92d3a'],
+        ['Drill cue', 'Use global slicers to test whether the time pattern survives segment filtering.', '#18a999']
+      ],
+      features: [
+        ['Show first', 'Top feature importance and feature-family treemap.', '#2563eb'],
+        ['Message', 'The model is not single-variable; card, address, amount, and time signals work together.', '#d92d3a'],
+        ['Drill cue', 'Use missingness versus importance to separate strong features from monitoring risks.', '#18a999']
+      ],
+      model: [
+        ['Show first', 'Threshold simulator, then precision-recall curve and confusion matrix.', '#7c3aed'],
+        ['Message', 'The model is a review-prioritization layer, not an automatic decision engine.', '#d92d3a'],
+        ['Drill cue', 'Move the threshold selector and explain capture, precision, workload, and missed exposure.', '#18a999']
+      ],
+      insights: [
+        ['Show first', 'Recommendation matrix and action priority ranking.', '#2563eb'],
+        ['Message', 'The business decision is segment-based risk management, not one global rule.', '#d92d3a'],
+        ['Drill cue', 'Close with nested thresholds, model calibration, and enrichment roadmap.', '#18a999']
+      ]
+    };
+
     const state = {
       page: 'overview',
       dashboard: null,
@@ -906,7 +1075,8 @@
       },
       cross: null,
       drawer: null,
-      drill: null
+      drill: null,
+      visualMode: 'main'
     };
 
     document.getElementById('page-nav').innerHTML = pages.map(page => `
@@ -918,6 +1088,7 @@
     document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => {
       state.page = button.dataset.page;
       state.drill = null;
+      state.visualMode = 'main';
       closeDetailDrawer();
       window.scrollTo(0, 0);
       render();
@@ -948,13 +1119,19 @@
     document.addEventListener('mouseout', hideTooltip);
     document.addEventListener('click', event => {
       const node = event.target.closest('[data-filter-key]');
-      if (!node) return;
-      state.filters[node.dataset.filterKey] = node.dataset.filterValue;
-      state.cross = { key: node.dataset.filterKey, value: node.dataset.filterValue };
-      state.drawer = readDetailDataset(node);
-      state.drill = state.drawer;
-      syncFilterControls();
-      render();
+      if (node) {
+        state.filters[node.dataset.filterKey] = node.dataset.filterValue;
+        state.cross = { key: node.dataset.filterKey, value: node.dataset.filterValue };
+        state.drawer = readDetailDataset(node);
+        state.drill = state.drawer;
+        syncFilterControls();
+        render();
+        return;
+      }
+      const ignored = event.target.closest('button, select, input, textarea, label, a, summary');
+      if (ignored) return;
+      const chart = event.target.closest('.visual-card[data-chart-title]');
+      if (chart) openChartDrillDrawer(readChartDataset(chart));
     });
     document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
@@ -1057,14 +1234,16 @@
           kpi('Capturable Exposure', fmtMoneyCompact(m.capturable_exposure), fmtPct(m.recall) + ' capture at selected threshold.', '#18a999'),
           kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Capture less review burden and missed exposure.', '#7c3aed')
         ]),
-        grid2([
-          chartCard('Risk band exposure', 'How model score bands translate into review volume and fraud capture.', '<div class="visual-body" id="overview-riskband"></div>', 'span-2'),
-          chartCard('Fraud exposure by segment', 'Fraud share by watchlist segment family.', '<div class="visual-body" id="overview-donut"></div>'),
-          chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>')
-        ]),
-        grid2([
-          chartCard('Top risk concentration Pareto', 'Fraud share by highest-priority segments.', '<div class="visual-body" id="overview-pareto"></div>'),
-          chartCard('Nested segment breakdown', 'Same-family drill-down for the active segment.', '<div class="visual-body" id="overview-breakdown"></div>')
+        visualPanels([
+          chartCard('Fraud trend snapshot', 'Relative TransactionDT trend with transaction volume context.', '<div class="visual-body" id="overview-trend"></div>', 'wide'),
+          chartCard('Risk band exposure', 'How model score bands translate into review volume and fraud capture.', '<div class="visual-body" id="overview-riskband"></div>', 'wide'),
+          grid2([
+            chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>'),
+            chartCard('Top risk concentration Pareto', 'Fraud share by highest-priority segments.', '<div class="visual-body" id="overview-pareto"></div>')
+          ])
+        ], [
+          chartCard('Executive economics breakdown', 'Supporting view of capture, review cost, missed exposure, and net benefit.', '<div class="visual-body" id="overview-economics"></div>'),
+          chartCard('Readiness gate', 'Supporting data contract checks behind presentation readiness.', '<div class="visual-body" id="overview-readiness"></div>')
         ]),
         insightRow([
           ...dynamicInsightCards()
@@ -1085,12 +1264,15 @@
           kpi('Fraud Transactions', fmtInt(sum(rows, 'fraud_count')), 'Fraud labels in selected relative period.', '#7c3aed'),
           kpi('Volume', fmtInt(sum(rows, 'transaction_count')), 'Transactions in selected relative period.', '#18a999')
         ]),
-        grid2([
-          chartCard('Fraud rate trend', 'Line chart supports day-window filtering.', '<div class="visual-body" id="trend-line"></div>', 'span-2'),
-          chartCard('Fraud count and transaction volume', 'Combined view separates rate movement from traffic volume.', '<div class="visual-body" id="trend-combo"></div>'),
-          chartCard('Relative hour fraud pattern', 'Hourly intensity by relative transaction hour.', '<div class="visual-body" id="trend-hour"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Fraud count and transaction volume', 'Combined view separates rate movement from traffic volume.', '<div class="visual-body" id="trend-combo"></div>', 'span-2'),
+            chartCard('Drift flag distribution', 'Relative days grouped by risk drift band.', '<div class="visual-body" id="trend-drift"></div>')
+          ])
+        ], [
+          chartCard('Peak relative-day ranking', 'Highest daily fraud-rate windows as a chart.', '<div class="visual-body" id="trend-peaks"></div>'),
+          chartCard('Peak fraud-volume windows', 'Supporting ranking by fraud transaction count rather than rate.', '<div class="visual-body" id="trend-volume-peaks"></div>')
         ]),
-        chartCard('Peak relative-day ranking', 'Highest daily fraud-rate windows as a chart.', '<div class="visual-body" id="trend-peaks"></div>'),
         insightRow([
           insight('Trend readout', 'Use relative-time movement as drift evidence, not calendar-seasonality evidence.', '#2563eb'),
           insight('Volume control', 'A fraud-rate spike should be read with transaction volume before changing policy.', '#c98012'),
@@ -1111,13 +1293,17 @@
           kpi('Avg Sample Amount', fmtMoney(average(tx, 'transaction_amount')), 'Filtered transaction sample average.', '#2563eb'),
           kpi('Bands Compared', fmtInt(amountRows.length), 'Amount bands in current filter.', '#18a999')
         ]),
-        grid2([
-          chartCard('Amount band fraud rate', 'Click a band to cross-filter the report.', '<div class="visual-body" id="amount-bar"></div>'),
-          chartCard('Product x amount heatmap', 'Nested risk pockets, not a single product-only story.', '<div class="visual-body" id="amount-heatmap"></div>'),
-          chartCard('Amount vs model score scatter', 'Shows whether high scores cluster by transaction value.', '<div class="visual-body" id="amount-scatter"></div>'),
-          chartCard('Fraud vs normal amount distribution', 'Boxplot-style comparison from filtered transaction sample.', '<div class="visual-body" id="amount-boxplot"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Amount band fraud rate', 'Click a band to cross-filter the report.', '<div class="visual-body" id="amount-bar"></div>'),
+            chartCard('Fraud exposure by amount', 'Financial exposure by amount band.', '<div class="visual-body" id="amount-exposure"></div>'),
+            chartCard('Product x amount heatmap', 'Nested risk pockets, not a single product-only story.', '<div class="visual-body" id="amount-heatmap"></div>'),
+            chartCard('Amount nested breakdown', 'Click an amount band to see product-level risk inside that range.', '<div class="visual-body" id="amount-breakdown"></div>')
+          ])
+        ], [
+          chartCard('Amount vs model score scatter', 'Supporting diagnostic for score and transaction value outliers.', '<div class="visual-body" id="amount-scatter"></div>'),
+          chartCard('Fraud vs normal amount distribution', 'Supporting distribution check from filtered transaction sample.', '<div class="visual-body" id="amount-boxplot"></div>')
         ]),
-        chartCard('Amount nested breakdown', 'Click an amount band to see product-level risk inside that range.', '<div class="visual-body" id="amount-breakdown"></div>'),
         insightRow([
           insight('Frequency vs exposure', 'Low-value bands can carry frequency risk while higher bands drive financial exposure.', '#c98012'),
           insight('Nested segmentation', 'Amount risk should be interpreted together with product and payment type.', '#2563eb'),
@@ -1136,13 +1322,19 @@
           kpi('Device Segments', fmtInt(groupBy(tx, 'device_type').length), 'Device groups in transaction sample.', '#7c3aed'),
           kpi('Sample Transactions', fmtInt(tx.length), 'Filtered analytical sample.', '#c98012')
         ]),
-        grid2([
-          chartCard('Identity status fraud rate', 'Identity availability is a segmentation signal.', '<div class="visual-body" id="customer-identity"></div>'),
-          chartCard('Email group risk ranking', 'Click an email group to cross-filter the report.', '<div class="visual-body" id="customer-email"></div>'),
-          chartCard('Device type fraud proxy', 'Derived from filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>'),
-          chartCard('Product x identity matrix', 'Coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Identity status fraud rate', 'Identity availability is a segmentation signal.', '<div class="visual-body" id="customer-identity"></div>'),
+            chartCard('Email group risk ranking', 'Click an email group to cross-filter the report.', '<div class="visual-body" id="customer-email"></div>'),
+            chartCard('Payment x email heatmap', 'Payment and purchaser email combinations inside customer proxy context.', '<div class="visual-body" id="customer-payment-email"></div>')
+          ]),
+          grid2([
+            chartCard('Product x identity matrix', 'Coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>'),
+            chartCard('Customer proxy nested breakdown', 'Selected proxy segment broken into product, email, or identity cuts.', '<div class="visual-body" id="customer-breakdown"></div>')
+          ])
+        ], [
+          chartCard('Device type fraud proxy', 'Supporting device signal from the filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>')
         ]),
-        chartCard('Customer proxy nested breakdown', 'Selected proxy segment broken into product, email, or identity cuts.', '<div class="visual-body" id="customer-breakdown"></div>'),
         insightRow([
           insight('Masked proxies', 'IEEE-CIS does not expose real customers, so this page uses identity, email, device, card, and product proxies.', '#2563eb'),
           insight('Risk signal', 'Identity presence and email domain groups should be read as risk segmentation variables, not only data quality fields.', '#d92d3a'),
@@ -1164,17 +1356,18 @@
           kpi('Top Proxy Fraud Share', fmtPct(num(topProxy.fraud_share)), 'Fraud concentration represented by the top proxy cut.', '#7c3aed'),
           kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#18a999')
         ]),
-        grid2([
-          chartCard('Proxy segment risk ranking', 'Click a proxy segment to open its drill-through report.', '<div class="visual-body" id="proxy-risk"></div>'),
-          chartCard('Proxy lift vs portfolio', 'Address and distance cuts compared against baseline fraud rate.', '<div class="visual-body" id="proxy-lift"></div>')
-        ]),
-        grid2([
-          chartCard('Proxy fraud share vs volume share', 'Separates signal strength from population size.', '<div class="visual-body" id="proxy-share"></div>'),
-          chartCard('Product x proxy segment heatmap', 'Nested risk pockets by product and masked proxy segment.', '<div class="visual-body" id="proxy-product-matrix"></div>')
-        ]),
-        grid2([
-          chartCard('Address x distance proxy matrix', 'Joint proxy availability and distance bands by fraud rate.', '<div class="visual-body" id="proxy-cross-matrix"></div>'),
-          chartCard('Address / distance model signal', 'Importance of addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Proxy segment risk ranking', 'Click a proxy segment to open its drill-through report.', '<div class="visual-body" id="proxy-risk"></div>'),
+            chartCard('Proxy fraud share vs volume share', 'Separates signal strength from population size.', '<div class="visual-body" id="proxy-share"></div>')
+          ]),
+          grid2([
+            chartCard('Product x proxy segment heatmap', 'Nested risk pockets by product and masked proxy segment.', '<div class="visual-body" id="proxy-product-matrix"></div>'),
+            chartCard('Address / distance model signal', 'Importance of addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>')
+          ])
+        ], [
+          chartCard('Proxy lift vs portfolio', 'Supporting baseline comparison for address and distance cuts.', '<div class="visual-body" id="proxy-lift"></div>'),
+          chartCard('Address x distance proxy matrix', 'Supporting joint proxy availability and distance-band check.', '<div class="visual-body" id="proxy-cross-matrix"></div>')
         ]),
         insightRow([
           insight('Read correctly', 'Address and distance fields are masked risk proxies, not geography.', '#2563eb'),
@@ -1194,13 +1387,16 @@
           kpi('High Score Sample', fmtInt(tx.filter(row => num(row.risk_score) >= 80).length), 'Filtered transactions above score 80.', '#7c3aed'),
           kpi('Avg Risk Score', fmtScore(average(tx, 'risk_score')), 'Filtered transaction sample.', '#c98012')
         ]),
-        grid2([
-          chartCard('Relative hour x amount behavior', 'Heatmap of hour and amount-decimal fraud signals.', '<div class="visual-body" id="behavior-hour"></div>'),
-          chartCard('Payment x email heatmap', 'Payment and purchaser email combinations.', '<div class="visual-body" id="behavior-payment-email"></div>'),
-          chartCard('Amount x score anomaly scatter', 'Outlier behavior across transaction amount and score.', '<div class="visual-body" id="behavior-scatter"></div>'),
-          chartCard('Risk band behavior distribution', 'Operational score bands as analytical bins.', '<div class="visual-body" id="behavior-risk"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Relative hour fraud pattern', 'Hourly fraud intensity by relative TransactionDT hour.', '<div class="visual-body" id="behavior-hour-risk"></div>'),
+            chartCard('Relative hour x amount behavior', 'Heatmap of hour and amount-decimal fraud signals.', '<div class="visual-body" id="behavior-hour"></div>'),
+            chartCard('Risk band behavior distribution', 'Operational score bands as analytical bins.', '<div class="visual-body" id="behavior-risk"></div>')
+          ]),
+          chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>')
+        ], [
+          chartCard('Amount x score anomaly scatter', 'Supporting outlier diagnostic across transaction amount and score.', '<div class="visual-body" id="behavior-scatter"></div>')
         ]),
-        chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>'),
         insightRow([
           insight('Time behavior', 'Relative hour patterns can inform monitoring windows, but they are not calendar-time effects.', '#2563eb'),
           insight('Payment behavior', 'Payment and email intersections reveal more usable controls than broad product-only views.', '#d92d3a'),
@@ -1220,12 +1416,15 @@
           kpi('Highest Missingness', fmtPct2(max(getRows('data_quality'), 'avg_missing_rate')), 'Feature-family missingness profile.', '#c98012'),
           kpi('Interpretation Mode', 'Observational', 'Masked fields are not confirmed business definitions.', '#d92d3a')
         ]),
-        grid2([
-          chartCard('Top 15 feature importance', 'Most influential model features.', '<div class="visual-body" id="feature-bar"></div>', 'span-2'),
-          chartCard('Feature family treemap', 'Importance grouped by feature family.', '<div class="visual-body" id="feature-family"></div>'),
-          chartCard('Missingness vs importance', 'Data quality and model signal together.', '<div class="visual-body" id="feature-scatter"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Top 15 feature importance', 'Most influential model features.', '<div class="visual-body" id="feature-bar"></div>', 'span-2'),
+            chartCard('Feature family treemap', 'Importance grouped by feature family.', '<div class="visual-body" id="feature-family"></div>'),
+            chartCard('Missingness vs importance', 'Data quality and model signal together.', '<div class="visual-body" id="feature-scatter"></div>')
+          ])
+        ], [
+          chartCard('Feature interpretation strength', 'Supporting roll-up of model and data-quality signal strength.', '<div class="visual-body" id="feature-interpretation"></div>')
         ]),
-        chartCard('Feature interpretation strength', 'Business-facing feature families by model and quality signal.', '<div class="visual-body" id="feature-interpretation"></div>'),
         insightRow([
           insight('Explainability', 'Feature importance gives direction, not causal proof.', '#2563eb'),
           insight('Masked features', 'Vesta-engineered variables must be framed as statistical signals.', '#d92d3a'),
@@ -1244,13 +1443,16 @@
           kpi('Recall', fmtPct(m.recall), 'Fraud capture at selected threshold.', '#7c3aed'),
           kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Financial view of threshold tradeoff.', '#d92d3a')
         ]),
-        chartCard('Threshold simulator', 'Select an operating point to compare capture, precision, workload, and exposure.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
-        grid2([
-          chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
-          chartCard('ROC / PR reference curves', 'Model separation and imbalanced-class precision-recall view.', '<div class="visual-body" id="model-curves"></div>'),
-          chartCard('Risk band distribution', 'Score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>'),
-          chartCard('Confusion matrix approximation', 'Selected-threshold classification view.', '<div class="visual-body" id="model-confusion"></div>'),
-          chartCard('Feature importance recap', 'Model drivers behind the score.', '<div class="visual-body" id="model-features"></div>')
+        visualPanels([
+          chartCard('Threshold simulator', 'Select an operating point to compare capture, precision, workload, and exposure.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
+          grid2([
+            chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
+            chartCard('Risk band distribution', 'Score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>'),
+            chartCard('Confusion matrix approximation', 'Selected-threshold classification view.', '<div class="visual-body" id="model-confusion"></div>'),
+            chartCard('Feature importance recap', 'Model drivers behind the score.', '<div class="visual-body" id="model-features"></div>')
+          ])
+        ], [
+          chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>')
         ]),
         insightRow([
           insight('Threshold tradeoff', 'Higher thresholds reduce workload and usually improve precision, but lower fraud capture.', '#c98012'),
@@ -1269,11 +1471,14 @@
           kpi('Data Gap', 'Location', 'External enrichment is required.', '#c98012'),
           kpi('Next Step', 'Pilot Policy', 'Test threshold and segment controls together.', '#7c3aed')
         ]),
-        grid2([
-          chartCard('Recommendation impact matrix', 'Prioritize actions by business impact and implementation effort.', '<div class="visual-body" id="insight-matrix"></div>'),
-          chartCard('Expected exposure reduction waterfall', 'Estimated value from targeting top risk pockets.', '<div class="visual-body" id="insight-waterfall"></div>')
+        visualPanels([
+          grid2([
+            chartCard('Recommendation impact matrix', 'Prioritize actions by business impact and implementation effort.', '<div class="visual-body" id="insight-matrix"></div>'),
+            chartCard('Recommendation priority ranking', 'Actions ranked by impact for the presentation close.', '<div class="visual-body" id="insight-priority"></div>')
+          ])
+        ], [
+          chartCard('Expected exposure reduction waterfall', 'Supporting estimate from targeting top risk pockets.', '<div class="visual-body" id="insight-waterfall"></div>')
         ]),
-        chartCard('Recommendation priority ranking', 'Actions ranked by impact for the presentation close.', '<div class="visual-body" id="insight-priority"></div>'),
         insightRow([
           insight('What happened?', 'Fraud is low in aggregate but concentrated across product, amount, identity, email, and score segments.', '#d92d3a'),
           insight('Why serious?', 'Concentration means a small number of targeted controls can affect a large share of exposure.', '#c98012'),
@@ -1343,12 +1548,16 @@
     }
 
     function bindDynamicControls() {
+      document.querySelectorAll('[data-visual-mode]').forEach(button => button.addEventListener('click', () => {
+        state.visualMode = button.dataset.visualMode || 'main';
+        render();
+      }));
       const slider = document.getElementById('threshold-slider');
       const thresholdSelect = document.getElementById('threshold-select');
       const rows = getRows('threshold_simulation');
       if (thresholdSelect) {
         thresholdSelect.innerHTML = rows.map((row, index) => {
-          const label = 'Threshold ' + fmtScore(row.threshold) + ' - capture ' + fmtPct(row.fraud_capture_rate);
+          const label = 'Threshold ' + fmtScore(row.score_threshold) + ' - capture ' + fmtPct(row.fraud_capture_rate);
           return '<option value="' + index + '">' + escapeHtml(label) + '</option>';
         }).join('');
         thresholdSelect.value = state.selectedThreshold;
@@ -1387,20 +1596,22 @@
 
     function hydrateCharts() {
       if (state.page === 'overview') {
+        lineChart('overview-trend', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
         riskBandExposureChart('overview-riskband');
-        donutChart('overview-donut', segmentFamilyContribution(), 'family', 'fraud_share');
         segmentedDrillChart('overview-product', 'product');
         barChart('overview-pareto', getRows('segment_watchlist').slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
-        segmentedDrillChart('overview-breakdown', state.filters.product !== 'All' ? 'product-nested' : 'watchlist');
+        barChart('overview-economics', executiveEconomicsRows(), row => row.label, row => row.value, fmtMoneyCompact, null);
+        barChart('overview-readiness', readinessGateRows(), row => row.label, row => row.value, fmtInt, null);
       }
       if (state.page === 'trend') {
-        lineChart('trend-line', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
         comboChart('trend-combo', filteredDaily(), 'transaction_day', 'transaction_count', 'fraud_rate');
-        heatmap('trend-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
+        barChart('trend-drift', driftFlagRows(), row => row.drift_flag, row => row.fraud_rate, fmtPct2, null);
         barChart('trend-peaks', filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12), row => 'Day ' + row.transaction_day, row => row.fraud_rate, fmtPct2, null);
+        barChart('trend-volume-peaks', filteredDaily().slice().sort((a, b) => num(b.fraud_count) - num(a.fraud_count)).slice(0, 12), row => 'Day ' + row.transaction_day, row => row.fraud_count, fmtInt, null);
       }
       if (state.page === 'amount') {
         segmentedDrillChart('amount-bar', 'amount');
+        barChart('amount-exposure', filteredAmountRows(), row => row.amount_band, row => row.fraud_transaction_amount || row.fraud_count * 120, fmtMoneyCompact, 'amount');
         heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Amount band' });
         scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
         boxplotChart('amount-boxplot', filteredTransactions());
@@ -1410,6 +1621,7 @@
         barChart('customer-identity', getRows('identity_risk'), row => identityLabel(row), row => row.fraud_rate, fmtPct2, 'identity');
         barChart('customer-email', filteredEmailRows().slice(0, 10), row => row.purchaser_email_group, row => row.fraud_rate, fmtPct2, 'email');
         barChart('customer-device', deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
+        heatmap('customer-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2, { rowAxis: 'Payment segment', colAxis: 'Email segment' });
         heatmap('customer-matrix', getRows('identity_product_coverage'), 'product_cd', 'identity_status', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Identity status' });
         segmentedDrillChart('customer-breakdown', customerBreakdownMode());
       }
@@ -1422,8 +1634,8 @@
         dotPlotChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null, { axisTitle: 'Model importance from masked proxy fields' });
       }
       if (state.page === 'behavior') {
+        barChart('behavior-hour-risk', hourRiskRows(), row => String(row.transaction_hour) + ':00', row => row.fraud_rate, fmtPct2, null);
         heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
-        heatmap('behavior-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2, { rowAxis: 'Payment segment', colAxis: 'Email segment' });
         scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
         barChart('behavior-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate || row.fraud_rate, fmtPct2, 'risk');
         barChart('behavior-signal', behaviorSignalRows(), row => row.signal, row => row.strength, fmtPct2, null);
@@ -1453,6 +1665,28 @@
     function grid2(parts) { return '<div class="grid-2">' + parts.join('') + '</div>'; }
     function kpiRow(parts) { return '<div class="kpi-row">' + parts.join('') + '</div>'; }
     function insightRow(parts) { return '<div class="insight-row">' + parts.join('') + '</div>'; }
+    function visualModeTabs(supportCount) {
+      if (!supportCount) return '';
+      const mainActive = state.visualMode !== 'support';
+      const supportActive = state.visualMode === 'support';
+      return '<div class="visual-mode-tabs" role="tablist" aria-label="Visual layer"><button class="visual-tab-btn ' + (mainActive ? 'active' : '') + '" type="button" data-visual-mode="main">Primary Analysis</button><button class="visual-tab-btn ' + (supportActive ? 'active' : '') + '" type="button" data-visual-mode="support">Supporting Visuals<span>' + supportCount + '</span></button></div>';
+    }
+    function visualPanels(mainParts, supportParts) {
+      const supportCount = supportParts.length;
+      const activeParts = state.visualMode === 'support' && supportCount ? [grid2(supportParts)] : mainParts;
+      return visualModeTabs(supportCount) + activeParts.join('');
+    }
+    function supportingVisuals(parts, title = 'Supporting visuals') {
+      return '<details class="supporting-visuals"><summary>' + escapeHtml(title) + '<span>Diagnostics</span></summary><div class="supporting-body">' + grid2(parts) + '</div></details>';
+    }
+    function storyStrip(pageId) {
+      const rows = storyCues[pageId] || [];
+      if (!rows.length) return '';
+      return '<div class="story-strip">' + rows.map(row => storyStep(row[0], row[1], row[2])).join('') + '</div>';
+    }
+    function storyStep(label, text, color) {
+      return '<div class="story-step" style="--accent:' + color + '"><strong>' + escapeHtml(label) + '</strong><span>' + escapeHtml(text) + '</span></div>';
+    }
     function kpi(label, value, foot, color) {
       return '<div class="kpi-card" style="--accent:' + color + '"><div class="kpi-label">' + escapeHtml(label) + '</div><div class="kpi-value">' + escapeHtml(value) + '</div><div class="kpi-foot">' + escapeHtml(foot) + '</div></div>';
     }
@@ -1460,7 +1694,7 @@
       return '<div class="insight-card" style="--accent:' + color + '"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(text) + '</span></div>';
     }
     function chartCard(title, note, body, klass) {
-      return '<article class="visual-card ' + (klass || '') + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div></div>' + body + '</article>';
+      return '<article class="visual-card ' + (klass || '') + '" data-chart-title="' + escapeHtml(title) + '" data-chart-note="' + escapeHtml(note) + '" data-chart-page="' + escapeHtml(state.page) + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div></div>' + body + '</article>';
     }
     function readDetailDataset(node) {
       if (!node) return null;
@@ -1470,6 +1704,22 @@
         family: node.dataset.detailFamily || labelize(node.dataset.filterKey || 'Segment'),
         label: node.dataset.detailLabel || node.dataset.filterValue || 'Segment'
       };
+    }
+    function readChartDataset(node) {
+      if (!node) return null;
+      return {
+        page: node.dataset.chartPage || state.page,
+        title: node.dataset.chartTitle || 'Chart',
+        note: node.dataset.chartNote || ''
+      };
+    }
+    function openChartDrillDrawer(detail) {
+      if (!detail) return;
+      document.getElementById('drawer-title').textContent = 'Chart Drill-through | ' + detail.title;
+      document.getElementById('drawer-subtitle').textContent = pageLabel(detail.page) + ' - ' + currentContextLabel();
+      document.getElementById('drawer-body').innerHTML = chartDrillPathHtml(detail) + chartDrillMetricHtml(detail) + chartDrillBarsHtml(detail) + chartDrillInsightHtml(detail);
+      document.getElementById('detail-backdrop').classList.add('open');
+      document.getElementById('detail-drawer').classList.add('open');
     }
     function openDetailDrawer(detail) {
       if (!detail || !detail.key) return;
@@ -1534,6 +1784,82 @@
     function drawerInsightHtml(detail, metric) {
       const sentence = detail.family + ' segment "' + detail.label + '" shows ' + fmtPct2(metric.rate) + ' fraud rate, ' + fmtScore(metric.lift) + 'x lift, and ' + fmtMoney(metric.amount) + ' exposure proxy. Use this segment only against comparable subsegments before making a threshold decision.';
       return '<div class="drawer-copy"><strong>Analyst insight</strong><br>' + escapeHtml(sentence) + '</div>';
+    }
+    function chartDrillPathHtml(detail) {
+      const path = [pageLabel(detail.page), detail.title, chartDrillNextStep(detail)];
+      return '<div class="drill-path">' + path.map((step, index) => {
+        const chip = '<span class="drill-step">' + escapeHtml(step) + '</span>';
+        return index ? '<span class="drill-arrow">></span>' + chip : chip;
+      }).join('') + '</div>';
+    }
+    function chartDrillMetricHtml(detail) {
+      const m = metricLayer();
+      const row = selectedThreshold();
+      const metrics = [
+        ['Context', currentContextLabel()],
+        ['Fraud rate', fmtPct2(m.fraud_rate)],
+        ['Exposure proxy', fmtMoneyCompact(m.fraud_exposure)],
+        ['Review workload', fmtInt(m.review_workload)],
+        ['Capture', fmtPct(row.fraud_capture_rate)],
+        ['Chart layer', state.visualMode === 'support' ? 'Supporting' : 'Primary']
+      ];
+      return '<div class="metric-grid">' + metrics.map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
+    }
+    function chartDrillRows(detail) {
+      const page = detail.page;
+      if (page === 'overview') return getRows('segment_watchlist').slice(0, 8).map(row => ({ label: row.segment_family + ' / ' + row.segment_name, value: row.fraud_share, format: fmtPct }));
+      if (page === 'trend') return filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 8).map(row => ({ label: 'Day ' + row.transaction_day, value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'amount') return filteredAmountRows().map(row => ({ label: row.amount_band, value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'customer') return filteredEmailRows().slice(0, 8).map(row => ({ label: row.purchaser_email_group, value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'geo') return proxySignalRows().slice(0, 8).map(row => ({ label: proxySegmentLabel(row), value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'behavior') return hourRiskRows().slice(0, 8).map(row => ({ label: String(row.transaction_hour) + ':00', value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'features') return getRows('feature_importance').slice(0, 8).map(row => ({ label: row.feature, value: row.importance, format: fmtInt }));
+      if (page === 'model') return getRows('threshold_simulation').slice(0, 8).map(row => ({ label: 'T ' + fmtScore(row.score_threshold), value: row.fraud_capture_rate, format: fmtPct }));
+      if (page === 'insights') return recommendationScoreRows().slice(0, 8).map(row => ({ label: row.recommendation, value: row.score, format: fmtInt }));
+      return [];
+    }
+    function chartDrillBarsHtml(detail) {
+      const rows = chartDrillRows(detail);
+      if (!rows.length) return '';
+      const maxValue = Math.max(...rows.map(row => Math.abs(num(row.value))), .0001);
+      const bars = rows.map((row, index) => {
+        const formatter = row.format || fmtInt;
+        return '<div class="bar-row" data-tooltip="' + escapeHtml(row.label + ' | ' + formatter(row.value)) + '"><div class="bar-label">' + escapeHtml(short(row.label, 24)) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(num(row.value)) / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + escapeHtml(formatter(row.value)) + '</div></div>';
+      }).join('');
+      return '<div class="drawer-bars"><div class="filter-title">Comparable drill-through cuts</div>' + bars + '</div>';
+    }
+    function chartDrillInsightHtml(detail) {
+      const sentence = chartDrillCopy(detail);
+      return '<div class="drawer-copy"><strong>Analyst interpretation</strong><br>' + escapeHtml(sentence) + '</div>';
+    }
+    function chartDrillNextStep(detail) {
+      const map = {
+        overview: 'Segment concentration',
+        trend: 'Peak relative windows',
+        amount: 'Amount-band and product cuts',
+        customer: 'Identity, email, and payment cuts',
+        geo: 'Masked proxy subsegments',
+        behavior: 'Relative-hour behavior',
+        features: 'Feature-family signal',
+        model: 'Threshold operating point',
+        insights: 'Action prioritization'
+      };
+      return map[detail.page] || 'Comparable cuts';
+    }
+    function chartDrillCopy(detail) {
+      const title = detail.title;
+      const page = detail.page;
+      if (page === 'model') return title + ' should be read as threshold governance: capture, precision, workload, and missed exposure must move together before changing policy.';
+      if (page === 'geo') return title + ' uses masked address and distance signals only. It supports proxy risk segmentation, not geographic inference.';
+      if (page === 'features') return title + ' explains model signal strength. Treat masked features as observational evidence, not confirmed business definitions.';
+      if (page === 'amount') return title + ' should be drilled into product and payment context before assigning a rule, because amount alone can mix exposure and frequency risk.';
+      if (page === 'customer') return title + ' should be interpreted through nested identity, email, payment, and product cuts, not as a standalone customer identity claim.';
+      if (page === 'trend') return title + ' uses relative TransactionDT windows. Use it for drift behavior, not calendar seasonality.';
+      if (page === 'insights') return title + ' translates analytical evidence into a prioritized business action. Use this view to close the presentation.';
+      return title + ' supports the executive conclusion that fraud is concentrated and should be managed with segment-aware controls.';
+    }
+    function pageLabel(pageId) {
+      return pages.find(page => page.id === pageId)?.title || labelize(pageId);
     }
 
     function peerRows(detail) {
@@ -1618,6 +1944,29 @@
         threshold
       };
     }
+    function executiveEconomicsRows() {
+      const m = metricLayer();
+      return [
+        { label: 'Capturable exposure', value: m.capturable_exposure },
+        { label: 'False positive review cost', value: m.false_positive_cost },
+        { label: 'Missed exposure', value: m.missed_exposure },
+        { label: 'Net benefit proxy', value: m.net_benefit }
+      ];
+    }
+    function readinessGateRows() {
+      const rows = getRows('report_readiness');
+      if (!rows.length) {
+        const meta = state.dashboard?.meta || {};
+        return [
+          { label: 'Readiness passed', value: num(meta.readiness_passed || 0) },
+          { label: 'Readiness total', value: num(meta.readiness_total || 0) }
+        ];
+      }
+      return groupBy(rows, 'readiness_result').map(group => ({
+        label: group.key || 'Readiness check',
+        value: group.rows.length
+      })).sort((a, b) => b.value - a.value);
+    }
     function segmentMetricContext() {
       const active = Object.entries(state.filters).filter(([key, value]) => key !== 'day' && value !== 'All');
       if (!active.length) return null;
@@ -1679,6 +2028,31 @@
       const maxDay = max(rows, 'transaction_day');
       const start = maxDay - Number(state.filters.day) + 1;
       return rows.filter(row => num(row.transaction_day) >= start);
+    }
+    function driftFlagRows() {
+      return groupBy(filteredDaily(), 'drift_flag').map(group => {
+        const tx = sum(group.rows, 'transaction_count');
+        const fraud = sum(group.rows, 'fraud_count');
+        return {
+          drift_flag: group.key || 'Unclassified',
+          day_count: group.rows.length,
+          transaction_count: tx,
+          fraud_count: fraud,
+          fraud_rate: tx ? fraud / tx : 0
+        };
+      }).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function hourRiskRows() {
+      return groupBy(getRows('time_amount_signals'), 'transaction_hour').map(group => {
+        const tx = sum(group.rows, 'transaction_count');
+        const fraud = sum(group.rows, 'fraud_count');
+        return {
+          transaction_hour: group.key,
+          transaction_count: tx,
+          fraud_count: fraud,
+          fraud_rate: tx ? fraud / tx : 0
+        };
+      }).sort((a, b) => b.fraud_rate - a.fraud_rate);
     }
     function filteredProductRows() {
       return getRows('product_risk').filter(row => state.filters.product === 'All' || row.product_cd === state.filters.product);
@@ -1771,17 +2145,18 @@
       return grouped.sort((a, b) => num(b.fraud_share) - num(a.fraud_share));
     }
     function paymentEmailRows() {
+      const rows = getRows('payment_email_matrix');
+      if (rows.length) return rows;
       const payments = getRows('payment_heatmap').slice(0, 8).map(row => ({
         payment_segment: (row.card_network || 'Unknown') + ' / ' + (row.card_type || 'Unknown'),
         email_segment: 'All email',
         fraud_rate: row.fraud_rate
       }));
-      const emails = filteredEmailRows().slice(0, 8).map(row => ({
+      return payments.concat(filteredEmailRows().slice(0, 8).map(row => ({
         payment_segment: 'All payment',
         email_segment: row.purchaser_email_group,
         fraud_rate: row.fraud_rate
-      }));
-      return payments.concat(emails);
+      })));
     }
     function deviceRiskRows() {
       return groupBy(filteredTransactions(), 'device_type').map(group => {
@@ -1993,6 +2368,7 @@
 
     function comboChart(id, rows, xKey, barKey, lineKey) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = (rows || []).slice(-80);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
       const w = 720, h = 300, padLeft = 58, padRight = 30, padTop = 54, padBottom = 42;
@@ -2153,6 +2529,7 @@
 
     function donutChart(id, rows, labelKey, valueKey) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = (rows || []).filter(row => num(row[valueKey]) > 0).slice(0, 6);
       if (!source.length) { target.innerHTML = empty('No segment share data.'); return; }
       const total = sum(source, valueKey) || 1;
@@ -2169,6 +2546,7 @@
 
     function heatmap(id, rows, rowKey, colKey, valueKey, formatFn, options = {}) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No heatmap data available.'); return; }
       const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0, 8);
@@ -2192,6 +2570,7 @@
 
     function scatterChart(id, rows, xFn, yFn, groupFn, options = {}) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = (rows || []).slice(0, 160);
       if (!source.length) { target.innerHTML = empty('No transaction sample available.'); return; }
       const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
@@ -2215,6 +2594,7 @@
 
     function boxplotChart(id, rows) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No amount sample available.'); return; }
       const critical = source.filter(row => String(row.risk_category).includes('Critical')).map(row => num(row.transaction_amount));
@@ -2235,6 +2615,7 @@
 
     function treemapTiles(id, rows) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = rows.slice(0, 8);
       if (!source.length) { target.innerHTML = empty('No feature family data.'); return; }
       const maxValue = Math.max(...source.map(row => num(row.importance)), 1);
@@ -2243,6 +2624,7 @@
 
     function thresholdCurve(id) {
       const target = document.getElementById(id);
+      if (!target) return;
       const rows = getRows('threshold_simulation');
       if (!rows.length) { target.innerHTML = empty('No threshold data available.'); return; }
       const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
@@ -2258,6 +2640,7 @@
     }
     function modelReferenceCurves(id) {
       const target = document.getElementById(id);
+      if (!target) return;
       const rows = getRows('threshold_simulation');
       if (!rows.length) { target.innerHTML = empty('No model curve data available.'); return; }
       const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 38, padBottom = 46;
@@ -2295,6 +2678,7 @@
 
     function confusionMatrix(id) {
       const target = document.getElementById(id);
+      if (!target) return;
       const row = selectedThreshold();
       const k = executiveKpis();
       const tp = num(row.captured_fraud_count);
@@ -2306,6 +2690,7 @@
 
     function waterfallChart(id, rows) {
       const target = document.getElementById(id);
+      if (!target) return;
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No waterfall data available.'); return; }
       const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 58;
@@ -2327,6 +2712,8 @@
     }
 
     function recommendationMatrix(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
       const rows = [
         { action: 'Segment thresholds', x: 82, y: 78, color: '#18a999' },
         { action: 'Location enrichment', x: 48, y: 70, color: '#2563eb' },
@@ -2341,7 +2728,7 @@
         return '<g><line class="svg-grid" x1="' + x + '" y1="' + pad + '" x2="' + x + '" y2="' + (h - pad) + '"/><line class="svg-grid" x1="' + pad + '" y1="' + y + '" x2="' + (w - pad) + '" y2="' + y + '"/><text class="svg-axis" x="' + x + '" y="' + (h - 13) + '" text-anchor="middle">' + value + '</text><text class="svg-axis" x="' + (pad - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + value + '</text></g>';
       }).join('');
       const dots = rows.map(row => '<g data-tooltip="' + escapeHtml(row.action) + '"><circle cx="' + (pad + row.x / 100 * (w - pad * 2)) + '" cy="' + (h - pad - row.y / 100 * (h - pad * 2)) + '" r="9" fill="' + row.color + '"/><text x="' + (pad + row.x / 100 * (w - pad * 2) + 12) + '" y="' + (h - pad - row.y / 100 * (h - pad * 2) + 4) + '" fill="#0f172a" font-size="12">' + escapeHtml(row.action) + '</text></g>').join('');
-      document.getElementById(id).innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + scale + '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/><text x="' + (w - 120) + '" y="' + (h - 10) + '" fill="#475569" font-size="12">Impact</text><text x="8" y="24" fill="#475569" font-size="12">Effort</text>' + dots + '</svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + scale + '<line x1="' + pad + '" y1="' + (h - pad) + '" x2="' + (w - pad) + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/><line x1="' + pad + '" y1="' + pad + '" x2="' + pad + '" y2="' + (h - pad) + '" stroke="#cbd5e1"/><text x="' + (w - 120) + '" y="' + (h - 10) + '" fill="#475569" font-size="12">Impact</text><text x="8" y="24" fill="#475569" font-size="12">Effort</text>' + dots + '</svg>';
     }
 
     function dataTable(rows, columns) {

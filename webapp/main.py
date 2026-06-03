@@ -91,6 +91,19 @@ TABLE_QUERIES: dict[str, str] = {
     "daily_drift": "select * from {table} order by transaction_day",
     "time_amount_signals": "select * from {table} order by transaction_hour, amount_decimal_group",
     "payment_heatmap": "select * from {table} order by fraud_rate desc",
+    "payment_email_matrix": (
+        "select "
+        "concat(coalesce(card_network, 'Unknown'), ' / ', coalesce(card_type, 'Unknown')) as payment_segment, "
+        "coalesce(purchaser_email_group, 'Unknown') as email_segment, "
+        "count(*) as transaction_count, "
+        "sum(is_fraud) as fraud_count, "
+        "case when count(*) = 0 then 0 else sum(is_fraud) * 1.0 / count(*) end as fraud_rate, "
+        "avg(transaction_amount) as avg_transaction_amount "
+        "from {table} "
+        "group by payment_segment, email_segment "
+        "having count(*) >= 1000 "
+        "order by fraud_rate desc"
+    ),
     "email_domain_risk": "select * from {table} order by fraud_rate desc",
     "model_risk_bands": (
         "select * from {table} "
@@ -175,6 +188,7 @@ BIGQUERY_TABLES: dict[str, str] = {
     "daily_drift": "rpt_daily_drift",
     "time_amount_signals": "rpt_time_amount_signals",
     "payment_heatmap": "rpt_payment_heatmap",
+    "payment_email_matrix": "fact_train_transactions",
     "email_domain_risk": "rpt_email_domain_risk",
     "model_risk_bands": "rpt_model_risk_bands",
     "feature_importance": "rpt_feature_importance",
