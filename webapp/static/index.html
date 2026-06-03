@@ -592,7 +592,15 @@
     .svg-axis { fill: #64748b; font-size: 10px; font-weight: 760; }
     .svg-grid { stroke: #e2e8f0; stroke-width: 1; }
     .svg-label { fill: #0f172a; font-size: 11px; font-weight: 900; }
-    .svg-value { fill: #0f172a; font-size: 10px; font-weight: 900; }
+    .svg-value {
+      fill: #0f172a;
+      font-size: 10px;
+      font-weight: 900;
+      paint-order: stroke;
+      stroke: rgba(255,255,255,.94);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+    }
 
     .table-wrap {
       width: 100%;
@@ -2447,15 +2455,21 @@
       const yRate = value => h - padBottom - value / maxRate * plotH;
       const yTx = value => h - padBottom - value / maxTx * plotH;
       const yTicks = yAxisSvg(axisTicks(maxRate), yRate, padLeft, w - padRight, fmtPct2);
-      const bars = rows.map((row, index) => {
+      const barRects = rows.map((row, index) => {
         const x = padLeft + index * bw + bw * .18;
         const width = bw * .64;
         const attrs = ' data-filter-key="risk" data-filter-value="' + escapeHtml(row.label) + '" data-detail-family="Risk band" data-detail-label="' + escapeHtml(row.label) + '"';
-        const labelY = Math.max(padTop + 18, yRate(row.fraudRate) - 8);
-        return '<g' + attrs + ' data-tooltip="' + escapeHtml(row.label + ' | ' + fmtInt(row.transactions) + ' tx | ' + fmtPct2(row.fraudRate)) + '"><rect' + attrs + ' x="' + x + '" y="' + yTx(row.transactions) + '" width="' + width + '" height="' + (h - padBottom - yTx(row.transactions)) + '" rx="5" fill="rgba(37,99,235,.28)"/><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 18) + '" text-anchor="middle">' + escapeHtml(row.label) + '</text><text class="svg-value" x="' + (x + width / 2) + '" y="' + labelY + '" text-anchor="middle">' + fmtPct2(row.fraudRate) + '</text></g>';
+        return '<g' + attrs + ' data-tooltip="' + escapeHtml(row.label + ' | ' + fmtInt(row.transactions) + ' tx | ' + fmtPct2(row.fraudRate)) + '"><rect' + attrs + ' x="' + x + '" y="' + yTx(row.transactions) + '" width="' + width + '" height="' + (h - padBottom - yTx(row.transactions)) + '" rx="5" fill="rgba(37,99,235,.28)"/><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 18) + '" text-anchor="middle">' + escapeHtml(row.label) + '</text></g>';
+      }).join('');
+      const barLabels = rows.map((row, index) => {
+        const x = padLeft + index * bw + bw * .18;
+        const width = bw * .64;
+        const pointY = yRate(row.fraudRate);
+        const labelY = Math.max(padTop + 18, pointY - 15);
+        return '<text class="svg-value" x="' + (x + width / 2) + '" y="' + labelY + '" text-anchor="middle">' + fmtPct2(row.fraudRate) + '</text>';
       }).join('');
       const points = rows.map((row, index) => (padLeft + index * bw + bw / 2) + ',' + yRate(row.fraudRate)).join(' ');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="' + padLeft + '" y="22">Volume bars + fraud-rate line</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + barRects + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' + barLabels + '<text class="svg-label" x="' + padLeft + '" y="22">Volume bars + fraud-rate line</text></svg>';
     }
 
     function proxyShareChart(id) {
