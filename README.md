@@ -1,4 +1,21 @@
-﻿# Fraud Project
+﻿# IEEE-CIS Fraud Risk Intelligence
+
+[![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
+[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+## Quick Summary
+
+| | |
+|--|--|
+| **Dataset** | IEEE-CIS Fraud Detection — 590,540 transactions, $79.7M, 3.50% baseline fraud rate |
+| **Core finding** | Fraud is not random. Product C carries **11.7% fraud rate (3.34x lift)** and drives 38.8% of all fraud labels. Identity-present transactions show **7.85% fraud rate (2.24x lift)**. |
+| **Model** | LightGBM — ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision** — 7.12x better than baseline review |
+| **Stack** | DuckDB → BigQuery → dbt (20+ models) → LightGBM → FastAPI → Vercel |
+| **Output** | Live executive dashboard with threshold simulator, segment heat maps, SHAP explainability |
+
+---
 
 End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive live web analytics dashboard.
 
@@ -291,15 +308,53 @@ Vercel deploys the `webapp/` folder as the project root. The production runtime 
 
 ## Dashboard Preview
 
+The dashboard follows the fraud analyst presentation sequence: portfolio exposure → concentration patterns → proxy signals → model evidence → threshold decision → recommendations.
+
+### 1. Executive Fraud Overview — Portfolio context and risk band exposure
+
+*Answers: What is total fraud exposure? Where does the model concentrate fraud across risk bands?*
+
 ![Executive web overview](docs/assets/web_dashboard_executive_overview.png)
+
+Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure, $2.46M net benefit proxy at selected threshold. The risk band chart shows Critical and High bands carry 96.31% and 44.39% fraud rates — confirming the model concentrates fraud effectively. Product risk ranking visible at page bottom.
+
+---
+
+### 2. Customer Risk Analysis — Identity and email segmentation
+
+*Answers: Which customer proxies signal higher fraud? Does identity availability predict risk?*
 
 ![Customer risk heatmap](docs/assets/web_dashboard_customer_risk.png)
 
+Identity-present transactions: 7.85% fraud rate (2.24x lift). Identity-missing: 2.09%. Email domain ranking: hotmail.com 5.30%, gmail.com 4.33%. Payment × email heatmap isolates MASTERCARD/CREDIT + gmail.com at 11.16% — the highest observable cross-segment rate.
+
+---
+
+### 3. Model Performance Analysis — Threshold decision evidence
+
+*Answers: How well does the model rank fraud? Which threshold policy is defensible?*
+
 ![Model threshold simulation](docs/assets/web_dashboard_model_threshold.png)
+
+ROC-AUC 0.9167, PR-AUC 0.5308 (vs 3.44% baseline). Interactive threshold simulator: at 0.50 threshold — 87.4% fraud capture, 33.3% precision, 54,159 workload transactions, $312K missed exposure. Precision-recall curve and confusion matrix confirm the model separates fraud from legitimate transactions at every operating point.
+
+---
+
+### 4. Masked Address & Distance Analysis — Proxy risk signals
+
+*Answers: Do anonymized address and distance fields carry fraud signal?*
 
 ![Masked proxy analysis](docs/assets/web_dashboard_masked_proxy.png)
 
+Top proxy lift: 3.37x for "Address missing" segment. Product × proxy heatmap: **Product C with address missing shows 11.87% fraud rate** — the single highest observable rate in the dataset. Proxy fraud share vs volume share chart confirms signal strength is independent of population size.
+
+---
+
+### 5. Mobile Executive View
+
 ![Mobile overview](docs/assets/web_dashboard_mobile_overview.png)
+
+Responsive layout for executive review on mobile. Portfolio KPIs and risk band distribution accessible without desktop.
 
 ## Quality Gates
 
