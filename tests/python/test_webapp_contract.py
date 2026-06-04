@@ -297,10 +297,25 @@ def test_threshold_slider_updates_selected_scenario_cards() -> None:
     )[0]
 
     assert "selectedThreshold()" in section
+    assert "const target = document.getElementById('threshold-summary');" in section
+    assert "if (!target) return;" in section
+    assert "target.innerHTML" in section
     assert "Fraud Capture" in section
     assert "Missed Exposure" in section
     assert "Precision" in section
     assert "Validation Workload" in section
+
+
+def test_model_supporting_visuals_are_hydrated_after_threshold_guard() -> None:
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    model_hydration = html.split("if (state.page === 'model')", 1)[1].split(
+        "if (state.page === 'insights')",
+        1,
+    )[0]
+
+    assert "renderThresholdSummary();" in model_hydration
+    assert "barChart('model-features'" in model_hydration
+    assert "modelRegistryCard('model-registry');" in model_hydration
 
 
 def test_behavior_peak_relative_hour_uses_charted_hour_risk_rows() -> None:
