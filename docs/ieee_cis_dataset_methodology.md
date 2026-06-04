@@ -6,7 +6,7 @@ The IEEE-CIS Fraud Detection dataset is treated as an e-commerce payment fraud d
 
 Implications for banking presentation:
 
-- Card, product, device, email, amount, and identity signals are relevant to fraud operations.
+- Card, product, device, email, amount, and identity signals are relevant to fraud analytics and threshold-policy design.
 - KYC, account-balance, branch, counterparty, and ledger-level banking fields are not present.
 - Masked fields are used as statistical signals, not as fully interpretable business definitions.
 
@@ -55,7 +55,7 @@ The raw transaction table includes V1-V339 anonymous engineered features. The ac
 Rationale:
 
 - The objective is a portfolio-grade analytical pipeline with stable local runtime and interpretable output.
-- Feature importance and SHAP artifacts are used to show which selected features actually drive model splits.
+- Feature importance and feature contribution artifacts are used to show which selected features actually drive model splits.
 - The report avoids business over-interpretation of individual V fields.
 
 Current limitation:
@@ -93,7 +93,7 @@ Purpose:
 
 - Separate round-amount behavior from fractional-amount behavior.
 - Support fraud-rate comparison by amount pattern.
-- Give operations an additional rule-candidate signal without relying only on broad amount bands.
+- Give the business an additional rule-candidate signal without relying only on broad amount bands.
 
 ## Email Domain Grouping
 

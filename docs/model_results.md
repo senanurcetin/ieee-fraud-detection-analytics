@@ -1,8 +1,8 @@
-# Model Results
+﻿# Model Results
 
 ## Objective
 
-The model is designed as a review-prioritization layer for fraud operations. It is not positioned as an automated decline engine. The practical question is: can the model rank transactions well enough to concentrate fraud labels into a manageable review queue?
+The model is designed as a threshold-policy evidence layer. It is not positioned as an automated decline engine. The practical question is: can the model rank transactions well enough to concentrate fraud labels into measurable risk bands?
 
 ## Validation Design
 
@@ -19,21 +19,23 @@ The project reports:
 - ROC-AUC for ranking quality.
 - Average precision / AUC-PR proxy for imbalanced-class performance.
 - Precision, recall, and false-positive rate at operating thresholds.
-- Review workload share to connect model thresholds to analyst capacity.
+- Workload share to connect model thresholds to business capacity.
 - Lift to show whether high-score bands concentrate fraud.
 
 ## Validation Metrics
 
 | Metric | Value | Interpretation |
 |---|---:|---|
-| ROC-AUC | 0.9139 | Strong ranking quality across thresholds |
-| Average precision / AUC-PR proxy | 0.5370 | Materially above the 3.44% validation fraud baseline |
+| ROC-AUC | 0.9134 | Strong ranking quality across thresholds |
+| Average precision / AUC-PR proxy | 0.5354 | Materially above the 3.44% validation fraud baseline |
 | Validation fraud baseline | 3.44% | Base precision before model prioritization |
-| Top 10% validation score lift | 7.24x | Top decile fraud rate versus validation baseline |
-| High + Critical precision | 40.4% | Share of reviewed High + Critical transactions that are fraud |
-| High + Critical recall | 59.4% | Share of fraud labels captured by the High + Critical queue |
-| High + Critical false-positive rate | 3.12% | Legitimate validation transactions sent to review |
-| High + Critical workload share | 5.06% | Share of validation transactions requiring review |
+| Top 10% validation score lift | 7.12x | Top decile fraud rate versus validation baseline |
+| Top 5% validation precision | 40.13% | Share of top-score validation transactions that are fraud |
+| Top 5% validation recall | 58.32% | Share of fraud labels captured by the top 5% score band |
+| Top 5% validation false-positive rate | 3.10% | Legitimate validation transactions flagged by the top 5% score band |
+| Top 5% validation workload share | 5.00% | Share of validation transactions in the focused score band |
+| Fixed 0.50 threshold precision | 25.68% | Precision when using a fixed probability threshold |
+| Fixed 0.50 threshold recall | 69.78% | Fraud capture when using a fixed probability threshold |
 | Registry feature count | 425 | Active registry scope after V1-V339 missingness-filtered expansion |
 | Rolling CV mean ROC-AUC | 0.9100 | Three expanding windows show stable ranking performance |
 
@@ -48,11 +50,11 @@ The registry records `training_date`, `model_version`, V-feature scope, feature 
 
 ## Operating Point
 
-The recommended operating point is the High + Critical queue. It is a pragmatic balance between fraud capture and review capacity:
+The dashboard presents two threshold-policy operating points:
 
-- It reviews a small share of total transactions.
-- It captures a majority of fraud labels in the validation holdout.
-- It improves analyst efficiency by raising the reviewed population's fraud rate far above baseline.
+- The top 5% validation score band is the focused control scenario: 40.13% precision, 58.32% recall, and 5.00% workload.
+- The fixed 0.50 threshold is the higher-capture scenario: 25.68% precision, 69.78% recall, and 9.35% workload.
+- Both options raise fraud concentration far above the 3.44% validation baseline.
 
 This threshold should be recalibrated if analyst capacity, fraud cost, customer friction cost, or product mix changes.
 
@@ -81,24 +83,25 @@ Top 10 feature importance snapshot:
 
 - Precision-recall curve: `docs/assets/precision_recall_curve.svg`
 - Feature importance export: `docs/assets/model_feature_importance.png`
-- SHAP summary export: `docs/assets/model_shap_summary.png`
-- Case-level explanation endpoint: `/api/enterprise/cases/{transaction_id}/explain`
+- Feature contribution summary export: `docs/assets/model_shap_summary.png`
+- Transaction explanation endpoint: `/api/enterprise/cases/{transaction_id}/explain`
 
 ## Business Interpretation
 
-The model creates value by turning a low-prevalence fraud problem into an ordered review queue. Instead of asking operations to inspect the full transaction population, the model identifies a narrow set of high-risk transactions where fraud concentration is materially higher than baseline.
+The model creates value by turning a low-prevalence fraud problem into threshold-policy evidence. Instead of treating the full transaction population equally, the model identifies narrow high-score bands where fraud concentration is materially higher than baseline.
 
 Recommended use:
 
 | Risk band | Operational use |
 |---|---|
-| Critical | Immediate review or additional verification |
-| High | Same-day priority review |
-| Elevated | Sample-based manual control and weekly monitoring |
-| Low | Standard automated monitoring |
+| Critical | Critical threshold-policy focus |
+| High | High-priority analytical review band |
+| Elevated | Sample-based control check and monitoring |
+| Low | Baseline monitoring |
 
 ## Remaining Model Improvements
 
 - Test calibrated probability outputs if the model will be used for cost-sensitive thresholding.
 - Add cost-weighted threshold optimization using false-negative cost, false-positive review cost, and customer-friction assumptions.
 - Add analyst feedback outcomes before any production-style decision automation.
+

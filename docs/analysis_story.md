@@ -2,7 +2,7 @@
 
 ## Core Question
 
-Where does fraud concentrate, and how should a fraud operations team monitor it?
+Where does fraud concentrate, and which threshold and segment policies should management prioritize?
 
 ## Executive Narrative
 
@@ -10,8 +10,8 @@ Where does fraud concentrate, and how should a fraud operations team monitor it?
 2. Product risk is uneven: Product C is materially above the baseline, while Product W is lower risk at portfolio level.
 3. Identity availability is a signal: identity-present transactions show higher fraud concentration than identity-missing transactions.
 4. Amount risk is nonlinear: very low-value and higher-value bands both need monitoring.
-5. Payment and email attributes add operationally explainable segments.
-6. Model scores should be used as a prioritization layer, not as a fully automated decision engine.
+5. Payment and email attributes add explainable BI segments.
+6. Model scores should be used as threshold-policy evidence, not as a fully automated decision engine.
 
 ## Recommended Presentation Flow
 

@@ -2,17 +2,17 @@
 
 ## Positioning
 
-This project is framed as fraud monitoring and review prioritization, not as an automated adverse decisioning system. The model ranks transactions for analyst attention; final action should remain governed by policy, auditability, and human approval.
+This project is framed as fraud monitoring and threshold-policy evidence, not as an automated adverse decisioning system. The model ranks transactions for analytical prioritization; final action should remain governed by policy, auditability, and human approval.
 
 ## PSD2 and Strong Customer Authentication
 
 For card-not-present and digital payment scenarios, PSD2-style strong customer authentication principles are relevant to the risk narrative:
 
-- High-risk segments can trigger stronger authentication or step-up review.
+- High-risk segments can trigger stronger authentication or additional business review.
 - Low-risk segments can remain on a standard monitoring path to reduce friction.
 - Risk scoring should be explainable enough to support exemption and step-up decisions.
 
-The report's risk bands support this logic by separating `Critical`, `High`, `Elevated`, and `Low` review priorities.
+The report's risk bands support this logic by separating `Critical`, `High`, `Elevated`, and `Low` policy priorities.
 
 ## AML and Financial Crime Monitoring
 
@@ -20,8 +20,8 @@ Fraud analytics overlaps with broader financial crime monitoring but should not 
 
 - Segment-level monitoring for unusual concentration.
 - Watchlist-style outputs for product, device, payment, and email groups.
-- Audit trails for model version, threshold, and review policy.
-- Escalation rules for high-risk queues.
+- Audit trails for model version, threshold, and policy changes.
+- Escalation rules for high-risk threshold bands.
 
 ## GDPR and Data Minimization
 
@@ -31,7 +31,7 @@ The IEEE-CIS dataset is anonymized, and this project does not redistribute raw d
 - Avoid exposing direct personal identifiers in dashboards.
 - Restrict analyst access by role.
 - Keep model explanations at feature-family or segment level when individual-level detail is not required.
-- Retain model outputs and review decisions according to the institution's retention policy.
+- Retain model outputs and business decisions according to the institution's retention policy.
 
 ## Governance Requirements Before Production
 

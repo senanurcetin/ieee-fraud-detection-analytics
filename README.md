@@ -1,4 +1,4 @@
-# Fraud Project
+﻿# Fraud Project
 
 End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive live web analytics dashboard.
 
@@ -12,9 +12,9 @@ Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate i
 
 - Product risk is concentrated: Product C has an 11.7% fraud rate, 3.34x lift, and 38.8% of fraud labels while representing 68,519 transactions.
 - Identity availability is an analytical signal: only 144,233 of 590,540 train transactions have identity records, creating a 24.42% identity coverage rate; identity-present transactions show 7.85% fraud rate and 2.24x lift.
-- Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9139 and the average precision / AUC-PR proxy is 0.5370.
-- The top-score region is operationally valuable: the top 10% validation score band has 7.24x lift versus the validation fraud baseline.
-- The recommended High + Critical operating band covers about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision.
+- Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9134 and the average precision / AUC-PR proxy is 0.5354.
+- The top-score region is analytically valuable: the top 10% validation score band has 7.12x lift versus the validation fraud baseline.
+- The model threshold page separates holdout evidence from reporting-score segmentation: the top 5% validation score band captures 58.32% of fraud labels at 40.13% precision, while the fixed 0.50 threshold captures 69.78% at 25.68% precision.
 
 ## Executive Summary
 
@@ -27,7 +27,7 @@ Portfolio snapshot:
 - Baseline fraud rate: 3.50%
 - Total transaction amount: $79.7M
 - Fraud-labeled amount: $3.08M
-- Recommended review policy: start with High + Critical model bands and segment-level controls, covering 5.06% of validation transactions and 59.4% of fraud labels in the validation holdout.
+- Recommended threshold-policy frame: start with the top 5% validation score band for a focused business-control scenario, then use the 0.50 threshold scenario when recall is prioritized over workload.
 
 ## Architecture Diagram
 
@@ -174,7 +174,7 @@ The final report is designed for executive review, not exploratory notebook brow
 | Where does risk concentrate? | `rpt_product_risk`, `rpt_identity_risk`, `rpt_segment_watchlist` |
 | Do amount and time patterns matter? | `rpt_amount_bands`, `rpt_time_amount_signals`, `rpt_daily_drift` |
 | Which payment and email segments need monitoring? | `rpt_payment_heatmap`, `rpt_email_domain_risk` |
-| Can the model support threshold policy? | `rpt_model_risk_bands`, `rpt_threshold_simulation`, `rpt_review_strategy` |
+| Can the model support threshold policy? | `rpt_model_risk_bands`, `rpt_validation_threshold_simulation`, `rpt_segment_model_performance` |
 | Is the data pipeline trustworthy? | `rpt_quality_contract`, `rpt_report_readiness`, dbt tests |
 
 Current validation snapshot:
@@ -185,24 +185,29 @@ Current validation snapshot:
 | Fraud-labeled train transactions | 20,663 |
 | Baseline fraud rate | 3.50% |
 | Identity coverage rate | 24.42% |
-| ROC-AUC | 0.9139 |
-| Average precision / AUC-PR proxy | 0.5370 |
-| Top 10% validation score lift | 7.24x |
-| High + Critical precision | 40.4% |
-| High + Critical recall | 59.4% |
-| High + Critical false-positive rate | 3.12% |
-| High + Critical review workload | 5.06% |
+| ROC-AUC | 0.9134 |
+| Average precision / AUC-PR proxy | 0.5354 |
+| Top 10% validation score lift | 7.12x |
+| Top 5% validation precision | 40.13% |
+| Top 5% validation recall | 58.32% |
+| Top 5% validation false-positive rate | 3.10% |
+| Top 5% validation workload | 5.00% |
+| Fixed 0.50 threshold precision | 25.68% |
+| Fixed 0.50 threshold recall | 69.78% |
+| Fixed 0.50 threshold workload | 9.35% |
 
 ## ML Scoring Layer
 
 The scoring script trains a `LightGBMClassifier` with a time-based validation split using the last 20% of `TransactionDT` as holdout data. Outputs include:
 
 - `raw.ml_predictions`
+- `raw.validation_predictions`
+- `raw.validation_threshold_simulation`
 - `raw.feature_importance`
 - validation ROC curve data
 - model metrics in `raw_profile.json`
 
-The model is used as a review-prioritization layer, not as an automated decline engine.
+The model is used as a threshold-policy and prioritization evidence layer, not as an automated decline engine.
 
 Current validation design:
 
@@ -214,9 +219,10 @@ Current validation design:
 
 Latest local validation snapshot:
 
-- ROC-AUC: 0.9139
-- Average precision: 0.5370
-- High + Critical operating point: 40.4% precision, 59.4% recall, 3.12% false-positive rate, 5.06% review workload
+- ROC-AUC: 0.9134
+- Average precision: 0.5354
+- Top 5% validation score band: 40.13% precision, 58.32% recall, 3.10% false-positive rate, 5.00% workload
+- Fixed 0.50 threshold: 25.68% precision, 69.78% recall, 7.20% false-positive rate, 9.35% workload
 - Registry feature scope: 425 features, including V1-V339 after missingness filtering
 - Categorical features: 26
 - Model registry endpoint: `/api/enterprise/model-registry`
@@ -225,7 +231,7 @@ Latest local validation snapshot:
 Model explainability artifacts:
 
 - [Feature importance](docs/assets/model_feature_importance.png)
-- [SHAP summary](docs/assets/model_shap_summary.png)
+- [Feature contribution summary](docs/assets/model_shap_summary.png)
 - [Precision-recall curve](docs/assets/precision_recall_curve.svg)
 - [Threshold simulation and business impact](docs/banking_business_impact.md)
 
@@ -233,13 +239,15 @@ Validation evidence:
 
 | Metric | Value |
 |---|---:|
-| ROC-AUC | 0.9139 |
-| Average precision / AUC-PR proxy | 0.5370 |
-| Validation top 10% lift | 7.24x |
-| Validation High + Critical precision | 40.4% |
-| Validation High + Critical recall | 59.4% |
-| Validation High + Critical false-positive rate | 3.12% |
-| Validation High + Critical workload share | 5.06% |
+| ROC-AUC | 0.9134 |
+| Average precision / AUC-PR proxy | 0.5354 |
+| Validation top 10% lift | 7.12x |
+| Validation top 5% precision | 40.13% |
+| Validation top 5% recall | 58.32% |
+| Validation top 5% false-positive rate | 3.10% |
+| Validation top 5% workload share | 5.00% |
+| Fixed 0.50 threshold precision | 25.68% |
+| Fixed 0.50 threshold recall | 69.78% |
 
 ## Live Web Dashboard
 
@@ -260,7 +268,7 @@ The live dashboard reads the dbt-built BigQuery reporting tables and is the main
 - Pareto, heatmap, waterfall, scatter, boxplot, treemap, matrix, and threshold-simulation visuals
 - Customer proxy analysis with full-width payment x email heatmap and supporting identity/device drilldowns
 - Masked address and distance analysis without unsupported geography claims
-- Threshold what-if simulation with workload, capture, precision, missed exposure, and net benefit proxy
+- Validation threshold what-if simulation with workload, capture, precision, missed exposure, and net benefit proxy
 - Feature importance, feature-family treemap, missingness analysis, and model-quality evidence
 - KPI dictionary, methodology limitations, production validation, and public API metadata contract
 
@@ -277,7 +285,7 @@ uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 
 Then open `http://127.0.0.1:8000`.
 
-The API reads pre-aggregated `rpt_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard. A separate `/api/metadata` endpoint publishes the KPI dictionary, methodology controls, operating assumptions, and quality gates used by the public dashboard.
+The API reads pre-aggregated `rpt_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard. A separate `/api/metadata` endpoint publishes the KPI dictionary, methodology controls, operating assumptions, and quality gates used by the public dashboard. Transaction explanation endpoints use model feature-importance context and transaction-level raw values; they are not presented as full instance-level model attribution.
 
 Vercel deploys the `webapp/` folder as the project root. The production runtime uses Vercel environment variables, including `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`, instead of local credential files.
 
@@ -304,8 +312,8 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 
 Latest validation snapshot:
 
-- dbt local build: `PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133`
-- dbt project scope: 33 models, 99 data tests, 8 sources, 1 exposure
+- dbt local build: `PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158`
+- dbt project scope: 36 models, 121 data tests, 10 sources, 1 exposure
 - Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; reporting fact 590,540
 - GitHub Actions: Python quality, pytest, web dashboard contract checks, dependency audit, and dbt parse/build workflow
 
@@ -335,3 +343,4 @@ Latest validation snapshot:
 ## License
 
 Code and documentation are released under the MIT License. The Kaggle dataset is not redistributed; users must download it from Kaggle and comply with the competition terms.
+

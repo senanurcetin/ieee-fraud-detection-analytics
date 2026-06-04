@@ -1,4 +1,4 @@
-# Model Validation Evidence
+﻿# Model Validation Evidence
 
 ## Validation Design
 
@@ -13,16 +13,18 @@ The project does not use random k-fold validation because random splits can leak
 
 | Metric | Value | Interpretation |
 |---|---:|---|
-| ROC-AUC | 0.9139 | Ranking quality across thresholds |
-| Average precision / AUC-PR proxy | 0.5370 | More relevant than accuracy for 3.5% fraud prevalence |
+| ROC-AUC | 0.9134 | Ranking quality across thresholds |
+| Average precision / AUC-PR proxy | 0.5354 | More relevant than accuracy for 3.5% fraud prevalence |
 | Validation fraud baseline | 3.44% | Precision baseline for the holdout set |
-| Top 10% validation score lift | 7.24x | Top-score decile fraud rate vs. validation baseline |
-| High + Critical threshold precision | 40.4% | Validation precision at the p95 train-score threshold |
-| High + Critical threshold recall | 59.4% | Validation fraud capture at the p95 train-score threshold |
-| High + Critical threshold false-positive rate | 3.12% | Legitimate validation transactions sent to review |
-| High + Critical threshold workload share | 5.06% | Share of validation transactions reviewed |
+| Top 10% validation score lift | 7.12x | Top-score decile fraud rate vs. validation baseline |
+| Top 5% validation precision | 40.13% | Precision in the focused top-score validation band |
+| Top 5% validation recall | 58.32% | Fraud capture in the focused top-score validation band |
+| Top 5% validation false-positive rate | 3.10% | Legitimate validation transactions flagged by the focused band |
+| Top 5% validation workload share | 5.00% | Share of validation transactions flagged by the focused band |
+| Fixed 0.50 threshold precision | 25.68% | Precision under a fixed probability threshold |
+| Fixed 0.50 threshold recall | 69.78% | Fraud capture under a fixed probability threshold |
 
-The same risk-band policy on the full training window captures 78.3% of fraud labels at 5.0% review workload. The validation metrics above are stricter and should be used when discussing generalization.
+The reporting-score risk bands remain useful for segmentation, but the validation metrics above should be used when discussing model generalization.
 
 ## Precision-Recall Curve
 
@@ -34,7 +36,7 @@ The fraud rate is approximately 3.5%, so accuracy is not used as a success metri
 
 - ROC-AUC for ranking quality.
 - Average precision / PR behavior for imbalance-aware evaluation.
-- Review workload share to connect model thresholds to analyst capacity.
+- Workload share to connect model thresholds to capacity.
 - Precision, recall, and false-positive rate at operating thresholds.
 - Lift to explain concentration in the highest-score population.
 
@@ -50,3 +52,4 @@ Recommended next experiment:
 - Add expanding-window time-based cross-validation.
 - Report mean and standard deviation for ROC-AUC, AUC-PR, recall, false-positive rate, and lift.
 - Compare against the current single-holdout result before changing model policy.
+

@@ -1,7 +1,7 @@
 {
   "model_name": "LightGBMClassifier",
   "model_version": "lightgbm-v2-v339-missingness-filtered",
-  "training_date": "2026-06-04T11:51:16.659875+00:00",
+  "training_date": "2026-06-04T13:21:29.485373+00:00",
   "validation_strategy": "time-based holdout plus expanding rolling cross-validation",
   "data_scope": {
     "raw_train_transactions": 590540,
@@ -17,15 +17,15 @@
     "feature_selection_note": "Anonymous Vesta V features are included when train missingness is at or below the configured ceiling."
   },
   "holdout_metrics": {
-    "roc_auc": 0.9138997209289577,
-    "average_precision": 0.5370379705414774
+    "roc_auc": 0.9134499683365752,
+    "average_precision": 0.5354133855429195
   },
   "rolling_cv_summary": {
     "window_count": 3,
-    "roc_auc_mean": 0.909996042960095,
+    "roc_auc_mean": 0.9098876990653824,
     "roc_auc_min": 0.8919284061904369,
-    "average_precision_mean": 0.5528116423095741,
-    "average_precision_min": 0.5219937843604052
+    "average_precision_mean": 0.5520780091663403,
+    "average_precision_min": 0.5197928849307036
   },
   "rolling_cv_windows": [
     {
@@ -57,14 +57,14 @@
       "validation_start_dt": 12192900,
       "validation_end_dt": 15811131,
       "fraud_rate": 0.034409184813899145,
-      "roc_auc": 0.914173657064465,
-      "average_precision": 0.5219937843604052,
+      "roc_auc": 0.9138486253803271,
+      "average_precision": 0.5197928849307036,
       "concept_drift_flag": "Stable"
     }
   ],
   "risk_thresholds": {
-    "elevated_p80": 0.2657832818613703,
-    "high_p95": 0.673479670907456,
-    "critical_p99": 0.983068965749926
+    "elevated_p80": 0.26522760586028793,
+    "high_p95": 0.6728613770065369,
+    "critical_p99": 0.9831488341636616
   }
 }

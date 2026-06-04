@@ -1,4 +1,4 @@
-"""FastAPI application for the live fraud analytics web dashboard."""
+﻿"""FastAPI application for the live fraud analytics web dashboard."""
 
 from __future__ import annotations
 
@@ -174,6 +174,11 @@ TABLE_QUERIES: dict[str, str] = {
     "niche_drilldown": NICHE_DRILLDOWN_QUERY,
     "review_strategy": "select * from {table} order by band_rank",
     "threshold_simulation": "select * from {table} order by score_threshold",
+    "validation_threshold_simulation": "select * from {table} order by score_threshold",
+    "segment_model_performance": (
+        "select * from {table} "
+        "order by segment_family, precision_rate desc, validation_fraud_count desc"
+    ),
     "report_narrative": "select * from {table} order by page_order",
     "quality_contract": "select * from {table} order by object_name",
     "report_readiness": "select * from {table} order by check_id",
@@ -200,6 +205,8 @@ BIGQUERY_TABLES: dict[str, str] = {
     "niche_drilldown": "fact_train_transactions",
     "review_strategy": "rpt_review_strategy",
     "threshold_simulation": "rpt_threshold_simulation",
+    "validation_threshold_simulation": "rpt_validation_threshold_simulation",
+    "segment_model_performance": "rpt_segment_model_performance",
     "report_narrative": "rpt_report_narrative",
     "quality_contract": "rpt_quality_contract",
     "report_readiness": "rpt_report_readiness",
@@ -237,19 +244,19 @@ KPI_DEFINITIONS: list[dict[str, str]] = [
         "business_use": "Separates high-risk niche segments from segments that also matter operationally.",
     },
     {
-        "kpi": "Review workload",
-        "definition": "Transactions that would enter the analyst review queue at a selected threshold.",
-        "business_use": "Connects model thresholds to operational capacity planning.",
+        "kpi": "Flagged workload",
+        "definition": "Transactions that would be flagged by the selected model threshold.",
+        "business_use": "Connects model thresholds to capacity and cost planning without implying automatic decisions.",
     },
     {
         "kpi": "Fraud capture",
         "definition": "Fraud labels captured by the selected model threshold or risk band.",
-        "business_use": "Estimates how much fraud the proposed queue can surface for review.",
+        "business_use": "Estimates how much fraud the proposed threshold can surface for additional control.",
     },
     {
         "kpi": "Precision",
-        "definition": "Captured fraud cases divided by reviewed transactions.",
-        "business_use": "Estimates review efficiency and false-positive burden.",
+        "definition": "Captured fraud cases divided by threshold-flagged transactions.",
+        "business_use": "Estimates threshold efficiency and false-positive burden.",
     },
 ]
 
@@ -271,7 +278,7 @@ METHODOLOGY_NOTES: list[dict[str, str]] = [
     },
     {
         "topic": "Model use",
-        "note": "The model is a prioritization layer for review queues, not an automated decline or customer-blocking engine.",
+        "note": "The model is a prioritization layer for threshold policy and analytical review, not an automated decline or customer-blocking engine.",
         "control": "Threshold simulation reports capture, precision, workload, and missed exposure before recommending action.",
     },
     {
@@ -285,7 +292,7 @@ OPERATING_ASSUMPTIONS: list[dict[str, str]] = [
     {
         "assumption": "Analyst capacity",
         "default_value": "180 reviews per analyst day",
-        "purpose": "Used by the model operations simulator to flag queue pressure.",
+        "purpose": "Used by the threshold simulator to flag capacity pressure.",
     },
     {
         "assumption": "False-positive review cost",
@@ -314,14 +321,16 @@ QUALITY_GATES: list[dict[str, str]] = [
 
 MODEL_VALIDATION_METRICS: list[dict[str, str]] = [
     {"metric": "Validation design", "value": "Time-based holdout", "interpretation": "Reduces leakage risk from relative transaction time."},
-    {"metric": "ROC-AUC", "value": "0.9139", "interpretation": "Strong ranking performance across score thresholds."},
-    {"metric": "Average precision", "value": "0.5370", "interpretation": "More informative than accuracy for the 3.5% fraud base rate."},
-    {"metric": "Brier score", "value": "0.0654", "interpretation": "Probability calibration error; lower is better and should be tracked before production decisioning."},
-    {"metric": "Expected calibration error", "value": "14.87%", "interpretation": "Weighted score-to-observed-rate gap across validation deciles."},
-    {"metric": "KS statistic", "value": "67.81%", "interpretation": "Maximum score-distribution separation between fraud and legitimate transactions."},
-    {"metric": "Top decile lift", "value": "7.24x", "interpretation": "The highest-score decile contains materially more fraud than the baseline."},
-    {"metric": "p95 precision", "value": "40.72%", "interpretation": "Precision for the validation top 5% review queue."},
-    {"metric": "p95 recall", "value": "59.18%", "interpretation": "Fraud labels captured by the validation top 5% review queue."},
+    {"metric": "ROC-AUC", "value": "0.9134", "interpretation": "Strong ranking performance across score thresholds."},
+    {"metric": "Average precision", "value": "0.5354", "interpretation": "More informative than accuracy for the 3.5% fraud base rate."},
+    {"metric": "Brier score", "value": "0.0636", "interpretation": "Probability calibration error; lower is better and should be tracked before production decisioning."},
+    {"metric": "Expected calibration error", "value": "14.52%", "interpretation": "Weighted score-to-observed-rate gap across validation deciles."},
+    {"metric": "KS statistic", "value": "67.32%", "interpretation": "Maximum score-distribution separation between fraud and legitimate transactions."},
+    {"metric": "Top decile lift", "value": "7.12x", "interpretation": "The highest-score decile contains materially more fraud than the validation baseline."},
+    {"metric": "p95 precision", "value": "40.13%", "interpretation": "Precision for the validation top 5% threshold policy."},
+    {"metric": "p95 recall", "value": "58.32%", "interpretation": "Fraud labels captured by the validation top 5% threshold policy."},
+    {"metric": "0.50 threshold precision", "value": "25.68%", "interpretation": "Validation precision at the dashboard default score threshold."},
+    {"metric": "0.50 threshold recall", "value": "69.78%", "interpretation": "Validation fraud capture at the dashboard default score threshold."},
     {"metric": "Feature count", "value": "425", "interpretation": "Model registry expands Vesta engineered features to V1-V339 with missingness filtering."},
 ]
 
@@ -339,27 +348,29 @@ MODEL_REGISTRY: dict[str, Any] = {
         "selection_logic": "Anonymous Vesta features are retained when train missingness is at or below the configured ceiling.",
     },
     "holdout_metrics": {
-        "roc_auc": 0.9138997209289577,
-        "average_precision": 0.5370379705414774,
-        "top_decile_lift": 7.24,
-        "p95_precision": 0.4072,
-        "p95_recall": 0.5918,
+        "roc_auc": 0.9134499683365752,
+        "average_precision": 0.5354133855429195,
+        "top_decile_lift": 7.1234,
+        "p95_precision": 0.4013,
+        "p95_recall": 0.5832,
+        "threshold_050_precision": 0.2568,
+        "threshold_050_recall": 0.6978,
     },
     "rolling_cv_summary": {
         "window_count": 3,
-        "roc_auc_mean": 0.909996042960095,
+        "roc_auc_mean": 0.9098876990653824,
         "roc_auc_min": 0.8919284061904369,
-        "average_precision_mean": 0.5528116423095741,
-        "average_precision_min": 0.5219937843604052,
+        "average_precision_mean": 0.5520780091663402,
+        "average_precision_min": 0.5197928849307036,
         "concept_drift_status": "Stable monitoring baseline",
     },
     "rolling_cv_windows": [
         {"window_number": 1, "roc_auc": 0.8919284061904369, "average_precision": 0.5521662421015207, "fraud_rate": 0.03750804348562333, "concept_drift_flag": "Stable"},
         {"window_number": 2, "roc_auc": 0.9238860656253831, "average_precision": 0.5842749004667965, "fraud_rate": 0.03904053916754157, "concept_drift_flag": "Stable"},
-        {"window_number": 3, "roc_auc": 0.914173657064465, "average_precision": 0.5219937843604052, "fraud_rate": 0.034409184813899145, "concept_drift_flag": "Stable"},
+        {"window_number": 3, "roc_auc": 0.9138486253803271, "average_precision": 0.5197928849307036, "fraud_rate": 0.034409184813899145, "concept_drift_flag": "Stable"},
     ],
     "risk_policy": {
-        "model_use": "review prioritization only",
+        "model_use": "threshold-policy evidence only",
         "transaction_dt_note": "TransactionDT is relative elapsed time, not a calendar timestamp.",
         "masked_feature_note": "V, C, D, M, address, and identity fields are interpreted as observational signals.",
     },
@@ -368,12 +379,12 @@ MODEL_REGISTRY: dict[str, Any] = {
 THRESHOLD_DECISION_POLICY: list[dict[str, str]] = [
     {
         "rule": "Primary operating rule",
-        "decision": "Start with the smallest review queue that meets the fraud-capture target while staying inside analyst capacity.",
+        "decision": "Start with the smallest threshold band that meets the fraud-capture target while staying inside capacity.",
         "evidence": "The dashboard recalculates capture, precision, workload, false-positive cost, and missed exposure from the selected threshold.",
     },
     {
         "rule": "Capacity breach",
-        "decision": "If daily reviews exceed available capacity, raise the score threshold or restrict operations to High and Critical segments.",
+        "decision": "If daily flagged volume exceeds available capacity, raise the score threshold or restrict the analysis to High and Critical segments.",
         "evidence": "The capacity simulator compares selected-threshold daily workload against the analyst capacity input.",
     },
     {
@@ -397,12 +408,12 @@ BUSINESS_IMPACT_SCENARIOS: list[dict[str, str]] = [
     {
         "scenario": "High review cost",
         "assumption": "Review cost doubles while fraud loss remains constant.",
-        "management_use": "Tests whether the selected queue still makes sense when operations are constrained.",
+        "management_use": "Tests whether the selected threshold still makes sense when capacity is constrained.",
     },
     {
         "scenario": "High fraud loss",
         "assumption": "Missed-fraud loss doubles while review cost remains constant.",
-        "management_use": "Tests whether the bank should lower threshold and accept more manual review.",
+        "management_use": "Tests whether the bank should lower threshold and accept broader analytical review.",
     },
     {
         "scenario": "Stress case",
@@ -415,7 +426,7 @@ MODEL_GOVERNANCE_CONTROLS: list[dict[str, str]] = [
     {
         "control": "Purpose limitation",
         "owner": "Fraud strategy",
-        "evidence": "The model is positioned as queue prioritization, not autonomous decline.",
+        "evidence": "The model is positioned as threshold prioritization, not autonomous decline.",
     },
     {
         "control": "Threshold approval",
@@ -446,9 +457,9 @@ MONITORING_PLAYBOOK: list[dict[str, str]] = [
         "action": "Review recent product, amount, payment, and email segment shifts before changing customer friction.",
     },
     {
-        "trigger": "Queue pressure",
-        "condition": "Selected-threshold daily workload exceeds analyst capacity.",
-        "action": "Raise threshold, split queues by segment priority, or add temporary review coverage.",
+        "trigger": "Capacity pressure",
+        "condition": "Selected-threshold daily flagged volume exceeds available capacity.",
+        "action": "Raise threshold, split the view by segment priority, or increase the validation sample before changing policy.",
     },
     {
         "trigger": "Missingness spike",
@@ -481,56 +492,81 @@ PRODUCTION_VALIDATION: list[dict[str, str]] = [
     {
         "gate": "Readiness score",
         "status": "PASS",
-        "evidence": "Dashboard readiness returns 6/6 release checks.",
+        "evidence": "Dashboard readiness returns all release checks, including narrative, validation threshold, and segment model-performance coverage.",
     },
     {
         "gate": "Local dbt build",
         "status": "PASS",
-        "evidence": "DuckDB development build completed with 132 pass, 0 warn, 0 error, 1 no-op, 133 total.",
+        "evidence": "DuckDB development build completed with 157 pass, 0 warn, 0 error, 1 no-op, 158 total.",
     },
     {
         "gate": "Production dbt build",
-        "status": "Operator controlled",
-        "evidence": "Run with an operator-supplied service account via GOOGLE_APPLICATION_CREDENTIALS; credentials are never committed.",
+        "status": "PASS",
+        "evidence": "BigQuery production build completed with 157 pass, 0 warn, 0 error, 1 no-op, 158 total.",
     },
 ]
 
 PAGE_ACTION_MESSAGES: list[dict[str, str]] = [
     {
-        "page": "Executive Overview",
+        "page": "Executive Fraud Overview",
         "action": "Lead with concentration, not volume.",
         "message": "Use Product, amount, identity, and risk-band concentration to decide where management attention should move first.",
     },
     {
-        "page": "Segment Explorer",
+        "page": "Fraud Trend Analysis",
+        "action": "Read TransactionDT as relative time.",
+        "message": "Use trend and drift views to explain behavioral movement, not calendar seasonality.",
+    },
+    {
+        "page": "Transaction Amount Analysis",
+        "action": "Separate frequency risk from exposure risk.",
+        "message": "A low amount band can carry high fraud rate while a high amount band can carry more loss exposure.",
+    },
+    {
+        "page": "Customer Risk Analysis",
+        "action": "Use masked customer proxies carefully.",
+        "message": "Identity, email, device, and payment signals are proxy cuts; avoid unsupported real-customer claims.",
+    },
+    {
+        "page": "Masked Address & Distance Analysis",
+        "action": "Do not infer geography.",
+        "message": "Address and distance fields are masked proxy signals; use them only as statistical evidence.",
+    },
+    {
+        "page": "Behavioral Pattern Analysis",
+        "action": "Validate patterns under slicers.",
+        "message": "Relative hour, payment/email, and amount-score behaviors should survive segment filters before policy changes.",
+    },
+    {
+        "page": "Feature Importance Analysis",
+        "action": "Explain drivers without overclaiming.",
+        "message": "Feature importance supports model transparency but does not prove causality for masked fields.",
+    },
+    {
+        "page": "Model Performance Analysis",
+        "action": "Select thresholds as validation-backed policies.",
+        "message": "Treat threshold movement as a tradeoff between fraud capture, flagged workload, precision, and missed exposure.",
+    },
+    {
+        "page": "Key Insights & Recommendations",
         "action": "Calibrate segment rules before adding friction.",
         "message": "Compare lift and fraud share together; high rate alone is not enough if the segment is too small.",
-    },
-    {
-        "page": "Model Operations",
-        "action": "Select thresholds as operating policies.",
-        "message": "Treat threshold movement as a tradeoff between fraud capture, analyst workload, precision, and missed exposure.",
-    },
-    {
-        "page": "Data Trust",
-        "action": "Keep release gates visible.",
-        "message": "Readiness, row-count reconciliation, missingness, and calibration controls are part of the fraud product, not background checks.",
     },
 ]
 
 ANALYSIS_COVERAGE: list[dict[str, str]] = [
-    {"area": "Data reliability", "dashboard_evidence": "Data Trust", "status": "Covered", "primary_output": "Row-count contract, duplicate protection, missingness, readiness gate."},
-    {"area": "Executive summary", "dashboard_evidence": "Executive Overview", "status": "Covered", "primary_output": "Portfolio KPIs, exposure lens, management message."},
-    {"area": "Segment concentration", "dashboard_evidence": "Executive Overview / Segment Explorer", "status": "Covered", "primary_output": "Product risk, lift, fraud share, Pareto, watchlist."},
-    {"area": "Identity coverage", "dashboard_evidence": "Segment Explorer", "status": "Covered", "primary_output": "Identity-present versus identity-missing fraud rates and product coverage."},
-    {"area": "Amount analysis", "dashboard_evidence": "Executive Overview / Segment Explorer", "status": "Covered", "primary_output": "Amount bands, amount-at-risk lens, decimal amount pattern."},
-    {"area": "Relative time", "dashboard_evidence": "Executive Overview / Segment Explorer", "status": "Covered", "primary_output": "Relative day drift and relative hour monitoring windows."},
-    {"area": "Payment and email", "dashboard_evidence": "Segment Explorer", "status": "Covered", "primary_output": "Payment heatmap and purchaser email risk groups."},
-    {"area": "Feature engineering", "dashboard_evidence": "Model Operations / Data Trust", "status": "Covered", "primary_output": "Feature importance, feature families, missingness, masked-feature caveats."},
-    {"area": "ML performance", "dashboard_evidence": "Model Operations", "status": "Covered", "primary_output": "ROC-AUC, average precision, top-decile lift, threshold confusion matrix."},
-    {"area": "Threshold operations", "dashboard_evidence": "Model Operations", "status": "Covered", "primary_output": "Workload, fraud capture, precision, false-positive and false-negative exposure."},
-    {"area": "Business impact", "dashboard_evidence": "Model Operations", "status": "Covered", "primary_output": "Review cost, missed exposure, capacity status, policy recommendation."},
-    {"area": "Presentation readiness", "dashboard_evidence": "Data Trust", "status": "Covered", "primary_output": "Readiness checks, KPI dictionary, methodology controls."},
+    {"area": "Data reliability", "dashboard_evidence": "Key Insights & Recommendations", "status": "Covered", "primary_output": "Row-count contract, duplicate protection, missingness, readiness gate."},
+    {"area": "Executive summary", "dashboard_evidence": "Executive Fraud Overview", "status": "Covered", "primary_output": "Portfolio KPIs, exposure lens, management message."},
+    {"area": "Segment concentration", "dashboard_evidence": "Executive Fraud Overview / Customer Risk Analysis", "status": "Covered", "primary_output": "Product risk, lift, fraud share, Pareto, watchlist."},
+    {"area": "Identity coverage", "dashboard_evidence": "Customer Risk Analysis", "status": "Covered", "primary_output": "Identity-present versus identity-missing fraud rates and product coverage."},
+    {"area": "Amount analysis", "dashboard_evidence": "Transaction Amount Analysis", "status": "Covered", "primary_output": "Amount bands, amount-at-risk lens, decimal amount pattern."},
+    {"area": "Relative time", "dashboard_evidence": "Fraud Trend Analysis / Behavioral Pattern Analysis", "status": "Covered", "primary_output": "Relative day drift and relative hour monitoring windows."},
+    {"area": "Payment and email", "dashboard_evidence": "Customer Risk Analysis / Behavioral Pattern Analysis", "status": "Covered", "primary_output": "Payment heatmap and purchaser email risk groups."},
+    {"area": "Feature engineering", "dashboard_evidence": "Feature Importance Analysis", "status": "Covered", "primary_output": "Feature importance, feature families, missingness, masked-feature caveats."},
+    {"area": "ML performance", "dashboard_evidence": "Model Performance Analysis", "status": "Covered", "primary_output": "ROC-AUC, average precision, top-decile lift, validation threshold confusion matrix."},
+    {"area": "Threshold policy", "dashboard_evidence": "Model Performance Analysis", "status": "Covered", "primary_output": "Workload, fraud capture, precision, false-positive and false-negative exposure."},
+    {"area": "Business impact", "dashboard_evidence": "Model Performance Analysis / Key Insights & Recommendations", "status": "Covered", "primary_output": "Review cost, missed exposure, capacity status, policy recommendation."},
+    {"area": "Presentation readiness", "dashboard_evidence": "Key Insights & Recommendations", "status": "Covered", "primary_output": "Readiness checks, KPI dictionary, methodology controls."},
 ]
 
 HYPOTHESIS_REGISTER: list[dict[str, str]] = [
@@ -555,9 +591,9 @@ HYPOTHESIS_REGISTER: list[dict[str, str]] = [
         "decision": "Monitor identity coverage as a first-class signal.",
     },
     {
-        "hypothesis": "Model score should prioritize review queues, not automate decline decisions.",
+        "hypothesis": "Model score should prioritize threshold policy, not automate decline decisions.",
         "evidence": "Threshold simulation, confusion matrix, capacity and cost assumptions.",
-        "decision": "Use score bands as triage policy inputs.",
+        "decision": "Use score bands as analytical policy inputs.",
     },
 ]
 
@@ -575,7 +611,7 @@ EXECUTIVE_TAKEAWAYS: list[dict[str, str]] = [
     {
         "takeaway": "Model score is a triage layer.",
         "evidence": "Threshold simulation converts score cutoffs into workload, capture, precision, false positives, and missed exposure.",
-        "decision": "Use score bands to prioritize analyst queues; do not position the model as an autonomous decline engine.",
+        "decision": "Use score bands to prioritize analytical policy review; do not position the model as an autonomous decline engine.",
     },
 ]
 
@@ -613,7 +649,7 @@ DATA_DICTIONARY: list[dict[str, str]] = [
     {
         "field": "P_emaildomain / R_emaildomain",
         "business_meaning": "Purchaser and recipient email domain groups.",
-        "interpretation_note": "Grouped into monitoring categories for explainable operations.",
+        "interpretation_note": "Grouped into monitoring categories for explainable BI reporting.",
     },
     {
         "field": "C1-C14",
@@ -638,7 +674,7 @@ DATA_DICTIONARY: list[dict[str, str]] = [
     {
         "field": "risk_band",
         "business_meaning": "Operational band derived from model score quantiles.",
-        "interpretation_note": "Used for queue priority, not for automatic decline decisions.",
+        "interpretation_note": "Used for threshold policy analysis, not for automatic decline decisions.",
     },
 ]
 
@@ -820,9 +856,9 @@ def public_priority(value: Any) -> str:
 
 def action_for_priority(family: str, priority: str) -> str:
     if priority == "Critical":
-        return f"{family} requires immediate review, rule calibration, and capacity allocation."
+        return f"{family} requires immediate analytical focus, rule calibration, and capacity scenario review."
     if priority == "High":
-        return f"{family} should enter the daily review queue with trend and volume monitoring."
+        return f"{family} should be tracked in the daily BI view with trend and volume monitoring."
     if priority == "Monitor":
         return f"{family} should be sampled weekly and tracked for drift or volume expansion."
     return f"{family} remains in standard monitoring with no additional friction unless drift increases."
@@ -830,29 +866,29 @@ def action_for_priority(family: str, priority: str) -> str:
 
 def risk_band_review_priority(risk_band: Any) -> str:
     return {
-        "Critical": "Immediate review",
-        "High": "Same-day priority",
-        "Elevated": "Queue sampling",
-        "Low": "Standard monitoring",
-    }.get(str(risk_band), "Standard monitoring")
+        "Critical": "Critical analytical focus",
+        "High": "High-priority monitoring",
+        "Elevated": "Sample monitoring",
+        "Low": "Baseline monitoring",
+    }.get(str(risk_band), "Baseline monitoring")
 
 
 def queue_policy(risk_band: Any) -> str:
     return {
-        "Critical": "Real-time manual review queue",
-        "High": "Same-day priority review",
-        "Elevated": "Sample-based manual control",
-        "Low": "Automated monitoring",
-    }.get(str(risk_band), "Automated monitoring")
+        "Critical": "Critical score monitoring",
+        "High": "High-priority threshold review",
+        "Elevated": "Sample-based control check",
+        "Low": "Baseline monitoring",
+    }.get(str(risk_band), "Baseline monitoring")
 
 
 def management_note(risk_band: Any) -> str:
     return {
-        "Critical": "Reserve analyst capacity",
-        "High": "Reserve analyst capacity",
-        "Elevated": "Monitor rule performance weekly",
-        "Low": "No additional action required",
-    }.get(str(risk_band), "No additional action required")
+        "Critical": "Use for threshold and segment-policy calibration",
+        "High": "Use for threshold and segment-policy calibration",
+        "Elevated": "Track as a control sample against the baseline",
+        "Low": "Keep as baseline comparison",
+    }.get(str(risk_band), "Keep as baseline comparison")
 
 
 def public_drift_flag(value: Any) -> str:
@@ -869,12 +905,12 @@ def operating_mode(value: Any) -> str:
     if "broad" in raw:
         return "Broad monitoring"
     if "balanced" in raw:
-        return "Balanced operations"
+        return "Balanced threshold policy"
     if "focused" in raw or "priority" in raw:
-        return "Focused risk queue"
+        return "Focused risk policy"
     if "narrow" in raw or "critical" in raw:
-        return "Narrow critical queue"
-    return str(value or "Balanced operations")
+        return "Narrow critical policy"
+    return str(value or "Balanced threshold policy")
 
 
 READINESS_COPY: dict[int, tuple[str, str, str]] = {
@@ -882,46 +918,66 @@ READINESS_COPY: dict[int, tuple[str, str, str]] = {
     2: ("Dashboard contract", "Web dashboard fact row count", "Ready for presentation"),
     3: ("Executive presentation", "Report narrative coverage", "Ready for presentation"),
     4: ("Risk analytics", "Segment watchlist coverage", "Ready for presentation"),
-    5: ("Model operations", "Risk band operations strategy", "Ready for presentation"),
-    6: ("Model operations", "Threshold simulation", "Ready for presentation"),
+    5: ("Model evidence", "Risk band policy strategy", "Ready for presentation"),
+    6: ("Model evidence", "Reporting threshold simulation", "Ready for presentation"),
+    7: ("Model evidence", "Validation threshold simulation", "Ready for presentation"),
+    8: ("Model evidence", "Segment model performance", "Ready for presentation"),
 }
 
 NARRATIVE_COPY: dict[int, dict[str, str]] = {
     1: {
-        "page_name": "Executive Overview",
+        "page_name": "Executive Fraud Overview",
         "executive_message": "Fraud is rare at portfolio level, but it concentrates in a manageable set of segments.",
-        "analytical_focus": "Use total volume, baseline fraud rate, product lift, identity lift, and risk-band lift as the first executive readout.",
-        "recommended_action": "Prioritize Product C, identity-present transactions, and high-lift risk bands for operational monitoring.",
+        "analytical_focus": "Use total volume, baseline fraud rate, exposure, product lift, identity lift, and risk-band lift as the first executive readout.",
+        "recommended_action": "Prioritize high-contribution product, identity, amount, and score segments for segment policy calibration.",
     },
     2: {
-        "page_name": "Segment Explorer",
-        "executive_message": "Product and identity fields create the clearest separation between baseline and elevated risk.",
-        "analytical_focus": "Compare product, identity, payment, email, and amount segments by fraud rate, lift, and fraud share.",
-        "recommended_action": "Use the segment watchlist as the weekly risk committee monitoring queue.",
+        "page_name": "Fraud Trend Analysis",
+        "executive_message": "Fraud behavior moves over relative transaction time, but TransactionDT is not a calendar timestamp.",
+        "analytical_focus": "Read volume, fraud rate, drift flags, and peak relative windows together.",
+        "recommended_action": "Use relative-day and relative-hour patterns as behavioral drift evidence, not as calendar seasonality.",
     },
     3: {
-        "page_name": "Amount and Time Signals",
-        "executive_message": "Amount and relative time behavior are nonlinear and should not be reduced to a single static threshold.",
-        "analytical_focus": "Read amount bands, daily drift, relative hour, and amount decimal signals together.",
-        "recommended_action": "Tune operating thresholds by relative time window and ticket-size behavior.",
+        "page_name": "Transaction Amount Analysis",
+        "executive_message": "Amount risk separates frequency risk from financial exposure.",
+        "analytical_focus": "Read amount bands, amount exposure, product x amount heatmaps, and amount-score diagnostics together.",
+        "recommended_action": "Use amount-band policies only after checking product and payment context.",
     },
     4: {
-        "page_name": "Payment and Email Segments",
-        "executive_message": "Payment and email dimensions add explainable monitoring cuts for fraud operations.",
-        "analytical_focus": "Compare card network, card type, and purchaser email groups by fraud rate and contribution.",
-        "recommended_action": "Monitor high-lift payment/email combinations together with product and model risk bands.",
+        "page_name": "Customer Risk Analysis",
+        "executive_message": "Identity, device, email, and payment fields act as masked customer-behavior proxies.",
+        "analytical_focus": "Compare identity coverage, device risk, email risk, and payment-email combinations.",
+        "recommended_action": "Use nested customer-proxy cuts instead of making unsupported real-customer claims.",
     },
     5: {
-        "page_name": "Model Operations",
-        "executive_message": "Model scores convert the analysis into review queues, not autonomous decline decisions.",
-        "analytical_focus": "Evaluate risk bands, threshold simulation, review workload, fraud capture, precision, and feature importance.",
-        "recommended_action": "Use High and Critical queues as the first operating point, then recalibrate by capacity and cost.",
+        "page_name": "Masked Address & Distance Analysis",
+        "executive_message": "Address and distance fields are masked proxy signals, not geography.",
+        "analytical_focus": "Compare proxy missingness, fraud lift, fraud share, and product x proxy nested pockets.",
+        "recommended_action": "Use address and distance as statistical proxy evidence only; true geography requires external enrichment.",
     },
     6: {
-        "page_name": "Data Trust",
-        "executive_message": "Data quality and lineage are part of the fraud report's control evidence.",
-        "analytical_focus": "Show row-count contracts, readiness checks, missingness, and dbt-to-dashboard lineage.",
-        "recommended_action": "Keep dbt tests and dashboard readiness checks as release gates before executive review.",
+        "page_name": "Behavioral Pattern Analysis",
+        "executive_message": "Fraud behavior clusters by relative hour, payment/email pattern, amount behavior, and score context.",
+        "analytical_focus": "Read relative-hour patterns, risk-band behavior, and amount-score outlier diagnostics.",
+        "recommended_action": "Treat behavioral patterns as monitoring evidence before changing customer friction.",
+    },
+    7: {
+        "page_name": "Feature Importance Analysis",
+        "executive_message": "The model draws signal from card, address, amount, relative-time, and Vesta engineered features together.",
+        "analytical_focus": "Compare feature importance, feature-family importance, and missingness versus importance.",
+        "recommended_action": "Frame masked feature interpretations as observational evidence, not causal business definitions.",
+    },
+    8: {
+        "page_name": "Model Performance Analysis",
+        "executive_message": "Validation metrics and reporting score distributions must be separated.",
+        "analytical_focus": "Use holdout threshold simulation for precision/recall and reporting simulation for portfolio volume scenarios.",
+        "recommended_action": "Select threshold policy with capture, precision, workload, and missed-exposure metrics visible.",
+    },
+    9: {
+        "page_name": "Key Insights & Recommendations",
+        "executive_message": "The business answer is segment-based fraud risk management, not one global rule.",
+        "analytical_focus": "Close with recommendation priority, readiness evidence, and next data-enrichment gaps.",
+        "recommended_action": "Pilot nested segment thresholds and add external enrichment before geography or real-time claims.",
     },
 }
 
@@ -957,7 +1013,7 @@ def normalize_public_row(table_key: str, row: dict[str, Any]) -> dict[str, Any]:
     if table_key == "daily_drift" and "drift_flag" in normalized:
         normalized["drift_flag"] = public_drift_flag(normalized.get("drift_flag"))
 
-    if table_key == "threshold_simulation" and "operating_mode" in normalized:
+    if table_key in {"threshold_simulation", "validation_threshold_simulation"} and "operating_mode" in normalized:
         normalized["operating_mode"] = operating_mode(normalized.get("operating_mode"))
 
     if table_key == "report_readiness":
@@ -1030,11 +1086,11 @@ def risk_category_from_band(value: Any) -> str:
 
 def recommended_action_from_band(value: Any) -> str:
     return {
-        "Critical": "Immediate manual review",
-        "High": "Same-day analyst review",
+        "Critical": "Immediate threshold-policy focus",
+        "High": "High-priority analytical review",
         "Elevated": "Sample and monitor",
-        "Low": "Standard monitoring",
-    }.get(str(value or ""), "Standard monitoring")
+        "Low": "Baseline monitoring",
+    }.get(str(value or ""), "Baseline monitoring")
 
 
 def risk_score_sql() -> str:
@@ -1110,10 +1166,10 @@ select
     coalesce(e.entity_prior_fraud_proxy, 0) as entity_prior_fraud_proxy,
     coalesce(e.entity_transaction_count, 1) as entity_transaction_count,
     case
-        when b.risk_band = 'Critical' then 'Immediate manual review'
-        when b.risk_band = 'High' then 'Same-day analyst review'
+        when b.risk_band = 'Critical' then 'Immediate threshold-policy focus'
+        when b.risk_band = 'High' then 'High-priority analytical review'
         when b.risk_band = 'Elevated' then 'Sample and monitor'
-        else 'Standard monitoring'
+        else 'Baseline monitoring'
     end as recommended_action,
     case
         when b.risk_band = 'Critical' then 'P0'
@@ -1187,17 +1243,17 @@ def build_transaction_explanation(row: dict[str, Any]) -> list[dict[str, Any]]:
     probability = float(row.get("model_probability") or 0)
     amount = float(row.get("transaction_amount") or 0)
     if row.get("risk_band") in {"Critical", "High"}:
-        factors.append({"factor": "Model risk band", "direction": "Raises risk", "impact": "High", "detail": f"{row.get('risk_band')} queue priority"})
+        factors.append({"factor": "Model risk band", "direction": "Raises risk", "impact": "High", "detail": f"{row.get('risk_band')} threshold-policy priority"})
     if amount >= 250:
         factors.append({"factor": "High ticket size", "direction": "Raises risk", "impact": "Medium", "detail": f"Amount {amount:,.0f}"})
     if row.get("identity_status") == "Identity present":
-        factors.append({"factor": "Identity signal present", "direction": "Requires review", "impact": "Medium", "detail": "Identity availability is monitored as a risk signal"})
+        factors.append({"factor": "Identity signal present", "direction": "Raises analytical priority", "impact": "Medium", "detail": "Identity availability is monitored as a risk signal"})
     if str(row.get("purchaser_email_group") or "").lower() in {"anonymous.com", "unknown", "other"}:
         factors.append({"factor": "Email domain group", "direction": "Raises uncertainty", "impact": "Medium", "detail": str(row.get("purchaser_email_group") or "Unknown")})
     if probability >= 0.2:
         factors.append({"factor": "Model probability", "direction": "Raises risk", "impact": "High", "detail": f"{probability:.2%} fraud probability"})
     if not factors:
-        factors.append({"factor": "Low operational score", "direction": "Standard monitoring", "impact": "Low", "detail": "No critical driver exceeded the review threshold"})
+        factors.append({"factor": "Low analytical score", "direction": "Baseline monitoring", "impact": "Low", "detail": "No critical driver exceeded the selected threshold"})
     return factors[:5]
 
 
@@ -1224,7 +1280,7 @@ def feature_context(feature: str, row: dict[str, Any]) -> str:
         return "Masked count feature family."
     if feature.startswith("M"):
         return "Masked match feature family."
-    return "Global model driver; case-level raw value is masked or unavailable in the public report."
+    return "Global model driver; transaction-level raw value is masked or unavailable in the public report."
 
 
 def build_feature_importance_explanation(
@@ -1301,7 +1357,7 @@ def metadata() -> dict[str, Any]:
 def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
     payload = cached_dashboard_payload(refresh=refresh)
     kpis = (payload.get("executive_kpis") or [{}])[0]
-    threshold_rows = payload.get("threshold_simulation") or []
+    threshold_rows = payload.get("validation_threshold_simulation") or payload.get("threshold_simulation") or []
     risk_rows = payload.get("model_risk_bands") or []
     watchlist = payload.get("segment_watchlist") or []
     recommended_threshold = next(
@@ -1443,7 +1499,7 @@ def enterprise_case_explain(transaction_id: int) -> dict[str, Any]:
             "Signals combine LightGBM feature-family importance rankings from the reporting layer "
             "with this transaction's observable attributes. Raw feature values (V1-V339, C1-C14, "
             "D1-D15) are not stored in the reporting fact table and are therefore summarised by "
-            "feature family. For instance-level SHAP values, rerun prepare_raw_and_ml.py against "
+            "feature family. For instance-level contribution values, rerun prepare_raw_and_ml.py against "
             "the full training data."
         ),
     }
@@ -1461,8 +1517,8 @@ def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
         "recommended_action": recommended_action_from_band(row.get("risk_band")),
         "audit_trail": [
             {"step": "Scored", "status": "Complete", "owner": "Model pipeline"},
-            {"step": "Queued", "status": risk_category_from_band(row.get("risk_band")), "owner": "Fraud operations"},
-            {"step": "Analyst decision", "status": "Pending", "owner": "Manual review"},
+            {"step": "Policy band assigned", "status": risk_category_from_band(row.get("risk_band")), "owner": "Fraud analytics"},
+            {"step": "Business decision", "status": "Pending", "owner": "Risk committee"},
         ],
     }
 
@@ -1525,16 +1581,16 @@ def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
             "recommended_action": "Review segment mix before changing customer friction.",
             "status": "Open",
         })
-    queue = next((row for row in payload.get("review_strategy", []) if row.get("risk_band") == "Critical"), None)
-    if queue:
+    critical_band = next((row for row in payload.get("review_strategy", []) if row.get("risk_band") == "Critical"), None)
+    if critical_band:
         alerts.append({
             "alert_id": "FD-QUEUE-002",
             "severity": "Critical",
-            "segment": "Critical risk queue",
-            "trigger": "Queue pressure",
-            "current_value": queue.get("estimated_daily_review_volume"),
+            "segment": "Critical risk band",
+            "trigger": "Capacity pressure",
+            "current_value": critical_band.get("estimated_daily_review_volume"),
             "threshold": "Analyst capacity input",
-            "recommended_action": "Reserve same-day analyst capacity for critical queue.",
+            "recommended_action": "Use the critical band for capacity and threshold-policy calibration.",
             "status": "Open",
         })
     missing = next(iter(payload.get("data_quality", [])), None)
@@ -1563,7 +1619,7 @@ def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
         })
     return {
         "mode": "historical_replay",
-        "note": "IEEE-CIS is a static dataset; alert stream is a historical replay simulation from reporting tables.",
+        "note": "IEEE-CIS is a static dataset; this endpoint is a historical replay signal feed from reporting tables.",
         "alerts": alerts,
     }
 
@@ -1577,7 +1633,9 @@ def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[st
         "validation_window": MODEL_REGISTRY["validation_strategy"],
         "model_registry": model_registry_payload(),
         "metrics": MODEL_VALIDATION_METRICS,
-        "thresholds": payload.get("threshold_simulation", []),
+        "thresholds": payload.get("validation_threshold_simulation", []),
+        "reporting_thresholds": payload.get("threshold_simulation", []),
+        "segment_model_performance": payload.get("segment_model_performance", []),
         "risk_bands": payload.get("model_risk_bands", []),
         "feature_importance": payload.get("feature_importance", []),
         "data_quality": payload.get("data_quality", []),
@@ -1635,3 +1693,4 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
+

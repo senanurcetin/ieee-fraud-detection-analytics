@@ -1,34 +1,34 @@
-# Operational Playbook
+# Analytical Policy Playbook
 
 ## Purpose
 
-The model output is converted into an analyst review queue. The operating rule is intentionally simple: prioritize scarce review capacity where fraud concentration and model confidence are highest.
+The model output is converted into threshold-policy scenarios for the BI dashboard. The rule is intentionally simple: prioritize scarce business attention where fraud concentration and model confidence are highest.
 
-## Review Queue Policy
+## Threshold Policy
 
-| Risk band | Queue priority | Expected action | SLA |
+| Risk band | Policy priority | Expected action | Cadence |
 |---|---|---|---|
-| Critical | Immediate review | Manual investigation before approval or escalation to step-up authentication | Same session or same day |
-| High | Priority review | Same-day investigation, rule-set check, and segment monitoring | Same day |
-| Elevated | Queue monitoring | Sample-based review and weekly trend monitoring | Weekly |
-| Low | Standard monitoring | No manual action unless another control triggers | Standard process |
+| Critical | Critical focus | Additional verification, policy calibration, and segment review | Same day |
+| High | High-priority band | Rule-set check and segment monitoring | Daily |
+| Elevated | Control sample | Sample-based control check and trend monitoring | Weekly |
+| Low | Baseline | No special action unless another control triggers | Standard process |
 
-## Analyst Workflow
+## Analyst Review Frame
 
-1. Start with the `Critical` queue and validate transaction context, product code, amount band, card attributes, email group, and identity coverage.
-2. Move to the `High` queue until daily review capacity is exhausted.
-3. For each reviewed transaction, record decision outcome, reason code, and whether additional authentication was requested.
-4. Review `Elevated` segments weekly to detect emerging patterns that are not yet large enough for full manual review.
+1. Start with Critical and High score bands and validate product code, amount band, card attributes, email group, and identity coverage.
+2. Compare focused top-score validation evidence with the fixed 0.50 threshold scenario.
+3. Record business assumptions: false-positive review cost, false-negative loss, and available capacity.
+4. Review Elevated segments weekly to detect emerging patterns that are not yet large enough for policy escalation.
 5. Feed confirmed outcomes back into the next model training cycle.
 
 ## Escalation Rules
 
-Escalate to fraud operations management when one of the following occurs:
+Escalate to risk management when one of the following occurs:
 
 - Daily fraud rate exceeds the seven-day moving baseline.
 - Product C or a high-risk payment segment grows materially in transaction share.
-- High + Critical review queue exceeds available analyst capacity.
-- Precision in reviewed queues drops below the approved threshold.
+- Selected threshold flagged volume exceeds available capacity.
+- Precision in the selected threshold band drops below the approved threshold.
 - A new email or device segment enters the top risk watchlist.
 
 ## Controls
@@ -36,7 +36,7 @@ Escalate to fraud operations management when one of the following occurs:
 Operational controls should include:
 
 - Approved threshold table.
-- Reviewer decision audit trail.
+- Decision audit trail.
 - Weekly segment watchlist.
 - Monthly model performance review.
 - Data-quality scorecard for missingness and source row reconciliation.
@@ -45,8 +45,8 @@ Operational controls should include:
 
 For real-time use, the batch scoring layer can be extended into an online scoring service:
 
-- Transaction event arrives from payment authorization flow.
+- Transaction event arrives from a payment authorization flow.
 - Feature service retrieves recent card, identity, amount, and device attributes.
 - Model service returns score and risk band.
-- Decision service applies policy: approve, step-up authentication, manual review, or decline under approved rules.
+- Decision service applies approved policy: approve, step-up authentication, business review, or decline under approved rules.
 - Outcomes are written back for monitoring and retraining.

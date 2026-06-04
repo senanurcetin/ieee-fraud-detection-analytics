@@ -35,7 +35,7 @@ flowchart LR
 | Staging | `stg_transactions`, `stg_identity` | Type casting, safe naming, TransactionDT-derived fields, amount-cent features |
 | Intermediate | `int_fraud_joined`, `int_features` | Transaction and identity join, product/payment/email/device segmentation |
 | Marts | `mart_*` | Fraud summary, risk bands, amount bands, daily drift, payment/email risk, quality checks |
-| Reporting | `fact_train_transactions`, `rpt_*` | Executive KPIs, web visual tables, watchlists, model operations, quality contracts |
+| Reporting | `fact_train_transactions`, `rpt_*` | Executive KPIs, web visual tables, segment watchlists, model performance, quality contracts |
 
 ## Reporting Design
 
@@ -52,6 +52,6 @@ The web dashboard reads only from `fraud_project_reporting` through the FastAPI 
 Latest production verification:
 
 ```text
-dbt build: PASS=123 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=124
-Scope: 33 models, 90 data tests, 8 sources, 1 exposure
+dbt build: PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158
+Scope: 36 models, 121 data tests, 10 sources, 1 exposure
 ```

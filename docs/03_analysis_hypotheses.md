@@ -1,4 +1,4 @@
-# 03 - Analysis Hypotheses
+﻿# 03 - Analysis Hypotheses
 
 ## H1 - Product Family Separates Risk
 
@@ -30,11 +30,11 @@ Hypothesis: fraud concentration changes across relative day and hour windows.
 
 Result: the project derives relative day and relative hour from `TransactionDT` and monitors drift through rolling fraud-rate metrics. These patterns support staffing and threshold discussions, but they are not real calendar dates.
 
-## H6 - Model Risk Bands Enable Review Prioritization
+## H6 - Model Risk Bands Enable Threshold Policy
 
-Hypothesis: model scores can create a manageable review queue without becoming an automated decline engine.
+Hypothesis: model scores can create a measurable threshold-policy layer without becoming an automated decline engine.
 
-Result: the High + Critical queue reviews about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision. This is the recommended starting operating point.
+Result: the top 5% validation score band captures 58.32% of fraud labels at 40.13% precision. The fixed 0.50 threshold captures 69.78% of fraud labels at 25.68% precision and 9.35% workload. This gives management two transparent operating scenarios.
 
 ## Presentation Frame
 
@@ -43,5 +43,6 @@ The analysis should start with fraud concentration, not tooling. The recommended
 1. Baseline fraud is low, so averages hide risk.
 2. Product and identity reveal the first concentration layer.
 3. Amount, payment, email, and relative time explain operational patterns.
-4. Model risk bands convert the evidence into review queues.
+4. Model risk bands convert the evidence into threshold-policy scenarios.
 5. dbt tests, row-count reconciliation, and data quality checks prove the pipeline is trustworthy.
+

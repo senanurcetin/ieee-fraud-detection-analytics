@@ -16,7 +16,7 @@ where review_count < captured_fraud_count
    or precision_rate > 1
    or operating_mode not in (
         'Broad monitoring',
-        'Balanced operations',
-        'Focused risk queue',
-        'Narrow critical queue'
-   )
+        'Balanced threshold policy',
+        'Focused risk policy',
+        'Narrow critical policy'
+    )

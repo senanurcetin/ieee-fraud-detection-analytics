@@ -39,6 +39,11 @@ def load_predictions() -> pd.DataFrame:
             "Run `python src/prepare_raw_and_ml.py` first."
         )
     frame = pd.read_csv(path)
+    rename_map = {
+        "actual_is_fraud": "actual",
+        "predicted_fraud_probability": "prediction",
+    }
+    frame = frame.rename(columns={source: target for source, target in rename_map.items() if source in frame.columns})
     expected = {"actual", "prediction"}
     missing = expected.difference(frame.columns)
     if missing:
@@ -179,10 +184,10 @@ def build_document(
         ["KS statistic", pct(metrics["ks_statistic"]), "Maximum separation between fraud and legitimate score distributions."],
         ["Top decile lift", f"{metrics['top_decile_lift']:.2f}x", "Fraud concentration in the highest-score decile."],
         ["Operating threshold", num(metrics["operating_threshold"]), "p95 validation score threshold."],
-        ["Precision at threshold", pct(metrics["precision"]), "Reviewed transactions that are fraud."],
-        ["Recall at threshold", pct(metrics["recall"]), "Fraud labels captured by the queue."],
-        ["False-positive rate", pct(metrics["false_positive_rate"]), "Legitimate transactions sent to review."],
-        ["Workload share", pct(metrics["workload_share"]), "Share of validation transactions reviewed."],
+        ["Precision at threshold", pct(metrics["precision"]), "Threshold-flagged transactions that are fraud."],
+        ["Recall at threshold", pct(metrics["recall"]), "Fraud labels captured by the selected threshold policy."],
+        ["False-positive rate", pct(metrics["false_positive_rate"]), "Legitimate validation transactions flagged by the selected threshold."],
+        ["Workload share", pct(metrics["workload_share"]), "Share of validation transactions flagged by the selected threshold."],
     ]
     calibration_rows = [
         [
@@ -226,7 +231,7 @@ def build_document(
             "## Feature Family Evidence",
             markdown_table(family_rows, ["Feature family", "Feature count", "Total importance", "Top feature"]),
             "## Governance Note",
-            "The model is suitable for prioritizing analyst review queues. It should not be used as an autonomous decline engine without calibrated probabilities, production decision logs, model-risk approval, and bank-specific cost validation.",
+            "The model is suitable for analytical threshold policy and fraud prioritization. It should not be used as an autonomous decline engine without calibrated probabilities, production decision logs, model-risk approval, and bank-specific cost validation.",
         ]
     ) + "\n"
 

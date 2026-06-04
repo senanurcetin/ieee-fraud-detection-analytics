@@ -11,7 +11,7 @@ with contract_failures as (
 
     union all
 
-    select 'report_narrative_pages', case when count(*) = 6 then 0 else 1 end
+    select 'report_narrative_pages', case when count(*) = 9 then 0 else 1 end
     from {{ ref('rpt_report_narrative') }}
 
     union all

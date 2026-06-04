@@ -5,8 +5,8 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 ## dbt and BigQuery
 
 - [x] Production dbt build completed successfully.
-- [x] Latest verified build result: `PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133`.
-- [x] Project scope: 33 models, 99 data tests, 8 sources, 1 exposure.
+- [x] Latest verified build result: `PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158`.
+- [x] Project scope: 36 models, 121 data tests, 10 sources, 1 exposure.
 - [x] dbt docs generation completed successfully.
 - [x] Raw row counts reconcile to the Kaggle source files.
 - [x] Reporting fact table reconciles to the training transaction source.
@@ -30,7 +30,9 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 - [x] `fraud_project_reporting.rpt_segment_watchlist`: 20 rows.
 - [x] `fraud_project_reporting.rpt_review_strategy`: 4 rows.
 - [x] `fraud_project_reporting.rpt_threshold_simulation`: 16 rows.
-- [x] `fraud_project_reporting.rpt_report_readiness`: 6 rows.
+- [x] `fraud_project_reporting.rpt_report_readiness`: 8 rows.
+- [x] `fraud_project_reporting.rpt_validation_threshold_simulation`: 16 rows.
+- [x] `fraud_project_reporting.rpt_segment_model_performance`: segment-level validation rows.
 - [x] `fraud_project_reporting.rpt_identity_product_coverage`: 5 ProductCD rows.
 - [x] `fraud_project_reporting.rpt_time_amount_signals`: 48 relative-hour and amount-decimal rows.
 - [x] `fraud_project_reporting.rpt_quality_contract`: 6 quality gates.
@@ -48,7 +50,7 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 - [x] Chart-level drill-through is available from every visual header/card.
 - [x] Customer Risk Analysis renders the payment x email heatmap as a full-width primary visual without horizontal layout spillover.
 - [x] Fraud contribution waterfall uses the segment watchlist.
-- [x] Threshold simulation recalculates workload, capture, precision, false-positive burden, and missed exposure.
+- [x] Validation threshold simulation recalculates workload, capture, precision, false-positive burden, and missed exposure.
 - [x] Drift indicators surface fraud movement and model-quality risk without workflow screens.
 - [x] CSV export and print/save as PDF actions are available.
 
@@ -58,9 +60,9 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 - [x] ROC-AUC and average precision are documented.
 - [x] Precision, recall, false-positive rate, workload, and lift are documented.
 - [x] Feature importance artifact is available.
-- [x] SHAP summary artifact is available.
+- [x] Feature contribution summary artifact is available.
 - [x] Precision-recall curve artifact is available.
-- [x] Risk-band operational use is documented.
+- [x] Risk-band threshold-policy use is documented.
 - [x] Masked feature interpretation limits are documented.
 
 ## Repository Hygiene

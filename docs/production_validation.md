@@ -11,7 +11,7 @@ This document records the release checks required before the public web dashboar
 | Reporting API groups | Reporting groups plus niche drilldown group | PASS |
 | Transaction population | 590,540 transactions | PASS |
 | Fraud population | 20,663 labeled fraud transactions | PASS |
-| Readiness gate | 6 of 6 checks pass | PASS |
+| Readiness gate | 8 of 8 checks pass | PASS |
 | Public dashboard URL | `https://fraud-project-web.vercel.app` | PASS |
 | Report pages | 9 BI-style analytical pages | PASS |
 | Visual story mode | Primary Analysis plus Supporting Visuals | PASS |
@@ -28,7 +28,7 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 Latest development result:
 
 ```text
-PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133
+PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158
 ```
 
 Production validation:
@@ -40,7 +40,7 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 Latest production result:
 
 ```text
-PASS=132 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=133
+PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158
 ```
 
 Production datasets rebuilt by dbt:
@@ -60,7 +60,7 @@ The dashboard can be presented only when all of the following are true:
 
 1. The public API returns the expected reporting dataset, reporting groups, and niche drilldown group.
 2. The reporting population reconciles to 590,540 transactions and 20,663 fraud labels.
-3. Readiness checks return 6/6 PASS.
+3. Readiness checks return 8/8 PASS.
 4. The local dbt build passes before commit.
 5. Production dbt build is rerun after any material SQL model change.
 6. The public dashboard contains no legacy presentation-layer references and no non-English public UI copy.

@@ -41,7 +41,7 @@ This document defines the next iteration after the BI-style web report release.
 
 4. Model explanation
    - Add optional calibration evidence to the existing model registry if governed probability scoring becomes in scope.
-   - Keep feature importance and SHAP artifacts visible in documentation.
+   - Keep feature importance and feature contribution artifacts visible in documentation.
 
 5. External enrichment
    - Add country, IP, merchant-location, or user-age analysis only if real enrichment fields are provided.

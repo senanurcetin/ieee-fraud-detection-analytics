@@ -46,9 +46,9 @@ select
     {{ fp_float('s.captured_fraud_count') }} / nullif({{ fp_float('s.review_count') }}, 0) as precision_rate,
     case
         when s.score_threshold <= 0.03 then 'Broad monitoring'
-        when s.score_threshold <= 0.08 then 'Balanced operations'
-        when s.score_threshold <= 0.20 then 'Focused risk queue'
-        else 'Narrow critical queue'
+        when s.score_threshold <= 0.08 then 'Balanced threshold policy'
+        when s.score_threshold <= 0.20 then 'Focused risk policy'
+        else 'Narrow critical policy'
     end as operating_mode
 from scored as s
 cross join base as b

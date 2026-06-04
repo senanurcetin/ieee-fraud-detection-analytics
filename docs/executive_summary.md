@@ -1,4 +1,4 @@
-# Executive Summary
+﻿# Executive Summary
 
 ## Core Finding
 
@@ -14,23 +14,24 @@ Fraud is rare in the IEEE-CIS portfolio, but it is highly concentrated. Product,
 | Total transaction amount | $79.7M |
 | Fraud-labeled amount | $3.08M |
 | Identity coverage rate | 24.42% |
-| Validation ROC-AUC | 0.9139 |
-| Validation average precision | 0.5370 |
+| Validation ROC-AUC | 0.9134 |
+| Validation average precision | 0.5354 |
 
 ## Management Recommendation
 
-Use the model as a review-prioritization layer, not as an automated decline engine. The recommended operating point is `High + Critical`:
+Use the model as a threshold-policy evidence layer, not as an automated decline engine. The recommended focused operating point is the top 5% validation score band:
 
-- Reviews 5.0% of transactions.
-- Captures 78.3% of fraud-labeled transactions in the training window.
-- Delivers 54.8% precision and 0.645 F1.
-- Captures $2.38M of the $3.08M fraud-labeled amount in the dataset.
+- Flags 5.00% of validation transactions.
+- Captures 58.32% of validation fraud labels.
+- Delivers 40.13% precision versus a 3.44% validation baseline.
+- Provides a defensible starting policy; the fixed 0.50 threshold can be used when higher capture is more important than workload.
 
 ## Business Action
 
-Start with a controlled fraud-operations pilot:
+Start with a controlled analytical policy pilot:
 
-1. Route `Critical` transactions to immediate review.
-2. Route `High` transactions to same-day analyst review.
-3. Monitor `Elevated` segments weekly for drift and emerging fraud patterns.
-4. Recalibrate thresholds after analyst decision outcomes are collected.
+1. Use Critical and High score bands as the first policy focus.
+2. Monitor Product C, identity-present transactions, and high-risk payment/email combinations separately.
+3. Track threshold precision, recall, and workload before any automated decision use.
+4. Recalibrate thresholds after real decision outcomes and cost inputs are collected.
+

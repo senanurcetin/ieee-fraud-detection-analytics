@@ -8,10 +8,10 @@ with invalid_values as (
     select 'review_strategy_queue_policy', queue_policy
     from {{ ref('rpt_review_strategy') }}
     where queue_policy not in (
-        'Real-time manual review queue',
-        'Same-day priority review',
-        'Sample-based manual control',
-        'Automated monitoring'
+        'Critical score monitoring',
+        'High-priority threshold review',
+        'Sample-based control check',
+        'Baseline monitoring'
     )
 
     union all
@@ -20,9 +20,9 @@ with invalid_values as (
     from {{ ref('rpt_threshold_simulation') }}
     where operating_mode not in (
         'Broad monitoring',
-        'Balanced operations',
-        'Focused risk queue',
-        'Narrow critical queue'
+        'Balanced threshold policy',
+        'Focused risk policy',
+        'Narrow critical policy'
     )
 
     union all

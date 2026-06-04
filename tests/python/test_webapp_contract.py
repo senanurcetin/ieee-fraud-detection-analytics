@@ -33,6 +33,8 @@ def test_dashboard_table_contract_is_allowlisted() -> None:
     assert "rpt_time_amount_signals" in set(main.BIGQUERY_TABLES.values())
     assert "rpt_report_narrative" in set(main.BIGQUERY_TABLES.values())
     assert "rpt_proxy_signal_risk" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_validation_threshold_simulation" in set(main.BIGQUERY_TABLES.values())
+    assert "rpt_segment_model_performance" in set(main.BIGQUERY_TABLES.values())
     assert main.BIGQUERY_TABLES["niche_drilldown"] == "fact_train_transactions"
 
 
@@ -75,7 +77,7 @@ def test_public_api_normalizer_keeps_reporting_copy_business_ready() -> None:
 
     assert row["segment_family"] == "Amount band"
     assert row["risk_priority"] == "Critical"
-    assert row["recommended_action"] == "Amount band requires immediate review, rule calibration, and capacity allocation."
+    assert row["recommended_action"] == "Amount band requires immediate analytical focus, rule calibration, and capacity scenario review."
 
     readiness = main.normalize_public_row(
         "report_readiness",
@@ -92,7 +94,7 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
 
     assert payload["presentation_layer"] == "web_dashboard"
     assert payload["dataset"] == "fraud_project_reporting"
-    assert payload["table_count"] == 23
+    assert payload["table_count"] == 25
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
     assert len(payload["executive_takeaways"]) >= 3
@@ -103,11 +105,11 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
     assert len(payload["model_governance_controls"]) >= 4
     assert len(payload["monitoring_playbook"]) >= 4
     assert len(payload["production_validation"]) >= 5
-    assert len(payload["page_action_messages"]) == 4
+    assert len(payload["page_action_messages"]) == 9
     assert payload["model_registry"]["model_version"] == "lightgbm-v2-v339-missingness-filtered"
     assert payload["model_registry"]["feature_scope"]["v_feature_range"] == "V1-V339"
     assert any(item["kpi"] == "Fraud rate" for item in payload["kpi_definitions"])
-    assert any(item["kpi"] == "Review workload" for item in payload["kpi_definitions"])
+    assert any(item["kpi"] == "Flagged workload" for item in payload["kpi_definitions"])
     assert any(item["metric"] == "Brier score" for item in payload["model_validation_metrics"])
     assert any(item["metric"] == "Expected calibration error" for item in payload["model_validation_metrics"])
     assert any(item["rule"] == "Primary operating rule" for item in payload["threshold_decision_policy"])
@@ -139,12 +141,12 @@ def test_enterprise_metadata_contract_is_explicit_about_dataset_limits() -> None
     assert "user_age" in payload["unsupported_fields"]
 
 
-def test_enterprise_case_helpers_create_operational_risk_contract() -> None:
+def test_enterprise_transaction_helpers_create_analytical_risk_contract() -> None:
     assert main.risk_category_from_band("Critical") == "Critical"
     assert main.risk_category_from_band("High") == "High Risk"
     assert main.risk_category_from_band("Elevated") == "Medium Risk"
     assert main.risk_category_from_band("Low") == "Low Risk"
-    assert main.recommended_action_from_band("Critical") == "Immediate manual review"
+    assert main.recommended_action_from_band("Critical") == "Immediate threshold-policy focus"
 
     explanation = main.build_transaction_explanation(
         {
@@ -278,6 +280,10 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Fraud Exposure" in html
     assert "Capturable Exposure" in html
     assert "Native Location Fields" in html
+    assert "Validation threshold simulator" in html
+    assert "Segment validation precision" in html
+    assert "Address Missing Risk" in html
+    assert "Distance High Risk" in html
     assert "Segment Drill-through" in html
     assert "drill-back-btn" in html
     assert html.count("Fraud trend snapshot") == 1
@@ -294,7 +300,7 @@ def test_threshold_slider_updates_selected_scenario_cards() -> None:
     assert "Fraud Capture" in section
     assert "Missed Exposure" in section
     assert "Precision" in section
-    assert "Workload" in section
+    assert "Validation Workload" in section
 
 
 def test_metadata_contains_full_analysis_coverage() -> None:

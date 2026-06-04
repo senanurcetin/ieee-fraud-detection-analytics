@@ -576,6 +576,22 @@
       font-size: 11px;
       font-weight: 820;
     }
+    .heat-cell small {
+      display: block;
+      margin-top: 4px;
+      color: #334155;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .heat-cell.low-support {
+      background-image: repeating-linear-gradient(
+        135deg,
+        rgba(255,255,255,.16) 0,
+        rgba(255,255,255,.16) 6px,
+        rgba(15,23,42,.05) 6px,
+        rgba(15,23,42,.05) 12px
+      );
+    }
     .heat-cell.head {
       min-height: 28px;
       border-color: transparent;
@@ -1310,7 +1326,7 @@
           kpi('Highest-Risk Amount Band', top.amount_band || '-', fmtPct2(top.fraud_rate) + ' fraud rate.', '#d92d3a'),
           kpi('Amount Exposure Proxy', fmtMoneyCompact(sum(amountRows, 'fraud_transaction_amount') || sum(amountRows, 'fraud_count') * 120), 'Observed amount where available.', '#c98012'),
           kpi('Fraud Count', fmtInt(sum(amountRows, 'fraud_count')), 'Fraud labels by amount bands.', '#7c3aed'),
-          kpi('Avg Sample Amount', fmtMoney(average(tx, 'transaction_amount')), 'Filtered transaction sample average.', '#2563eb'),
+          kpi('Diagnostic Sample Avg Amount', fmtMoney(average(tx, 'transaction_amount')), '240-row diagnostic sample; full-population amount bands are shown in the main charts.', '#2563eb'),
           kpi('Bands Compared', fmtInt(amountRows.length), 'Amount bands in current filter.', '#18a999')
         ]),
         visualPanels([
@@ -1340,7 +1356,7 @@
           kpi('Identity Risk Lift', bestLift(getRows('identity_risk')), 'Identity signal versus portfolio baseline.', '#d92d3a'),
           kpi('Email Groups', fmtInt(filteredEmailRows().length), 'Purchaser email groups profiled.', '#18a999'),
           kpi('Device Segments', fmtInt(groupBy(tx, 'device_type').length), 'Device groups in transaction sample.', '#7c3aed'),
-          kpi('Sample Transactions', fmtInt(tx.length), 'Filtered analytical sample.', '#c98012')
+          kpi('Diagnostic Sample Rows', fmtInt(tx.length), 'Used only for scatter and device diagnostics.', '#c98012')
         ]),
         visualPanels([
           grid2([
@@ -1365,14 +1381,16 @@
       const proxyQuality = proxyQualityRows();
       const proxyRisk = proxySignalRows();
       const topProxy = proxyRisk[0] || {};
+      const addressMissing = proxyRisk.find(row => row.proxy_segment === 'Address missing') || {};
+      const distanceHigh = proxyRisk.find(row => row.proxy_segment === 'Distance high') || {};
       const entityTop = entityRepeatRows()[0] || {};
       return pageGrid([
         kpiRow([
           kpi('Native Location Fields', '0', 'No country, city, IP, or coordinate fields.', '#d92d3a'),
-          kpi('Proxy Segments', fmtInt(proxyRisk.length), 'Address and distance risk cuts from reporting fact.', '#2563eb'),
-          kpi('Highest Proxy Lift', fmtScore(topProxy.lift || 0) + 'x', short(topProxy.proxy_segment || '-', 22), '#d92d3a'),
-          kpi('Top Proxy Fraud Share', fmtPct(num(topProxy.fraud_share)), 'Fraud concentration represented by the top proxy cut.', '#7c3aed'),
-          kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate.', '#18a999')
+          kpi('Address Missing Risk', fmtPct2(addressMissing.fraud_rate), fmtScore(addressMissing.lift || 0) + 'x lift; ' + fmtPct(addressMissing.fraud_share) + ' fraud share.', '#d92d3a'),
+          kpi('Distance High Risk', fmtPct2(distanceHigh.fraud_rate), fmtScore(distanceHigh.lift || 0) + 'x lift; ' + fmtPct(distanceHigh.fraud_share) + ' fraud share.', '#c98012'),
+          kpi('Top Proxy Fraud Share', fmtPct(num(topProxy.fraud_share)), short(topProxy.proxy_segment || '-', 22), '#7c3aed'),
+          kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate in diagnostic sample.', '#18a999')
         ]),
         visualPanels([
           grid2([
@@ -1402,8 +1420,8 @@
           kpi('Peak Relative Hour', peakHourLabel(), 'Highest hourly fraud-rate signal.', '#d92d3a'),
           kpi('Payment Groups', fmtInt(getRows('payment_heatmap').length), 'Card network/type combinations.', '#2563eb'),
           kpi('Email Risk Groups', fmtInt(filteredEmailRows().length), 'Purchaser email domains profiled.', '#18a999'),
-          kpi('High Score Sample', fmtInt(tx.filter(row => num(row.risk_score) >= 80).length), 'Filtered transactions above score 80.', '#7c3aed'),
-          kpi('Avg Risk Score', fmtScore(average(tx, 'risk_score')), 'Filtered transaction sample.', '#c98012')
+          kpi('Diagnostic High Scores', fmtInt(tx.filter(row => num(row.risk_score) >= 80).length), 'Rows above score 80 in the diagnostic sample.', '#7c3aed'),
+          kpi('Diagnostic Avg Score', fmtScore(average(tx, 'risk_score')), 'Filtered 240-row sample only.', '#c98012')
         ]),
         visualPanels([
           grid2([
@@ -1452,27 +1470,28 @@
     }
 
     function renderModel() {
-      const m = metricLayer();
       const registry = state.registry || (state.meta && state.meta.model_registry) || {};
       const holdout = registry.holdout_metrics || {};
+      const threshold = selectedThreshold();
       return pageGrid([
         kpiRow([
           kpi('ROC-AUC', fmtScore(holdout.roc_auc || .9139), 'Strong rank ordering across thresholds.', '#2563eb'),
           kpi('PR-AUC', fmtScore(holdout.average_precision || .5370), 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
-          kpi('Precision', fmtPct(m.precision), 'Review efficiency at selected threshold.', '#c98012'),
-          kpi('Recall', fmtPct(m.recall), 'Fraud capture at selected threshold.', '#7c3aed'),
-          kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Financial view of threshold tradeoff.', '#d92d3a')
+          kpi('Validation Precision', fmtPct(threshold.precision_rate), 'Holdout precision at selected threshold.', '#c98012'),
+          kpi('Validation Recall', fmtPct(threshold.fraud_capture_rate), 'Holdout fraud capture at selected threshold.', '#7c3aed'),
+          kpi('Validation Workload', fmtPct(threshold.workload_share), 'Holdout flagged share at selected threshold.', '#d92d3a')
         ]),
         visualPanels([
-          chartCard('Threshold simulator', 'Select an operating point to compare capture, precision, workload, and exposure.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
+          chartCard('Validation threshold simulator', 'Holdout threshold evidence; reporting score simulation is kept as supporting context.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
           grid2([
             chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
-            chartCard('Risk band distribution', 'Score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>'),
-            chartCard('Confusion matrix approximation', 'Selected-threshold classification view.', '<div class="visual-body" id="model-confusion"></div>'),
-            chartCard('Feature importance recap', 'Model drivers behind the score.', '<div class="visual-body" id="model-features"></div>')
+            chartCard('Segment validation precision', 'Where the model performs better or worse across comparable segment families.', '<div class="visual-body" id="model-segment-performance"></div>'),
+            chartCard('Validation confusion matrix', 'Selected-threshold classification view from holdout counts.', '<div class="visual-body" id="model-confusion"></div>'),
+            chartCard('Risk band distribution', 'Reporting score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>')
           ])
         ], [
           chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>'),
+          chartCard('Feature importance recap', 'Supporting model-driver context behind the score.', '<div class="visual-body" id="model-features"></div>'),
           chartCard('Model registry and rolling CV', 'Version, V-feature scope, and rolling validation stability evidence.', '<div class="visual-body" id="model-registry"></div>')
         ]),
         insightRow([
@@ -1575,10 +1594,10 @@
       }));
       const slider = document.getElementById('threshold-slider');
       const thresholdSelect = document.getElementById('threshold-select');
-      const rows = getRows('threshold_simulation');
+      const rows = thresholdRows();
       if (thresholdSelect) {
         thresholdSelect.innerHTML = rows.map((row, index) => {
-          const label = 'Threshold ' + fmtScore(row.score_threshold) + ' - capture ' + fmtPct(row.fraud_capture_rate);
+          const label = 'Threshold ' + fmtScore(row.score_threshold) + ' - validation capture ' + fmtPct(row.fraud_capture_rate);
           return '<option value="' + index + '">' + escapeHtml(label) + '</option>';
         }).join('');
         thresholdSelect.value = state.selectedThreshold;
@@ -1672,6 +1691,7 @@
         modelReferenceCurves('model-curves');
         renderThresholdSummary();
         barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
+        barChart('model-segment-performance', segmentModelRows(), row => row.segment_family + ' / ' + row.segment_name, row => row.precision_rate, fmtPct2, null);
         confusionMatrix('model-confusion');
         barChart('model-features', getRows('feature_importance').slice(0, 8), row => row.feature, row => row.importance, fmtInt, null);
         modelRegistryCard('model-registry');
@@ -1821,7 +1841,7 @@
         ['Context', currentContextLabel()],
         ['Fraud rate', fmtPct2(m.fraud_rate)],
         ['Exposure proxy', fmtMoneyCompact(m.fraud_exposure)],
-        ['Review workload', fmtInt(m.review_workload)],
+        ['Flagged workload', fmtInt(m.review_workload)],
         ['Capture', fmtPct(row.fraud_capture_rate)],
         ['Chart layer', state.visualMode === 'support' ? 'Supporting' : 'Primary']
       ];
@@ -1836,7 +1856,7 @@
       if (page === 'geo') return proxySignalRows().slice(0, 8).map(row => ({ label: proxySegmentLabel(row), value: row.fraud_rate, format: fmtPct2 }));
       if (page === 'behavior') return hourRiskRows().slice(0, 8).map(row => ({ label: String(row.transaction_hour) + ':00', value: row.fraud_rate, format: fmtPct2 }));
       if (page === 'features') return getRows('feature_importance').slice(0, 8).map(row => ({ label: row.feature, value: row.importance, format: fmtInt }));
-      if (page === 'model') return getRows('threshold_simulation').slice(0, 8).map(row => ({ label: 'T ' + fmtScore(row.score_threshold), value: row.fraud_capture_rate, format: fmtPct }));
+      if (page === 'model') return thresholdRows().slice(0, 8).map(row => ({ label: 'T ' + fmtScore(row.score_threshold), value: row.fraud_capture_rate, format: fmtPct }));
       if (page === 'insights') return recommendationScoreRows().slice(0, 8).map(row => ({ label: row.recommendation, value: row.score, format: fmtInt }));
       return [];
     }
@@ -1935,7 +1955,32 @@
 
     function getRows(key) { return state.dashboard?.[key] || []; }
     function executiveKpis() { return getRows('executive_kpis')[0] || {}; }
-    function selectedThreshold() { return getRows('threshold_simulation')[Math.max(0, Math.min(state.selectedThreshold, getRows('threshold_simulation').length - 1))] || {}; }
+    function thresholdRows() {
+      const validation = getRows('validation_threshold_simulation');
+      return validation.length ? validation : getRows('threshold_simulation');
+    }
+    function selectedThreshold() { return thresholdRows()[Math.max(0, Math.min(state.selectedThreshold, thresholdRows().length - 1))] || {}; }
+    function reportingThresholdAtSelected() {
+      const selected = selectedThreshold();
+      const reporting = getRows('threshold_simulation');
+      if (!reporting.length) return {};
+      return reporting.find(row => Math.abs(num(row.score_threshold) - num(selected.score_threshold)) < .00001) || reporting[Math.max(0, Math.min(state.selectedThreshold, reporting.length - 1))] || {};
+    }
+    function validationTotalRows() {
+      const rows = thresholdRows();
+      const totals = rows
+        .filter(row => num(row.workload_share) > 0)
+        .map(row => num(row.review_count) / num(row.workload_share))
+        .filter(Number.isFinite);
+      return totals.length ? Math.round(Math.max(...totals)) : 0;
+    }
+    function validationFraudTotal() {
+      const rows = thresholdRows();
+      const totals = rows
+        .map(row => num(row.captured_fraud_count) + num(row.false_negative_count))
+        .filter(value => value > 0);
+      return totals.length ? Math.max(...totals) : 0;
+    }
     function metricLayer() {
       const k = executiveKpis();
       const threshold = selectedThreshold();
@@ -1946,8 +1991,9 @@
       const exposure = segment?.fraud_amount ?? fraudExposure();
       const captured = exposure * num(threshold.fraud_capture_rate);
       const missed = Math.max(exposure - captured, 0);
-      const review = num(threshold.review_count);
-      const falsePositiveCost = Math.max(review - num(threshold.captured_fraud_count), 0) * 5;
+      const review = num(threshold.workload_share) * total;
+      const capturedFraudCount = fraud * num(threshold.fraud_capture_rate);
+      const falsePositiveCost = Math.max(review - capturedFraudCount, 0) * 5;
       const netBenefit = captured - falsePositiveCost - missed * 0.15;
       return {
         source: segment?.source || 'Portfolio',
@@ -2036,7 +2082,7 @@
       return active.length ? active.join(' | ') : 'Full portfolio';
     }
     function recommendedThresholdIndex() {
-      const rows = getRows('threshold_simulation');
+      const rows = thresholdRows();
       const target = rows.findIndex(row => num(row.score_threshold) >= 0.50);
       return target >= 0 ? target : Math.min(5, rows.length - 1);
     }
@@ -2179,6 +2225,13 @@
         email_segment: row.purchaser_email_group,
         fraud_rate: row.fraud_rate
       })));
+    }
+    function segmentModelRows() {
+      return getRows('segment_model_performance')
+        .filter(row => num(row.validation_transactions) >= 1000)
+        .slice()
+        .sort((a, b) => num(b.precision_rate) - num(a.precision_rate))
+        .slice(0, 12);
     }
     function deviceRiskRows() {
       return groupBy(filteredTransactions(), 'device_type').map(group => {
@@ -2586,11 +2639,16 @@
         const row = lookup.get(rowLabel + '||' + colLabel);
         const value = num(row?.[valueKey]);
         const alpha = .05 + value / maxValue * .70;
+        const support = num(row?.transaction_count || row?.validation_transactions || row?.row_count);
+        const fraud = num(row?.fraud_count || row?.validation_fraud_count || row?.observed_fraud_count);
+        const supportText = support ? 'n=' + fmtInt(support) : 'no support';
+        const fraudText = fraud ? 'fraud=' + fmtInt(fraud) : 'fraud=0';
+        const supportClass = support && support < 1000 ? ' low-support' : '';
         const filterValue = options.filterFrom === 'col' ? colLabel : rowLabel;
         const attrs = options.filterKey
           ? ' data-filter-key="' + escapeHtml(options.filterKey) + '" data-filter-value="' + escapeHtml(filterValue) + '" data-detail-family="' + escapeHtml(options.detailFamily || labelize(options.filterKey)) + '" data-detail-label="' + escapeHtml(filterValue) + '"'
           : '';
-        return '<div class="heat-cell"' + attrs + ' style="background:rgba(217,45,58,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value)) + '"><span class="heat-value">' + formatFn(value) + '</span></div>';
+        return '<div class="heat-cell' + supportClass + '"' + attrs + ' style="background:rgba(217,45,58,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value) + ' | ' + supportText + ' | ' + fraudText) + '"><span class="heat-value">' + formatFn(value) + '</span><small>' + escapeHtml(supportText) + '</small></div>';
       }).join('') + '</div>').join('');
       const axes = '<div class="heat-axis"><span>Rows: ' + escapeHtml(options.rowAxis || labelize(rowKey)) + '</span><span>Columns: ' + escapeHtml(options.colAxis || labelize(colKey)) + '</span></div>';
       target.innerHTML = axes + '<div class="heatmap">' + header + body + '</div>';
@@ -2653,7 +2711,7 @@
     function thresholdCurve(id) {
       const target = document.getElementById(id);
       if (!target) return;
-      const rows = getRows('threshold_simulation');
+      const rows = thresholdRows();
       if (!rows.length) { target.innerHTML = empty('No threshold data available.'); return; }
       const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
       const x = index => padLeft + index / Math.max(rows.length - 1, 1) * (w - padLeft - padRight);
@@ -2664,12 +2722,12 @@
       const selectedX = x(state.selectedThreshold);
       const yTicks = yAxisSvg(axisTicks(1), y, padLeft, w - padRight, fmtPct);
       const xTicks = indexedTicks(rows, 'score_threshold', 5).map(tick => '<text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtScore(rows[tick.index].score_threshold) + '</text>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + padTop + '" x2="' + selectedX + '" y2="' + (h - padBottom) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/>' + xTicks + '<text x="' + padLeft + '" y="18" fill="#18a999" font-size="12">Capture</text><text x="' + (padLeft + 82) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (padLeft + 175) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + padTop + '" x2="' + selectedX + '" y2="' + (h - padBottom) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/>' + xTicks + '<text x="' + padLeft + '" y="18" fill="#18a999" font-size="12">Validation capture</text><text x="' + (padLeft + 126) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (padLeft + 218) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
     }
     function modelReferenceCurves(id) {
       const target = document.getElementById(id);
       if (!target) return;
-      const rows = getRows('threshold_simulation');
+      const rows = thresholdRows();
       if (!rows.length) { target.innerHTML = empty('No model curve data available.'); return; }
       const registry = state.registry || (state.meta && state.meta.model_registry) || {};
       const holdout = registry.holdout_metrics || {};
@@ -2718,12 +2776,15 @@
       const captured = num(row.captured_fraud_count);
       const review = num(row.review_count);
       const falsePositives = Math.max(review - captured, 0);
-      const missedFraud = Math.max(num(k.fraud_transactions) - captured, 0);
+      const missedFraud = num(row.false_negative_count) || Math.max((validationTotalRows() ? validationFraudTotal() : num(k.fraud_transactions)) - captured, 0);
+      const reportingRow = reportingThresholdAtSelected();
+      const portfolioReview = num(reportingRow.review_count);
       document.getElementById('threshold-summary').innerHTML = '<div class="kpi-row">' + [
-        kpi('Threshold', fmtScore(row.score_threshold), row.operating_mode || 'Operating point', '#2563eb'),
-        kpi('Fraud Capture', fmtPct(row.fraud_capture_rate), fmtInt(captured) + ' fraud labels captured.', '#18a999'),
-        kpi('Precision', fmtPct(row.precision_rate), 'Expected review efficiency.', '#c98012'),
-        kpi('Workload', fmtInt(review), fmtPct(row.workload_share) + ' of transactions.', '#7c3aed'),
+        kpi('Threshold', fmtScore(row.score_threshold), row.operating_mode || 'Validation operating point', '#2563eb'),
+        kpi('Fraud Capture', fmtPct(row.fraud_capture_rate), fmtInt(captured) + ' holdout fraud labels captured.', '#18a999'),
+        kpi('Precision', fmtPct(row.precision_rate), 'Holdout threshold efficiency.', '#c98012'),
+        kpi('Validation Workload', fmtInt(review), fmtPct(row.workload_share) + ' of holdout transactions.', '#7c3aed'),
+        kpi('Portfolio Flagged Volume', portfolioReview ? fmtInt(portfolioReview) : '-', 'Reporting score simulation at the same threshold.', '#2563eb'),
         kpi('Missed Exposure', fmtMoneyCompact(missedFraud * 120), fmtInt(missedFraud) + ' missed fraud labels.', '#d92d3a')
       ].join('') + '</div>';
     }
@@ -2732,11 +2793,11 @@
       const target = document.getElementById(id);
       if (!target) return;
       const row = selectedThreshold();
-      const k = executiveKpis();
       const tp = num(row.captured_fraud_count);
-      const fp = Math.max(num(row.review_count) - tp, 0);
-      const fn = Math.max(num(k.fraud_transactions) - tp, 0);
-      const tn = Math.max(num(k.total_transactions) - tp - fp - fn, 0);
+      const fp = num(row.false_positive_count) || Math.max(num(row.review_count) - tp, 0);
+      const fn = num(row.false_negative_count) || Math.max(validationFraudTotal() - tp, 0);
+      const total = validationTotalRows();
+      const tn = Math.max(total - tp - fp - fn, 0);
       target.innerHTML = '<div class="heatmap"><div class="heat-row" style="--cols:2"><div class="heat-cell head"></div><div class="heat-cell head">Predicted fraud</div><div class="heat-cell head">Predicted normal</div></div><div class="heat-row" style="--cols:2"><div class="heat-cell head">Actual fraud</div><div class="heat-cell" style="background:rgba(24,169,153,.24)"><span class="heat-value">' + fmtInt(tp) + '</span>TP</div><div class="heat-cell" style="background:rgba(217,45,58,.22)"><span class="heat-value">' + fmtInt(fn) + '</span>FN</div></div><div class="heat-row" style="--cols:2"><div class="heat-cell head">Actual normal</div><div class="heat-cell" style="background:rgba(201,128,18,.20)"><span class="heat-value">' + fmtInt(fp) + '</span>FP</div><div class="heat-cell" style="background:rgba(37,99,235,.16)"><span class="heat-value">' + fmtInt(tn) + '</span>TN</div></div></div>';
     }
 
@@ -2797,7 +2858,7 @@
         geo: proxySignalRows().concat(proxyProductMatrixRows()).concat(proxyCrossMatrixRows()).concat(proxyFeatureRows()),
         behavior: behaviorMatrixRows(),
         features: getRows('feature_importance'),
-        model: getRows('threshold_simulation'),
+        model: thresholdRows(),
         insights: recommendationRows()
       })[state.page] || [];
       if (!rows.length) return;

@@ -113,7 +113,7 @@ select
     end as risk_priority,
     case
         when fraud_share >= 0.20 and lift >= 1.50 then 'Immediate segment review and rule calibration'
-        when fraud_share >= 0.10 and lift >= 1.20 then 'Prioritize in the daily operations queue'
+        when fraud_share >= 0.10 and lift >= 1.20 then 'Prioritize in segment policy calibration'
         when lift >= 1.10 then 'Monitor weekly trend and volume'
         else 'Standard reporting'
     end as recommended_action

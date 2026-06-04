@@ -41,6 +41,15 @@ sources:
           - row_count_equals:
               arguments:
                 expected_count: 1097231
+      - name: validation_predictions
+        description: "Holdout validation transaction predictions used for unbiased model-threshold evidence."
+      - name: validation_threshold_simulation
+        description: "Holdout validation threshold simulation with workload, precision, recall, false-positive, and false-negative metrics."
+        tests:
+          - row_count_between:
+              arguments:
+                min_count: 10
+                max_count: 20
       - name: feature_missingness
         description: "Missingness profile table for raw columns."
       - name: feature_importance

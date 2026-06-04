@@ -15,9 +15,9 @@ This matrix translates the analyst workplan into concrete dashboard evidence, db
 | Payment and email | Which card and email cuts are analytically useful? | Customer Risk Analysis | Full-width payment x email heatmap, email risk ranking, payment/email nested drill-through. |
 | Masked proxy analysis | Do address and distance proxy fields add signal? | Masked Address & Distance Analysis | Proxy segment risk, fraud share versus volume, product x proxy heatmap, address/distance caveat. |
 | Feature engineering | Which signals power the model and where is missingness structural? | Feature Importance Analysis | Feature importance, feature family treemap, missingness versus importance, masked-feature caveat. |
-| ML performance | Is the model strong enough for review prioritization? | Model Performance Analysis | Time-based validation, ROC-AUC, average precision, top-decile lift, feature importance recap. |
-| Threshold operations | Which score threshold balances capture and workload? | Model Performance Analysis | Threshold curve, selected-threshold capture, precision, workload, confusion matrix. |
-| Business impact | What is the operational and financial tradeoff? | Model Performance Analysis / Key Insights & Recommendations | False-positive review cost, missed fraud exposure, net benefit proxy, review policy. |
+| ML performance | Is the model strong enough for threshold-policy evidence? | Model Performance Analysis | Time-based validation, ROC-AUC, average precision, top-decile lift, feature importance recap. |
+| Threshold policy | Which score threshold balances capture and workload? | Model Performance Analysis | Threshold curve, selected-threshold capture, precision, workload, confusion matrix. |
+| Business impact | What is the financial tradeoff? | Model Performance Analysis / Key Insights & Recommendations | False-positive review cost, missed fraud exposure, net benefit proxy, threshold policy. |
 | Presentation readiness | Is the public report defensible? | Production validation docs | KPI dictionary, methodology notes, analysis coverage matrix, release gates. |
 
 ## Defensible Hypotheses

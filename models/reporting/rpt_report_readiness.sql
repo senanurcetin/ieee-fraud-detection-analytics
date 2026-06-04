@@ -22,9 +22,9 @@ with checks as (
     select
         'STORY_001',
         'Report narrative coverage',
-        '6',
+        '9',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_report_narrative') ~ ')') }},
-        case when (select count(*) from {{ ref('rpt_report_narrative') }}) = 6 then 'PASS' else 'FAIL' end,
+        case when (select count(*) from {{ ref('rpt_report_narrative') }}) = 9 then 'PASS' else 'FAIL' end,
         'Executive presentation'
 
     union all
@@ -41,21 +41,41 @@ with checks as (
 
     select
         'MODEL_001',
-        'Risk band operations strategy',
+        'Risk band policy strategy',
         '4',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_review_strategy') ~ ')') }},
         case when (select count(*) from {{ ref('rpt_review_strategy') }}) = 4 then 'PASS' else 'FAIL' end,
-        'Model Operasyon'
+        'Model evidence'
 
     union all
 
     select
         'MODEL_002',
-        'Threshold simulation',
+        'Reporting threshold simulation',
         '>=10',
         {{ fp_string('(select count(*) from ' ~ ref('rpt_threshold_simulation') ~ ')') }},
         case when (select count(*) from {{ ref('rpt_threshold_simulation') }}) >= 10 then 'PASS' else 'FAIL' end,
-        'Model Operasyon'
+        'Model evidence'
+
+    union all
+
+    select
+        'MODEL_003',
+        'Validation threshold simulation',
+        '>=10',
+        {{ fp_string('(select count(*) from ' ~ ref('rpt_validation_threshold_simulation') ~ ')') }},
+        case when (select count(*) from {{ ref('rpt_validation_threshold_simulation') }}) >= 10 then 'PASS' else 'FAIL' end,
+        'Model evidence'
+
+    union all
+
+    select
+        'MODEL_004',
+        'Segment model performance',
+        '>=10',
+        {{ fp_string('(select count(*) from ' ~ ref('rpt_segment_model_performance') ~ ')') }},
+        case when (select count(*) from {{ ref('rpt_segment_model_performance') }}) >= 10 then 'PASS' else 'FAIL' end,
+        'Model evidence'
 )
 
 select

@@ -1,4 +1,4 @@
-# 01 - Executive Summary
+﻿# 01 - Executive Summary
 
 ## Objective
 
@@ -6,7 +6,7 @@
 
 The core business question is:
 
-> Where does fraud concentrate, and how should a fraud operations team prioritize review capacity?
+> Where does fraud concentrate, and which threshold and segment policies should management prioritize?
 
 ## Dataset Scope
 
@@ -27,11 +27,11 @@ The core business question is:
 3. Identity-present transactions have a 7.85% fraud rate, while identity-missing transactions show 2.09%.
 4. Amount risk is not linear: very low values and higher-value bands both require monitoring.
 5. Email and payment attributes add explainable operational segmentation when combined with product and model risk bands.
-6. The High + Critical model queue reviews about 5.06% of validation transactions while capturing 59.4% of fraud labels.
+6. The top 5% validation score band captures 58.32% of fraud labels at 40.13% precision; the fixed 0.50 threshold raises capture to 69.78% with higher workload.
 
 ## Management Message
 
-The project does not present the model as an automated decline engine. It positions machine learning as a review-prioritization layer that concentrates low-prevalence fraud into a manageable queue. Business rules and segment analytics remain visible so that analysts can explain why a queue is being prioritized.
+The project does not present the model as an automated decline engine. It positions machine learning as threshold-policy evidence that concentrates low-prevalence fraud into measurable risk bands. Business rules and segment analytics remain visible so that analysts can explain why a segment or threshold should be prioritized.
 
 ## Deliverables
 
@@ -40,4 +40,5 @@ The project does not present the model as an automated decline engine. It positi
 - LightGBM scoring pipeline with time-based validation and explainability artifacts.
 - FastAPI web API connected to the BigQuery reporting layer.
 - English-first executive web dashboard deployed on Vercel.
-- Documentation covering methodology, business impact, security, and operational playbook.
+- Documentation covering methodology, business impact, security, and analytical policy guidance.
+

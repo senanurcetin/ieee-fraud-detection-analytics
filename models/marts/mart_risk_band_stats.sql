@@ -30,10 +30,10 @@ select
         else 4
     end as band_rank,
     case b.risk_band
-        when 'Critical' then 'Immediate review'
-        when 'High' then 'Priority review'
-        when 'Elevated' then 'Queue monitoring'
-        else 'Standard monitoring'
+        when 'Critical' then 'Critical threshold focus'
+        when 'High' then 'High-priority analytical band'
+        when 'Elevated' then 'Sample-based control check'
+        else 'Baseline monitoring'
     end as review_priority,
     b.transaction_count,
     b.avg_predicted_probability,

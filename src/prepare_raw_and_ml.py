@@ -472,8 +472,74 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
     pd.DataFrame({"fpr": fpr, "tpr": tpr, "threshold": thresholds}).to_csv(
         TABLES_DIR / "validation_roc_curve.csv", index=False
     )
-    pd.DataFrame({"actual": y_valid.to_numpy(), "prediction": valid_pred}).to_csv(
-        TABLES_DIR / "validation_predictions.csv", index=False
+    validation_predictions = pd.DataFrame(
+        {
+            "transaction_id": train_df.loc[~train_mask, "TransactionID"].astype("int64").to_numpy(),
+            "actual_is_fraud": y_valid.to_numpy(),
+            "predicted_fraud_probability": valid_pred,
+        }
+    )
+    validation_predictions.to_csv(TABLES_DIR / "validation_predictions.csv", index=False)
+    con.register("validation_predictions_df", validation_predictions)
+    con.execute("create or replace table raw.validation_predictions as select * from validation_predictions_df")
+
+    threshold_values = [
+        0.01,
+        0.02,
+        0.03,
+        0.04,
+        0.05,
+        0.06,
+        0.07,
+        0.08,
+        0.09,
+        0.10,
+        0.15,
+        0.20,
+        0.25,
+        0.30,
+        0.40,
+        0.50,
+    ]
+    total_valid = len(validation_predictions)
+    total_fraud_valid = int(validation_predictions["actual_is_fraud"].sum())
+    threshold_records = []
+    for threshold_value in threshold_values:
+        selected_mask = validation_predictions["predicted_fraud_probability"] >= threshold_value
+        reviewed = validation_predictions.loc[selected_mask]
+        captured_fraud = int(reviewed["actual_is_fraud"].sum())
+        false_positive_count = int(len(reviewed) - captured_fraud)
+        false_negative_count = int(total_fraud_valid - captured_fraud)
+        threshold_records.append(
+            {
+                "score_threshold": threshold_value,
+                "evidence_scope": "validation_holdout",
+                "review_count": int(len(reviewed)),
+                "captured_fraud_count": captured_fraud,
+                "false_positive_count": false_positive_count,
+                "false_negative_count": false_negative_count,
+                "workload_share": len(reviewed) / total_valid if total_valid else 0,
+                "fraud_capture_rate": captured_fraud / total_fraud_valid if total_fraud_valid else 0,
+                "precision_rate": captured_fraud / len(reviewed) if len(reviewed) else 0,
+                "false_positive_rate": false_positive_count
+                / max(total_valid - total_fraud_valid, 1),
+                "operating_mode": (
+                    "Broad monitoring"
+                    if threshold_value <= 0.03
+                    else "Balanced threshold policy"
+                    if threshold_value <= 0.08
+                    else "Focused risk policy"
+                    if threshold_value <= 0.20
+                    else "Narrow critical policy"
+                ),
+            }
+        )
+    validation_thresholds = pd.DataFrame(threshold_records)
+    validation_thresholds.to_csv(TABLES_DIR / "validation_threshold_simulation.csv", index=False)
+    con.register("validation_threshold_simulation_df", validation_thresholds)
+    con.execute(
+        "create or replace table raw.validation_threshold_simulation "
+        "as select * from validation_threshold_simulation_df"
     )
 
     v_features_used = [col for col in features if col.startswith("V") and col[1:].isdigit()]

@@ -101,9 +101,9 @@ models:
                 values: ["High risk drift", "Low risk drift", "Normal band"]
 
   - name: rpt_time_amount_signals
-    description: "Relative hour and amount-decimal risk signals used for operational staffing and dynamic threshold discussion."
+    description: "Relative hour and amount-decimal risk signals used for behavioral pattern and dynamic threshold discussion."
     config:
-      tags: ["reporting", "time", "amount", "operations"]
+      tags: ["reporting", "time", "amount", "behavior"]
     tests:
       - row_count_between:
           arguments:
@@ -121,7 +121,7 @@ models:
       tags: ["reporting", "email"]
 
   - name: rpt_model_risk_bands
-    description: "Model risk bands and operational prioritization metrics."
+    description: "Model risk bands and threshold-policy prioritization metrics."
     config:
       tags: ["reporting", "model", "executive"]
     columns:
@@ -129,7 +129,7 @@ models:
         tests:
           - accepted_values:
               arguments:
-                values: ["Immediate review", "Priority review", "Queue monitoring", "Standard monitoring"]
+                values: ["Critical threshold focus", "High-priority analytical band", "Sample-based control check", "Baseline monitoring"]
 
   - name: rpt_feature_importance
     description: "Model feature importance ranking."
@@ -215,9 +215,9 @@ models:
                 values: ["Critical", "High", "Monitor", "Normal"]
 
   - name: rpt_review_strategy
-    description: "Maps model risk bands to review queue, estimated daily volume, and management action."
+    description: "Maps model risk bands to threshold policy bands, estimated daily volume, and management action."
     config:
-      tags: ["reporting", "model", "operations", "executive"]
+      tags: ["reporting", "model", "threshold", "executive"]
     tests:
       - row_count_equals:
           arguments:
@@ -232,15 +232,15 @@ models:
           - accepted_values:
               arguments:
                 values:
-                  - "Real-time manual review queue"
-                  - "Same-day priority review"
-                  - "Sample-based manual control"
-                  - "Automated monitoring"
+                  - "Critical score monitoring"
+                  - "High-priority threshold review"
+                  - "Sample-based control check"
+                  - "Baseline monitoring"
 
   - name: rpt_threshold_simulation
-    description: "Threshold simulation for review workload, fraud capture, and precision trade-off."
+    description: "Threshold simulation for flagged workload, fraud capture, and precision trade-off."
     config:
-      tags: ["reporting", "model", "threshold", "operations"]
+      tags: ["reporting", "model", "threshold", "validation"]
     tests:
       - row_count_between:
           arguments:
@@ -269,12 +269,78 @@ models:
               arguments:
                 values:
                   - "Broad monitoring"
-                  - "Balanced operations"
-                  - "Focused risk queue"
-                  - "Narrow critical queue"
+                  - "Balanced threshold policy"
+                  - "Focused risk policy"
+                  - "Narrow critical policy"
+
+  - name: rpt_validation_threshold_simulation
+    description: "Holdout validation threshold evidence separated from reporting/train score simulation."
+    config:
+      tags: ["reporting", "model", "threshold", "validation"]
+    tests:
+      - row_count_between:
+          arguments:
+            min_count: 10
+            max_count: 20
+    columns:
+      - name: score_threshold
+        tests:
+          - not_null
+          - unique
+      - name: evidence_scope
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["validation_holdout"]
+      - name: fraud_capture_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: precision_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: workload_share
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+
+  - name: rpt_segment_model_performance
+    description: "Holdout validation model performance by business segment family at the selected threshold."
+    config:
+      tags: ["reporting", "model", "validation", "segment"]
+    tests:
+      - row_count_between:
+          arguments:
+            min_count: 10
+            max_count: 50
+    columns:
+      - name: segment_family
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["Product", "Amount band", "Identity", "Email domain", "Payment"]
+      - name: precision_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: recall_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
 
   - name: rpt_report_readiness
-    description: "Acceptance checklist table summarizing data, narrative, risk analytics, and model operations readiness."
+    description: "Acceptance checklist table summarizing data, narrative, risk analytics, and model evidence readiness."
     config:
       tags: ["reporting", "qa", "executive"]
     columns:
@@ -316,6 +382,8 @@ exposures:
       - ref('rpt_segment_watchlist')
       - ref('rpt_review_strategy')
       - ref('rpt_threshold_simulation')
+      - ref('rpt_validation_threshold_simulation')
+      - ref('rpt_segment_model_performance')
       - ref('rpt_report_readiness')
     owner:
       name: "Fraud Analytics Team"

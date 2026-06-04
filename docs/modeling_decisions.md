@@ -1,8 +1,8 @@
-# Modeling Decisions
+﻿# Modeling Decisions
 
 ## Objective
 
-The model is designed to rank transactions for fraud review. It is not positioned as an automated decline engine. The expected business use is review queue prioritization and segment monitoring.
+The model is designed to rank transactions for threshold-policy analysis. It is not positioned as an automated decline engine. The expected business use is risk-band prioritization and segment monitoring.
 
 ## Algorithm Choice
 
@@ -45,24 +45,24 @@ Secondary metric:
 Operational metrics:
 
 - Risk-band fraud capture
-- Review workload share
+- Workload share
 - Segment lift
 - Fraud share by segment
-- Precision, recall, and F1 at the selected review policy
+- Precision, recall, and F1 at selected threshold policies
 
 Latest validation snapshot:
 
-- ROC-AUC: 0.9139
-- Average precision: 0.5370
-- High + Critical queue: 54.8% precision, 78.3% recall, 0.645 F1, 5.0% review workload
+- ROC-AUC: 0.9134
+- Average precision: 0.5354
+- Top 5% validation score band: 40.13% precision, 58.32% recall, 5.00% workload
+- Fixed 0.50 threshold: 25.68% precision, 69.78% recall, 9.35% workload
 
-Validation operating point at the train p95 threshold:
+Validation evidence:
 
-- Precision: 40.4%
-- Recall: 59.4%
-- False-positive rate: 3.12%
-- Workload share: 5.06%
-- Top 10% score lift: 7.24x
+- ROC-AUC: 0.9134
+- Average precision: 0.5354
+- Top 10% score lift: 7.12x
+- Top 5% false-positive rate: 3.10%
 
 ## Class Imbalance Strategy
 
@@ -70,10 +70,10 @@ The dataset has a baseline fraud rate of 3.50%, so accuracy is not a useful mode
 
 - Probability-based ranking instead of hard class prediction.
 - Average precision as a secondary metric.
-- Quantile-based review bands that control analyst workload.
-- Business-facing threshold simulation rather than a fixed 0.50 classification threshold.
+- Quantile-based risk bands that control workload.
+- Business-facing threshold simulation plus a fixed 0.50 scenario for comparison.
 
-Synthetic oversampling is not used because the validation design is time-based and the priority is preserving realistic transaction chronology and review workload behavior.
+Synthetic oversampling is not used because the validation design is time-based and the priority is preserving realistic transaction chronology and threshold workload behavior.
 
 ## Feature Scope
 
@@ -89,21 +89,20 @@ Masked feature interpretations are treated as observational. The report does not
 
 ## Risk Bands
 
-Model scores are converted into review bands using score quantiles:
+Model scores are converted into risk bands using score quantiles:
 
 - `Low`: below p80
 - `Elevated`: p80 to p95
 - `High`: p95 to p99
 - `Critical`: p99 and above
 
-These bands support capacity planning: the operations team can decide how much review volume to allocate to each band.
+These bands support capacity planning: the business can decide how much flagged volume to allocate to each band.
 
 Recommended starting policy:
 
-- Review `High + Critical` first.
-- Expected workload: 5.0% of train transactions.
-- Expected fraud capture: 78.3% of train fraud labels.
-- Expected precision: 54.8% in the reviewed queue.
+- Use the top 5% validation score band as the focused policy baseline.
+- Compare against the fixed 0.50 threshold when a higher-capture scenario is needed.
+- Recalibrate thresholds if cost assumptions, capacity, or product mix changes.
 
 ## Monitoring Gap
 
@@ -111,5 +110,6 @@ The project includes drift-style reporting tables, daily fraud-rate monitoring, 
 
 - Batch scoring schedule
 - Approved drift thresholds
-- Alerting on score distribution and fraud-rate movement
-- Human approval workflow for threshold changes
+- Governance checks on score distribution and fraud-rate movement
+- Human approval process for threshold changes
+
