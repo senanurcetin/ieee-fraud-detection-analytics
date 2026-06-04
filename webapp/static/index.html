@@ -1417,7 +1417,7 @@
       const tx = filteredTransactions();
       return pageGrid([
         kpiRow([
-          kpi('Peak Relative Hour', peakHourLabel(), 'Highest hourly fraud-rate signal.', '#d92d3a'),
+          kpi('Peak Relative Hour', peakHourLabel(), 'Highest hourly fraud-rate signal from the charted relative-hour pattern.', '#d92d3a'),
           kpi('Payment Groups', fmtInt(getRows('payment_heatmap').length), 'Card network/type combinations.', '#2563eb'),
           kpi('Email Risk Groups', fmtInt(filteredEmailRows().length), 'Purchaser email domains profiled.', '#18a999'),
           kpi('Diagnostic High Scores', fmtInt(tx.filter(row => num(row.risk_score) >= 80).length), 'Rows above score 80 in the diagnostic sample.', '#7c3aed'),
@@ -1674,7 +1674,7 @@
         dotPlotChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null, { axisTitle: 'Model importance from masked proxy fields' });
       }
       if (state.page === 'behavior') {
-        barChart('behavior-hour-risk', hourRiskRows(), row => String(row.transaction_hour) + ':00', row => row.fraud_rate, fmtPct2, null);
+        barChart('behavior-hour-risk', hourRiskRows(), row => relativeHourLabel(row), row => row.fraud_rate, fmtPct2, null);
         heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
         scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
         barChart('behavior-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate || row.fraud_rate, fmtPct2, 'risk');
@@ -1854,7 +1854,7 @@
       if (page === 'amount') return filteredAmountRows().map(row => ({ label: row.amount_band, value: row.fraud_rate, format: fmtPct2 }));
       if (page === 'customer') return filteredEmailRows().slice(0, 8).map(row => ({ label: row.purchaser_email_group, value: row.fraud_rate, format: fmtPct2 }));
       if (page === 'geo') return proxySignalRows().slice(0, 8).map(row => ({ label: proxySegmentLabel(row), value: row.fraud_rate, format: fmtPct2 }));
-      if (page === 'behavior') return hourRiskRows().slice(0, 8).map(row => ({ label: String(row.transaction_hour) + ':00', value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'behavior') return hourRiskRows().slice(0, 8).map(row => ({ label: relativeHourLabel(row), value: row.fraud_rate, format: fmtPct2 }));
       if (page === 'features') return getRows('feature_importance').slice(0, 8).map(row => ({ label: row.feature, value: row.importance, format: fmtInt }));
       if (page === 'model') return thresholdRows().slice(0, 8).map(row => ({ label: 'T ' + fmtScore(row.score_threshold), value: row.fraud_capture_rate, format: fmtPct }));
       if (page === 'insights') return recommendationScoreRows().slice(0, 8).map(row => ({ label: row.recommendation, value: row.score, format: fmtInt }));
@@ -2330,7 +2330,7 @@
     }
     function behaviorSignalRows() {
       return [
-        { signal: 'Relative hour', strength: max(getRows('time_amount_signals'), 'fraud_rate') },
+        { signal: 'Relative hour', strength: num(peakHourRow()?.fraud_rate) },
         { signal: 'Payment / email', strength: max(paymentEmailRows(), 'fraud_rate') },
         { signal: 'Amount / score', strength: average(filteredTransactions().filter(row => num(row.risk_score) >= 80), 'risk_score') / 100 },
         { signal: 'Risk band', strength: max(getRows('model_risk_bands'), 'observed_fraud_rate') || max(getRows('model_risk_bands'), 'fraud_rate') }
@@ -2899,8 +2899,14 @@
       return { min: sorted[0], q1: pick(.25), median: pick(.5), q3: pick(.75), max: sorted[sorted.length - 1] };
     }
     function peakHourLabel() {
-      const top = getRows('time_amount_signals').slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate))[0];
-      return top ? String(top.transaction_hour) + ':00' : '-';
+      const top = peakHourRow();
+      return top ? relativeHourLabel(top) : '-';
+    }
+    function peakHourRow() {
+      return hourRiskRows()[0] || null;
+    }
+    function relativeHourLabel(row) {
+      return row && row.transaction_hour !== undefined && row.transaction_hour !== null ? String(row.transaction_hour) : '-';
     }
     function bestLift(rows) {
       const value = Math.max(...(rows || []).map(row => num(row.fraud_lift || row.lift)), 0);

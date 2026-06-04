@@ -303,6 +303,35 @@ def test_threshold_slider_updates_selected_scenario_cards() -> None:
     assert "Validation Workload" in section
 
 
+def test_behavior_peak_relative_hour_uses_charted_hour_risk_rows() -> None:
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+
+    behavior_section = html.split("function renderBehavior()", 1)[1].split(
+        "function renderFeatures()",
+        1,
+    )[0]
+    hydrate_section = html.split("barChart('behavior-hour-risk'", 1)[1].split(
+        "heatmap('behavior-hour'",
+        1,
+    )[0]
+    peak_label_section = html.split("function peakHourLabel()", 1)[1].split(
+        "function bestLift",
+        1,
+    )[0]
+    peak_row_section = html.split("function peakHourRow()", 1)[1].split(
+        "function relativeHourLabel",
+        1,
+    )[0]
+
+    assert "Highest hourly fraud-rate signal from the charted relative-hour pattern." in behavior_section
+    assert "relativeHourLabel(row)" in hydrate_section
+    assert "const top = peakHourRow();" in peak_label_section
+    assert "return top ? relativeHourLabel(top) : '-';" in peak_label_section
+    assert "return hourRiskRows()[0] || null;" in peak_row_section
+    assert "getRows('time_amount_signals').slice().sort" not in peak_label_section
+    assert "String(row.transaction_hour) + ':00'" not in html
+
+
 def test_metadata_contains_full_analysis_coverage() -> None:
     payload = main.metadata()
 
