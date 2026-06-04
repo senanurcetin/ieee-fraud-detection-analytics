@@ -104,6 +104,8 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
     assert len(payload["monitoring_playbook"]) >= 4
     assert len(payload["production_validation"]) >= 5
     assert len(payload["page_action_messages"]) == 4
+    assert payload["model_registry"]["model_version"] == "lightgbm-v2-v339-missingness-filtered"
+    assert payload["model_registry"]["feature_scope"]["v_feature_range"] == "V1-V339"
     assert any(item["kpi"] == "Fraud rate" for item in payload["kpi_definitions"])
     assert any(item["kpi"] == "Review workload" for item in payload["kpi_definitions"])
     assert any(item["metric"] == "Brier score" for item in payload["model_validation_metrics"])
@@ -157,6 +159,31 @@ def test_enterprise_case_helpers_create_operational_risk_contract() -> None:
     assert len(explanation) >= 4
     assert any(item["factor"] == "Model risk band" for item in explanation)
     assert any(item["factor"] == "High ticket size" for item in explanation)
+
+    registry = main.enterprise_model_registry()
+    assert registry["model_version"] == "lightgbm-v2-v339-missingness-filtered"
+    assert registry["feature_scope"]["v_features_selected"] == 339
+    assert registry["rolling_cv_summary"]["window_count"] == 3
+
+    importance_explanation = main.build_feature_importance_explanation(
+        {
+            "transaction_amount": 600,
+            "transaction_day": 10,
+            "transaction_hour": 4,
+            "product_cd": "C",
+            "identity_status": "Identity present",
+            "device_type": "mobile",
+            "purchaser_email_group": "gmail.com",
+        },
+        [
+            {"feature": "TransactionAmt", "feature_family": "Core transaction", "importance": 1408, "importance_rank": 5},
+            {"feature": "addr1", "feature_family": "Address", "importance": 1566, "importance_rank": 3},
+            {"feature": "V87", "feature_family": "Vesta engineered V", "importance": 200, "importance_rank": 20},
+        ],
+    )
+    assert len(importance_explanation) == 3
+    assert "Transaction amount" in importance_explanation[0]["case_context"]
+    assert "not a real geography" in importance_explanation[1]["case_context"]
 
 
 def test_enterprise_case_sql_omits_unsupported_fields(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -240,11 +267,13 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "model-curves" in html
     assert "model-risk" in html
     assert "model-confusion" in html
+    assert "model-registry" in html
     assert "insight-matrix" in html
     assert "insight-waterfall" in html
     assert "/api/dashboard" in html
     assert "/api/metadata" in html
     assert "/api/enterprise/cases?limit=240" in html
+    assert "/api/enterprise/model-registry" in html
     assert "Selected threshold" in html
     assert "Fraud Exposure" in html
     assert "Capturable Exposure" in html

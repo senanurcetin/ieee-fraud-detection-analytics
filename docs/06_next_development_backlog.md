@@ -40,7 +40,7 @@ This document defines the next iteration after the BI-style web report release.
    - Avoid comparing unrelated segment families in the same drill-through view.
 
 4. Model explanation
-   - Add optional calibration evidence if a stable model registry table is introduced.
+   - Add optional calibration evidence to the existing model registry if governed probability scoring becomes in scope.
    - Keep feature importance and SHAP artifacts visible in documentation.
 
 5. External enrichment

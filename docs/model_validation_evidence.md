@@ -13,8 +13,8 @@ The project does not use random k-fold validation because random splits can leak
 
 | Metric | Value | Interpretation |
 |---|---:|---|
-| ROC-AUC | 0.9167 | Ranking quality across thresholds |
-| Average precision / AUC-PR proxy | 0.5308 | More relevant than accuracy for 3.5% fraud prevalence |
+| ROC-AUC | 0.9139 | Ranking quality across thresholds |
+| Average precision / AUC-PR proxy | 0.5370 | More relevant than accuracy for 3.5% fraud prevalence |
 | Validation fraud baseline | 3.44% | Precision baseline for the holdout set |
 | Top 10% validation score lift | 7.24x | Top-score decile fraud rate vs. validation baseline |
 | High + Critical threshold precision | 40.4% | Validation precision at the p95 train-score threshold |

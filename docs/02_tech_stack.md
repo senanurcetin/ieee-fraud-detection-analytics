@@ -52,7 +52,7 @@ Model layers:
 
 - Algorithm: LightGBM binary classifier.
 - Validation: time-based holdout using the final 20% of `TransactionDT` order.
-- Current model feature count: 206.
+- Current registry feature count: 425.
 - Categorical feature count: 26.
 - Primary metrics: ROC-AUC, average precision, precision, recall, false-positive rate, lift, workload share.
 

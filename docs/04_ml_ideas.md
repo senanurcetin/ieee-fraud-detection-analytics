@@ -8,14 +8,14 @@ This mirrors a real fraud-monitoring setting more closely than random k-fold val
 
 ## Current Evidence
 
-- ROC-AUC: 0.9167
-- Average precision / AUC-PR proxy: 0.5308
+- ROC-AUC: 0.9139
+- Average precision / AUC-PR proxy: 0.5370
 - Validation baseline fraud rate: 3.44%
 - Top 10% validation score lift: 7.24x
 - High + Critical queue precision: 40.4%
 - High + Critical queue recall: 59.4%
 - High + Critical review workload: 5.06%
-- Feature count: 206
+- Feature count: 425
 - Categorical feature count: 26
 
 ## Risk Bands

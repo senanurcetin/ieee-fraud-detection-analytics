@@ -1,0 +1,70 @@
+{
+  "model_name": "LightGBMClassifier",
+  "model_version": "lightgbm-v2-v339-missingness-filtered",
+  "training_date": "2026-06-04T11:51:16.659875+00:00",
+  "validation_strategy": "time-based holdout plus expanding rolling cross-validation",
+  "data_scope": {
+    "raw_train_transactions": 590540,
+    "fraud_rate": 0.03499000914417313,
+    "transaction_dt_note": "TransactionDT is a relative timedelta, not a calendar timestamp."
+  },
+  "feature_scope": {
+    "feature_count": 425,
+    "categorical_feature_count": 26,
+    "v_feature_range": "V1-V339",
+    "v_missingness_threshold": 0.95,
+    "v_features_selected": 339,
+    "feature_selection_note": "Anonymous Vesta V features are included when train missingness is at or below the configured ceiling."
+  },
+  "holdout_metrics": {
+    "roc_auc": 0.9138997209289577,
+    "average_precision": 0.5370379705414774
+  },
+  "rolling_cv_summary": {
+    "window_count": 3,
+    "roc_auc_mean": 0.909996042960095,
+    "roc_auc_min": 0.8919284061904369,
+    "average_precision_mean": 0.5528116423095741,
+    "average_precision_min": 0.5219937843604052
+  },
+  "rolling_cv_windows": [
+    {
+      "window_number": 1,
+      "train_rows": 236216,
+      "validation_rows": 118108,
+      "validation_start_dt": 5592304,
+      "validation_end_dt": 8745772,
+      "fraud_rate": 0.03750804348562333,
+      "roc_auc": 0.8919284061904369,
+      "average_precision": 0.5521662421015207,
+      "concept_drift_flag": "Stable"
+    },
+    {
+      "window_number": 2,
+      "train_rows": 354324,
+      "validation_rows": 118108,
+      "validation_start_dt": 8745798,
+      "validation_end_dt": 12192842,
+      "fraud_rate": 0.03904053916754157,
+      "roc_auc": 0.9238860656253831,
+      "average_precision": 0.5842749004667965,
+      "concept_drift_flag": "Stable"
+    },
+    {
+      "window_number": 3,
+      "train_rows": 472432,
+      "validation_rows": 118108,
+      "validation_start_dt": 12192900,
+      "validation_end_dt": 15811131,
+      "fraud_rate": 0.034409184813899145,
+      "roc_auc": 0.914173657064465,
+      "average_precision": 0.5219937843604052,
+      "concept_drift_flag": "Stable"
+    }
+  ],
+  "risk_thresholds": {
+    "elevated_p80": 0.2657832818613703,
+    "high_p95": 0.673479670907456,
+    "critical_p99": 0.983068965749926
+  }
+}

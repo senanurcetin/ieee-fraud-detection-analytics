@@ -62,6 +62,8 @@ The frontend reads:
 - `/api/dashboard`
 - `/api/metadata`
 - `/api/enterprise/cases?limit=240` for a governed analytical sample used in scatter plots, masked proxy charts, and nested drill-down visuals.
+- `/api/enterprise/model-registry` for model version, feature scope, rolling validation, and governance metadata.
+- `/api/enterprise/cases/{transaction_id}/explain` for feature-importance based transaction explanation context.
 
 Core reporting groups:
 

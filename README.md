@@ -12,7 +12,7 @@ Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate i
 
 - Product risk is concentrated: Product C has an 11.7% fraud rate, 3.34x lift, and 38.8% of fraud labels while representing 68,519 transactions.
 - Identity availability is an analytical signal: only 144,233 of 590,540 train transactions have identity records, creating a 24.42% identity coverage rate; identity-present transactions show 7.85% fraud rate and 2.24x lift.
-- Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9167 and the average precision / AUC-PR proxy is 0.5308.
+- Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9139 and the average precision / AUC-PR proxy is 0.5370.
 - The top-score region is operationally valuable: the top 10% validation score band has 7.24x lift versus the validation fraud baseline.
 - The recommended High + Critical operating band covers about 5.06% of validation transactions while capturing 59.4% of fraud labels at 40.4% precision.
 
@@ -185,8 +185,8 @@ Current validation snapshot:
 | Fraud-labeled train transactions | 20,663 |
 | Baseline fraud rate | 3.50% |
 | Identity coverage rate | 24.42% |
-| ROC-AUC | 0.9167 |
-| Average precision / AUC-PR proxy | 0.5308 |
+| ROC-AUC | 0.9139 |
+| Average precision / AUC-PR proxy | 0.5370 |
 | Top 10% validation score lift | 7.24x |
 | High + Critical precision | 40.4% |
 | High + Critical recall | 59.4% |
@@ -214,11 +214,13 @@ Current validation design:
 
 Latest local validation snapshot:
 
-- ROC-AUC: 0.9167
-- Average precision: 0.5308
+- ROC-AUC: 0.9139
+- Average precision: 0.5370
 - High + Critical operating point: 40.4% precision, 59.4% recall, 3.12% false-positive rate, 5.06% review workload
-- Features used: 206
+- Registry feature scope: 425 features, including V1-V339 after missingness filtering
 - Categorical features: 26
+- Model registry endpoint: `/api/enterprise/model-registry`
+- Case explainability endpoint: `/api/enterprise/cases/{transaction_id}/explain`
 
 Model explainability artifacts:
 
@@ -231,8 +233,8 @@ Validation evidence:
 
 | Metric | Value |
 |---|---:|
-| ROC-AUC | 0.9167 |
-| Average precision / AUC-PR proxy | 0.5308 |
+| ROC-AUC | 0.9139 |
+| Average precision / AUC-PR proxy | 0.5370 |
 | Validation top 10% lift | 7.24x |
 | Validation High + Critical precision | 40.4% |
 | Validation High + Critical recall | 59.4% |

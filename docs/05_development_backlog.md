@@ -43,7 +43,7 @@ This backlog tracks the remaining non-blocking work after the web dashboard beca
 
 4. Long-term model monitoring
    - Add recurring drift automation only after a recurring data feed exists.
-   - Add model registry and calibration tracking if the project evolves beyond portfolio scope.
+   - Extend the existing model registry with calibration tracking if the project evolves beyond portfolio scope.
 
 ## Current Completion Estimate
 

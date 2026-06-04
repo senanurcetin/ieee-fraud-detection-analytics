@@ -314,16 +314,56 @@ QUALITY_GATES: list[dict[str, str]] = [
 
 MODEL_VALIDATION_METRICS: list[dict[str, str]] = [
     {"metric": "Validation design", "value": "Time-based holdout", "interpretation": "Reduces leakage risk from relative transaction time."},
-    {"metric": "ROC-AUC", "value": "0.9167", "interpretation": "Strong ranking performance across score thresholds."},
-    {"metric": "Average precision", "value": "0.5308", "interpretation": "More informative than accuracy for the 3.5% fraud base rate."},
+    {"metric": "ROC-AUC", "value": "0.9139", "interpretation": "Strong ranking performance across score thresholds."},
+    {"metric": "Average precision", "value": "0.5370", "interpretation": "More informative than accuracy for the 3.5% fraud base rate."},
     {"metric": "Brier score", "value": "0.0654", "interpretation": "Probability calibration error; lower is better and should be tracked before production decisioning."},
     {"metric": "Expected calibration error", "value": "14.87%", "interpretation": "Weighted score-to-observed-rate gap across validation deciles."},
     {"metric": "KS statistic", "value": "67.81%", "interpretation": "Maximum score-distribution separation between fraud and legitimate transactions."},
     {"metric": "Top decile lift", "value": "7.24x", "interpretation": "The highest-score decile contains materially more fraud than the baseline."},
     {"metric": "p95 precision", "value": "40.72%", "interpretation": "Precision for the validation top 5% review queue."},
     {"metric": "p95 recall", "value": "59.18%", "interpretation": "Fraud labels captured by the validation top 5% review queue."},
-    {"metric": "Feature count", "value": "206", "interpretation": "Model uses engineered transaction, card, identity, amount, and masked feature signals."},
+    {"metric": "Feature count", "value": "425", "interpretation": "Model registry expands Vesta engineered features to V1-V339 with missingness filtering."},
 ]
+
+MODEL_REGISTRY: dict[str, Any] = {
+    "model_name": "LightGBMClassifier",
+    "model_version": "lightgbm-v2-v339-missingness-filtered",
+    "training_date": "2026-06-04",
+    "validation_strategy": "time-based holdout plus 3-window expanding rolling cross-validation",
+    "feature_scope": {
+        "feature_count": 425,
+        "categorical_feature_count": 26,
+        "v_feature_range": "V1-V339",
+        "v_missingness_threshold": 0.95,
+        "v_features_selected": 339,
+        "selection_logic": "Anonymous Vesta features are retained when train missingness is at or below the configured ceiling.",
+    },
+    "holdout_metrics": {
+        "roc_auc": 0.9138997209289577,
+        "average_precision": 0.5370379705414774,
+        "top_decile_lift": 7.24,
+        "p95_precision": 0.4072,
+        "p95_recall": 0.5918,
+    },
+    "rolling_cv_summary": {
+        "window_count": 3,
+        "roc_auc_mean": 0.909996042960095,
+        "roc_auc_min": 0.8919284061904369,
+        "average_precision_mean": 0.5528116423095741,
+        "average_precision_min": 0.5219937843604052,
+        "concept_drift_status": "Stable monitoring baseline",
+    },
+    "rolling_cv_windows": [
+        {"window_number": 1, "roc_auc": 0.8919284061904369, "average_precision": 0.5521662421015207, "fraud_rate": 0.03750804348562333, "concept_drift_flag": "Stable"},
+        {"window_number": 2, "roc_auc": 0.9238860656253831, "average_precision": 0.5842749004667965, "fraud_rate": 0.03904053916754157, "concept_drift_flag": "Stable"},
+        {"window_number": 3, "roc_auc": 0.914173657064465, "average_precision": 0.5219937843604052, "fraud_rate": 0.034409184813899145, "concept_drift_flag": "Stable"},
+    ],
+    "risk_policy": {
+        "model_use": "review prioritization only",
+        "transaction_dt_note": "TransactionDT is relative elapsed time, not a calendar timestamp.",
+        "masked_feature_note": "V, C, D, M, address, and identity fields are interpreted as observational signals.",
+    },
+}
 
 THRESHOLD_DECISION_POLICY: list[dict[str, str]] = [
     {
@@ -1161,6 +1201,63 @@ def build_transaction_explanation(row: dict[str, Any]) -> list[dict[str, Any]]:
     return factors[:5]
 
 
+def feature_context(feature: str, row: dict[str, Any]) -> str:
+    if feature == "TransactionAmt":
+        return f"Transaction amount: ${float(row.get('transaction_amount') or 0):,.2f}"
+    if feature == "TransactionDT":
+        return f"Relative day {row.get('transaction_day')}, hour {row.get('transaction_hour')}"
+    if feature == "ProductCD":
+        return f"Product segment: {row.get('product_cd') or 'Unknown'}"
+    if feature.startswith("card"):
+        return f"Payment proxy: {row.get('card_network') or 'Unknown'} / {row.get('card_type') or 'Unknown'}"
+    if feature.startswith(("addr", "dist")):
+        return "Masked address and distance proxy; not a real geography field."
+    if feature.startswith("id_") or feature in {"DeviceType", "DeviceInfo"}:
+        return f"Identity/device proxy: {row.get('identity_status') or 'Unknown'} / {row.get('device_type') or 'Unknown'}"
+    if "emaildomain" in feature:
+        return f"Purchaser email group: {row.get('purchaser_email_group') or 'Unknown'}"
+    if feature.startswith("V"):
+        return "Vesta masked engineered signal; interpreted only as an observational model driver."
+    if feature.startswith("D"):
+        return "Masked relative-time feature family."
+    if feature.startswith("C"):
+        return "Masked count feature family."
+    if feature.startswith("M"):
+        return "Masked match feature family."
+    return "Global model driver; case-level raw value is masked or unavailable in the public report."
+
+
+def build_feature_importance_explanation(
+    row: dict[str, Any],
+    feature_importance_rows: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    drivers: list[dict[str, Any]] = []
+    for item in feature_importance_rows[:10]:
+        feature = str(item.get("feature") or "")
+        if not feature:
+            continue
+        drivers.append(
+            {
+                "feature": feature,
+                "feature_family": item.get("feature_family"),
+                "importance": item.get("importance"),
+                "importance_rank": item.get("importance_rank"),
+                "case_context": feature_context(feature, row),
+                "explanation_type": "global feature importance with transaction context",
+            }
+        )
+    return drivers
+
+
+def model_registry_payload() -> dict[str, Any]:
+    return {
+        **MODEL_REGISTRY,
+        "metrics": MODEL_VALIDATION_METRICS,
+        "governance_controls": MODEL_GOVERNANCE_CONTROLS,
+        "registry_note": "Registry values are exposed for model governance and presentation traceability.",
+    }
+
+
 @app.get("/api/metadata")
 def metadata() -> dict[str, Any]:
     return {
@@ -1175,6 +1272,7 @@ def metadata() -> dict[str, Any]:
         "methodology_notes": METHODOLOGY_NOTES,
         "operating_assumptions": OPERATING_ASSUMPTIONS,
         "model_validation_metrics": MODEL_VALIDATION_METRICS,
+        "model_registry": MODEL_REGISTRY,
         "threshold_decision_policy": THRESHOLD_DECISION_POLICY,
         "business_impact_scenarios": BUSINESS_IMPACT_SCENARIOS,
         "model_governance_controls": MODEL_GOVERNANCE_CONTROLS,
@@ -1218,8 +1316,8 @@ def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
         "risk_distribution": risk_rows,
         "model_metrics": MODEL_VALIDATION_METRICS,
         "trust_signals": {
-            "model_version": "lightgbm-v1",
-            "validation_design": "time-based holdout",
+            "model_version": MODEL_REGISTRY["model_version"],
+            "validation_design": MODEL_REGISTRY["validation_strategy"],
             "data_source": "IEEE-CIS masked e-commerce transaction data",
             "model_use": "review prioritization only",
         },
@@ -1320,8 +1418,17 @@ def enterprise_case_explain(transaction_id: int) -> dict[str, Any]:
 
     return {
         "transaction_id": transaction_id,
+        "model_version": MODEL_REGISTRY["model_version"],
+        "risk_context": {
+            "risk_score": row.get("risk_score"),
+            "risk_band": row.get("risk_band"),
+            "risk_category": row.get("risk_category"),
+            "model_probability": row.get("model_probability"),
+        },
         "risk_band": row.get("risk_band"),
         "model_probability": probability,
+        "case_factors": build_transaction_explanation(row),
+        "feature_importance_explanation": build_feature_importance_explanation(row, feat_rows),
         "observable_signals": observable_signals,
         "top_global_features": [
             {
@@ -1338,35 +1445,6 @@ def enterprise_case_explain(transaction_id: int) -> dict[str, Any]:
             "D1-D15) are not stored in the reporting fact table and are therefore summarised by "
             "feature family. For instance-level SHAP values, rerun prepare_raw_and_ml.py against "
             "the full training data."
-        ),
-    }
-
-
-@app.get("/api/enterprise/model-registry")
-def enterprise_model_registry() -> dict[str, Any]:
-    """Returns model version metadata for governance and reproducibility tracking."""
-    registry_path_candidates = [
-        Path(duckdb_path()).parent.parent / "outputs" / "tables" / "model_registry.json",
-        Path("outputs") / "tables" / "model_registry.json",
-        Path("../outputs/tables/model_registry.json"),
-    ]
-    for candidate in registry_path_candidates:
-        if candidate.exists():
-            try:
-                return json.loads(candidate.read_text(encoding="utf-8"))
-            except Exception:
-                pass
-    # Fallback: return static metadata from model validation evidence
-    return {
-        "model_id": "lightgbm-v1",
-        "model_class": "LightGBMClassifier",
-        "validation_strategy": "time-based holdout (last 20% by TransactionDT)",
-        "validation_auc": 0.9167,
-        "validation_ap": 0.5308,
-        "features_used": 206,
-        "note": (
-            "Run src/prepare_raw_and_ml.py with the Kaggle dataset to generate "
-            "a live model_registry.json with rolling CV results and extended V-features."
         ),
     }
 
@@ -1494,9 +1572,10 @@ def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
 def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[str, Any]:
     payload = cached_dashboard_payload(refresh=refresh)
     return {
-        "model_version": "lightgbm-v1",
-        "last_training_date": "portfolio training artifact",
-        "validation_window": "time-based holdout",
+        "model_version": MODEL_REGISTRY["model_version"],
+        "last_training_date": MODEL_REGISTRY["training_date"],
+        "validation_window": MODEL_REGISTRY["validation_strategy"],
+        "model_registry": model_registry_payload(),
         "metrics": MODEL_VALIDATION_METRICS,
         "thresholds": payload.get("threshold_simulation", []),
         "risk_bands": payload.get("model_risk_bands", []),
@@ -1504,6 +1583,11 @@ def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[st
         "data_quality": payload.get("data_quality", []),
         "controls": MODEL_GOVERNANCE_CONTROLS,
     }
+
+
+@app.get("/api/enterprise/model-registry")
+def enterprise_model_registry() -> dict[str, Any]:
+    return model_registry_payload()
 
 
 @app.get("/api/enterprise/metadata")

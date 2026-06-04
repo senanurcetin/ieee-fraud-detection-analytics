@@ -50,7 +50,7 @@ Interpretation standard:
 
 ## V Feature Scope
 
-The raw transaction table includes V1-V339 anonymous engineered features. The baseline model currently uses V1-V120 as part of a 206-feature model.
+The raw transaction table includes V1-V339 anonymous engineered features. The active registry version expands the model scope to V1-V339 with a configurable missingness ceiling, resulting in a 425-feature candidate set in the current snapshot.
 
 Rationale:
 
@@ -60,8 +60,8 @@ Rationale:
 
 Current limitation:
 
-- V121-V339 are not included in the baseline model.
-- Expanding the V feature set and comparing validation AUC-PR, recall, false-positive rate, and runtime is a recommended next experiment.
+- V1-V339 are considered through the missingness-filtered selection function in `src/prepare_raw_and_ml.py`.
+- Rolling validation windows are tracked to detect whether the expanded feature scope introduces unstable time-window behavior.
 
 ## ProductCD Framing
 

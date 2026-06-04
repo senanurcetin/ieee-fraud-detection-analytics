@@ -14,8 +14,8 @@ Fraud is rare in the IEEE-CIS portfolio, but it is highly concentrated. Product,
 | Total transaction amount | $79.7M |
 | Fraud-labeled amount | $3.08M |
 | Identity coverage rate | 24.42% |
-| Validation ROC-AUC | 0.9167 |
-| Validation average precision | 0.5308 |
+| Validation ROC-AUC | 0.9139 |
+| Validation average precision | 0.5370 |
 
 ## Management Recommendation
 

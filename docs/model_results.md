@@ -26,14 +26,25 @@ The project reports:
 
 | Metric | Value | Interpretation |
 |---|---:|---|
-| ROC-AUC | 0.9167 | Strong ranking quality across thresholds |
-| Average precision / AUC-PR proxy | 0.5308 | Materially above the 3.44% validation fraud baseline |
+| ROC-AUC | 0.9139 | Strong ranking quality across thresholds |
+| Average precision / AUC-PR proxy | 0.5370 | Materially above the 3.44% validation fraud baseline |
 | Validation fraud baseline | 3.44% | Base precision before model prioritization |
 | Top 10% validation score lift | 7.24x | Top decile fraud rate versus validation baseline |
 | High + Critical precision | 40.4% | Share of reviewed High + Critical transactions that are fraud |
 | High + Critical recall | 59.4% | Share of fraud labels captured by the High + Critical queue |
 | High + Critical false-positive rate | 3.12% | Legitimate validation transactions sent to review |
 | High + Critical workload share | 5.06% | Share of validation transactions requiring review |
+| Registry feature count | 425 | Active registry scope after V1-V339 missingness-filtered expansion |
+| Rolling CV mean ROC-AUC | 0.9100 | Three expanding windows show stable ranking performance |
+
+## Model Registry
+
+The project now exposes model governance metadata in two places:
+
+- JSON artifact: `docs/model_registry.json`
+- API endpoint: `/api/enterprise/model-registry`
+
+The registry records `training_date`, `model_version`, V-feature scope, feature count, holdout metrics, rolling cross-validation windows, and the model-use policy. The current registry version is `lightgbm-v2-v339-missingness-filtered`.
 
 ## Operating Point
 
@@ -55,22 +66,23 @@ Top 10 feature importance snapshot:
 
 | Rank | Feature | Feature family | Importance |
 |---:|---|---|---:|
-| 1 | `card1` | Card | 1,917 |
-| 2 | `card2` | Card | 1,743 |
-| 3 | `addr1` | Address | 1,566 |
-| 4 | `TransactionDT` | Core transaction | 1,546 |
-| 5 | `TransactionAmt` | Core transaction | 1,408 |
-| 6 | `C13` | Counting C | 944 |
-| 7 | `D2` | Timedelta D | 943 |
-| 8 | `D15` | Timedelta D | 876 |
-| 9 | `P_emaildomain` | Email | 755 |
-| 10 | `dist1` | Distance | 696 |
+| 1 | `card1` | Card | 1,844 |
+| 2 | `card2` | Card | 1,525 |
+| 3 | `addr1` | Address | 1,333 |
+| 4 | `TransactionDT` | Core transaction | 1,329 |
+| 5 | `TransactionAmt` | Core transaction | 1,300 |
+| 6 | `C13` | Counting C | 856 |
+| 7 | `D15` | Timedelta D | 830 |
+| 8 | `D2` | Timedelta D | 699 |
+| 9 | `P_emaildomain` | Email | 692 |
+| 10 | `dist1` | Distance | 658 |
 
 ## Explainability Artifacts
 
 - Precision-recall curve: `docs/assets/precision_recall_curve.svg`
 - Feature importance export: `docs/assets/model_feature_importance.png`
 - SHAP summary export: `docs/assets/model_shap_summary.png`
+- Case-level explanation endpoint: `/api/enterprise/cases/{transaction_id}/explain`
 
 ## Business Interpretation
 
@@ -85,9 +97,8 @@ Recommended use:
 | Elevated | Sample-based manual control and weekly monitoring |
 | Low | Standard automated monitoring |
 
-## Next Experiments
+## Remaining Model Improvements
 
-- Expand the V-family feature scope beyond the baseline V1-V120 subset and compare AUC-PR, recall, false-positive rate, lift, and runtime.
 - Test calibrated probability outputs if the model will be used for cost-sensitive thresholding.
-- Add rolling validation windows to monitor concept drift.
 - Add cost-weighted threshold optimization using false-negative cost, false-positive review cost, and customer-friction assumptions.
+- Add analyst feedback outcomes before any production-style decision automation.

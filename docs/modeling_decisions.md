@@ -52,8 +52,8 @@ Operational metrics:
 
 Latest validation snapshot:
 
-- ROC-AUC: 0.9167
-- Average precision: 0.5308
+- ROC-AUC: 0.9139
+- Average precision: 0.5370
 - High + Critical queue: 54.8% precision, 78.3% recall, 0.645 F1, 5.0% review workload
 
 Validation operating point at the train p95 threshold:
@@ -77,13 +77,13 @@ Synthetic oversampling is not used because the validation design is time-based a
 
 ## Feature Scope
 
-The baseline model uses 206 selected features:
+The active registry version uses 425 selected features:
 
 - Core transaction fields such as `TransactionDT` and `TransactionAmt`
 - Card, address, distance, email, C, D, M, identity, device, and selected Vesta engineered V features
-- V1-V120 from the V1-V339 anonymous V feature family
+- V1-V339 from the anonymous Vesta feature family, filtered by the configured missingness ceiling
 
-V121-V339 are not used in the baseline model. This is documented as a scope decision, not as a claim that the omitted fields have no value. Expanding the V-family coverage is the next model experiment and should be judged by AUC-PR, recall, false-positive rate, lift, and runtime.
+The V-family expansion is governed by `V_FEATURE_MISSINGNESS_THRESHOLD`. In the current registry snapshot, all 339 Vesta anonymous features are retained because they pass the configured threshold. The public dashboard exposes this scope through the model registry card and `/api/enterprise/model-registry`.
 
 Masked feature interpretations are treated as observational. The report does not claim confirmed meanings for C, D, M, V, or identity fields beyond their role as anonymized fraud signals.
 
@@ -107,10 +107,9 @@ Recommended starting policy:
 
 ## Monitoring Gap
 
-The project includes drift-style reporting tables and daily fraud-rate monitoring, but it does not expose a production inference API or automated model drift service. For production use, the next steps would be:
+The project includes drift-style reporting tables, daily fraud-rate monitoring, a registry snapshot, and rolling validation evidence. For production use, the next steps would be:
 
-- Model registry
 - Batch scoring schedule
-- Drift thresholds
+- Approved drift thresholds
 - Alerting on score distribution and fraud-rate movement
 - Human approval workflow for threshold changes

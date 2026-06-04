@@ -1029,47 +1029,47 @@
 
     const storyCues = {
       overview: [
-        ['Show first', 'KPI strip, fraud trend snapshot, risk-band exposure.', '#2563eb'],
+        ['Presentation focus', 'KPI strip, fraud trend snapshot, risk-band exposure.', '#2563eb'],
         ['Message', 'Fraud is rare in the portfolio, but concentration makes it manageable.', '#d92d3a'],
         ['Drill cue', 'Click a product or risk band to open same-context drill-through.', '#18a999']
       ],
       trend: [
-        ['Show first', 'Volume versus fraud-rate movement, then peak relative-day ranking.', '#2563eb'],
+        ['Presentation focus', 'Volume versus fraud-rate movement, then peak relative-day ranking.', '#2563eb'],
         ['Message', 'TransactionDT is relative time; read this as behavioral drift, not calendar seasonality.', '#c98012'],
         ['Drill cue', 'Use the relative-day slicer before comparing peak windows.', '#18a999']
       ],
       amount: [
-        ['Show first', 'Amount-band fraud rate, then fraud exposure by amount.', '#c98012'],
+        ['Presentation focus', 'Amount-band fraud rate, then fraud exposure by amount.', '#c98012'],
         ['Message', 'Low-value bands show frequency risk; high-value bands create loss exposure.', '#d92d3a'],
         ['Drill cue', 'Click Product x Amount cells to isolate nested risk pockets.', '#18a999']
       ],
       customer: [
-        ['Show first', 'Identity risk, device risk, email domain risk, and payment-email heatmap.', '#2563eb'],
+        ['Presentation focus', 'Identity risk, device risk, email domain risk, and payment-email heatmap.', '#2563eb'],
         ['Message', 'Identity, device, email, and payment act as masked customer behavior proxies.', '#d92d3a'],
         ['Drill cue', 'Click Identity present or an email group, then read the payment-email intersection.', '#18a999']
       ],
       geo: [
-        ['Show first', 'Proxy risk ranking, fraud share versus volume, and Product x Proxy heatmap.', '#2563eb'],
+        ['Presentation focus', 'Proxy risk ranking, fraud share versus volume, and Product x Proxy heatmap.', '#2563eb'],
         ['Message', 'There is no native geography; address and distance are masked risk proxies.', '#d92d3a'],
         ['Drill cue', 'Click Address missing or Distance high to compare product-level subsegments.', '#18a999']
       ],
       behavior: [
-        ['Show first', 'Relative-hour fraud pattern, amount-decimal heatmap, and score outliers.', '#c98012'],
+        ['Presentation focus', 'Relative-hour fraud pattern, amount-decimal heatmap, and score outliers.', '#c98012'],
         ['Message', 'Fraud behavior clusters by relative time, payment, amount, and score context.', '#d92d3a'],
         ['Drill cue', 'Use global slicers to test whether the time pattern survives segment filtering.', '#18a999']
       ],
       features: [
-        ['Show first', 'Top feature importance and feature-family treemap.', '#2563eb'],
+        ['Presentation focus', 'Top feature importance and feature-family treemap.', '#2563eb'],
         ['Message', 'The model is not single-variable; card, address, amount, and time signals work together.', '#d92d3a'],
         ['Drill cue', 'Use missingness versus importance to separate strong features from monitoring risks.', '#18a999']
       ],
       model: [
-        ['Show first', 'Threshold simulator, then precision-recall curve and confusion matrix.', '#7c3aed'],
+        ['Presentation focus', 'Threshold simulator, then precision-recall curve and confusion matrix.', '#7c3aed'],
         ['Message', 'The model is a review-prioritization layer, not an automatic decision engine.', '#d92d3a'],
         ['Drill cue', 'Move the threshold selector and explain capture, precision, workload, and missed exposure.', '#18a999']
       ],
       insights: [
-        ['Show first', 'Recommendation matrix and action priority ranking.', '#2563eb'],
+        ['Presentation focus', 'Recommendation matrix and action priority ranking.', '#2563eb'],
         ['Message', 'The business decision is segment-based risk management, not one global rule.', '#d92d3a'],
         ['Drill cue', 'Close with nested thresholds, model calibration, and enrichment roadmap.', '#18a999']
       ]
@@ -1079,6 +1079,7 @@
       page: 'overview',
       dashboard: null,
       meta: null,
+      registry: null,
       transactions: [],
       selectedThreshold: 0,
       filters: {
@@ -1158,13 +1159,15 @@
     async function loadAll() {
       showState('Loading governed reporting data.');
       try {
-        const [dashboard, meta, tx] = await Promise.all([
+        const [dashboard, meta, tx, registry] = await Promise.all([
           fetchJson('/api/dashboard'),
           fetchJson('/api/metadata'),
-          fetchJson('/api/enterprise/cases?limit=240').catch(() => ({ cases: [] }))
+          fetchJson('/api/enterprise/cases?limit=240').catch(() => ({ cases: [] })),
+          fetchJson('/api/enterprise/model-registry').catch(() => null)
         ]);
         state.dashboard = dashboard;
         state.meta = meta;
+        state.registry = registry;
         state.transactions = tx.cases || [];
         state.selectedThreshold = recommendedThresholdIndex();
         populateFilterOptions();
@@ -1450,10 +1453,12 @@
 
     function renderModel() {
       const m = metricLayer();
+      const registry = state.registry || (state.meta && state.meta.model_registry) || {};
+      const holdout = registry.holdout_metrics || {};
       return pageGrid([
         kpiRow([
-          kpi('ROC-AUC', '0.9167', 'Strong rank ordering across thresholds.', '#2563eb'),
-          kpi('PR-AUC', '0.5308', 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
+          kpi('ROC-AUC', fmtScore(holdout.roc_auc || .9139), 'Strong rank ordering across thresholds.', '#2563eb'),
+          kpi('PR-AUC', fmtScore(holdout.average_precision || .5370), 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
           kpi('Precision', fmtPct(m.precision), 'Review efficiency at selected threshold.', '#c98012'),
           kpi('Recall', fmtPct(m.recall), 'Fraud capture at selected threshold.', '#7c3aed'),
           kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Financial view of threshold tradeoff.', '#d92d3a')
@@ -1467,7 +1472,8 @@
             chartCard('Feature importance recap', 'Model drivers behind the score.', '<div class="visual-body" id="model-features"></div>')
           ])
         ], [
-          chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>')
+          chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>'),
+          chartCard('Model registry and rolling CV', 'Version, V-feature scope, and rolling validation stability evidence.', '<div class="visual-body" id="model-registry"></div>')
         ]),
         insightRow([
           insight('Threshold tradeoff', 'Higher thresholds reduce workload and usually improve precision, but lower fraud capture.', '#c98012'),
@@ -1668,6 +1674,7 @@
         barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
         confusionMatrix('model-confusion');
         barChart('model-features', getRows('feature_importance').slice(0, 8), row => row.feature, row => row.importance, fmtInt, null);
+        modelRegistryCard('model-registry');
       }
       if (state.page === 'insights') {
         recommendationMatrix('insight-matrix');
@@ -2664,6 +2671,8 @@
       if (!target) return;
       const rows = getRows('threshold_simulation');
       if (!rows.length) { target.innerHTML = empty('No model curve data available.'); return; }
+      const registry = state.registry || (state.meta && state.meta.model_registry) || {};
+      const holdout = registry.holdout_metrics || {};
       const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 38, padBottom = 46;
       const x = value => padLeft + num(value) * (w - padLeft - padRight);
       const y = value => h - padBottom - num(value) * (h - padTop - padBottom);
@@ -2678,7 +2687,29 @@
         return x(recall) + ',' + y(precision);
       }).join(' ');
       const ticks = axisTicks(1).map(value => '<g><line class="svg-grid" x1="' + x(value) + '" y1="' + padTop + '" x2="' + x(value) + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + x(value) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtPct(value) + '</text><text class="svg-axis" x="' + (padLeft - 8) + '" y="' + (y(value) + 4) + '" text-anchor="end">' + fmtPct(value) + '</text></g>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><rect x="' + padLeft + '" y="' + padTop + '" width="' + (w - padLeft - padRight) + '" height="' + (h - padTop - padBottom) + '" fill="#f8fafc" stroke="#d8e0ea"/>' + ticks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + padTop + '" stroke="#cbd5e1" stroke-dasharray="4 5"/><polyline points="' + roc + '" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><polyline points="' + pr + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round"/><text x="' + padLeft + '" y="18" fill="#2563eb" font-size="12">ROC-AUC 0.9167</text><text x="' + (padLeft + 115) + '" y="18" fill="#d92d3a" font-size="12">PR-AUC 0.5308</text><text x="' + (w - padRight) + '" y="' + (h - 10) + '" text-anchor="end" fill="#64748b" font-size="11">Recall / false positive tradeoff</text></svg>';
+      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><rect x="' + padLeft + '" y="' + padTop + '" width="' + (w - padLeft - padRight) + '" height="' + (h - padTop - padBottom) + '" fill="#f8fafc" stroke="#d8e0ea"/>' + ticks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + padTop + '" stroke="#cbd5e1" stroke-dasharray="4 5"/><polyline points="' + roc + '" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><polyline points="' + pr + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round"/><text x="' + padLeft + '" y="18" fill="#2563eb" font-size="12">ROC-AUC ' + fmtScore(holdout.roc_auc || .9139) + '</text><text x="' + (padLeft + 115) + '" y="18" fill="#d92d3a" font-size="12">PR-AUC ' + fmtScore(holdout.average_precision || .5370) + '</text><text x="' + (w - padRight) + '" y="' + (h - 10) + '" text-anchor="end" fill="#64748b" font-size="11">Recall / false positive tradeoff</text></svg>';
+    }
+
+    function modelRegistryCard(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const registry = state.registry || (state.meta && state.meta.model_registry) || {};
+      if (!registry.model_version) { target.innerHTML = empty('No model registry data available.'); return; }
+      const featureScope = registry.feature_scope || {};
+      const rolling = registry.rolling_cv_summary || {};
+      const windows = registry.rolling_cv_windows || [];
+      const maxAuc = Math.max(.0001, ...windows.map(row => num(row.roc_auc)));
+      const bars = windows.map((row, index) => {
+        const auc = num(row.roc_auc);
+        const label = 'Window ' + row.window_number;
+        return '<div class="bar-row" data-tooltip="' + escapeHtml(label + ' | ROC-AUC ' + fmtPct2(auc) + ' | PR-AUC ' + fmtPct2(row.average_precision)) + '"><div class="bar-label">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, auc / maxAuc * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + fmtPct2(auc) + '</div></div>';
+      }).join('');
+      target.innerHTML = '<div class="kpi-row">' + [
+        kpi('Model Version', registry.model_version, registry.training_date || '-', '#2563eb'),
+        kpi('Feature Scope', featureScope.v_feature_range || '-', fmtInt(featureScope.feature_count) + ' features used.', '#18a999'),
+        kpi('V Features', fmtInt(featureScope.v_features_selected), 'Missingness ceiling ' + fmtPct2(featureScope.v_missingness_threshold), '#7c3aed'),
+        kpi('Rolling AUC', fmtPct2(rolling.roc_auc_mean), 'Minimum ' + fmtPct2(rolling.roc_auc_min), '#c98012')
+      ].join('') + '</div><div class="bar-list" style="margin-top:12px">' + bars + '</div>';
     }
 
     function renderThresholdSummary() {

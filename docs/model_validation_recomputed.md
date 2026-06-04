@@ -8,8 +8,8 @@ This file is generated from exported validation artifacts and can be recreated w
 | --- | --- | --- |
 | Validation rows | 118,108 | Time-based holdout population. |
 | Validation fraud baseline | 3.44% | Base precision before model ranking. |
-| ROC-AUC | 0.9167 | Ranking power across thresholds. |
-| Average precision | 0.5308 | Imbalance-aware model quality. |
+| ROC-AUC | 0.9139 | Ranking power across thresholds. |
+| Average precision | 0.5370 | Imbalance-aware model quality. |
 | Brier score | 0.0654 | Probability calibration error; lower is better. |
 | Expected calibration error | 14.87% | Weighted score-to-observed-rate gap across deciles. |
 | KS statistic | 67.81% | Maximum separation between fraud and legitimate score distributions. |
@@ -24,10 +24,9 @@ This file is generated from exported validation artifacts and can be recreated w
 
 | Window | Rows | Fraud rate | ROC-AUC | Average precision |
 | --- | --- | --- | --- | --- |
-| Holdout window 1 | 29,527 | 3.32% | 0.9140 | 0.5232 |
-| Holdout window 2 | 29,527 | 2.95% | 0.9239 | 0.5505 |
-| Holdout window 3 | 29,527 | 3.54% | 0.9062 | 0.4972 |
-| Holdout window 4 | 29,527 | 3.96% | 0.9222 | 0.5520 |
+| Rolling window 1 | 118,108 | 3.75% | 0.8919 | 0.5522 |
+| Rolling window 2 | 118,108 | 3.90% | 0.9239 | 0.5843 |
+| Rolling window 3 | 118,108 | 3.44% | 0.9142 | 0.5220 |
 
 ## Calibration by Score Decile
 
@@ -48,16 +47,16 @@ This file is generated from exported validation artifacts and can be recreated w
 
 | Feature family | Feature count | Total importance | Top feature |
 | --- | --- | --- | --- |
-| Timedelta D | 17 | 6,326 | D2 |
-| Card | 6 | 5,039 | card1 |
-| Vesta engineered V | 120 | 4,668 | V62 |
-| Counting C | 14 | 4,220 | C13 |
-| Identity id | 31 | 3,215 | id_20 |
-| Core transaction | 3 | 3,159 | TransactionDT |
-| Address | 2 | 1,608 | addr1 |
-| Email | 2 | 1,211 | P_emaildomain |
-| Match M | 9 | 1,120 | M4 |
-| Distance | 2 | 934 | dist1 |
+| Vesta engineered V | 339 | 8,254 | V310 |
+| Timedelta D | 17 | 5,279 | D15 |
+| Card | 6 | 4,653 | card1 |
+| Counting C | 14 | 3,713 | C13 |
+| Core transaction | 3 | 2,805 | TransactionDT |
+| Identity id | 31 | 2,602 | id_02 |
+| Address | 2 | 1,369 | addr1 |
+| Email | 2 | 1,001 | P_emaildomain |
+| Match M | 9 | 970 | M5 |
+| Distance | 2 | 854 | dist1 |
 
 ## Governance Note
 
