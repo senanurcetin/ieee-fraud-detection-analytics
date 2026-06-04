@@ -1238,6 +1238,139 @@ def enterprise_cases(limit: int = Query(default=150, ge=10, le=500)) -> dict[str
     }
 
 
+@app.get("/api/enterprise/cases/{transaction_id}/explain")
+def enterprise_case_explain(transaction_id: int) -> dict[str, Any]:
+    """Feature-importance-based explanation for a specific transaction.
+
+    Combines LightGBM importance rankings from the reporting layer with
+    the transaction's observable attributes to produce an operator-friendly
+    breakdown of the top contributing signals.
+    """
+    rows = direct_aggregate(transaction_detail_sql(transaction_id))
+    if not rows:
+        raise HTTPException(status_code=404, detail="Transaction not found in reporting fact table.")
+    row = rows[0]
+
+    feat_table = enterprise_table("rpt_feature_importance")
+    feat_rows = run_query(
+        f"SELECT feature, feature_family, importance, importance_rank "
+        f"FROM {feat_table} "
+        f"WHERE importance_rank <= 10 "
+        f"ORDER BY importance_rank"
+    )
+
+    # Map observable transaction attributes to feature families
+    observable_signals: list[dict[str, Any]] = []
+    probability = float(row.get("model_probability") or 0)
+    amount = float(row.get("transaction_amount") or 0)
+
+    attribute_signals = [
+        {
+            "feature_family": "Card",
+            "observed_value": f"{row.get('card_network', 'Unknown')} / {row.get('card_type', 'Unknown')}",
+            "signal_direction": "Input feature",
+            "note": "Card network and type are high-importance model inputs.",
+        },
+        {
+            "feature_family": "Core transaction",
+            "observed_value": f"${amount:,.2f} ({row.get('amount_band', 'Unknown')} band)",
+            "signal_direction": "Raises risk" if amount >= 250 else "Standard range",
+            "note": "Transaction amount and amount band contribute to score.",
+        },
+        {
+            "feature_family": "Email",
+            "observed_value": str(row.get("purchaser_email_group") or "Unknown"),
+            "signal_direction": (
+                "Raises uncertainty"
+                if str(row.get("purchaser_email_group") or "").lower() in {"anonymous.com", "unknown", "other"}
+                else "Standard group"
+            ),
+            "note": "Purchaser email group is a monitored fraud signal.",
+        },
+        {
+            "feature_family": "Identity id",
+            "observed_value": "Present" if row.get("has_identity") else "Missing",
+            "signal_direction": "Identity present" if row.get("has_identity") else "Identity absent",
+            "note": "Identity availability affects fraud probability in both directions.",
+        },
+        {
+            "feature_family": "Core transaction",
+            "observed_value": f"Relative day {row.get('transaction_day')}, hour {row.get('transaction_hour')}",
+            "signal_direction": "Time signal",
+            "note": "Transaction time relative to portfolio contributes to score.",
+        },
+    ]
+
+    # Annotate each observable signal with global importance from reporting layer
+    family_importance: dict[str, float] = {
+        r["feature_family"]: float(r["importance"] or 0) for r in feat_rows
+    }
+    for sig in attribute_signals:
+        sig["global_family_importance"] = family_importance.get(sig["feature_family"], 0.0)
+    attribute_signals.sort(key=lambda s: s["global_family_importance"], reverse=True)
+
+    model_probability_signal = {
+        "feature_family": "Model output",
+        "observed_value": f"{probability:.3f}",
+        "signal_direction": "High risk" if probability >= 0.15 else "Low risk",
+        "note": "Predicted fraud probability from LightGBM.",
+        "global_family_importance": 1.0,
+    }
+    observable_signals = [model_probability_signal] + attribute_signals[:4]
+
+    return {
+        "transaction_id": transaction_id,
+        "risk_band": row.get("risk_band"),
+        "model_probability": probability,
+        "observable_signals": observable_signals,
+        "top_global_features": [
+            {
+                "rank": r["importance_rank"],
+                "feature": r["feature"],
+                "feature_family": r["feature_family"],
+                "global_importance": r["importance"],
+            }
+            for r in feat_rows[:5]
+        ],
+        "methodology": (
+            "Signals combine LightGBM feature-family importance rankings from the reporting layer "
+            "with this transaction's observable attributes. Raw feature values (V1-V339, C1-C14, "
+            "D1-D15) are not stored in the reporting fact table and are therefore summarised by "
+            "feature family. For instance-level SHAP values, rerun prepare_raw_and_ml.py against "
+            "the full training data."
+        ),
+    }
+
+
+@app.get("/api/enterprise/model-registry")
+def enterprise_model_registry() -> dict[str, Any]:
+    """Returns model version metadata for governance and reproducibility tracking."""
+    registry_path_candidates = [
+        Path(duckdb_path()).parent.parent / "outputs" / "tables" / "model_registry.json",
+        Path("outputs") / "tables" / "model_registry.json",
+        Path("../outputs/tables/model_registry.json"),
+    ]
+    for candidate in registry_path_candidates:
+        if candidate.exists():
+            try:
+                return json.loads(candidate.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+    # Fallback: return static metadata from model validation evidence
+    return {
+        "model_id": "lightgbm-v1",
+        "model_class": "LightGBMClassifier",
+        "validation_strategy": "time-based holdout (last 20% by TransactionDT)",
+        "validation_auc": 0.9167,
+        "validation_ap": 0.5308,
+        "features_used": 206,
+        "note": (
+            "Run src/prepare_raw_and_ml.py with the Kaggle dataset to generate "
+            "a live model_registry.json with rolling CV results and extended V-features."
+        ),
+    }
+
+
 @app.get("/api/enterprise/cases/{transaction_id}")
 def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
     rows = direct_aggregate(transaction_detail_sql(transaction_id))

@@ -191,7 +191,7 @@ def available_feature_columns(con: duckdb.DuckDBPyConnection) -> tuple[list[str]
         "dist2",
         *[f"C{i}" for i in range(1, 15)],
         *[f"D{i}" for i in range(1, 16)],
-        *[f"V{i}" for i in range(1, 121)],
+        *[f"V{i}" for i in range(1, 340)],
         "id_01",
         "id_02",
         "id_03",
@@ -255,14 +255,110 @@ def encode_categoricals(train_df: pd.DataFrame, test_df: pd.DataFrame, categoric
         test_df[col] = test_df[col].astype("string").fillna("__missing__").map(mapping).fillna(-1).astype("int32")
 
 
+def filter_features_by_missingness(
+    con: duckdb.DuckDBPyConnection,
+    features: list[str],
+    max_missing_rate: float = 0.50,
+) -> list[str]:
+    """Drop features whose train-split missingness exceeds the threshold.
+
+    Keeps the first 206 selected features (original set) intact even if they
+    exceed the threshold, to guarantee backward compatibility with the reporting
+    layer.  Only newly added V-features (V121-V339) are subject to filtering.
+    """
+    try:
+        miss_df = con.execute(
+            "SELECT column_name, missing_rate FROM raw.feature_missingness "
+            "WHERE table_name = 'train_transaction'"
+        ).fetch_df()
+    except Exception:
+        return features
+
+    high_miss = set(
+        miss_df.loc[miss_df["missing_rate"] > max_missing_rate, "column_name"].tolist()
+    )
+    # Only filter extended V features (V121+)
+    extended_v = {f"V{i}" for i in range(121, 340)}
+    return [f for f in features if f not in (high_miss & extended_v)]
+
+
+def rolling_time_validation(
+    train_df: pd.DataFrame,
+    y: pd.Series,
+    X: pd.DataFrame,
+    n_splits: int = 3,
+) -> list[dict]:
+    """3-window rolling time-based cross-validation.
+
+    Each window trains on transactions up to a cutoff and validates on the
+    next 12.5 % of the timeline, stepping forward by 12.5 % per fold.
+    Returns per-fold AUC and average-precision scores.
+    """
+    results = []
+    dt = train_df["TransactionDT"]
+    base_q = 0.625
+    step = 0.125
+
+    for fold in range(n_splits):
+        train_cutoff = float(dt.quantile(base_q + fold * step))
+        valid_cutoff = float(dt.quantile(min(1.0, base_q + (fold + 1) * step)))
+
+        tr_mask = dt <= train_cutoff
+        va_mask = (dt > train_cutoff) & (dt <= valid_cutoff)
+        if va_mask.sum() < 100 or tr_mask.sum() < 1000:
+            continue
+
+        fold_model = LGBMClassifier(
+            objective="binary",
+            n_estimators=300,
+            learning_rate=0.05,
+            num_leaves=64,
+            subsample=0.85,
+            colsample_bytree=0.85,
+            class_weight="balanced",
+            random_state=42,
+            n_jobs=-1,
+            verbose=-1,
+        )
+        fold_model.fit(X.loc[tr_mask], y.loc[tr_mask])
+        fold_pred = fold_model.predict_proba(X.loc[va_mask])[:, 1]
+        fold_auc = float(roc_auc_score(y.loc[va_mask], fold_pred))
+        fold_ap = float(average_precision_score(y.loc[va_mask], fold_pred))
+        results.append({
+            "fold": fold + 1,
+            "train_samples": int(tr_mask.sum()),
+            "validation_samples": int(va_mask.sum()),
+            "train_cutoff_dt": round(train_cutoff),
+            "validation_auc": round(fold_auc, 4),
+            "validation_ap": round(fold_ap, 4),
+        })
+    return results
+
+
 def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
     features, numeric, categorical = available_feature_columns(con)
+
+    # Build missingness table first so V-feature filtering can use it
+    if "raw.feature_missingness" not in [
+        row[0] for row in con.execute(
+            "SELECT table_name FROM information_schema.tables WHERE table_schema='raw'"
+        ).fetchall()
+    ]:
+        build_missingness(con)
+
+    features = filter_features_by_missingness(con, features, max_missing_rate=0.50)
+
     train_df = con.execute(feature_query("train", features)).fetch_df()
     test_df = con.execute(feature_query("test", features)).fetch_df()
 
     for col in numeric:
+        if col not in train_df.columns:
+            continue
         train_df[col] = pd.to_numeric(train_df[col], errors="coerce").astype("float32")
         test_df[col] = pd.to_numeric(test_df[col], errors="coerce").astype("float32")
+    numeric = [c for c in numeric if c in train_df.columns]
+    categorical = [c for c in categorical if c in train_df.columns]
+    features = [c for c in features if c in train_df.columns]
     encode_categoricals(train_df, test_df, categorical)
 
     y = train_df["isFraud"].astype(int)
@@ -271,6 +367,11 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
     X = train_df[features]
     X_train, X_valid = X.loc[train_mask], X.loc[~train_mask]
     y_train, y_valid = y.loc[train_mask], y.loc[~train_mask]
+
+    # 3-window rolling cross-validation for drift detection
+    print("Running rolling time-based cross-validation...")
+    rolling_cv_results = rolling_time_validation(train_df, y, X)
+    rolling_cv_auc_mean = float(np.mean([r["validation_auc"] for r in rolling_cv_results])) if rolling_cv_results else None
 
     model = LGBMClassifier(
         objective="binary",
@@ -371,8 +472,51 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
         "validation_average_precision": ap,
         "features_used": len(features),
         "categorical_features": len(categorical),
+        "v_features_included": len([f for f in features if f.startswith("V")]),
         "risk_thresholds": {"elevated_p80": float(q80), "high_p95": float(q95), "critical_p99": float(q99)},
+        "rolling_cv": {
+            "n_splits": len(rolling_cv_results),
+            "mean_auc": round(rolling_cv_auc_mean, 4) if rolling_cv_auc_mean else None,
+            "folds": rolling_cv_results,
+            "interpretation": (
+                "Rolling windows reveal temporal stability. "
+                "Stable AUC across folds = low concept drift risk; "
+                "declining AUC = consider more frequent retraining."
+            ),
+        },
     }
+
+    # Model registry: version metadata for governance and reproducibility
+    import datetime as _dt
+    model_registry = {
+        "model_id": "lightgbm-v2-extended-v-features",
+        "model_class": "LightGBMClassifier",
+        "training_date": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "validation_strategy": "time-based holdout (last 20% by TransactionDT)",
+        "features_used": len(features),
+        "v_features_included": metrics["v_features_included"],
+        "validation_auc": auc,
+        "validation_ap": ap,
+        "rolling_cv_mean_auc": rolling_cv_auc_mean,
+        "risk_thresholds": metrics["risk_thresholds"],
+        "hyperparameters": {
+            "n_estimators": 500,
+            "learning_rate": 0.035,
+            "num_leaves": 64,
+            "subsample": 0.85,
+            "colsample_bytree": 0.85,
+            "class_weight": "balanced",
+        },
+        "notes": [
+            "V-features expanded from V1-V120 to V1-V339 with 50% missingness filter.",
+            "Rolling CV added for temporal stability monitoring.",
+            "Model registry introduced for versioning and governance.",
+        ],
+    }
+    (TABLES_DIR / "model_registry.json").write_text(
+        json.dumps(model_registry, indent=2), encoding="utf-8"
+    )
+
     return metrics
 
 
