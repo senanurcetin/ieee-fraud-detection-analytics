@@ -370,6 +370,49 @@
       font-size: 12px;
       line-height: 1.35;
     }
+    .registry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .registry-card {
+      min-width: 0;
+      min-height: 86px;
+      padding: 10px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-top: 4px solid var(--accent, var(--teal));
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    .registry-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+    .registry-value {
+      max-width: 100%;
+      color: #0f172a;
+      font-size: clamp(14px, 1.25vw, 18px);
+      line-height: 1.14;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .registry-value.mono {
+      font-family: Consolas, "SFMono-Regular", "Liberation Mono", monospace;
+      font-size: clamp(12px, 1vw, 15px);
+      letter-spacing: 0;
+    }
+    .registry-foot {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
     .visual-card {
       padding: 12px;
       min-height: 340px;
@@ -909,7 +952,7 @@
       .report-canvas { padding: 10px; }
       .topbar, .canvas-head { display: grid; grid-template-columns: 1fr; }
       .top-actions { justify-content: flex-start; }
-      .nav, .filter-rail, .kpi-row, .grid-2, .grid-3, .grid-4, .insight-row, .story-strip { grid-template-columns: 1fr; }
+      .nav, .filter-rail, .kpi-row, .registry-grid, .grid-2, .grid-3, .grid-4, .insight-row, .story-strip { grid-template-columns: 1fr; }
       .span-2, .span-3 { grid-column: auto; }
       .bar-row { grid-template-columns: 1fr; }
       .bar-value { text-align: left; }
@@ -1485,7 +1528,7 @@
           chartCard('Validation threshold simulator', 'Holdout threshold evidence; reporting score simulation is kept as supporting context.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
           grid2([
             chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
-            chartCard('Segment validation precision', 'Where the model performs better or worse across comparable segment families.', '<div class="visual-body" id="model-segment-performance"></div>'),
+            chartCard('Segment validation precision at selected threshold', 'Segment-level holdout precision recalculated for the selected threshold.', '<div class="visual-body" id="model-segment-performance"></div>'),
             chartCard('Validation confusion matrix', 'Selected-threshold classification view from holdout counts.', '<div class="visual-body" id="model-confusion"></div>'),
             chartCard('Risk band distribution', 'Reporting score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>')
           ])
@@ -1731,6 +1774,9 @@
     }
     function kpi(label, value, foot, color) {
       return '<div class="kpi-card" style="--accent:' + color + '"><div class="kpi-label">' + escapeHtml(label) + '</div><div class="kpi-value">' + escapeHtml(value) + '</div><div class="kpi-foot">' + escapeHtml(foot) + '</div></div>';
+    }
+    function registryMetric(label, value, foot, color, mono = false) {
+      return '<div class="registry-card" style="--accent:' + color + '" title="' + escapeHtml(value) + '"><div class="registry-label">' + escapeHtml(label) + '</div><div class="registry-value ' + (mono ? 'mono' : '') + '">' + escapeHtml(value) + '</div><div class="registry-foot">' + escapeHtml(foot) + '</div></div>';
     }
     function insight(title, text, color) {
       return '<div class="insight-card" style="--accent:' + color + '"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(text) + '</span></div>';
@@ -2227,7 +2273,13 @@
       })));
     }
     function segmentModelRows() {
-      return getRows('segment_model_performance')
+      const rows = getRows('segment_model_performance');
+      const threshold = num(selectedThreshold().score_threshold);
+      const hasThresholdRows = rows.some(row => row.score_threshold !== undefined && row.score_threshold !== null);
+      const thresholdRows = hasThresholdRows
+        ? rows.filter(row => Math.abs(num(row.score_threshold) - threshold) < .00001)
+        : rows;
+      return thresholdRows
         .filter(row => num(row.validation_transactions) >= 1000)
         .slice()
         .sort((a, b) => num(b.precision_rate) - num(a.precision_rate))
@@ -2762,11 +2814,11 @@
         const label = 'Window ' + row.window_number;
         return '<div class="bar-row" data-tooltip="' + escapeHtml(label + ' | ROC-AUC ' + fmtPct2(auc) + ' | PR-AUC ' + fmtPct2(row.average_precision)) + '"><div class="bar-label">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, auc / maxAuc * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + fmtPct2(auc) + '</div></div>';
       }).join('');
-      target.innerHTML = '<div class="kpi-row">' + [
-        kpi('Model Version', registry.model_version, registry.training_date || '-', '#2563eb'),
-        kpi('Feature Scope', featureScope.v_feature_range || '-', fmtInt(featureScope.feature_count) + ' features used.', '#18a999'),
-        kpi('V Features', fmtInt(featureScope.v_features_selected), 'Missingness ceiling ' + fmtPct2(featureScope.v_missingness_threshold), '#7c3aed'),
-        kpi('Rolling AUC', fmtPct2(rolling.roc_auc_mean), 'Minimum ' + fmtPct2(rolling.roc_auc_min), '#c98012')
+      target.innerHTML = '<div class="registry-grid">' + [
+        registryMetric('Model version', registry.model_version, registry.training_date || '-', '#2563eb', true),
+        registryMetric('Feature scope', featureScope.v_feature_range || '-', fmtInt(featureScope.feature_count) + ' features used.', '#18a999'),
+        registryMetric('V features', fmtInt(featureScope.v_features_selected), 'Missingness ceiling ' + fmtPct2(featureScope.v_missingness_threshold), '#7c3aed'),
+        registryMetric('Rolling AUC', fmtPct2(rolling.roc_auc_mean), 'Minimum ' + fmtPct2(rolling.roc_auc_min), '#c98012')
       ].join('') + '</div><div class="bar-list" style="margin-top:12px">' + bars + '</div>';
     }
 

@@ -281,7 +281,8 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Capturable Exposure" in html
     assert "Native Location Fields" in html
     assert "Validation threshold simulator" in html
-    assert "Segment validation precision" in html
+    assert "Segment validation precision at selected threshold" in html
+    assert "Segment-level holdout precision recalculated for the selected threshold." in html
     assert "Address Missing Risk" in html
     assert "Distance High Risk" in html
     assert "Segment Drill-through" in html
@@ -316,6 +317,33 @@ def test_model_supporting_visuals_are_hydrated_after_threshold_guard() -> None:
     assert "renderThresholdSummary();" in model_hydration
     assert "barChart('model-features'" in model_hydration
     assert "modelRegistryCard('model-registry');" in model_hydration
+
+
+def test_segment_model_precision_filters_to_selected_threshold() -> None:
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    segment_section = html.split("function segmentModelRows()", 1)[1].split(
+        "function deviceRiskRows()",
+        1,
+    )[0]
+
+    assert "const threshold = num(selectedThreshold().score_threshold);" in segment_section
+    assert "hasThresholdRows" in segment_section
+    assert "Math.abs(num(row.score_threshold) - threshold) < .00001" in segment_section
+    assert ".filter(row => num(row.validation_transactions) >= 1000)" in segment_section
+
+
+def test_model_registry_uses_compact_metadata_layout() -> None:
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    registry_section = html.split("function modelRegistryCard(id)", 1)[1].split(
+        "function renderThresholdSummary()",
+        1,
+    )[0]
+
+    assert ".registry-grid" in html
+    assert "overflow-wrap: anywhere;" in html
+    assert "function registryMetric(" in html
+    assert "registryMetric('Model version', registry.model_version" in registry_section
+    assert "true)" in registry_section
 
 
 def test_behavior_peak_relative_hour_uses_charted_hour_risk_rows() -> None:

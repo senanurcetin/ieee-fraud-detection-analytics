@@ -2,9 +2,14 @@ with validation as (
     select
         transaction_id,
         actual_is_fraud,
-        predicted_fraud_probability,
-        case when predicted_fraud_probability >= 0.50 then 1 else 0 end as predicted_positive
+        predicted_fraud_probability
     from {{ source('raw', 'validation_predictions') }}
+),
+
+thresholds as (
+    select distinct
+        score_threshold
+    from {{ ref('rpt_validation_threshold_simulation') }}
 ),
 
 base as (
@@ -12,7 +17,6 @@ base as (
         f.transaction_id,
         v.actual_is_fraud,
         v.predicted_fraud_probability,
-        v.predicted_positive,
         coalesce(f.product_cd, 'Unknown') as product_segment,
         coalesce(f.amount_band, 'Unknown') as amount_segment,
         case when f.has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_segment,
@@ -29,8 +33,7 @@ segments as (
         product_segment as segment_name,
         transaction_id,
         actual_is_fraud,
-        predicted_fraud_probability,
-        predicted_positive
+        predicted_fraud_probability
     from base
 
     union all
@@ -40,8 +43,7 @@ segments as (
         amount_segment as segment_name,
         transaction_id,
         actual_is_fraud,
-        predicted_fraud_probability,
-        predicted_positive
+        predicted_fraud_probability
     from base
 
     union all
@@ -51,8 +53,7 @@ segments as (
         identity_segment as segment_name,
         transaction_id,
         actual_is_fraud,
-        predicted_fraud_probability,
-        predicted_positive
+        predicted_fraud_probability
     from base
 
     union all
@@ -62,8 +63,7 @@ segments as (
         email_segment as segment_name,
         transaction_id,
         actual_is_fraud,
-        predicted_fraud_probability,
-        predicted_positive
+        predicted_fraud_probability
     from base
 
     union all
@@ -73,38 +73,43 @@ segments as (
         payment_segment as segment_name,
         transaction_id,
         actual_is_fraud,
-        predicted_fraud_probability,
-        predicted_positive
+        predicted_fraud_probability
     from base
 ),
 
 scored as (
     select
-        segment_family,
-        segment_name,
+        t.score_threshold,
+        s.segment_family,
+        s.segment_name,
         count(*) as validation_transactions,
-        sum(actual_is_fraud) as validation_fraud_count,
-        sum(predicted_positive) as review_count,
-        sum(case when predicted_positive = 1 and actual_is_fraud = 1 then 1 else 0 end) as captured_fraud_count,
-        sum(case when predicted_positive = 1 and actual_is_fraud = 0 then 1 else 0 end) as false_positive_count,
-        sum(case when predicted_positive = 0 and actual_is_fraud = 1 then 1 else 0 end) as false_negative_count
-    from segments
-    group by 1, 2
+        sum(s.actual_is_fraud) as validation_fraud_count,
+        sum(case when s.predicted_fraud_probability >= t.score_threshold then 1 else 0 end) as review_count,
+        sum(case when s.predicted_fraud_probability >= t.score_threshold and s.actual_is_fraud = 1 then 1 else 0 end) as captured_fraud_count,
+        sum(case when s.predicted_fraud_probability >= t.score_threshold and s.actual_is_fraud = 0 then 1 else 0 end) as false_positive_count,
+        sum(case when s.predicted_fraud_probability < t.score_threshold and s.actual_is_fraud = 1 then 1 else 0 end) as false_negative_count
+    from segments as s
+    cross join thresholds as t
+    group by 1, 2, 3
 )
 
 select
+    score_threshold,
     segment_family,
     segment_name,
     validation_transactions,
     validation_fraud_count,
     review_count,
+    review_count as flagged_count,
     captured_fraud_count,
+    captured_fraud_count as true_positive_count,
     false_positive_count,
     false_negative_count,
     {{ fp_float('validation_fraud_count') }} / nullif({{ fp_float('validation_transactions') }}, 0) as validation_fraud_rate,
     {{ fp_float('review_count') }} / nullif({{ fp_float('validation_transactions') }}, 0) as workload_share,
     {{ fp_float('captured_fraud_count') }} / nullif({{ fp_float('review_count') }}, 0) as precision_rate,
     {{ fp_float('captured_fraud_count') }} / nullif({{ fp_float('validation_fraud_count') }}, 0) as recall_rate,
+    {{ fp_float('captured_fraud_count') }} / nullif({{ fp_float('validation_fraud_count') }}, 0) as fraud_capture_rate,
     case
         when validation_transactions < 1000 then 'Low support'
         when validation_transactions < 5000 then 'Medium support'
@@ -112,4 +117,4 @@ select
     end as support_level
 from scored
 where validation_transactions > 0
-order by segment_family, precision_rate desc, validation_fraud_count desc
+order by score_threshold, segment_family, precision_rate desc, validation_fraud_count desc

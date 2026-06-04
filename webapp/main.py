@@ -177,7 +177,7 @@ TABLE_QUERIES: dict[str, str] = {
     "validation_threshold_simulation": "select * from {table} order by score_threshold",
     "segment_model_performance": (
         "select * from {table} "
-        "order by segment_family, precision_rate desc, validation_fraud_count desc"
+        "order by score_threshold, segment_family, precision_rate desc, validation_fraud_count desc"
     ),
     "report_narrative": "select * from {table} order by page_order",
     "quality_contract": "select * from {table} order by object_name",

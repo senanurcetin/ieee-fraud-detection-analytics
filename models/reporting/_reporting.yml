@@ -312,20 +312,33 @@ models:
                 max_value: 1
 
   - name: rpt_segment_model_performance
-    description: "Holdout validation model performance by business segment family at the selected threshold."
+    description: "Holdout validation model performance by business segment family and score threshold."
     config:
       tags: ["reporting", "model", "validation", "segment"]
     tests:
       - row_count_between:
           arguments:
-            min_count: 10
-            max_count: 50
+            min_count: 100
+            max_count: 1000
     columns:
+      - name: score_threshold
+        tests:
+          - not_null
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
       - name: segment_family
         tests:
           - accepted_values:
               arguments:
                 values: ["Product", "Amount band", "Identity", "Email domain", "Payment"]
+      - name: flagged_count
+        tests:
+          - not_negative
+      - name: true_positive_count
+        tests:
+          - not_negative
       - name: precision_rate
         tests:
           - accepted_range:
@@ -333,6 +346,12 @@ models:
                 min_value: 0
                 max_value: 1
       - name: recall_rate
+        tests:
+          - accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 1
+      - name: fraud_capture_rate
         tests:
           - accepted_range:
               arguments:
