@@ -1719,7 +1719,13 @@ def diagnostics() -> dict[str, Any]:
     if data_backend() != "bigquery":
         return report
 
-    key = f"{project_id()}.{dataset_id()}"
+    try:
+        key = f"{project_id()}.{dataset_id()}"
+    except RuntimeError as exc:
+        report["dataset_found"] = False
+        report["error"] = f"Project is not configured: {exc}"
+        return report
+
     try:
         dataset = bq_client().get_dataset(key)
     except Exception as exc:
