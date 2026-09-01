@@ -740,6 +740,31 @@ def bigquery_location() -> str | None:
     return os.getenv("BIGQUERY_LOCATION") or os.getenv("BQ_LOCATION")
 
 
+_LOCATION_CACHE: dict[str, str | None] = {}
+
+
+def resolved_location() -> str | None:
+    """Return the reporting dataset's real location.
+
+    Jobs used to be pinned to BIGQUERY_LOCATION. When the dataset lives in
+    another region BigQuery reports every table as missing instead of naming the
+    region mismatch, so ask the dataset where it lives and reuse that answer.
+    """
+    try:
+        key = f"{project_id()}.{dataset_id()}"
+    except RuntimeError:
+        return bigquery_location()
+    if key in _LOCATION_CACHE:
+        return _LOCATION_CACHE[key]
+    try:
+        location = bq_client().get_dataset(key).location
+    except Exception:
+        return bigquery_location()
+    resolved = location or bigquery_location()
+    _LOCATION_CACHE[key] = resolved
+    return resolved
+
+
 def max_bytes_billed() -> int | None:
     raw_value = os.getenv("BIGQUERY_MAX_BYTES_BILLED")
     return int(raw_value) if raw_value else None
@@ -770,9 +795,9 @@ def bq_client() -> bigquery.Client:
             credentials_info,
             scopes=["https://www.googleapis.com/auth/bigquery"],
         )
-        return bigquery.Client(project=project_id(), location=bigquery_location(), credentials=credentials)
+        return bigquery.Client(project=project_id(), credentials=credentials)
 
-    return bigquery.Client(project=project_id(), location=bigquery_location())
+    return bigquery.Client(project=project_id())
 
 
 def query_job_config() -> bigquery.QueryJobConfig:
@@ -803,7 +828,9 @@ def run_query(sql: str) -> list[dict[str, Any]]:
         return run_duckdb_query(sql)
 
     try:
-        rows = bq_client().query(sql, job_config=query_job_config()).result()
+        rows = bq_client().query(
+            sql, job_config=query_job_config(), location=resolved_location()
+        ).result()
     except GoogleAPIError as exc:
         raise HTTPException(status_code=502, detail=f"BigQuery query failed: {exc.message}") from exc
     except Exception as exc:
@@ -1674,6 +1701,47 @@ def dashboard(refresh: bool = Query(default=False)) -> dict[str, Any]:
     return cached_dashboard_payload(refresh=refresh)
 
 
+@app.get("/api/diagnostics")
+def diagnostics() -> dict[str, Any]:
+    """Report dataset reachability, location and table coverage.
+
+    Metadata calls only, so this stays usable when the reporting tables are gone
+    and every data endpoint is failing.
+    """
+    expected = sorted(set(BIGQUERY_TABLES.values()))
+    report: dict[str, Any] = {
+        "backend": data_backend(),
+        "project": project_label(),
+        "dataset": dataset_id(),
+        "configured_location": bigquery_location() or "default",
+        "expected_tables": expected,
+    }
+    if data_backend() != "bigquery":
+        return report
+
+    key = f"{project_id()}.{dataset_id()}"
+    try:
+        dataset = bq_client().get_dataset(key)
+    except Exception as exc:
+        report["dataset_found"] = False
+        report["error"] = f"{type(exc).__name__}: {exc}"
+        return report
+
+    report["dataset_found"] = True
+    report["dataset_location"] = dataset.location
+    report["default_table_expiration_ms"] = dataset.default_table_expiration_ms
+    try:
+        present = sorted(table.table_id for table in bq_client().list_tables(key))
+    except Exception as exc:
+        report["error"] = f"{type(exc).__name__}: {exc}"
+        return report
+
+    report["tables_in_dataset"] = len(present)
+    report["present_tables"] = present
+    report["missing_tables"] = [name for name in expected if name not in set(present)]
+    return report
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     return {
@@ -1683,6 +1751,7 @@ def health() -> dict[str, Any]:
         "dataset": dataset_id(),
         "duckdb_path": duckdb_path() if data_backend() == "duckdb" else None,
         "location": bigquery_location() or "default",
+        "resolved_location": resolved_location() if data_backend() == "bigquery" else None,
         "cache_seconds": int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS))),
     }
 
