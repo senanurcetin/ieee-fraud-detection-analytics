@@ -1265,9 +1265,11 @@
 
     function updateStatus() {
       const meta = state.dashboard?.meta || {};
-      document.getElementById('backend-pill').textContent = meta.backend === 'duckdb' ? 'DuckDB local' : 'BigQuery live';
+      const backendLabel = { duckdb: 'DuckDB local', snapshot: 'BigQuery snapshot' };
+      document.getElementById('backend-pill').textContent = backendLabel[meta.backend] || 'BigQuery live';
       document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'fraud_project_reporting');
-      document.getElementById('freshness-pill').textContent = 'Fresh: ' + new Date(meta.refreshed_at || Date.now()).toLocaleString('en-US');
+      const freshLabel = meta.backend === 'snapshot' ? 'Built: ' : 'Fresh: ';
+      document.getElementById('freshness-pill').textContent = freshLabel + new Date(meta.refreshed_at || Date.now()).toLocaleString('en-US');
     }
 
     function render() {

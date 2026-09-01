@@ -29,6 +29,7 @@ __pycache__/
 !package-lock.json
 !tsconfig.json
 !vercel.json
+!webapp/snapshots/*.json
 !Report/**
 .env
 .env.*

@@ -121,6 +121,27 @@ Open:
 http://127.0.0.1:8000
 ```
 
+## Precomputed Snapshots
+
+`webapp/snapshots/` holds the reporting payloads the dashboard serves. They are
+read from disk, so the site answers in milliseconds and needs no BigQuery call
+at request time. Without them a visitor arriving after an idle period waited
+around 45 seconds on a cold warehouse query.
+
+Regenerate them whenever the marts are rebuilt, otherwise the dashboard keeps
+showing the previous build:
+
+```powershell
+python scripts/build_web_snapshot.py --project-id <project> --credentials <service-account.json>
+```
+
+Then commit `webapp/snapshots/` and redeploy. The header pill reads
+"BigQuery snapshot" with the build time, and `/api/health` reports
+`snapshot_served`.
+
+Set `WEB_SNAPSHOT_DISABLE=1` to bypass the snapshots and read BigQuery live;
+`/api/dashboard?refresh=true` does the same for a single request.
+
 ## Vercel Runtime
 
 Deploy the `webapp` folder as the Vercel project root:

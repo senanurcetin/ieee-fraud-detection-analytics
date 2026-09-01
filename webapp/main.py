@@ -1060,6 +1060,31 @@ def normalize_public_row(table_key: str, row: dict[str, Any]) -> dict[str, Any]:
 
 _CACHE: dict[str, Any] = {"expires_at": 0.0, "payload": None}
 
+SNAPSHOT_DIR = APP_DIR / "snapshots"
+_SNAPSHOT_CACHE: dict[str, Any] = {}
+
+
+def snapshots_enabled() -> bool:
+    return not os.getenv("WEB_SNAPSHOT_DISABLE")
+
+
+def load_snapshot(name: str) -> Any:
+    """Return a precomputed payload for an endpoint, or None when absent.
+
+    Reporting marts change once per rebuild, so serving them from disk keeps a
+    visitor arriving after an idle period from waiting on a cold BigQuery query.
+    """
+    if not snapshots_enabled():
+        return None
+    if name in _SNAPSHOT_CACHE:
+        return _SNAPSHOT_CACHE[name]
+    try:
+        payload = json.loads((SNAPSHOT_DIR / f"{name}.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        payload = None
+    _SNAPSHOT_CACHE[name] = payload
+    return payload
+
 
 def build_dashboard_payload() -> dict[str, Any]:
     data: dict[str, Any] = {}
@@ -1087,6 +1112,11 @@ def build_dashboard_payload() -> dict[str, Any]:
 
 
 def cached_dashboard_payload(refresh: bool = False) -> dict[str, Any]:
+    if not refresh:
+        snapshot = load_snapshot("dashboard")
+        if snapshot is not None:
+            return snapshot
+
     now = time.time()
     if not refresh and _CACHE["payload"] is not None and _CACHE["expires_at"] > now:
         return _CACHE["payload"]
@@ -1409,6 +1439,11 @@ def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
 
 @app.get("/api/enterprise/cases")
 def enterprise_cases(limit: int = Query(default=150, ge=10, le=500)) -> dict[str, Any]:
+    snapshot = load_snapshot("enterprise-cases")
+    if snapshot is not None:
+        cases = (snapshot.get("cases") or [])[:limit]
+        return {**snapshot, "cases": cases, "count": len(cases)}
+
     rows = direct_aggregate(case_queue_sql(limit=limit))
     return {
         "cases": rows,
@@ -1552,6 +1587,11 @@ def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
 
 @app.get("/api/enterprise/segments")
 def enterprise_segments(refresh: bool = Query(default=False)) -> dict[str, Any]:
+    if not refresh:
+        snapshot = load_snapshot("enterprise-segments")
+        if snapshot is not None:
+            return snapshot
+
     payload = cached_dashboard_payload(refresh=refresh)
     fact_table = enterprise_table("fact_train_transactions")
     device_identity_sql = f"""
@@ -1758,6 +1798,7 @@ def health() -> dict[str, Any]:
         "duckdb_path": duckdb_path() if data_backend() == "duckdb" else None,
         "location": bigquery_location() or "default",
         "resolved_location": resolved_location() if data_backend() == "bigquery" else None,
+        "snapshot_served": load_snapshot("dashboard") is not None,
         "cache_seconds": int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS))),
     }
 
