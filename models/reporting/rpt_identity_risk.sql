@@ -12,7 +12,8 @@ identity_risk as (
         case when has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_segment,
         count(*) as transaction_count,
         sum(is_fraud) as fraud_count,
-        {{ fp_avg_rate('is_fraud') }} as fraud_rate
+        {{ fp_avg_rate('is_fraud') }} as fraud_rate,
+        sum(case when is_fraud = 1 then transaction_amount else 0 end) as fraud_transaction_amount
     from {{ ref('int_features') }}
     group by 1, 2
 )
@@ -26,7 +27,8 @@ select
     base.baseline_fraud_rate,
     i.fraud_rate / nullif(base.baseline_fraud_rate, 0) as lift,
     {{ fp_float('i.transaction_count') }} / nullif({{ fp_float('base.total_transactions') }}, 0) as transaction_share,
-    {{ fp_float('i.fraud_count') }} / nullif({{ fp_float('base.total_fraud_count') }}, 0) as fraud_share
+    {{ fp_float('i.fraud_count') }} / nullif({{ fp_float('base.total_fraud_count') }}, 0) as fraud_share,
+    i.fraud_transaction_amount
 from identity_risk as i
 cross join base
 order by i.has_identity desc

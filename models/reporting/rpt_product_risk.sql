@@ -12,6 +12,7 @@ product_risk as (
         count(*) as transaction_count,
         sum(is_fraud) as fraud_count,
         {{ fp_avg_rate('is_fraud') }} as fraud_rate,
+        sum(case when is_fraud = 1 then transaction_amount else 0 end) as fraud_transaction_amount,
         avg(transaction_amount) as avg_transaction_amount
     from {{ ref('int_features') }}
     group by 1
@@ -26,6 +27,7 @@ select
     p.fraud_rate / nullif(base.baseline_fraud_rate, 0) as lift,
     {{ fp_float('p.transaction_count') }} / nullif({{ fp_float('base.total_transactions') }}, 0) as transaction_share,
     {{ fp_float('p.fraud_count') }} / nullif({{ fp_float('base.total_fraud_count') }}, 0) as fraud_share,
+    p.fraud_transaction_amount,
     p.avg_transaction_amount
 from product_risk as p
 cross join base

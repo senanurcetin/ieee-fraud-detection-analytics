@@ -492,3 +492,46 @@ def test_cost_assumptions_are_declared_and_priced_on_one_scale() -> None:
     assert "fraudLossMultiplier: 1," in html
     assert "IEEE-CIS contains no cost fields" in html
     assert "True Cost of Fraud" in html
+
+
+def test_segment_rates_never_come_from_the_risk_ranked_review_queue() -> None:
+    """Segment rates must come from governed marts, not from the case queue.
+
+    The queue is ordered by risk band, so at limit=240 every row is Critical and
+    fraudulent. Deriving a fraud rate from it reported 100% for every segment,
+    and a two-filter selection put that 100% on the headline KPI cards.
+    """
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+
+    context = html.split("function segmentMetricContext()", 1)[1].split(
+        "function exactSegmentRow(",
+        1,
+    )[0]
+    assert "filteredTransactions()" not in context
+    assert "NICHE_FAMILY_BY_FILTER" in context
+    assert "nicheCell(" in context
+    assert "no governed cross-tab for this filter set" in context
+
+    device = html.split("function deviceRiskRows()", 1)[1].split("}", 1)[0]
+    assert "nicheSegmentRows('Device')" in device
+    assert "filteredTransactions()" not in device
+
+    # Fraud amounts are reported from the marts or not at all; the retired
+    # $120-per-fraud constant fabricated exposure that was never measured.
+    assert "* 120" not in html
+
+
+def test_reporting_marts_carry_observed_fraud_amount() -> None:
+    models = REPO_ROOT / "models"
+    for path in [
+        models / "reporting" / "rpt_product_risk.sql",
+        models / "reporting" / "rpt_identity_risk.sql",
+        models / "marts" / "mart_email_domain_stats.sql",
+    ]:
+        sql = path.read_text(encoding="utf-8")
+        assert "fraud_transaction_amount" in sql, path.name
+
+    niche = main.NICHE_DRILLDOWN_QUERY
+    assert "fraud_transaction_amount" in niche
+    assert "device_segment" in niche
+    assert "Device" in main.NICHE_DIMENSIONS

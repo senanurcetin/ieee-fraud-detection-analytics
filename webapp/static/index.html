@@ -1374,7 +1374,7 @@
       return pageGrid([
         kpiRow([
           kpi('Highest-Risk Amount Band', top.amount_band || '-', fmtPct2(top.fraud_rate) + ' fraud rate.', '#d92d3a'),
-          kpi('Amount Exposure Proxy', fmtMoneyCompact(sum(amountRows, 'fraud_transaction_amount') || sum(amountRows, 'fraud_count') * 120), 'Observed amount where available.', '#c98012'),
+          kpi('Amount Exposure Proxy', fmtMoneyCompact(sum(amountRows, 'fraud_transaction_amount')), 'Observed fraud amount in these bands.', '#c98012'),
           kpi('Fraud Count', fmtInt(sum(amountRows, 'fraud_count')), 'Fraud labels by amount bands.', '#7c3aed'),
           kpi('Diagnostic Sample Avg Amount', fmtMoney(average(tx, 'transaction_amount')), '240-row diagnostic sample; full-population amount bands are shown in the main charts.', '#2563eb'),
           kpi('Bands Compared', fmtInt(amountRows.length), 'Amount bands in current filter.', '#18a999')
@@ -1416,7 +1416,7 @@
           chartCard('Payment x email heatmap', 'Payment and purchaser email combinations inside customer proxy context.', '<div class="visual-body" id="customer-payment-email"></div>', 'wide')
         ], [
           chartCard('Product x identity matrix', 'Supporting coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>'),
-          chartCard('Device type fraud proxy', 'Supporting device signal from the filtered transaction sample.', '<div class="visual-body" id="customer-device"></div>'),
+          chartCard('Device type fraud proxy', 'Observed fraud rate by device across all 590,540 transactions.', '<div class="visual-body" id="customer-device"></div>'),
           chartCard('Customer proxy nested breakdown', 'Supporting breakdown for selected customer proxy segments.', '<div class="visual-body" id="customer-breakdown"></div>')
         ]),
         insightRow([
@@ -1440,7 +1440,7 @@
           kpi('Address Missing Risk', fmtPct2(addressMissing.fraud_rate), fmtScore(addressMissing.lift || 0) + 'x lift; ' + fmtPct(addressMissing.fraud_share) + ' fraud share.', '#d92d3a'),
           kpi('Distance High Risk', fmtPct2(distanceHigh.fraud_rate), fmtScore(distanceHigh.lift || 0) + 'x lift; ' + fmtPct(distanceHigh.fraud_share) + ' fraud share.', '#c98012'),
           kpi('Top Proxy Fraud Share', fmtPct(num(topProxy.fraud_share)), short(topProxy.proxy_segment || '-', 22), '#7c3aed'),
-          kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), fmtPct2(entityTop.fraud_rate) + ' fraud proxy rate in diagnostic sample.', '#18a999')
+          kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), 'Ranked within the high-risk review queue, not the portfolio.', '#18a999')
         ]),
         visualPanels([
           grid2([
@@ -1721,7 +1721,7 @@
       }
       if (state.page === 'amount') {
         segmentedDrillChart('amount-bar', 'amount');
-        barChart('amount-exposure', filteredAmountRows(), row => row.amount_band, row => row.fraud_transaction_amount || row.fraud_count * 120, fmtMoneyCompact, 'amount');
+        barChart('amount-exposure', filteredAmountRows(), row => row.amount_band, row => row.fraud_transaction_amount, fmtMoneyCompact, 'amount');
         heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Amount band' });
         scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
         boxplotChart('amount-boxplot', filteredTransactions());
@@ -1856,7 +1856,9 @@
       const rate = num(row.fraud_rate || row.observed_fraud_rate) || (tx ? fraudCount / tx : 0);
       const lift = segmentLift({ ...row, fraud_rate: rate });
       const fraudShare = num(row.fraud_share || row.expected_fraud_capture);
-      const amount = num(row.fraud_transaction_amount) || fraudCount * 120;
+      // Only report an amount the marts actually carry; a flat per-fraud
+      // constant would read as measured exposure.
+      const amount = num(row.fraud_transaction_amount);
       const priority = row.priority || row.review_priority || (lift >= 2 ? 'High' : lift >= 1.2 ? 'Monitor' : 'Standard');
       return { tx, fraudCount, rate, lift, fraudShare, amount, priority };
     }
@@ -1866,7 +1868,7 @@
         ['Fraud Rate', fmtPct2(metric.rate)],
         ['Lift', fmtScore(metric.lift) + 'x'],
         ['Fraud Share', metric.fraudShare ? fmtPct(metric.fraudShare) : '-'],
-        ['Exposure Proxy', fmtMoney(metric.amount)],
+        ['Fraud Amount', metric.amount ? fmtMoney(metric.amount) : 'Not carried in this mart'],
         ['Priority', metric.priority || 'Monitor']
       ].map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
     }
@@ -2134,23 +2136,32 @@
             source: labelize(key) + ' segment',
             transactions: txCount,
             fraud_count: fraudCount || txCount * num(row.fraud_rate),
-            fraud_amount: num(row.fraud_transaction_amount) || fraudCount * 120,
+            fraud_amount: num(row.fraud_transaction_amount),
             fraud_rate: num(row.fraud_rate || row.observed_fraud_rate),
             row
           };
         }
       }
-      const sample = filteredTransactions();
-      if (!sample.length) return null;
-      const fraudRows = sample.filter(row => num(row.is_fraud) === 1);
-      return {
-        source: 'Filtered transaction sample',
-        transactions: sample.length,
-        fraud_count: fraudRows.length,
-        fraud_amount: sum(fraudRows, 'transaction_amount'),
-        fraud_rate: sample.length ? fraudRows.length / sample.length : 0,
-        row: null
-      };
+      if (active.length === 2) {
+        const familyA = NICHE_FAMILY_BY_FILTER[active[0][0]];
+        const familyB = NICHE_FAMILY_BY_FILTER[active[1][0]];
+        const cell = familyA && familyB ? nicheCell(familyA, active[0][1], familyB, active[1][1]) : null;
+        if (cell) {
+          return {
+            source: familyA + ' x ' + familyB,
+            transactions: num(cell.transaction_count),
+            fraud_count: num(cell.fraud_count),
+            fraud_amount: num(cell.fraud_transaction_amount),
+            fraud_rate: num(cell.fraud_rate),
+            row: cell
+          };
+        }
+      }
+      // Deeper filter sets have no governed cross-tab behind them. Reading them
+      // off the risk-ranked review queue reported a 100% fraud rate for every
+      // combination, so fall back to portfolio figures and label them as such
+      // rather than presenting a sample artefact as a segment finding.
+      return { source: 'Portfolio, no governed cross-tab for this filter set' };
     }
     function exactSegmentRow(key, value) {
       if (key === 'product') return getRows('product_risk').find(row => row.product_cd === value);
@@ -2174,7 +2185,7 @@
     }
     function fraudExposure() {
       const k = executiveKpis();
-      return num(k.fraud_transaction_amount) || num(k.fraud_amount) || num(k.fraud_transactions) * 120;
+      return num(k.fraud_transaction_amount) || num(k.fraud_amount);
     }
     function filteredDaily() {
       const rows = getRows('daily_drift');
@@ -2216,6 +2227,42 @@
     }
     function filteredEmailRows() {
       return getRows('email_domain_risk').filter(row => state.filters.email === 'All' || row.purchaser_email_group === state.filters.email);
+    }
+    // The review queue is ranked by risk, so nearly every row in it is fraud.
+    // Segment rates must come from the governed cross-tab instead, which covers
+    // the whole portfolio.
+    const NICHE_FAMILY_BY_FILTER = {
+      product: 'Product',
+      amount: 'Amount band',
+      email: 'Email domain',
+      identity: 'Identity',
+      risk: 'Risk band'
+    };
+    function nicheCell(familyA, segmentA, familyB, segmentB) {
+      const rows = getRows('niche_drilldown');
+      return rows.find(row => row.parent_family === familyA && row.parent_segment === segmentA
+          && row.child_family === familyB && row.child_segment === segmentB)
+        || rows.find(row => row.parent_family === familyB && row.parent_segment === segmentB
+          && row.child_family === familyA && row.child_segment === segmentA)
+        || null;
+    }
+    function nicheSegmentRows(family) {
+      const rows = getRows('niche_drilldown').filter(row => row.parent_family === family);
+      if (!rows.length) return [];
+      // Any single child family partitions the whole portfolio exactly once.
+      const child = rows[0].child_family;
+      const map = new Map();
+      rows.filter(row => row.child_family === child).forEach(row => {
+        const key = row.parent_segment || 'Unknown';
+        if (!map.has(key)) map.set(key, { segment: key, transaction_count: 0, fraud_count: 0, fraud_transaction_amount: 0 });
+        const item = map.get(key);
+        item.transaction_count += num(row.transaction_count);
+        item.fraud_count += num(row.fraud_count);
+        item.fraud_transaction_amount += num(row.fraud_transaction_amount);
+      });
+      return [...map.values()]
+        .map(row => ({ ...row, fraud_rate: row.transaction_count ? row.fraud_count / row.transaction_count : 0 }))
+        .sort((a, b) => b.fraud_rate - a.fraud_rate);
     }
     function filteredTransactions() {
       return (state.transactions || []).filter(row => {
@@ -2326,24 +2373,29 @@
         .slice(0, 12);
     }
     function deviceRiskRows() {
-      return groupBy(filteredTransactions(), 'device_type').map(group => {
-        const fraud = group.rows.filter(row => num(row.is_fraud) === 1).length;
-        return { device_type: group.key || 'Unknown', fraud_rate: group.rows.length ? fraud / group.rows.length : 0, transaction_count: group.rows.length };
-      }).sort((a, b) => b.fraud_rate - a.fraud_rate);
+      return nicheSegmentRows('Device').map(row => ({
+        device_type: row.segment,
+        fraud_rate: row.fraud_rate,
+        transaction_count: row.transaction_count
+      }));
     }
-    function emailProductRows() {
-      return groupBy(filteredTransactions(), 'product_cd').map(group => segmentFromGroup('product_cd', group)).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    function productRiskRows() {
+      return getRows('product_risk').map(row => ({
+        product_cd: row.product_cd || 'Unknown',
+        transaction_count: num(row.transaction_count),
+        fraud_count: num(row.fraud_count),
+        fraud_rate: num(row.fraud_rate)
+      })).sort((a, b) => b.fraud_rate - a.fraud_rate);
     }
-    function identityProductRows() {
-      return groupBy(filteredTransactions(), 'product_cd').map(group => segmentFromGroup('product_cd', group)).sort((a, b) => b.fraud_rate - a.fraud_rate);
-    }
+    function emailProductRows() { return productRiskRows(); }
+    function identityProductRows() { return productRiskRows(); }
     function productEmailRows() {
-      return groupBy(filteredTransactions(), 'purchaser_email_group').map(group => segmentFromGroup('purchaser_email_group', group)).sort((a, b) => b.fraud_rate - a.fraud_rate).slice(0, 12);
-    }
-    function segmentFromGroup(key, group) {
-      const tx = group.rows.length;
-      const fraud = group.rows.filter(row => num(row.is_fraud) === 1).length;
-      return { [key]: group.key || 'Unknown', transaction_count: tx, fraud_count: fraud, fraud_rate: tx ? fraud / tx : 0 };
+      return getRows('email_domain_risk').map(row => ({
+        purchaser_email_group: row.purchaser_email_group || 'Unknown',
+        transaction_count: num(row.transaction_count),
+        fraud_count: num(row.fraud_count),
+        fraud_rate: num(row.fraud_rate)
+      })).sort((a, b) => b.fraud_rate - a.fraud_rate).slice(0, 12);
     }
     function proxyQualityRows() {
       return getRows('data_quality').filter(row => ['Address', 'Distance'].includes(row.column_family));
@@ -2879,7 +2931,7 @@
         kpi('Precision', fmtPct(row.precision_rate), 'Holdout threshold efficiency.', '#c98012'),
         kpi('Validation Workload', fmtInt(review), fmtPct(row.workload_share) + ' of holdout transactions.', '#7c3aed'),
         kpi('Portfolio Flagged Volume', portfolioReview ? fmtInt(portfolioReview) : '-', 'Reporting score simulation at the same threshold.', '#2563eb'),
-        kpi('Missed Exposure', fmtMoneyCompact(missedFraud * 120), fmtInt(missedFraud) + ' missed fraud labels.', '#d92d3a')
+        kpi('Missed Exposure', fmtMoneyCompact(missedFraud * num(executiveKpis().avg_fraud_transaction_amount)), fmtInt(missedFraud) + ' missed labels x observed mean fraud amount.', '#d92d3a')
       ].join('') + '</div>';
     }
 

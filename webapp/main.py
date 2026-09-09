@@ -39,6 +39,7 @@ NICHE_DIMENSIONS: dict[str, str] = {
     "Email domain": "email_segment",
     "Identity": "identity_segment",
     "Risk band": "risk_segment",
+    "Device": "device_segment",
 }
 
 
@@ -54,7 +55,8 @@ def niche_select(parent_family: str, child_family: str) -> str:
         "count(*) as transaction_count, "
         "sum(is_fraud) as fraud_count, "
         "case when count(*) = 0 then 0 else sum(is_fraud) * 1.0 / count(*) end as fraud_rate, "
-        "avg(transaction_amount) as avg_transaction_amount "
+        "avg(transaction_amount) as avg_transaction_amount, "
+        "sum(case when is_fraud = 1 then transaction_amount else 0 end) as fraud_transaction_amount "
         "from base "
         f"group by {parent_col}, {child_col}"
     )
@@ -69,6 +71,7 @@ NICHE_DRILLDOWN_QUERY = (
     "coalesce(purchaser_email_group, 'Unknown') as email_segment, "
     "case when has_identity = 1 then 'Identity present' else 'Identity missing' end as identity_segment, "
     "coalesce(risk_band, 'Unscored') as risk_segment, "
+    "coalesce(device_type, 'Unknown') as device_segment, "
     "transaction_amount, "
     "is_fraud "
     "from {table}"
