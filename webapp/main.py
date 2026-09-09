@@ -1187,14 +1187,26 @@ with base as (
     from {table}
     where predicted_fraud_probability is not null
 ),
-entity_stats as (
+entity_history as (
+    -- Count only what was already observable for this entity when the
+    -- transaction arrived. Aggregating the whole partition would fold the
+    -- row's own label, and later rows' labels, into its own risk context.
     select
-        synthetic_uid_card_addr,
-        count(*) as entity_transaction_count,
-        sum(coalesce(is_fraud, 0)) as entity_prior_fraud_proxy
+        transaction_id,
+        coalesce(sum(coalesce(is_fraud, 0)) over entity_before, 0) as prior_fraud_count,
+        count(*) over entity_through as seen_so_far
     from base
-    where synthetic_uid_card_addr is not null
-    group by 1
+    window
+        entity_before as (
+            partition by synthetic_uid_card_addr
+            order by transaction_day, transaction_hour, transaction_id
+            rows between unbounded preceding and 1 preceding
+        ),
+        entity_through as (
+            partition by synthetic_uid_card_addr
+            order by transaction_day, transaction_hour, transaction_id
+            rows between unbounded preceding and current row
+        )
 )
 select
     b.transaction_id,
@@ -1220,8 +1232,14 @@ select
         else 'Safe'
     end as risk_category,
     abs(coalesce(b.predicted_fraud_probability, 0) - 0.5) * 2 as model_confidence,
-    coalesce(e.entity_prior_fraud_proxy, 0) as entity_prior_fraud_proxy,
-    coalesce(e.entity_transaction_count, 1) as entity_transaction_count,
+    case
+        when b.synthetic_uid_card_addr is null then 0
+        else coalesce(e.prior_fraud_count, 0)
+    end as entity_prior_fraud_proxy,
+    case
+        when b.synthetic_uid_card_addr is null then 1
+        else coalesce(e.seen_so_far, 1)
+    end as entity_transaction_count,
     case
         when b.risk_band = 'Critical' then 'Immediate threshold-policy focus'
         when b.risk_band = 'High' then 'High-priority analytical review'
@@ -1235,8 +1253,8 @@ select
         else 'P3'
     end as sla_priority
 from base as b
-left join entity_stats as e
-    on b.synthetic_uid_card_addr = e.synthetic_uid_card_addr
+left join entity_history as e
+    on b.transaction_id = e.transaction_id
 order by
     case b.risk_band
         when 'Critical' then 1
@@ -1451,6 +1469,12 @@ def enterprise_cases(limit: int = Query(default=150, ge=10, le=500)) -> dict[str
         "risk_categories": ["Critical", "High Risk", "Medium Risk", "Low Risk", "Safe"],
         "unsupported_fields": ["country", "user_age"],
         "note": "Country and user age are not native IEEE-CIS fields and are intentionally omitted.",
+        "label_disclosure": (
+            "This queue is built on labelled historical transactions. is_fraud is the "
+            "observed outcome, shown for evaluation, and is never an input to the score. "
+            "entity_prior_fraud_proxy counts only the entity's earlier transactions, so it "
+            "reflects what was knowable when the transaction arrived."
+        ),
     }
 
 

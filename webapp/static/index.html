@@ -2289,7 +2289,7 @@
     }
     function deviceRiskRows() {
       return groupBy(filteredTransactions(), 'device_type').map(group => {
-        const fraud = group.rows.filter(row => num(row.model_confidence) >= .5 || row.risk_category === 'Critical').length;
+        const fraud = group.rows.filter(row => num(row.is_fraud) === 1).length;
         return { device_type: group.key || 'Unknown', fraud_rate: group.rows.length ? fraud / group.rows.length : 0, transaction_count: group.rows.length };
       }).sort((a, b) => b.fraud_rate - a.fraud_rate);
     }
@@ -2304,7 +2304,7 @@
     }
     function segmentFromGroup(key, group) {
       const tx = group.rows.length;
-      const fraud = group.rows.filter(row => num(row.is_fraud) === 1 || num(row.risk_score) >= 80).length;
+      const fraud = group.rows.filter(row => num(row.is_fraud) === 1).length;
       return { [key]: group.key || 'Unknown', transaction_count: tx, fraud_count: fraud, fraud_rate: tx ? fraud / tx : 0 };
     }
     function proxyQualityRows() {
@@ -2343,7 +2343,7 @@
       return groupBy(filteredTransactions().map(row => ({ ...row, repeat_band: entityRepeatBand(row) })), 'repeat_band')
         .map(group => {
           const tx = group.rows.length;
-          const fraud = group.rows.filter(row => num(row.is_fraud) === 1 || num(row.risk_score) >= 80).length;
+          const fraud = group.rows.filter(row => num(row.is_fraud) === 1).length;
           return { repeat_band: group.key, transaction_count: tx, fraud_count: fraud, fraud_rate: tx ? fraud / tx : 0 };
         })
         .sort((a, b) => b.fraud_rate - a.fraud_rate);
@@ -2356,7 +2356,7 @@
         if (!map.has(key)) map.set(key, { product_cd: row.product_cd || 'Unknown', repeat_band: row.repeat_band, transaction_count: 0, fraud_count: 0 });
         const item = map.get(key);
         item.transaction_count += 1;
-        if (num(row.is_fraud) === 1 || num(row.risk_score) >= 80) item.fraud_count += 1;
+        if (num(row.is_fraud) === 1) item.fraud_count += 1;
       });
       return [...map.values()].map(row => ({ ...row, fraud_rate: row.transaction_count ? row.fraud_count / row.transaction_count : 0 }));
     }
