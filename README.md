@@ -374,26 +374,26 @@ Latest validation snapshot:
 
 ## Documentation
 
-- [Summary](docs/01_summary.md)
-- [Tech Stack](docs/02_tech_stack.md)
-- [Analysis Hypotheses](docs/03_analysis_hypotheses.md)
-- [ML Ideas](docs/04_ml_ideas.md)
-- [Architecture](docs/architecture.md)
-- [Data Dictionary](docs/data_dictionary.md)
-- [IEEE-CIS Dataset Methodology Notes](docs/ieee_cis_dataset_methodology.md)
-- [Modeling Decisions](docs/modeling_decisions.md)
-- [Model Results](docs/model_results.md)
-- [Model Validation Evidence](docs/model_validation_evidence.md)
-- [Recomputed Model Validation Snapshot](docs/model_validation_recomputed.md)
-- [Professional Fraud Analysis Coverage](docs/professional_analysis_coverage.md)
-- [Banking Business Impact](docs/banking_business_impact.md)
-- [Production Validation Gate](docs/production_validation.md)
-- [Regulatory Context](docs/regulatory_context.md)
-- [Operational Playbook](docs/operational_playbook.md)
-- [Security and Secrets](docs/security_and_secrets.md)
-- [Live Web Dashboard Guide](docs/live_web_dashboard_guide.md)
-- [Professional Data Analyst Gap Closure](docs/data_analyst_gap_closure.md)
-- [QA Acceptance Checklist](docs/qa_acceptance_checklist.md)
+The `docs/` folder is thorough rather than short. If you are reviewing this
+project, these four cover it:
+
+| Read | For |
+|---|---|
+| [Executive summary](docs/executive_summary.md) | What the analysis found and what it recommends |
+| [Dataset methodology](docs/ieee_cis_dataset_methodology.md) | What IEEE-CIS does and does not contain, and how that bounds every claim |
+| [Modeling decisions](docs/modeling_decisions.md) | Time-based validation, feature scope, why the V-features are filtered on missingness |
+| [Business impact](docs/banking_business_impact.md) | Threshold economics and the two cost assumptions behind the net-benefit figure |
+
+Supporting depth:
+
+- Evidence — [model results](docs/model_results.md), [validation evidence](docs/model_validation_evidence.md), [production validation](docs/production_validation.md)
+- Engineering — [architecture](docs/architecture.md), [BigQuery/dbt lineage](docs/bigquery_dbt_lineage.md), [dbt guide](docs/dbt_project_guide.md), [dashboard guide](docs/live_web_dashboard_guide.md)
+- Operations — [operational playbook](docs/operational_playbook.md) including retraining triggers, [regulatory context](docs/regulatory_context.md), [security and secrets](docs/security_and_secrets.md)
+- Reference — [data dictionary](docs/data_dictionary.md), [analysis story](docs/analysis_story.md)
+
+The remaining files are working notes: backlogs, coverage checklists and QA
+acceptance records kept for traceability rather than for reading start to
+finish.
 
 ## License
 

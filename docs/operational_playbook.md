@@ -50,3 +50,25 @@ For real-time use, the batch scoring layer can be extended into an online scorin
 - Model service returns score and risk band.
 - Decision service applies approved policy: approve, step-up authentication, business review, or decline under approved rules.
 - Outcomes are written back for monitoring and retraining.
+
+## Retraining Triggers
+
+Retraining is worth doing when the evidence the model was accepted on stops
+holding. Each trigger below is measurable from tables this project already
+publishes, so none of them require new instrumentation.
+
+| Trigger | Measured from | Threshold | Action |
+|---|---|---|---|
+| Holdout ranking decays | `rpt_validation_threshold_simulation`, model registry | Holdout ROC-AUC falls below 0.8919, the weakest rolling-CV window observed at acceptance | Retrain on the extended history and re-run rolling CV before promoting |
+| Band quality drifts | `rpt_validation_risk_bands` vs `rpt_model_risk_bands` | High-band holdout rate falls more than 40% below the fitted split, against -32% at acceptance | Investigate concept drift before changing the review threshold |
+| Population shifts | `rpt_daily_drift` | Daily fraud rate leaves the published drift band for five consecutive days | Check for a data or upstream change first, then retrain |
+| Scheduled refresh | Calendar | Quarterly, whichever comes first | Retrain and re-publish registry evidence |
+
+Two cautions specific to this dataset:
+
+- `TransactionDT` is a relative offset, not a calendar timestamp, so "quarterly"
+  has to be defined against ingestion time in a real deployment.
+- The model is fitted on the first 80% of the time axis and never refitted on
+  the full history. Any production retrain should refit on everything available
+  up to the cutoff and re-derive the band cut points, since those are quantiles
+  of the fitted model's own score distribution.
