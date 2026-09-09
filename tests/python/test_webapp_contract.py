@@ -94,7 +94,8 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
 
     assert payload["presentation_layer"] == "web_dashboard"
     assert payload["dataset"] == "fraud_project_reporting"
-    assert payload["table_count"] == 25
+    # 26 since rpt_validation_risk_bands joined the layer.
+    assert payload["table_count"] == 26
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
     assert len(payload["executive_takeaways"]) >= 3
@@ -535,3 +536,27 @@ def test_reporting_marts_carry_observed_fraud_amount() -> None:
     assert "fraud_transaction_amount" in niche
     assert "device_segment" in niche
     assert "Device" in main.NICHE_DIMENSIONS
+
+
+def test_risk_band_quality_is_reported_on_the_holdout() -> None:
+    """Band quality is a generalisation claim and must not come from the fit.
+
+    The model is fitted on the first 80% of TransactionDT and then scores every
+    row, so the train split is four fifths in-sample: it reports 44.59% in the
+    High band against 30.34% on transactions held out of training.
+    """
+    assert main.BIGQUERY_TABLES["validation_risk_bands"] == "rpt_validation_risk_bands"
+
+    model_sql = (REPO_ROOT / "models" / "reporting" / "rpt_validation_risk_bands.sql").read_text(encoding="utf-8")
+    # Cut points are recovered from the scored train split so both splits are
+    # partitioned identically rather than re-quantiled.
+    assert "min(case when risk_band = 'Critical'" in model_sql
+    assert "source('raw', 'validation_predictions')" in model_sql
+
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    band_chart = html.split("function riskBandExposureChart(id)", 1)[1].split("const w = 760", 1)[0]
+    assert "validation_risk_bands" in band_chart
+
+    assert "function generalisationGapTable(" in html
+    assert "generalisationGapTable('model-generalisation');" in html
+    assert "Risk band exposure (holdout)" in html

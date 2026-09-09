@@ -1322,7 +1322,7 @@
         ]),
         visualPanels([
           chartCard('Fraud trend snapshot', 'Relative TransactionDT trend with transaction volume context.', '<div class="visual-body" id="overview-trend"></div>', 'wide'),
-          chartCard('Risk band exposure', 'How model score bands translate into review volume and fraud capture.', '<div class="visual-body" id="overview-riskband"></div>', 'wide'),
+          chartCard('Risk band exposure (holdout)', 'Observed fraud rate and volume on the 118,108 transactions held out of training.', '<div class="visual-body" id="overview-riskband"></div>', 'wide'),
           grid2([
             chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>'),
             chartCard('Top risk concentration Pareto', 'Fraud share by highest-priority segments.', '<div class="visual-body" id="overview-pareto"></div>')
@@ -1476,7 +1476,7 @@
         visualPanels([
           grid2([
             chartCard('Relative hour fraud pattern', 'Hourly fraud intensity by relative TransactionDT hour.', '<div class="visual-body" id="behavior-hour-risk"></div>'),
-            chartCard('Risk band behavior distribution', 'Operational score bands as analytical bins.', '<div class="visual-body" id="behavior-risk"></div>')
+            chartCard('Risk band behavior distribution', 'Holdout fraud rate per band; the scored portfolio is sized on the model page.', '<div class="visual-body" id="behavior-risk"></div>')
           ]),
           chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>', 'wide')
         ], [
@@ -1537,12 +1537,13 @@
             chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
             chartCard('Segment validation precision at selected threshold', 'Segment-level holdout precision recalculated for the selected threshold.', '<div class="visual-body" id="model-segment-performance"></div>'),
             chartCard('Validation confusion matrix', 'Selected-threshold classification view from holdout counts.', '<div class="visual-body" id="model-confusion"></div>'),
-            chartCard('Risk band distribution', 'Reporting score bands used as analytical bins.', '<div class="visual-body" id="model-risk"></div>')
+            chartCard('Risk band distribution', 'Volume of the scored portfolio per band, for review capacity sizing.', '<div class="visual-body" id="model-risk"></div>')
           ])
         ], [
           chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>'),
           chartCard('Feature importance recap', 'Supporting model-driver context behind the score.', '<div class="visual-body" id="model-features"></div>'),
-          chartCard('Model registry and rolling CV', 'Version, V-feature scope, and rolling validation stability evidence.', '<div class="visual-body" id="model-registry"></div>')
+          chartCard('Model registry and rolling CV', 'Version, V-feature scope, and rolling validation stability evidence.', '<div class="visual-body" id="model-registry"></div>'),
+          chartCard('In-sample vs holdout by risk band', 'The model is fit on the first 80% of TransactionDT and then scores every row, so the train split flatters each band. Holdout figures are the ones that generalise.', '<div class="visual-body" id="model-generalisation"></div>')
         ]),
         insightRow([
           insight('Threshold tradeoff', 'Higher thresholds reduce workload and usually improve precision, but lower fraud capture.', '#c98012'),
@@ -1747,7 +1748,7 @@
         barChart('behavior-hour-risk', hourRiskRows(), row => relativeHourLabel(row), row => row.fraud_rate, fmtPct2, null);
         heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
         scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
-        barChart('behavior-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate || row.fraud_rate, fmtPct2, 'risk');
+        barChart('behavior-risk', getRows('validation_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate, fmtPct2, null);
         barChart('behavior-signal', behaviorSignalRows(), row => row.signal, row => row.strength, fmtPct2, null);
       }
       if (state.page === 'features') {
@@ -1760,6 +1761,7 @@
         thresholdCurve('model-threshold');
         modelReferenceCurves('model-curves');
         renderThresholdSummary();
+        generalisationGapTable('model-generalisation');
         barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
         barChart('model-segment-performance', segmentModelRows(), row => row.segment_family + ' / ' + row.segment_name, row => row.precision_rate, fmtPct2, null);
         confusionMatrix('model-confusion');
@@ -2648,9 +2650,40 @@
       target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="21">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
     }
 
+    function generalisationGapTable(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const holdout = getRows('validation_risk_bands');
+      const train = getRows('model_risk_bands');
+      if (!holdout.length || !train.length) { target.innerHTML = empty('Holdout band evidence not available.'); return; }
+      const byBand = new Map(train.map(row => [row.risk_band, row]));
+      const order = ['Critical', 'High', 'Elevated', 'Low'];
+      const rows = holdout
+        .slice()
+        .sort((a, b) => order.indexOf(a.risk_band) - order.indexOf(b.risk_band))
+        .map(row => {
+          const trainRow = byBand.get(row.risk_band) || {};
+          const trainRate = num(trainRow.observed_fraud_rate);
+          const holdoutRate = num(row.observed_fraud_rate);
+          const gap = trainRate ? (holdoutRate - trainRate) / trainRate : 0;
+          return { band: row.risk_band, trainRate, holdoutRate, gap, n: num(row.transaction_count) };
+        });
+      target.innerHTML = dataTable(rows, [
+        ['Band', row => escapeHtml(row.band)],
+        ['Train split', row => fmtPct2(row.trainRate)],
+        ['Holdout', row => '<strong>' + fmtPct2(row.holdoutRate) + '</strong>'],
+        ['Relative gap', row => '<span style="color:' + (row.gap < 0 ? '#d92d3a' : '#18a999') + '">'
+          + (row.gap > 0 ? '+' : '') + fmtPct(row.gap) + '</span>'],
+        ['Holdout n', row => fmtInt(row.n)]
+      ]);
+    }
     function riskBandExposureChart(id) {
       const target = document.getElementById(id);
-      const rows = getRows('model_risk_bands').map(row => ({
+      // Band quality is a generalisation claim, so read it from the holdout.
+      // The train split is 80% in-sample and reports 44.59% in the High band
+      // against 30.34% on transactions the model never saw during fit.
+      const source = getRows('validation_risk_bands').length ? 'validation_risk_bands' : 'model_risk_bands';
+      const rows = getRows(source).map(row => ({
         label: row.risk_band,
         transactions: num(row.transaction_count || row.row_count),
         fraudRate: num(row.observed_fraud_rate || row.fraud_rate),

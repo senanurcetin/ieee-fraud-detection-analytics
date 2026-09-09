@@ -11,7 +11,7 @@
 |--|--|
 | **Dataset** | IEEE-CIS Fraud Detection — 590,540 transactions, $79.7M, 3.50% baseline fraud rate |
 | **Core finding** | Fraud is not random. Product C carries **11.7% fraud rate (3.34x lift)** and drives 38.8% of all fraud labels. Identity-present transactions show **7.85% fraud rate (2.24x lift)**. |
-| **Model** | LightGBM — ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision** — 7.12x better than baseline review |
+| **Model** | LightGBM — holdout ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision** — 7.12x better than baseline review. Band quality is reported on the time-based holdout, not the split the model was fitted on. |
 | **Stack** | DuckDB → BigQuery → dbt (20+ models) → LightGBM → FastAPI → Vercel |
 | **Output** | Live executive dashboard with threshold simulator, segment heat maps, SHAP explainability |
 
@@ -316,7 +316,7 @@ The dashboard follows the fraud analyst presentation sequence: portfolio exposur
 
 ![Executive web overview](docs/assets/web_dashboard_executive_overview.png)
 
-Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure. Net benefit is not a fixed figure: IEEE-CIS has no cost columns, so the simulator exposes the two assumptions it depends on — cost per reviewed false positive and loss per fraud dollar — and recomputes as you move them. The risk band chart shows Critical and High bands carry 96.31% and 44.39% fraud rates — confirming the model concentrates fraud effectively. Product risk ranking visible at page bottom.
+Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure. Net benefit is not a fixed figure: IEEE-CIS has no cost columns, so the simulator exposes the two assumptions it depends on — cost per reviewed false positive and loss per fraud dollar — and recomputes as you move them. The risk band chart reports the holdout: Critical carries a 90.49% fraud rate and High 30.34%, against 96.68% and 44.59% on the train split the model was partly fitted on. The model page shows that gap band by band. Product risk ranking visible at page bottom.
 
 ---
 

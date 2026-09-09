@@ -113,6 +113,7 @@ TABLE_QUERIES: dict[str, str] = {
         "where split = 'train' "
         "order by band_rank"
     ),
+    "validation_risk_bands": "select * from {table} order by band_rank",
     "feature_importance": (
         "select feature, feature_family, importance, importance_rank "
         "from {table} "
@@ -199,6 +200,7 @@ BIGQUERY_TABLES: dict[str, str] = {
     "payment_email_matrix": "fact_train_transactions",
     "email_domain_risk": "rpt_email_domain_risk",
     "model_risk_bands": "rpt_model_risk_bands",
+    "validation_risk_bands": "rpt_validation_risk_bands",
     "feature_importance": "rpt_feature_importance",
     "data_quality": "rpt_data_quality_scorecard",
     "proxy_signal_risk": "rpt_proxy_signal_risk",
