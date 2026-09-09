@@ -1141,6 +1141,11 @@
       registry: null,
       transactions: [],
       selectedThreshold: 0,
+      // IEEE-CIS carries no cost fields, so these are stated assumptions rather
+      // than measurements. Defaults: $5 per reviewed false positive, and each
+      // dollar of fraud valued at face value. See the sourced note in the UI.
+      reviewCost: 5,
+      fraudLossMultiplier: 1,
       filters: {
         day: 'all',
         product: 'All',
@@ -1313,7 +1318,7 @@
           kpi('Fraud Rate', fmtPct2(m.fraud_rate), fmtInt(m.fraud_transactions) + ' labeled fraud transactions.', '#d92d3a'),
           kpi('Fraud Exposure', fmtMoneyCompact(m.fraud_exposure), 'Observed fraud amount or exposure proxy.', '#c98012'),
           kpi('Capturable Exposure', fmtMoneyCompact(m.capturable_exposure), fmtPct(m.recall) + ' capture at selected threshold.', '#18a999'),
-          kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Capture less review burden and missed exposure.', '#7c3aed')
+          kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Assumes $' + m.review_cost + '/review and ' + m.loss_rate + 'x loss per fraud dollar.', '#7c3aed')
         ]),
         visualPanels([
           chartCard('Fraud trend snapshot', 'Relative TransactionDT trend with transaction volume context.', '<div class="visual-body" id="overview-trend"></div>', 'wide'),
@@ -1527,7 +1532,7 @@
           kpi('Validation Workload', fmtPct(threshold.workload_share), 'Holdout flagged share at selected threshold.', '#d92d3a')
         ]),
         visualPanels([
-          chartCard('Validation threshold simulator', 'Holdout threshold evidence; reporting score simulation is kept as supporting context.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div>', 'compact wide'),
+          chartCard('Validation threshold simulator', 'Holdout threshold evidence; reporting score simulation is kept as supporting context.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div><div class="grid-2" style="margin-top:12px"><div class="field"><label for="review-cost-input">Cost per reviewed false positive ($)</label><input id="review-cost-input" type="number" min="0" step="0.5" class="select"></div><div class="field"><label for="loss-rate-input">Loss per $1 of fraud</label><input id="loss-rate-input" type="number" min="0" step="0.1" class="select"></div></div><p class="muted" style="margin:8px 0 0; font-size:12px; line-height:1.5">IEEE-CIS contains no cost fields, so these two numbers are assumptions, not measurements. Net benefit = avoided loss &minus; review cost, with both sides priced at the same loss rate. A loss rate of 1.0 counts only the transaction amount; LexisNexis&rsquo; 2025 True Cost of Fraud study puts the fully loaded cost nearer 4.6&ndash;5.0 per fraud dollar once operations, chargeback handling and customer churn are included. Per-review cost runs about $3&ndash;5 for automation-assisted screening and $25&ndash;50 for full investigations.</p>', 'compact wide'),
           grid2([
             chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
             chartCard('Segment validation precision at selected threshold', 'Segment-level holdout precision recalculated for the selected threshold.', '<div class="visual-body" id="model-segment-performance"></div>'),
@@ -1650,6 +1655,26 @@
       if (slider) {
         slider.max = Math.max(rows.length - 1, 0);
         slider.value = state.selectedThreshold;
+      }
+      const reviewCostInput = document.getElementById('review-cost-input');
+      const lossRateInput = document.getElementById('loss-rate-input');
+      if (reviewCostInput) {
+        reviewCostInput.value = state.reviewCost;
+        reviewCostInput.addEventListener('change', event => {
+          const next = Number(event.target.value);
+          if (!Number.isFinite(next) || next < 0 || next === state.reviewCost) return;
+          state.reviewCost = next;
+          render();
+        });
+      }
+      if (lossRateInput) {
+        lossRateInput.value = state.fraudLossMultiplier;
+        lossRateInput.addEventListener('change', event => {
+          const next = Number(event.target.value);
+          if (!Number.isFinite(next) || next < 0 || next === state.fraudLossMultiplier) return;
+          state.fraudLossMultiplier = next;
+          render();
+        });
       }
       const updateThreshold = event => {
         const nextValue = Number(event.target.value || 0);
@@ -2041,8 +2066,16 @@
       const missed = Math.max(exposure - captured, 0);
       const review = num(threshold.workload_share) * total;
       const capturedFraudCount = fraud * num(threshold.fraud_capture_rate);
-      const falsePositiveCost = Math.max(review - capturedFraudCount, 0) * 5;
-      const netBenefit = captured - falsePositiveCost - missed * 0.15;
+      const falsePositives = Math.max(review - capturedFraudCount, 0);
+      // Catching fraud avoids a loss rather than earning revenue, so the same
+      // per-dollar loss rate has to price both the caught and the missed side.
+      // Valuing capture at face value while pricing misses at a fraction made
+      // the two halves of this comparison incommensurable.
+      const lossRate = Math.max(num(state.fraudLossMultiplier), 0);
+      const falsePositiveCost = falsePositives * Math.max(num(state.reviewCost), 0);
+      const avoidedLoss = captured * lossRate;
+      const residualLoss = missed * lossRate;
+      const netBenefit = avoidedLoss - falsePositiveCost;
       return {
         source: segment?.source || 'Portfolio',
         total_transactions: total,
@@ -2055,7 +2088,12 @@
         review_share: num(threshold.workload_share),
         precision: num(threshold.precision_rate),
         recall: num(threshold.fraud_capture_rate),
+        false_positive_count: falsePositives,
         false_positive_cost: falsePositiveCost,
+        avoided_loss: avoidedLoss,
+        residual_loss: residualLoss,
+        loss_rate: lossRate,
+        review_cost: Math.max(num(state.reviewCost), 0),
         net_benefit: netBenefit,
         threshold
       };
@@ -2063,10 +2101,10 @@
     function executiveEconomicsRows() {
       const m = metricLayer();
       return [
-        { label: 'Capturable exposure', value: m.capturable_exposure },
-        { label: 'False positive review cost', value: m.false_positive_cost },
-        { label: 'Missed exposure', value: m.missed_exposure },
-        { label: 'Net benefit proxy', value: m.net_benefit }
+        { label: 'Avoided loss', value: m.avoided_loss },
+        { label: 'Review cost', value: m.false_positive_cost },
+        { label: 'Residual loss', value: m.residual_loss },
+        { label: 'Net benefit', value: m.net_benefit }
       ];
     }
     function readinessGateRows() {

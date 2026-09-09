@@ -46,37 +46,52 @@ The dashboard implements this rule client-side through capacity, false-positive 
 
 ## Financial Framing
 
-The project separates measured dataset value from operational assumptions.
+IEEE-CIS contains exactly one monetary column, `TransactionAmt`. There is no
+review cost, no chargeback cost, no recovery rate and no margin. Every currency
+figure beyond fraud-labelled amount is therefore an assumption, and the
+dashboard states both of its assumptions on screen rather than embedding them.
 
-Measured dataset values:
+Measured from the dataset:
 
-- Fraud-labeled amount can be evaluated by selected score threshold and segment filters in the dashboard.
-- False-positive burden is estimated from validation threshold precision and workload.
+- Fraud-labelled amount, filterable by score threshold and segment.
+- Flagged volume and precision at each validation threshold.
 
-Illustrative operating assumptions for a banking presentation:
+Assumed, and adjustable in the threshold simulator:
 
-- Investigation cost per reviewed transaction: $3.00
-- Preventable fraud share after business intervention: 60%
-- Customer friction cost is monitored but not directly monetized in this portfolio version.
+| Parameter | Default | Basis |
+|---|---:|---|
+| Cost per reviewed false positive | $5.00 | Automation-assisted screening sits near $3-5 per case; full manual investigations at mid-size institutions run $25-50. |
+| Loss per $1 of fraud | 1.0 | Conservative: counts only the transaction amount. LexisNexis' 2025 True Cost of Fraud study puts the fully loaded figure nearer 4.6-5.0 once operations, chargeback handling and customer churn are included. |
 
-Illustrative impact:
+The net benefit calculation is:
 
-- Preventable fraud value: selected threshold exposure * 60%
-- Review operating cost: selected flagged volume * $3.00
-- Net value before customer-friction adjustment is recalculated in the dashboard threshold simulator.
+```
+net benefit = (captured fraud amount x loss rate) - (false positives x review cost)
+```
 
-This is not presented as realized savings. It is a decision frame for prioritizing review capacity and for defining the next production pilot.
+Both sides are priced at the same loss rate. Catching fraud avoids a loss
+rather than earning revenue, so crediting captured fraud at face value while
+charging missed fraud at a fraction would make the two halves of the comparison
+incommensurable. Missed fraud is not penalised a second time: it is already
+absent from the avoided-loss term.
+
+This is a decision frame, not realised savings. Move the loss rate to 4.6 and
+the recommended operating point shifts toward higher capture; raise the review
+cost and it shifts toward a narrower queue. Showing that sensitivity is the
+point.
 
 ## Sensitivity Scenarios
 
-| Scenario | Review cost assumption | Missed-fraud loss assumption | Management interpretation |
-|---|---:|---:|---|
-| Base pilot | $4 per false-positive review | $120 per missed fraud | Default weekly risk committee scenario. |
-| Higher review cost | $8 per false-positive review | $120 per missed fraud | Tests whether analyst capacity or customer friction makes the selected threshold too expensive. |
-| Higher fraud loss | $4 per false-positive review | $240 per missed fraud | Tests whether capture should be increased even if review volume rises. |
-| Stress case | $8 per false-positive review | $240 per missed fraud | Defines the decision boundary before production pilot approval. |
+Set these directly in the dashboard's threshold simulator.
 
-These are scenario controls rather than accounting claims. They help management understand how the recommended threshold changes when operating assumptions change.
+| Scenario | Review cost | Loss per fraud dollar | What it tests |
+|---|---:|---:|---|
+| Conservative | $5 | 1.0 | Only the transaction amount is at risk. Floor case. |
+| Higher review cost | $25 | 1.0 | Full manual investigation instead of assisted screening. |
+| Fully loaded loss | $5 | 4.6 | LexisNexis merchant multiplier, including downstream operational and trust costs. |
+| Stress case | $25 | 4.6 | Expensive reviews against fully loaded fraud cost; defines the decision boundary before a production pilot. |
+
+These are scenario controls, not accounting claims.
 
 ## False Positive / False Negative Interpretation
 

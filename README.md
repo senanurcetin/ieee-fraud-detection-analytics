@@ -285,7 +285,7 @@ The live dashboard reads the dbt-built BigQuery reporting tables and is the main
 - Pareto, heatmap, waterfall, scatter, boxplot, treemap, matrix, and threshold-simulation visuals
 - Customer proxy analysis with full-width payment x email heatmap and supporting identity/device drilldowns
 - Masked address and distance analysis without unsupported geography claims
-- Validation threshold what-if simulation with workload, capture, precision, missed exposure, and net benefit proxy
+- Validation threshold what-if simulation with workload, capture, precision, missed exposure, and a net benefit frame whose two cost assumptions are stated on screen and adjustable
 - Feature importance, feature-family treemap, missingness analysis, and model-quality evidence
 - KPI dictionary, methodology limitations, production validation, and public API metadata contract
 
@@ -316,7 +316,7 @@ The dashboard follows the fraud analyst presentation sequence: portfolio exposur
 
 ![Executive web overview](docs/assets/web_dashboard_executive_overview.png)
 
-Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure, $2.46M net benefit proxy at selected threshold. The risk band chart shows Critical and High bands carry 96.31% and 44.39% fraud rates — confirming the model concentrates fraud effectively. Product risk ranking visible at page bottom.
+Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure. Net benefit is not a fixed figure: IEEE-CIS has no cost columns, so the simulator exposes the two assumptions it depends on — cost per reviewed false positive and loss per fraud dollar — and recomputes as you move them. The risk band chart shows Critical and High bands carry 96.31% and 44.39% fraud rates — confirming the model concentrates fraud effectively. Product risk ranking visible at page bottom.
 
 ---
 

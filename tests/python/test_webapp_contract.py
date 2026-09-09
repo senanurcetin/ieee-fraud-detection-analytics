@@ -460,3 +460,35 @@ def test_public_text_surfaces_are_english_and_web_only() -> None:
                 failures.append(f"{path.relative_to(REPO_ROOT)} contains blocked public text: {pattern}")
 
     assert not failures, "\n".join(failures)
+
+
+def test_cost_assumptions_are_declared_and_priced_on_one_scale() -> None:
+    """The dataset has no cost fields, so the economics must be stated, not buried.
+
+    The earlier version hardcoded $5 per false positive and charged missed fraud
+    at 0.15x while crediting caught fraud at face value, which priced the two
+    sides of the same comparison differently.
+    """
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    metric_layer = html.split("function metricLayer()", 1)[1].split(
+        "function executiveEconomicsRows()",
+        1,
+    )[0]
+
+    # One loss rate prices both the avoided and the residual side.
+    assert "const lossRate = Math.max(num(state.fraudLossMultiplier), 0);" in metric_layer
+    assert "const avoidedLoss = captured * lossRate;" in metric_layer
+    assert "const residualLoss = missed * lossRate;" in metric_layer
+    assert "const netBenefit = avoidedLoss - falsePositiveCost;" in metric_layer
+
+    # The retired asymmetric constants must not come back.
+    assert "missed * 0.15" not in metric_layer
+    assert "* 5;" not in metric_layer
+
+    # Both assumptions are reader-adjustable and carry their provenance.
+    assert 'id="review-cost-input"' in html
+    assert 'id="loss-rate-input"' in html
+    assert "reviewCost: 5," in html
+    assert "fraudLossMultiplier: 1," in html
+    assert "IEEE-CIS contains no cost fields" in html
+    assert "True Cost of Fraud" in html
