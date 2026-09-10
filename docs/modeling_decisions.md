@@ -75,6 +75,28 @@ The dataset has a baseline fraud rate of 3.50%, so accuracy is not a useful mode
 
 Synthetic oversampling is not used because the validation design is time-based and the priority is preserving realistic transaction chronology and threshold workload behavior.
 
+### What balanced class weights cost
+
+The classifier is fitted with `class_weight="balanced"`, which upweights the
+3.5% positive class by roughly 28 to 1. That buys ranking quality and costs
+probability calibration, and the trade is measured rather than assumed. On the
+holdout the mean score is 17.96% against an observed fraud rate of 3.44%, a
+5.2x overprediction, and every score decile overshoots: the top decile averages
+70.46% against 24.51% observed. The Brier score is 0.0636, worse than the
+0.0332 a constant base-rate forecast achieves, and the expected calibration
+error is 0.1452.
+
+The score is therefore a rank, not a likelihood. Everything the project builds
+on it is rank-based - quantile bands, capture rates at thresholds, the review
+queue ordering - so none of those are affected. What the score cannot do is
+answer "how likely is this transaction to be fraud", and it must not be read
+that way. `rpt_model_calibration` publishes the reliability curve so a reader
+can check this rather than take it on trust.
+
+Making the score a probability would mean fitting a calibrator (Platt or
+isotonic) on held-out data and reporting both. That is a deliberate open item,
+not an oversight: the decision layer here does not need probabilities.
+
 ## Feature Scope
 
 The active registry version uses 425 selected features:

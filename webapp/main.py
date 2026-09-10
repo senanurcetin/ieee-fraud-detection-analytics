@@ -114,6 +114,7 @@ TABLE_QUERIES: dict[str, str] = {
         "order by band_rank"
     ),
     "validation_risk_bands": "select * from {table} order by band_rank",
+    "model_calibration": "select * from {table} order by score_decile",
     "feature_importance": (
         "select feature, feature_family, importance, importance_rank "
         "from {table} "
@@ -201,6 +202,7 @@ BIGQUERY_TABLES: dict[str, str] = {
     "email_domain_risk": "rpt_email_domain_risk",
     "model_risk_bands": "rpt_model_risk_bands",
     "validation_risk_bands": "rpt_validation_risk_bands",
+    "model_calibration": "rpt_model_calibration",
     "feature_importance": "rpt_feature_importance",
     "data_quality": "rpt_data_quality_scorecard",
     "proxy_signal_risk": "rpt_proxy_signal_risk",

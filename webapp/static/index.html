@@ -1543,6 +1543,7 @@
           chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>'),
           chartCard('Feature importance recap', 'Supporting model-driver context behind the score.', '<div class="visual-body" id="model-features"></div>'),
           chartCard('Model registry and rolling CV', 'Version, V-feature scope, and rolling validation stability evidence.', '<div class="visual-body" id="model-registry"></div>'),
+          chartCard('Score calibration on the holdout', 'The classifier is fitted with balanced class weights, which is good for ranking and bad for probability. The score is a rank, not a likelihood: it averages 5.2x the observed fraud rate, and its Brier score is worse than a constant base-rate forecast.', '<div class="visual-body" id="model-calibration"></div>'),
           chartCard('In-sample vs holdout by risk band', 'The model is fit on the first 80% of TransactionDT and then scores every row, so the train split flatters each band. Holdout figures are the ones that generalise.', '<div class="visual-body" id="model-generalisation"></div>')
         ]),
         insightRow([
@@ -1762,6 +1763,7 @@
         modelReferenceCurves('model-curves');
         renderThresholdSummary();
         generalisationGapTable('model-generalisation');
+        calibrationTable('model-calibration');
         barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
         barChart('model-segment-performance', segmentModelRows(), row => row.segment_family + ' / ' + row.segment_name, row => row.precision_rate, fmtPct2, null);
         confusionMatrix('model-confusion');
@@ -2650,6 +2652,28 @@
       target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="21">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
     }
 
+    function calibrationTable(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const rows = getRows('model_calibration');
+      if (!rows.length) { target.innerHTML = empty('Calibration evidence not available.'); return; }
+      const head = rows[0];
+      const summary = '<div class="metric-grid">' + [
+        ['Mean score', fmtPct2(head.holdout_mean_predicted)],
+        ['Observed rate', fmtPct2(head.holdout_baseline_rate)],
+        ['Overprediction', fmtScore(head.mean_overprediction_ratio) + 'x'],
+        ['Brier', fmtScore4(head.brier_score)],
+        ['Base-rate Brier', fmtScore4(head.baseline_brier_score)],
+        ['ECE', fmtPct2(head.expected_calibration_error)]
+      ].map(pair => '<div class="metric"><span>' + pair[0] + '</span><strong>' + pair[1] + '</strong></div>').join('') + '</div>';
+      target.innerHTML = summary + dataTable(rows, [
+        ['Score decile', row => fmtInt(row.score_decile)],
+        ['Transactions', row => fmtInt(row.transaction_count)],
+        ['Mean score', row => fmtPct2(row.mean_predicted_probability)],
+        ['Observed fraud', row => '<strong>' + fmtPct2(row.observed_fraud_rate) + '</strong>'],
+        ['Gap', row => '<span style="color:#d92d3a">+' + fmtPct2(row.calibration_gap) + '</span>']
+      ]);
+    }
     function generalisationGapTable(id) {
       const target = document.getElementById(id);
       if (!target) return;
@@ -3110,6 +3134,7 @@
     function fmtPct(value) { return pf.format(num(value)); }
     function fmtPct2(value) { return pf2.format(num(value)); }
     function fmtScore(value) { return df.format(num(value)); }
+    function fmtScore4(value) { return num(value).toFixed(4); }
     function short(value, length) { const text = String(value ?? ''); return text.length > length ? text.slice(0, length - 1) + '...' : text; }
     function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
     function empty(text) { return '<div class="empty">' + escapeHtml(text) + '</div>'; }

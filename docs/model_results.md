@@ -102,6 +102,7 @@ Recommended use:
 ## Remaining Model Improvements
 
 - Test calibrated probability outputs if the model will be used for cost-sensitive thresholding.
-- Cost-weighted thresholding is implemented: review cost and loss per fraud dollar are reader-adjustable inputs on the dashboard, priced on one scale. Customer-friction cost is still not monetized, and calibrated probabilities are still untested.
+- Cost-weighted thresholding is implemented: review cost and loss per fraud dollar are reader-adjustable inputs on the dashboard, priced on one scale. Customer-friction cost is still not monetized.
+- Calibration is measured and published in `rpt_model_calibration`. The model is not calibrated: balanced class weights inflate the score 5.2x against the observed rate, and its Brier score (0.0636) is worse than a constant base-rate forecast (0.0332). The score ranks well and should be used only as a rank. Fitting a Platt or isotonic calibrator remains open, and would be required before any decision that consumes the score as a probability.
 - Add analyst feedback outcomes before any production-style decision automation.
 

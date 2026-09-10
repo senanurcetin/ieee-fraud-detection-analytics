@@ -94,8 +94,8 @@ def test_metadata_endpoint_contract_is_business_ready() -> None:
 
     assert payload["presentation_layer"] == "web_dashboard"
     assert payload["dataset"] == "fraud_project_reporting"
-    # 26 since rpt_validation_risk_bands joined the layer.
-    assert payload["table_count"] == 26
+    # 27 since rpt_validation_risk_bands and rpt_model_calibration joined the layer.
+    assert payload["table_count"] == 27
     assert len(payload["kpi_definitions"]) >= 8
     assert len(payload["methodology_notes"]) >= 5
     assert len(payload["executive_takeaways"]) >= 3
@@ -560,3 +560,27 @@ def test_risk_band_quality_is_reported_on_the_holdout() -> None:
     assert "function generalisationGapTable(" in html
     assert "generalisationGapTable('model-generalisation');" in html
     assert "Risk band exposure (holdout)" in html
+
+
+def test_calibration_is_published_rather_than_assumed() -> None:
+    """The score is not a probability, and the dashboard has to say so.
+
+    Balanced class weights buy ranking quality at the cost of calibration: on
+    the holdout the mean score is 5.2x the observed fraud rate and the Brier
+    score loses to a constant base-rate forecast. That is publishable evidence,
+    not a footnote.
+    """
+    assert main.BIGQUERY_TABLES["model_calibration"] == "rpt_model_calibration"
+
+    sql = (REPO_ROOT / "models" / "reporting" / "rpt_model_calibration.sql").read_text(encoding="utf-8")
+    assert "source('raw', 'validation_predictions')" in sql
+    assert "brier_score" in sql
+    assert "baseline_brier_score" in sql
+    assert "expected_calibration_error" in sql
+    assert "ntile(10)" in sql
+
+    html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
+    assert "function calibrationTable(" in html
+    assert "calibrationTable('model-calibration');" in html
+    # The card must state the limitation, not just plot it.
+    assert "The score is a rank, not a likelihood" in html
