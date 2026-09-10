@@ -6,7 +6,7 @@ This document records the release checks required before the public web dashboar
 
 | Gate | Expected result | Current status |
 |---|---|---|
-| API backend | Live BigQuery reporting backend | PASS |
+| API backend | Precomputed snapshots of the BigQuery reporting layer, served from disk | PASS |
 | Reporting dataset | `fraud_project_reporting` | PASS |
 | Reporting API groups | Reporting groups plus niche drilldown group | PASS |
 | Transaction population | 590,540 transactions | PASS |
@@ -28,7 +28,7 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 Latest development result:
 
 ```text
-PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158
+PASS=163 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=164
 ```
 
 Production validation:
@@ -40,7 +40,7 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 Latest production result:
 
 ```text
-PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158
+PASS=163 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=164
 ```
 
 Production datasets rebuilt by dbt:

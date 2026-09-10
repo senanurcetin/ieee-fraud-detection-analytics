@@ -342,7 +342,9 @@ MODEL_VALIDATION_METRICS: list[dict[str, str]] = [
 MODEL_REGISTRY: dict[str, Any] = {
     "model_name": "LightGBMClassifier",
     "model_version": "lightgbm-v2-v339-missingness-filtered",
-    "training_date": "2026-06-04",
+    # Retrained 2026-09-01 when the reporting tables were rebuilt. Every other
+    # registry field reproduced byte for byte, so the metrics below are unchanged.
+    "training_date": "2026-09-01",
     "validation_strategy": "time-based holdout plus 3-window expanding rolling cross-validation",
     "feature_scope": {
         "feature_count": 425,

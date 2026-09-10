@@ -1,7 +1,7 @@
 {
   "model_name": "LightGBMClassifier",
   "model_version": "lightgbm-v2-v339-missingness-filtered",
-  "training_date": "2026-06-04T13:21:29.485373+00:00",
+  "training_date": "2026-09-01T09:52:04.139847+00:00",
   "validation_strategy": "time-based holdout plus expanding rolling cross-validation",
   "data_scope": {
     "raw_train_transactions": 590540,

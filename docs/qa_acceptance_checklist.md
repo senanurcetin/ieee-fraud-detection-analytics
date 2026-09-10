@@ -5,8 +5,8 @@ Final acceptance target: the live web dashboard is the only presentation layer.
 ## dbt and BigQuery
 
 - [x] Production dbt build completed successfully.
-- [x] Latest verified build result: `PASS=157 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=158`.
-- [x] Project scope: 36 models, 121 data tests, 10 sources, 1 exposure.
+- [x] Latest verified build result: `PASS=163 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=164`.
+- [x] Project scope: 37 models, 126 data tests, 10 sources, 1 exposure.
 - [x] dbt docs generation completed successfully.
 - [x] Raw row counts reconcile to the Kaggle source files.
 - [x] Reporting fact table reconciles to the training transaction source.

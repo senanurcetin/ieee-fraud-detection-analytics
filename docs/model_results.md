@@ -102,6 +102,6 @@ Recommended use:
 ## Remaining Model Improvements
 
 - Test calibrated probability outputs if the model will be used for cost-sensitive thresholding.
-- Add cost-weighted threshold optimization using false-negative cost, false-positive review cost, and customer-friction assumptions.
+- Cost-weighted thresholding is implemented: review cost and loss per fraud dollar are reader-adjustable inputs on the dashboard, priced on one scale. Customer-friction cost is still not monetized, and calibrated probabilities are still untested.
 - Add analyst feedback outcomes before any production-style decision automation.
 
