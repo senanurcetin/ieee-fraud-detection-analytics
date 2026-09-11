@@ -12,7 +12,7 @@
 | **Dataset** | IEEE-CIS Fraud Detection — 590,540 transactions, $79.7M, 3.50% baseline fraud rate |
 | **Core finding** | Fraud is not random. Product C carries **11.7% fraud rate (3.34x lift)** and drives 38.8% of all fraud labels. Identity-present transactions show **7.85% fraud rate (2.24x lift)**. |
 | **Model** | LightGBM — holdout ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision** — 7.12x better than baseline review. Band quality is reported on the time-based holdout, not the split the model was fitted on. |
-| **Stack** | DuckDB → BigQuery → dbt (37 models) → LightGBM → FastAPI → Vercel |
+| **Stack** | DuckDB → BigQuery → dbt (38 models) → LightGBM → FastAPI → Vercel |
 | **Output** | Live executive dashboard with threshold simulator, segment heat maps, SHAP explainability |
 
 ---
@@ -367,8 +367,8 @@ dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detecti
 
 Latest validation snapshot:
 
-- dbt local build: `PASS=163 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=164`
-- dbt project scope: 37 models, 126 data tests, 10 sources, 1 exposure
+- dbt local build: `PASS=164 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=165`
+- dbt project scope: 38 models, 126 data tests, 10 sources, 1 exposure
 - Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; reporting fact 590,540
 - GitHub Actions: Python quality, pytest, web dashboard contract checks, dependency audit, and dbt parse/build workflow
 

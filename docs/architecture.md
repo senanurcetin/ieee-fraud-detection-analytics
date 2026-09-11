@@ -52,6 +52,6 @@ The web dashboard reads only from `fraud_project_reporting` through the FastAPI 
 Latest production verification:
 
 ```text
-dbt build: PASS=163 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=164
-Scope: 37 models, 126 data tests, 10 sources, 1 exposure
+dbt build: PASS=164 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=165
+Scope: 38 models, 126 data tests, 10 sources, 1 exposure
 ```
