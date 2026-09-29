@@ -109,6 +109,19 @@ The V-family expansion is governed by `V_FEATURE_MISSINGNESS_THRESHOLD`. In the 
 
 Masked feature interpretations are treated as observational. The report does not claim confirmed meanings for C, D, M, V, or identity fields beyond their role as anonymized fraud signals.
 
+### Categorical handling
+
+Categorical columns (`ProductCD`, `card4`, `card6`, the email domains, `M1`-`M9`, and selected identity/device
+fields) are encoded as integer codes numbered by order of first appearance in the time-sorted training data. The
+published metrics were produced by passing these codes to LightGBM **as ordinary numeric columns**, so the trees
+split on an arbitrary ordering of the categories rather than on category membership.
+
+This is a known limitation, not yet a measured one. Setting `LIGHTGBM_NATIVE_CATEGORICALS=1` makes
+`src/prepare_raw_and_ml.py` pass the columns via `categorical_feature`, so LightGBM splits on category subsets.
+The flag is off by default because switching it changes every reported metric; the comparison (holdout ROC-AUC,
+average precision, top-5% capture, both settings, same seed) needs to be run on the full data before it becomes the
+default and the numbers in this project are regenerated.
+
 ## Risk Bands
 
 Model scores are converted into risk bands using score quantiles:

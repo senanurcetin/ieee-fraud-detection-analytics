@@ -31,6 +31,8 @@ MODEL_VERSION = "lightgbm-v2-v339-missingness-filtered"
 V_FEATURE_MISSINGNESS_THRESHOLD = float(os.environ.get("V_FEATURE_MISSINGNESS_THRESHOLD", "0.95"))
 ROLLING_CV_WINDOWS = int(os.environ.get("ROLLING_CV_WINDOWS", "3"))
 SHAP_SAMPLE_SIZE = int(os.environ.get("SHAP_SAMPLE_SIZE", "20000"))
+# Off by default: the published metrics were produced with categoricals as ordinal integer codes.
+NATIVE_CATEGORICALS = os.environ.get("LIGHTGBM_NATIVE_CATEGORICALS", "0") == "1"
 
 
 REQUIRED_FILES = [
@@ -301,11 +303,20 @@ def lightgbm_model(n_estimators: int = 500) -> LGBMClassifier:
     )
 
 
+def fit_kwargs(categorical: list[str]) -> dict:
+    """Tell LightGBM which integer-coded columns are categorical, when enabled."""
+
+    if NATIVE_CATEGORICALS and categorical:
+        return {"categorical_feature": list(categorical)}
+    return {}
+
+
 def rolling_time_cv_metrics(
     X: pd.DataFrame,
     y: pd.Series,
     transaction_dt: pd.Series,
     windows: int = ROLLING_CV_WINDOWS,
+    categorical: list[str] | None = None,
 ) -> pd.DataFrame:
     """Run expanding-window validation slices to surface concept drift risk."""
 
@@ -334,7 +345,7 @@ def rolling_time_cv_metrics(
             continue
 
         model = lightgbm_model(n_estimators=300)
-        model.fit(X_ordered.iloc[:valid_start], y_ordered.iloc[:valid_start])
+        model.fit(X_ordered.iloc[:valid_start], y_ordered.iloc[:valid_start], **fit_kwargs(categorical or []))
         pred_valid = model.predict_proba(X_ordered.iloc[valid_start:valid_end])[:, 1]
         auc = float(roc_auc_score(y_valid, pred_valid))
         ap = float(average_precision_score(y_valid, pred_valid))
@@ -386,14 +397,14 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
     X_train, X_valid = X.loc[train_mask], X.loc[~train_mask]
     y_train, y_valid = y.loc[train_mask], y.loc[~train_mask]
 
-    rolling_cv = rolling_time_cv_metrics(X, y, train_df["TransactionDT"])
+    rolling_cv = rolling_time_cv_metrics(X, y, train_df["TransactionDT"], categorical=categorical)
     if not rolling_cv.empty:
         rolling_cv.to_csv(TABLES_DIR / "rolling_cv_metrics.csv", index=False)
         con.register("rolling_cv_df", rolling_cv)
         con.execute("create or replace table raw.rolling_cv_metrics as select * from rolling_cv_df")
 
     model = lightgbm_model(n_estimators=500)
-    model.fit(X_train, y_train)
+    model.fit(X_train, y_train, **fit_kwargs(categorical))
     valid_pred = model.predict_proba(X_valid)[:, 1]
     auc = float(roc_auc_score(y_valid, valid_pred))
     ap = float(average_precision_score(y_valid, valid_pred))
