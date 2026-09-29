@@ -336,7 +336,7 @@ Identity-present transactions: 7.85% fraud rate (2.24x lift). Identity-missing: 
 
 ![Model threshold simulation](docs/assets/web_dashboard_model_threshold.png)
 
-ROC-AUC 0.9167, PR-AUC 0.5308 (vs 3.44% baseline). Interactive threshold simulator: at 0.50 threshold — 87.4% fraud capture, 33.3% precision, 54,159 workload transactions, $312K missed exposure. Precision-recall curve and confusion matrix confirm the model separates fraud from legitimate transactions at every operating point.
+Holdout ROC-AUC 0.9134, average precision 0.5354 (vs 3.44% baseline). Interactive threshold simulator: at the 0.50 threshold — 69.78% fraud capture, 25.68% precision, 11,043 reviewed transactions (9.35% workload), 1,228 fraud labels missed. Precision-recall curve and confusion matrix confirm the model separates fraud from legitimate transactions at every operating point.
 
 ---
 
