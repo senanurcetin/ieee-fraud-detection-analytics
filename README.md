@@ -2,8 +2,11 @@
 
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
+[![Kaggle notebook](https://img.shields.io/badge/Kaggle-notebook-20BEFF)](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
+
+**Kaggle notebook:** [IEEE-CIS: How Much of Random-CV AUC Is Leakage?](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage) measures why this project validates on time: on the same model, random 5-fold gives ROC-AUC 0.971 and the time split 0.921; about half the gap is customers seen in training, half is time drift.
 
 ## Quick Summary
 
