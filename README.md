@@ -1,5 +1,7 @@
 ﻿# IEEE-CIS Fraud Risk Intelligence
 
+**Technical reviewer brief:** [Problem, quantitative evidence and limitations](docs/hiring-summary.md).
+
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
 [![Kaggle notebook](https://img.shields.io/badge/Kaggle-notebook-20BEFF)](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage)
