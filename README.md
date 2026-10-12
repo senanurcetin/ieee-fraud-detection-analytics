@@ -2,6 +2,10 @@
 
 **Technical reviewer brief:** [Problem, quantitative evidence and limitations](docs/hiring-summary.md).
 
+![Fraud Risk Intelligence executive dashboard: portfolio KPIs, risk bands and threshold decision visuals](docs/assets/web_dashboard_executive_overview.png)
+
+> **Actual application screenshot:** a static capture of the project's dashboard, not a generated concept or a live data feed. Dataset scope, model validation and threshold assumptions are documented below.
+
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
 [![Kaggle notebook](https://img.shields.io/badge/Kaggle-notebook-20BEFF)](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage)
@@ -319,7 +323,7 @@ The dashboard follows the fraud analyst presentation sequence: portfolio exposur
 
 *Answers: What is total fraud exposure? Where does the model concentrate fraud across risk bands?*
 
-![Executive web overview](docs/assets/web_dashboard_executive_overview.png)
+[Open the full-resolution executive dashboard screenshot](docs/assets/web_dashboard_executive_overview.png) (shown at the beginning of this README).
 
 Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure. Net benefit is not a fixed figure: IEEE-CIS has no cost columns, so the simulator exposes the two assumptions it depends on — cost per reviewed false positive and loss per fraud dollar — and recomputes as you move them. The risk band chart reports the holdout: Critical carries a 90.49% fraud rate and High 30.34%, against 96.68% and 44.59% on the train split the model was partly fitted on. The model page shows that gap band by band. Product risk ranking visible at page bottom.
 
