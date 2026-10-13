@@ -967,6 +967,7 @@
     }
   </style>
   <link rel="stylesheet" href="/static/nexus-design.css">
+  <link rel="stylesheet" href="/static/nexus-studio.css">
 </head>
 <body>
   <div class="app">
@@ -1345,29 +1346,38 @@
 
     function renderOverview() {
       const m = metricLayer();
-      return pageGrid([
-        kpiRow([
-          kpi('Total Transactions', fmtInt(m.total_transactions), m.source + ' context.', '#2563eb'),
-          kpi('Fraud Rate', fmtPct2(m.fraud_rate), fmtInt(m.fraud_transactions) + ' labeled fraud transactions.', '#d92d3a'),
-          kpi('Fraud Exposure', fmtMoneyCompact(m.fraud_exposure), 'Observed fraud amount or exposure proxy.', '#c98012'),
-          kpi('Capturable Exposure', fmtMoneyCompact(m.capturable_exposure), fmtPct(m.recall) + ' capture at selected threshold.', '#18a999'),
-          kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Assumes $' + m.review_cost + '/review and ' + m.loss_rate + 'x loss per fraud dollar.', '#7c3aed')
-        ]),
-        visualPanels([
-          chartCard('Fraud trend snapshot', 'Relative TransactionDT trend with transaction volume context.', '<div class="visual-body" id="overview-trend"></div>', 'wide'),
-          chartCard('Risk band exposure (holdout)', 'Observed fraud rate and volume on the 118,108 transactions held out of training.', '<div class="visual-body" id="overview-riskband"></div>', 'wide'),
-          grid2([
-            chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>'),
-            chartCard('Cross-segment fraud concentration', 'Overlapping segment cuts ranked by fraud share; percentages must not be added together.', '<div class="visual-body" id="overview-pareto"></div>')
-          ])
-        ], [
-          chartCard('Executive economics breakdown', 'Supporting view of capture, review cost, missed exposure, and net benefit.', '<div class="visual-body" id="overview-economics"></div>'),
-          chartCard('Readiness gate', 'Supporting data contract checks behind presentation readiness.', '<div class="visual-body" id="overview-readiness"></div>')
-        ]),
-        insightRow([
-          ...dynamicInsightCards()
-        ])
-      ]);
+      const executive = '<section class="studio-command" aria-label="Executive risk brief">' +
+        '<div class="studio-command-copy"><div class="studio-kicker"><span class="studio-kicker-marker"></span>01 / EXPOSURE INTELLIGENCE<span class="studio-kicker-divider"></span>GOVERNED REPORTING</div>' +
+        '<h3>Locate the risk.<br><em>Protect the portfolio.</em></h3>' +
+        '<p>Decision-ready exposure, measurable review capacity and the risk pockets that deserve investigation. Built from the available reporting snapshot, not simulated live alerts.</p>' +
+        '<div class="studio-command-meta"><span>Evidence: ' + escapeHtml(m.source) + '</span><span>' + fmtInt(m.total_transactions) + ' observed transactions</span></div></div>' +
+        '<div class="studio-command-focus"><div class="studio-focus-label">PORTFOLIO FRAUD RATE</div><div class="studio-focus-value">' + fmtPct2(m.fraud_rate) + '</div><div class="studio-focus-foot">' + fmtInt(m.fraud_transactions) + ' labeled fraud transactions</div><div class="studio-focus-rule"><span>Holdout and portfolio measures are distinct</span></div></div>' +
+        '</section>';
+      const economics = '<section class="studio-exposure-ribbon" aria-label="Executive exposure measures">' +
+        '<div class="studio-exposure-lead"><span>OBSERVED FRAUD EXPOSURE</span><strong>' + fmtMoneyCompact(m.fraud_exposure) + '</strong><small>Fraud transaction amount / exposure proxy</small></div>' +
+        kpi('Capturable Exposure', fmtMoneyCompact(m.capturable_exposure), fmtPct(m.recall) + ' capture at selected threshold.', '#77afef') +
+        kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Scenario: $' + m.review_cost + '/review · ' + m.loss_rate + 'x fraud loss.', '#9d94ef') +
+        '</section>';
+      const primary = '<section class="studio-overview-analysis" aria-label="Portfolio evidence">' +
+        '<div class="studio-overview-feature"><div class="studio-section-tag"><span>01A</span> BEHAVIORAL MOVEMENT <em>Relative transaction time</em></div>' +
+          chartCard('Fraud trajectory', 'Fraud rate and context volume across the selected TransactionDT window.', '<div class="visual-body" id="overview-trend"></div>', 'studio-chart studio-primary-plot') +
+        '</div><div class="studio-overview-companion"><div class="studio-section-tag"><span>01B</span> VALIDATION EVIDENCE <em>Holdout validation · 118,108 transactions</em></div>' +
+          chartCard('Priority bands', 'Observed fraud rate and evaluated population use separate explicit scales.', '<div class="visual-body" id="overview-riskband"></div>', 'studio-chart studio-band-plot') +
+        '</div></section>';
+      const ranking = '<section class="studio-overview-rankings" aria-label="Risk concentration and segment actions">' +
+        '<div class="studio-section-heading"><div><span>02 / SEGMENT INTELLIGENCE</span><h3>Where intervention creates leverage</h3></div><p>Ranked observations are not causal explanations. Select a product or band to inspect its underlying slice.</p></div>' +
+        '<div class="studio-compare-grid">' +
+          chartCard('Product risk ranking', 'Click a product to open nested amount-band evidence.', '<div class="visual-body" id="overview-product"></div>', 'studio-chart') +
+          chartCard('Cross-segment fraud concentration', 'Overlapping groups; percentages must not be summed.', '<div class="visual-body" id="overview-pareto"></div>', 'studio-chart') +
+        '</div></section>';
+      const support = [
+        chartCard('Executive economics breakdown', 'Sensitivity of the review-cost and capture assumptions.', '<div class="visual-body" id="overview-economics"></div>'),
+        chartCard('Readiness gate', 'Quality checks behind the reporting evidence.', '<div class="visual-body" id="overview-readiness"></div>')
+      ];
+      return '<div class="studio-screen studio-overview">' + executive + economics +
+        visualPanels([primary, ranking], support) +
+        '<section class="studio-overview-decisions"><div class="studio-section-heading"><div><span>03 / DECISION BRIEF</span><h3>Actions, not just numbers</h3></div></div>' + insightRow(dynamicInsightCards()) + '</section>' +
+        '</div>';
     }
 
     function renderTrend() {
