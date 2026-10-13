@@ -4,7 +4,7 @@
 
 ![Fraud Risk Intelligence executive dashboard: portfolio KPIs, risk bands and threshold decision visuals](docs/assets/web_dashboard_executive_overview.png)
 
-> **Actual application screenshot:** a static capture of the project's dashboard, not a generated concept or a live data feed. Dataset scope, model validation and threshold assumptions are documented below.
+> **Historical application screenshot:** this is a genuine capture of an earlier dashboard revision, **not** a capture of the current draft NEXUS redesign or a live data feed. A replacement screenshot requires a successful real-browser run, visual review and verification of the deployed revision. Dataset scope, model validation and threshold assumptions are documented below.
 
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
