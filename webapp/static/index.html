@@ -1007,7 +1007,7 @@
           </div>
         </div>
 
-        <div class="state hidden" id="state"></div>
+        <div class="state hidden" id="state" data-state="loading" role="status" aria-live="polite"></div>
 
         <div class="slicer-grid">
           <aside class="filter-rail" aria-label="Report filters">
@@ -3096,7 +3096,8 @@
     function showState(message, error) {
       const target = document.getElementById('state');
       target.textContent = message;
-      target.className = error ? 'state' : 'state';
+      target.className = error ? 'state state-error' : 'state state-loading';
+      target.dataset.state = error ? 'error' : 'loading';
     }
     function hideState() { document.getElementById('state').className = 'state hidden'; }
     function unique(values) { return [...new Set(values.filter(value => value !== null && value !== undefined && value !== ''))].sort(); }

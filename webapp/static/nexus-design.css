@@ -224,3 +224,19 @@ body.light .nexus-backend-status[data-state="connecting"] { color:#405f7d;backgr
 .top-actions .btn.primary:hover { background:#9ad1ff; }
 .nav-btn:focus-visible,.top-actions button:focus-visible { outline:2px solid #4ea8ff;outline-offset:3px; }
 @media print { .top-actions .btn.primary { display:none!important; } }
+
+/* Startup loading is not an error. Errors must be distinguishable from the
+   transient API loading state in both light and dark reporting themes. */
+.state.state-loading, .state[data-state="loading"] {
+  background:#e5f2ff; border-color:#94c1ee; color:#154770;
+}
+.state.state-loading::before { content:"◌"; display:inline-block; margin-right:8px; font-weight:800; }
+.state.state-error, .state[data-state="error"] {
+  background:#fff0f2; border-color:#e3a4b0; color:#882637; font-weight:650;
+}
+body:not(.light) .state.state-loading {
+  background:#123753; border-color:#3c81b8; color:#d5edff;
+}
+body:not(.light) .state.state-error {
+  background:#462237; border-color:#a94f67; color:#ffe2e8;
+}
