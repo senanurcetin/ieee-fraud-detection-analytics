@@ -374,8 +374,7 @@ Run FastAPI locally with its documented reporting data configuration, install Pl
 ```bash
 python -m pip install playwright
 python -m playwright install chromium
-FRAUD_E2E_BASE_URL=http://127.0.0.1:8000 E2E_SCREENSHOT_DIR=artifacts/dashboard-browser \\
-  python -m unittest discover -s tests/browser -p 'test_fraud_dashboard.py' -v
+FRAUD_E2E_BASE_URL=http://127.0.0.1:8000 E2E_SCREENSHOT_DIR=artifacts/dashboard-browser python -m unittest discover -s tests/browser -p 'test_fraud_dashboard.py' -v
 ```
 
 Review the two actual 1440px/375px captures before changing portfolio imagery. This opt-in suite is **not part of the default pytest testpath or hosted CI**, and no browser execution, screenshot approval, preview readiness, or deployment is claimed by adding it.
