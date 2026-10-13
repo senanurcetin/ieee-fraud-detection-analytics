@@ -1075,7 +1075,7 @@
     const pf2 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const cf = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
     const df = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const palette = ['#d92d3a', '#c98012', '#2563eb', '#18a999', '#7c3aed', '#0f766e', '#475569'];
+    const palette = ['#f37a88', '#f6b95f', '#4ea8ff', '#8f9bff', '#487fd8', '#43c99d', '#647c96'];
 
     const pages = [
       { id: 'overview', title: 'Executive Fraud Overview', short: 'Portfolio exposure', purpose: 'What is the total fraud exposure and where is fraud concentrated?' },
@@ -1165,7 +1165,7 @@
     };
 
     document.getElementById('page-nav').innerHTML = pages.map(page => `
-      <button class="nav-btn ${page.id === state.page ? 'active' : ''}" data-page="${page.id}" type="button">
+      <button class="nav-btn ${page.id === state.page ? 'active' : ''}" data-page="${page.id}" aria-current="${page.id === state.page ? 'page' : 'false'}" type="button">
         ${page.title}<span>${page.short}</span>
       </button>
     `).join('');
@@ -1283,7 +1283,11 @@
     function render() {
       if (!state.dashboard) return;
       pages.forEach(page => {
-        document.querySelector('[data-page="' + page.id + '"]').classList.toggle('active', page.id === state.page);
+        const navigationButton = document.querySelector('[data-page="' + page.id + '"]');
+        if (!navigationButton) return;
+        const isCurrentPage = page.id === state.page;
+        navigationButton.classList.toggle('active', isCurrentPage);
+        navigationButton.setAttribute('aria-current', isCurrentPage ? 'page' : 'false');
       });
       const page = pages.find(item => item.id === state.page);
       document.getElementById('page-title').textContent = page.title;

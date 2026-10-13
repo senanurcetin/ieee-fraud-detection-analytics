@@ -15,6 +15,9 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn("NEXUS / RISK INTELLIGENCE", html)
         self.assertIn("NEXUS / FINANCIAL ANALYTICS", html)
         self.assertIn("Executive Fraud Overview", html)
+        self.assertIn("aria-current=", html)
+        self.assertIn("navigationButton.setAttribute('aria-current'", html)
+        self.assertIn("'#4ea8ff', '#8f9bff', '#487fd8'", html)
         self.assertIn("Model Performance Analysis", html)
         self.assertIn('id="page-nav"', html)
 

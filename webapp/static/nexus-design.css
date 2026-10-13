@@ -106,3 +106,24 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   .topbar { box-shadow: none; }
   .report-canvas { box-shadow: none; }
 }
+
+/* NEXUS visual detail: navigation, analytics affordances, dense table legibility. */
+.sidebar .nav-btn[aria-current="page"] {
+  border-color:rgba(78,168,255,.48);
+  box-shadow:inset 3px 0 #4ea8ff,0 7px 18px rgba(3,16,34,.22);
+}
+.sidebar .nav-btn:focus-visible { outline:2px solid #4ea8ff;outline-offset:2px; }
+.brand-mark { font-variant-numeric:tabular-nums;letter-spacing:.025em; }
+.kpi-card:hover,.visual-card:hover { border-color:#accbe9; }
+.kpi-card .kpi-value { font-variant-numeric:tabular-nums; }
+.report-canvas table tbody tr:hover td { background:#edf5fc; }
+.report-canvas .bartrack { background:#e7f0fa; border-radius:10px; }
+.report-canvas .barfill { background:linear-gradient(90deg,#2678d9,#8f9bff);border-radius:10px; }
+@media(max-width:680px) {
+  .topbar { gap:14px; }
+  .top-actions { justify-content:flex-start; }
+  .report-canvas .kpi-value { font-size:clamp(19px,5vw,28px); }
+}
+@media(prefers-reduced-motion:reduce) {
+  .kpi-card:hover,.visual-card:hover { transform:none!important; }
+}
