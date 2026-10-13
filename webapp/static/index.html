@@ -2596,23 +2596,27 @@
       if (!target) return;
       const source = (rows || []).slice(-180);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 760, h = 300, padLeft = 58, padRight = 26, padTop = 48, padBottom = 42;
+      const w = 760, h = 306, padLeft = 62, padRight = 28, padTop = 47, padBottom = 42;
       const value = row => num(typeof yKey === 'function' ? yKey(row) : row[yKey]);
-      const maxY = Math.max(...source.map(value), .0001);
+      const values = source.map(value);
+      const maxY = Math.max(...values, .0001) * 1.08;
       const maxVol = Math.max(...source.map(row => num(row[options.volumeKey])), 1);
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
-      const x = index => padLeft + (index / Math.max(source.length - 1, 1)) * plotW;
-      const y = val => h - padBottom - (val / maxY) * plotH;
+      const plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
+      const x = index => padLeft + index / Math.max(source.length - 1, 1) * plotW;
+      const y = val => h - padBottom - val / maxY * plotH;
+      const lineColor = options.color || '#2678d9';
+      const gradientId = 'area-' + id.replace(/[^a-z0-9_-]/gi, '-');
+      const points = source.map((row, index) => x(index) + ',' + y(value(row))).join(' ');
+      const area = 'M' + x(0) + ' ' + (h - padBottom) + ' L' + source.map((row,index) => x(index) + ' ' + y(value(row))).join(' L') + ' L' + x(source.length - 1) + ' ' + (h - padBottom) + ' Z';
       const bars = options.volumeKey ? source.map((row, index) => {
         const bh = num(row[options.volumeKey]) / maxVol * plotH;
-        return '<rect x="' + (x(index) - 1) + '" y="' + (h - padBottom - bh) + '" width="2" height="' + bh + '" fill="rgba(37,99,235,.18)" />';
+        return '<rect x="' + (x(index) - 1.3) + '" y="' + (h - padBottom - bh) + '" width="2.6" height="' + bh + '" fill="#a6cbe9" opacity=".44" />';
       }).join('') : '';
-      const points = source.map((row, index) => x(index) + ',' + y(value(row))).join(' ');
       const latest = source[source.length - 1];
       const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, options.yFormat || fmtInt);
-      const xTicks = indexedTicks(source, xKey).map(tick => '<g><line x1="' + x(tick.index) + '" y1="' + (h - padBottom) + '" x2="' + x(tick.index) + '" y2="' + (h - padBottom + 4) + '" stroke="#94a3b8"/><text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text></g>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<polyline points="' + points + '" fill="none" stroke="' + (options.color || '#2563eb') + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5" fill="' + (options.color || '#2563eb') + '"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Latest: ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg>';
+      const xTicks = indexedTicks(source, xKey).map(tick => '<text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
+      const accessible = escapeHtml('Trend over ' + source.length + ' reporting periods; latest ' + (options.yFormat || fmtInt)(value(latest)));
+      target.innerHTML = '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + accessible + '"><defs><linearGradient id="' + gradientId + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + lineColor + '" stop-opacity=".22"/><stop offset="100%" stop-color="' + lineColor + '" stop-opacity=".015"/></linearGradient></defs>' + yTicks + bars + '<path d="' + area + '" fill="url(#' + gradientId + ')"/><polyline points="' + points + '" fill="none" stroke="' + lineColor + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5.5" fill="#fff" stroke="' + lineColor + '" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Latest · ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg></div>';
     }
 
     function comboChart(id, rows, xKey, barKey, lineKey) {
@@ -2620,20 +2624,20 @@
       if (!target) return;
       const source = (rows || []).slice(-80);
       if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 30, padTop = 54, padBottom = 42;
-      const maxBar = Math.max(...source.map(row => num(row[barKey])), 1);
-      const maxLine = Math.max(...source.map(row => num(row[lineKey])), .0001);
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
+      const w = 760, h = 306, padLeft = 65, padRight = 65, padTop = 50, padBottom = 42;
+      const maxBar = Math.max(...source.map(row => num(row[barKey])), 1) * 1.08;
+      const maxLine = Math.max(...source.map(row => num(row[lineKey])), .0001) * 1.08;
+      const plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
       const bw = plotW / source.length;
       const x = index => padLeft + index * bw;
-      const yBar = val => h - padBottom - (num(val) / maxBar) * plotH;
-      const yLine = val => h - padBottom - (num(val) / maxLine) * plotH;
+      const yBar = val => h - padBottom - num(val) / maxBar * plotH;
+      const yLine = val => h - padBottom - num(val) / maxLine * plotH;
       const points = source.map((row, index) => (x(index) + bw / 2) + ',' + yLine(row[lineKey])).join(' ');
-      const fixedBars = source.map((row, index) => '<rect x="' + (x(index) + 2) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw - 4) + '" height="' + (h - padBottom - yBar(row[barKey])) + '" fill="rgba(37,99,235,.26)"/>').join('');
-      const yTicks = yAxisSvg(axisTicks(maxLine), yLine, padLeft, w - padRight, fmtPct2);
+      const bars = source.map((row, index) => '<rect x="' + (x(index) + Math.max(1, bw * .12)) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw * .76) + '" height="' + Math.max(0, h - padBottom - yBar(row[barKey])) + '" rx="2" fill="#8ebce4" opacity=".76"/>').join('');
+      const leftTicks = yAxisSvg(axisTicks(maxLine), yLine, padLeft, w - padRight, fmtPct2);
+      const rightTicks = axisTicks(maxBar).map(v => '<text class="svg-axis" x="' + (w - padRight + 9) + '" y="' + (yBar(v) + 4) + '" text-anchor="start">' + escapeHtml(fmtInt(v)) + '</text>').join('');
       const xTicks = indexedTicks(source, xKey, 5).map(tick => '<text class="svg-axis" x="' + (x(tick.index) + bw / 2) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + fixedBars + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Bars: transactions | Line: fraud rate</text></svg>';
+      target.innerHTML = '<div class="chart-figure"><div class="chart-legend"><span><b class="legend-volume"></b>Transactions · right axis</span><span><b class="legend-risk"></b>Fraud rate · left axis</span></div><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Transaction volume bars and fraud rate line with independent labeled axes">' + leftTicks + rightTicks + bars + '<polyline points="' + points + '" fill="none" stroke="#cd455b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Fraud rate</text><text class="svg-label" x="' + (w - padRight) + '" y="21" text-anchor="end">Transactions</text></svg></div>';
     }
 
     function barChart(id, rows, labelFn, valueFn, formatFn, filterKey) {
@@ -2642,13 +2646,18 @@
       const source = (rows || []).filter(Boolean).slice(0, 14);
       if (!source.length) { target.innerHTML = empty('No data available.'); return; }
       const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
-      target.innerHTML = '<div class="bar-list">' + source.map((row, index) => {
-        const label = String(labelFn(row) ?? 'Unknown');
+      const labels = source.map(row => String(labelFn(row) ?? 'Unknown'));
+      const uniqueLabels = new Set(labels).size === labels.length;
+      const scaleNote = '<div class="chart-scale-note">Segment comparison <span>Bar length normalized to largest visible value</span></div>';
+      target.innerHTML = scaleNote + '<div class="bar-list executive-bars">' + source.map((row, index) => {
+        const label = labels[index];
         const value = num(valueFn(row));
+        const peak = Math.abs(value) >= maxValue - .0000001;
         const attrs = filterKey
-          ? 'data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
+          ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
           : '';
-        return '<div class="bar-row" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><div class="bar-label">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(value) / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + escapeHtml((formatFn || fmtInt)(value)) + '</div></div>';
+        const fill = peak ? '#2678d9' : '#91b9df';
+        return '<div class="bar-row executive-bar-row" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><div class="bar-label" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(value) / maxValue * 100) + '%;--accent:' + fill + '"></div></div><div class="bar-value">' + escapeHtml((formatFn || fmtInt)(value)) + '</div></div>';
       }).join('') + '</div>';
     }
 
@@ -2657,25 +2666,25 @@
       if (!target) return;
       const source = (rows || []).filter(Boolean).slice(0, options.limit || 8);
       if (!source.length) { target.innerHTML = empty('No column chart data available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 50, padBottom = 62;
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
-      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
+      const w = 760, h = 305, padLeft = 66, padRight = 28, padTop = 46, padBottom = 65;
+      const plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
+      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001) * 1.12;
       const bw = plotW / source.length;
-      const y = value => h - padBottom - (Math.abs(num(value)) / maxValue) * plotH;
+      const y = value => h - padBottom - Math.abs(num(value)) / maxValue * plotH;
       const attrsFor = label => filterKey
         ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
         : '';
       const yTicks = yAxisSvg(axisTicks(maxValue), y, padLeft, w - padRight, formatFn || fmtInt);
+      const peakValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))));
       const bars = source.map((row, index) => {
-        const label = String(labelFn(row) ?? 'Unknown');
-        const value = num(valueFn(row));
-        const x = padLeft + index * bw + Math.max(5, bw * .14);
-        const width = Math.max(16, bw * .72);
-        const valueY = Math.max(padTop + 15, y(value) - 7);
-        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><rect' + attrsFor(label) + ' x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + (h - padBottom - y(value)) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + valueY + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
+        const label = String(labelFn(row) ?? 'Unknown'), value = num(valueFn(row));
+        const x = padLeft + index * bw + Math.max(5, bw * .16);
+        const width = Math.max(15, bw * .68);
+        const valueY = Math.max(padTop + 13, y(value) - 9);
+        const fill = Math.abs(value) >= peakValue - .0000001 ? '#2678d9' : '#9fc4e6';
+        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><title>' + escapeHtml(label + ': ' + (formatFn || fmtInt)(value)) + '</title><rect x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + Math.max(0, h - padBottom - y(value)) + '" rx="4" fill="' + fill + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + valueY + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
       }).join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '<text class="svg-label" x="' + padLeft + '" y="21">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg>';
+      target.innerHTML = '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + escapeHtml(options.axisTitle || 'Segment value comparison') + '">' + yTicks + bars + '<text class="svg-label" x="' + padLeft + '" y="21">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg></div>';
     }
 
     function calibrationTable(id) {
