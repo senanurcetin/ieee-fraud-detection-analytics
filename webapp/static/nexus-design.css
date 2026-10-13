@@ -174,3 +174,41 @@ body.light .report-canvas { box-shadow:0 14px 32px rgba(25,62,110,.09); }
 body.light .nexus-backend-status[data-state="connected"] { color:#176044;background:#dff6eb;border-color:#a2d9c1; }
 body.light .nexus-backend-status[data-state="unavailable"] { color:#8c5418;background:#fff2d9;border-color:#e4c18a; }
 body.light .nexus-backend-status[data-state="connecting"] { color:#405f7d;background:#e8f3ff;border-color:#b5d4ef; }
+
+/* Nine-page BI navigation becomes a scrollable horizontal report index on
+   narrow screens, leaving the actual dashboard above the fold. */
+@media(max-width:820px) {
+  .sidebar { padding:12px 10px 11px; }
+  .brand { padding:5px 7px 11px; margin-bottom:10px; }
+  .nav {
+    display:flex!important;
+    width:100%;
+    flex-flow:row nowrap;
+    gap:8px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scroll-snap-type:x proximity;
+    padding:2px 2px 10px;
+    scrollbar-width:thin;
+    scrollbar-color:#4a7dab #081f35;
+  }
+  .nav-btn {
+    flex:0 0 auto; width:clamp(150px,42vw,198px);
+    min-height:55px; padding:9px 11px;
+    scroll-snap-align:start; font-size:12px;
+    white-space:normal; overflow-wrap:anywhere;
+  }
+  .nav-btn span { font-size:10px; line-height:1.35; }
+  .topbar { padding:16px 14px; }
+  .top-actions { gap:7px; }
+  .top-actions .btn { min-height:40px; }
+  .report-canvas { padding:14px; }
+}
+@media(max-width:420px) {
+  .nav-btn { width:155px; }
+  .top-actions .pill { max-width:100%; white-space:normal; }
+  .canvas-title h2 { font-size:clamp(21px,7vw,27px); }
+}
+@media print {
+  .sidebar .nav { display:none!important; }
+}
