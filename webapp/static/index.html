@@ -1558,8 +1558,8 @@
       const threshold = selectedThreshold();
       return pageGrid([
         kpiRow([
-          kpi('ROC-AUC', fmtScore(holdout.roc_auc || .9139), 'Strong rank ordering across thresholds.', '#2563eb'),
-          kpi('PR-AUC', fmtScore(holdout.average_precision || .5370), 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
+          kpi('ROC-AUC', (holdout.roc_auc == null ? 'Unavailable' : fmtScore(holdout.roc_auc)), 'Strong rank ordering across thresholds.', '#2563eb'),
+          kpi('PR-AUC', (holdout.average_precision == null ? 'Unavailable' : fmtScore(holdout.average_precision)), 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
           kpi('Validation Precision', fmtPct(threshold.precision_rate), 'Holdout precision at selected threshold.', '#c98012'),
           kpi('Validation Recall', fmtPct(threshold.fraud_capture_rate), 'Holdout fraud capture at selected threshold.', '#7c3aed'),
           kpi('Validation Workload', fmtPct(threshold.workload_share), 'Holdout flagged share at selected threshold.', '#d92d3a')
