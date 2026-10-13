@@ -1008,6 +1008,7 @@
         </div>
 
         <div class="state hidden" id="state" data-state="loading" role="status" aria-live="polite"></div>
+        <button class="nexus-retry-data hidden" id="retry-data-btn" type="button" hidden>Retry data connection</button>
 
         <div class="slicer-grid">
           <aside class="filter-rail" aria-label="Report filters">
@@ -1222,8 +1223,14 @@
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
 
     loadAll();
+    document.getElementById('retry-data-btn').addEventListener('click', loadAll);
 
     async function loadAll() {
+      const retryButton = document.getElementById('retry-data-btn');
+      retryButton.hidden = true;
+      const sourceStatus = document.getElementById('backend-pill');
+      sourceStatus.dataset.state = 'connecting';
+      sourceStatus.textContent = 'CONNECTING TO DATA SOURCE';
       showState('Loading governed reporting data.');
       try {
         const [dashboard, meta, tx, registry] = await Promise.all([
@@ -1249,6 +1256,7 @@
           sourceStatus.textContent = 'REPORT DATA UNAVAILABLE';
         }
         showState(error.message || 'Dashboard data could not be loaded.', true);
+        retryButton.hidden = false;
       }
     }
 
@@ -3099,7 +3107,10 @@
       target.className = error ? 'state state-error' : 'state state-loading';
       target.dataset.state = error ? 'error' : 'loading';
     }
-    function hideState() { document.getElementById('state').className = 'state hidden'; }
+    function hideState() {
+      document.getElementById('state').className = 'state hidden';
+      document.getElementById('retry-data-btn').hidden = true;
+    }
     function unique(values) { return [...new Set(values.filter(value => value !== null && value !== undefined && value !== ''))].sort(); }
     function num(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
     function sum(rows, key) { return (rows || []).reduce((acc, row) => acc + num(typeof key === 'function' ? key(row) : row[key]), 0); }

@@ -23,6 +23,10 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn("navigationButton.setAttribute('aria-current'", html)
         self.assertIn('id="backend-pill" data-state="connecting"', html)
         self.assertIn('id="state" data-state="loading" role="status"', html)
+        self.assertIn('id="retry-data-btn" type="button" hidden', html)
+        self.assertIn("addEventListener('click', loadAll)", html)
+        self.assertIn("retryButton.hidden = false", html)
+        self.assertIn("sourceStatus.dataset.state = 'connecting'", html)
         self.assertIn("'state state-error' : 'state state-loading'", html)
         self.assertIn("target.dataset.state = error ? 'error' : 'loading'", html)
         self.assertIn("sourceStatus.dataset.state = 'unavailable'", html)
@@ -53,6 +57,7 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn("body.light .pill.live", css)
         self.assertIn(".state.state-loading", css)
         self.assertIn(".state.state-error", css)
+        self.assertIn(".nexus-retry-data[hidden]", css)
 
 
 if __name__ == "__main__":

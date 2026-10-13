@@ -240,3 +240,17 @@ body:not(.light) .state.state-loading {
 body:not(.light) .state.state-error {
   background:#462237; border-color:#a94f67; color:#ffe2e8;
 }
+
+/* A failed backend has a keyboard-accessible recovery action, not a dead-end
+   dashboard. Retried requests must not be misrepresented as a live source. */
+.nexus-retry-data {
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid #4384bf;border-radius:9px;background:#155184;
+  color:#f2f8ff;padding:10px 15px;margin:0 0 16px;
+  min-height:42px;font-size:.78rem;font-weight:750;cursor:pointer;
+}
+.nexus-retry-data:hover { background:#1b69a8; }
+.nexus-retry-data:focus-visible { outline:2px solid #83c7ff;outline-offset:3px; }
+.nexus-retry-data[hidden] { display:none!important; }
+body.light .nexus-retry-data { background:#dcefff;color:#12486e;border-color:#8fbee4; }
+body.light .nexus-retry-data:hover { background:#cae5ff; }
