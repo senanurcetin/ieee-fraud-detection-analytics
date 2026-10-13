@@ -1,0 +1,108 @@
+/* NEXUS / Fraud Analytics portfolio system.
+   Retain accessible light report canvas and all genuine interactive BI marks. */
+:root {
+  --bg: #071829;
+  --chrome: #091e35;
+  --nav: #071b30;
+  --blue: #2678d9;
+  --violet: #665ee6;
+  --radius: 12px;
+  --shadow: 0 20px 50px rgba(4,18,37,.12);
+}
+body {
+  background: radial-gradient(ellipse at 88% -5%, rgba(78,168,255,.16), transparent 40%), #071829;
+}
+.sidebar {
+  background: linear-gradient(180deg, #071b30 0%, #08233e 52%, #061829 100%);
+  border-right: 1px solid #285070;
+  box-shadow: 10px 0 35px rgba(0,8,22,.18);
+}
+.brand { gap: 11px; border-bottom-color: rgba(137,185,237,.22); }
+.brand-mark {
+  background: linear-gradient(135deg, #266ab8, #172d68);
+  border: 1px solid rgba(146,181,255,.52);
+  color: #fff;
+  border-radius: 11px;
+  box-shadow: 0 0 0 4px rgba(78,168,255,.075);
+}
+.brand .nexus-fraud-kicker {
+  display: block;
+  color: #8ec8ff;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .14em;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+.brand strong { color: #f4f8ff; font-size: 14px; font-weight: 780; letter-spacing: -.02em; }
+.brand span:not(.nexus-fraud-kicker) { color: #acc5e5; }
+.nav-btn { border-radius: 9px; color: #a9c3e1; }
+.nav-btn:hover { color: #f4f8ff; background: rgba(78,168,255,.11); }
+.nav-btn[aria-current="page"], .nav-btn.active, .nav-btn[aria-selected="true"] {
+  background: linear-gradient(90deg, rgba(41,117,216,.35), rgba(29,76,131,.20));
+  color: #f2f7ff;
+  border-color: rgba(78,168,255,.32);
+  box-shadow: inset 3px 0 #4ea8ff;
+}
+.topbar {
+  padding: 16px 19px;
+  border: 1px solid #2a5077;
+  border-radius: 15px;
+  background: linear-gradient(106deg, #102f4e, #0a213a 65%, #0a1c34);
+  box-shadow: 0 14px 30px rgba(0,6,20,.18);
+}
+.nexus-fraud-eyebrow {
+  color: #8ec8ff;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 790;
+  margin-bottom: 7px;
+}
+.topbar h1 { color: #f3f8ff; font-size: clamp(21px, 2.5vw, 29px); font-weight: 775; letter-spacing: -.04em; }
+.topbar p { color: #b8cfe8; line-height: 1.45; }
+.pill { border-color: rgba(157,190,234,.24); background: rgba(9,32,55,.68); }
+.report-canvas {
+  border: 1px solid #d0dfef;
+  border-radius: 17px;
+  background: linear-gradient(180deg, #f9fbff, #f4f8fc);
+  padding: clamp(14px, 1.7vw, 24px);
+  box-shadow: 0 22px 55px rgba(2,13,32,.15);
+}
+.canvas-head { padding-bottom: 18px; margin-bottom: 18px; }
+.canvas-title h2 { color: #112c4c; font-weight: 830; letter-spacing: -.04em; }
+.canvas-title p { color: #4a6480; }
+.kpi-card, .visual-card, .insight-card {
+  border: 1px solid #d4e2f1;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 9px 25px rgba(24,58,100,.065);
+}
+.kpi-card { border-top-width: 3px; min-height: 122px; }
+.kpi-label { color: #4d6480; letter-spacing: .055em; }
+.kpi-value { color: #102e50; font-weight: 840; letter-spacing: -.045em; }
+.kpi-foot { color: #58718d; }
+.visual-card { padding: clamp(13px,1.4vw,21px); }
+.supporting-visuals { border-color: #d2e1f0; border-radius: 12px; background: #f9fbfe; }
+.supporting-visuals summary { border-left-color: #4ea8ff; color: #183956; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 2px solid #2678d9;
+  outline-offset: 2px;
+}
+@media (max-width: 1240px) {
+  .topbar { margin: 12px; }
+  .sidebar { border-bottom: 1px solid #315475; }
+}
+@media (max-width: 680px) {
+  .topbar { padding: 16px; }
+  .nexus-fraud-eyebrow { font-size: 9px; }
+  .brand .nexus-fraud-kicker { font-size: 9px; }
+  .report-canvas { margin: 0 7px; padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-btn, .kpi-card, .visual-card { animation: none !important; transition: none !important; }
+}
+@media print {
+  .topbar { box-shadow: none; }
+  .report-canvas { box-shadow: none; }
+}
