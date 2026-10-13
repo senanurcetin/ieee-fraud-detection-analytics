@@ -3002,7 +3002,7 @@
         return '<div class="bar-row executive-bar-row" data-tooltip="'+escapeHtml(label+' | ROC-AUC '+fmtPct2(auc)+' | PR-AUC '+fmtPct2(row.average_precision))+'"><span class="bar-label">'+escapeHtml(label)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.max(0,Math.min(100,auc*100))+'%;--accent:'+(index===0?'#2867b1':'#8ab2db')+'"></div></div><strong class="bar-value">'+fmtPct2(auc)+'</strong></div>';
       }).join('');
       target.innerHTML='<div class="registry-grid">'+[
-        registryMetric('Model version',registry.model_version,registry.training_date||'-','#2867b1',true),
+        registryMetric('Model version', registry.model_version,registry.training_date||'-','#2867b1',true),
         registryMetric('Feature scope',featureScope.v_feature_range||'-',fmtInt(featureScope.feature_count)+' features used.','#5c91d1'),
         registryMetric('V features',fmtInt(featureScope.v_features_selected),'Missingness ceiling '+fmtPct2(featureScope.v_missingness_threshold),'#887dca'),
         registryMetric('Rolling AUC',fmtPct2(rolling.roc_auc_mean),'Minimum '+fmtPct2(rolling.roc_auc_min),'#a68acb')
