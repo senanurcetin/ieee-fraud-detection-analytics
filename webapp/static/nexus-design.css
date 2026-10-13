@@ -212,3 +212,15 @@ body.light .nexus-backend-status[data-state="connecting"] { color:#405f7d;backgr
 @media print {
   .sidebar .nav { display:none!important; }
 }
+
+/* Keep interface actions on brand blue; reserve green for true positive status. */
+:root { --teal:#4ea8ff; --blue:#2678d9; --violet:#8f9bff; }
+.top-actions .btn.primary {
+  background:#4ea8ff;
+  border-color:#72baff;
+  color:#071829;
+  box-shadow:0 8px 20px rgba(35,108,188,.19);
+}
+.top-actions .btn.primary:hover { background:#9ad1ff; }
+.nav-btn:focus-visible,.top-actions button:focus-visible { outline:2px solid #4ea8ff;outline-offset:3px; }
+@media print { .top-actions .btn.primary { display:none!important; } }

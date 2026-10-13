@@ -15,6 +15,10 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn("NEXUS / RISK INTELLIGENCE", html)
         self.assertIn("NEXUS / FINANCIAL ANALYTICS", html)
         self.assertIn("Executive Fraud Overview", html)
+        self.assertIn("data:image/svg+xml,", html)
+        self.assertIn("%234ea8ff", html.lower())
+        self.assertIn("%238f9bff", html.lower())
+
         self.assertIn("aria-current=", html)
         self.assertIn("navigationButton.setAttribute('aria-current'", html)
         self.assertIn('id="backend-pill" data-state="connecting"', html)
@@ -34,6 +38,9 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn(".sidebar", css)
         self.assertIn("prefers-reduced-motion", css)
         self.assertIn("scroll-snap-type:x proximity", css)
+        self.assertIn("--teal:#4ea8ff", css)
+        self.assertIn(".top-actions .btn.primary", css)
+
         self.assertIn("flex-flow:row nowrap", css)
         self.assertIn("overflow-x:auto", css)
         self.assertIn("@media(max-width:820px)", css)
