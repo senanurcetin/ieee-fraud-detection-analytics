@@ -4,7 +4,7 @@
 
 ![Fraud Risk Intelligence executive dashboard: portfolio KPIs, risk bands and threshold decision visuals](docs/assets/web_dashboard_executive_overview.png)
 
-> **Actual application screenshot:** a static capture of the project's dashboard, not a generated concept or a live data feed. Dataset scope, model validation and threshold assumptions are documented below.
+> **Historical application screenshot:** this is a genuine capture of an earlier dashboard revision, **not** a capture of the current draft NEXUS redesign or a live data feed. A replacement screenshot requires a successful real-browser run, visual review and verification of the deployed revision. Dataset scope, model validation and threshold assumptions are documented below.
 
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
@@ -364,6 +364,20 @@ Top proxy lift: 3.37x for "Address missing" segment. Product × proxy heatmap: *
 ![Mobile overview](docs/assets/web_dashboard_mobile_overview.png)
 
 Responsive layout for executive review on mobile. Portfolio KPIs and risk band distribution accessible without desktop.
+
+### Opt-in real-browser dashboard acceptance (local, no hosted CI)
+
+The premium NEXUS dashboard design remains a **draft** until it is inspected in a real browser against actual report responses. The optional [browser acceptance suite](tests/browser/test_fraud_dashboard.py) checks nine-page navigation, the dark/light control, 375px overflow, the visible error/retry state, and uncaught JavaScript exceptions. A live reporting backend is required for the non-error tests; this suite does **not** substitute mocked values for successful business metrics.
+
+Run FastAPI locally with its documented reporting data configuration, install Playwright and Chromium, then execute:
+
+```bash
+python -m pip install playwright
+python -m playwright install chromium
+FRAUD_E2E_BASE_URL=http://127.0.0.1:8000 E2E_SCREENSHOT_DIR=artifacts/dashboard-browser python -m unittest discover -s tests/browser -p 'test_fraud_dashboard.py' -v
+```
+
+Review the two actual 1440px/375px captures before changing portfolio imagery. This opt-in suite is **not part of the default pytest testpath or hosted CI**, and no browser execution, screenshot approval, preview readiness, or deployment is claimed by adding it.
 
 ## Quality Gates
 

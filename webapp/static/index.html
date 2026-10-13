@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Fraud Analytics Report</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1320'/%3E%3Cpath d='M12 42h40v8H12zM16 30h9v9h-9zM28 20h9v19h-9zM40 12h9v27h-9z' fill='%2318a999'/%3E%3Cpath d='M12 16l10 7 10-12 20 15' fill='none' stroke='%23e5484d' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23071829%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%2254%22%20height%3D%2254%22%20rx%3D%2211%22%20fill%3D%22%23153654%22%20stroke%3D%22%234ea8ff%22%20stroke-width%3D%222%22%2F%3E%3Ctext%20x%3D%2232%22%20y%3D%2241%22%20text-anchor%3D%22middle%22%20font-size%3D%2224%22%20font-family%3D%22Arial%2Csans-serif%22%20font-weight%3D%22800%22%20letter-spacing%3D%22-1%22%20fill%3D%22%23eaf4ff%22%3ENX%3C%2Ftext%3E%3Cpath%20d%3D%22M16%2049h32%22%20stroke%3D%22%238f9bff%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E">
   <style>
     :root {
       color-scheme: dark;
@@ -966,15 +966,17 @@
       .visual-card, .kpi-card, .insight-card { break-inside: avoid; box-shadow: none; }
     }
   </style>
+  <link rel="stylesheet" href="/static/nexus-design.css">
 </head>
 <body>
   <div class="app">
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-mark">FR</div>
+        <div class="brand-mark" aria-hidden="true">NX</div>
         <div>
+          <span class="nexus-fraud-kicker">NEXUS / RISK INTELLIGENCE</span>
           <strong>Fraud Analytics</strong>
-          <span>BI-style report suite</span>
+          <span>Executive risk control center</span>
         </div>
       </div>
       <nav class="nav" id="page-nav" aria-label="Report pages"></nav>
@@ -983,11 +985,12 @@
     <main class="main">
       <header class="topbar">
         <div>
+          <div class="nexus-fraud-eyebrow">NEXUS / FINANCIAL ANALYTICS · 04</div>
           <h1>Fraud Analytics Dashboard</h1>
           <p>Interactive web report built from governed fraud reporting marts.</p>
         </div>
         <div class="top-actions">
-          <span class="pill live" id="backend-pill">Connecting</span>
+          <span class="pill nexus-backend-status" id="backend-pill" data-state="connecting" role="status" aria-live="polite">CONNECTING TO DATA SOURCE</span>
           <span class="pill" id="dataset-pill">Dataset pending</span>
           <span class="pill" id="freshness-pill">Freshness pending</span>
           <button class="btn" id="theme-btn" type="button">Light Mode</button>
@@ -1004,7 +1007,8 @@
           </div>
         </div>
 
-        <div class="state hidden" id="state"></div>
+        <div class="state hidden" id="state" data-state="loading" role="status" aria-live="polite"></div>
+        <button class="nexus-retry-data hidden" id="retry-data-btn" type="button" hidden>Retry data connection</button>
 
         <div class="slicer-grid">
           <aside class="filter-rail" aria-label="Report filters">
@@ -1072,7 +1076,7 @@
     const pf2 = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const cf = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
     const df = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const palette = ['#d92d3a', '#c98012', '#2563eb', '#18a999', '#7c3aed', '#0f766e', '#475569'];
+    const palette = ['#f37a88', '#f6b95f', '#4ea8ff', '#8f9bff', '#487fd8', '#43c99d', '#647c96'];
 
     const pages = [
       { id: 'overview', title: 'Executive Fraud Overview', short: 'Portfolio exposure', purpose: 'What is the total fraud exposure and where is fraud concentrated?' },
@@ -1162,7 +1166,7 @@
     };
 
     document.getElementById('page-nav').innerHTML = pages.map(page => `
-      <button class="nav-btn ${page.id === state.page ? 'active' : ''}" data-page="${page.id}" type="button">
+      <button class="nav-btn ${page.id === state.page ? 'active' : ''}" data-page="${page.id}" aria-current="${page.id === state.page ? 'page' : 'false'}" type="button">
         ${page.title}<span>${page.short}</span>
       </button>
     `).join('');
@@ -1219,8 +1223,14 @@
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
 
     loadAll();
+    document.getElementById('retry-data-btn').addEventListener('click', loadAll);
 
     async function loadAll() {
+      const retryButton = document.getElementById('retry-data-btn');
+      retryButton.hidden = true;
+      const sourceStatus = document.getElementById('backend-pill');
+      sourceStatus.dataset.state = 'connecting';
+      sourceStatus.textContent = 'CONNECTING TO DATA SOURCE';
       showState('Loading governed reporting data.');
       try {
         const [dashboard, meta, tx, registry] = await Promise.all([
@@ -1240,7 +1250,13 @@
         hideState();
         render();
       } catch (error) {
+        const sourceStatus = document.getElementById('backend-pill');
+        if (sourceStatus) {
+          sourceStatus.dataset.state = 'unavailable';
+          sourceStatus.textContent = 'REPORT DATA UNAVAILABLE';
+        }
         showState(error.message || 'Dashboard data could not be loaded.', true);
+        retryButton.hidden = false;
       }
     }
 
@@ -1270,17 +1286,27 @@
 
     function updateStatus() {
       const meta = state.dashboard?.meta || {};
-      const backendLabel = { duckdb: 'DuckDB local', snapshot: 'BigQuery snapshot' };
-      document.getElementById('backend-pill').textContent = backendLabel[meta.backend] || 'BigQuery live';
-      document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'fraud_project_reporting');
-      const freshLabel = meta.backend === 'snapshot' ? 'Built: ' : 'Fresh: ';
-      document.getElementById('freshness-pill').textContent = freshLabel + new Date(meta.refreshed_at || Date.now()).toLocaleString('en-US');
+      const backendLabel = { duckdb: 'DuckDB local', snapshot: 'BigQuery snapshot', bigquery: 'BigQuery' };
+      const backendPill = document.getElementById('backend-pill');
+      backendPill.dataset.state = 'connected';
+      backendPill.textContent = backendLabel[meta.backend] || 'Source backend unspecified';
+      document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'not supplied');
+      const sourceTime = meta.refreshed_at ? new Date(meta.refreshed_at) : null;
+      const validSourceTime = sourceTime && Number.isFinite(sourceTime.getTime());
+      const freshLabel = meta.backend === 'snapshot' ? 'Built: ' : 'Source timestamp: ';
+      document.getElementById('freshness-pill').textContent = validSourceTime
+        ? freshLabel + sourceTime.toLocaleString('en-US')
+        : 'Source timestamp unavailable';
     }
 
     function render() {
       if (!state.dashboard) return;
       pages.forEach(page => {
-        document.querySelector('[data-page="' + page.id + '"]').classList.toggle('active', page.id === state.page);
+        const navigationButton = document.querySelector('[data-page="' + page.id + '"]');
+        if (!navigationButton) return;
+        const isCurrentPage = page.id === state.page;
+        navigationButton.classList.toggle('active', isCurrentPage);
+        navigationButton.setAttribute('aria-current', isCurrentPage ? 'page' : 'false');
       });
       const page = pages.find(item => item.id === state.page);
       document.getElementById('page-title').textContent = page.title;
@@ -3078,9 +3104,13 @@
     function showState(message, error) {
       const target = document.getElementById('state');
       target.textContent = message;
-      target.className = error ? 'state' : 'state';
+      target.className = error ? 'state state-error' : 'state state-loading';
+      target.dataset.state = error ? 'error' : 'loading';
     }
-    function hideState() { document.getElementById('state').className = 'state hidden'; }
+    function hideState() {
+      document.getElementById('state').className = 'state hidden';
+      document.getElementById('retry-data-btn').hidden = true;
+    }
     function unique(values) { return [...new Set(values.filter(value => value !== null && value !== undefined && value !== ''))].sort(); }
     function num(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
     function sum(rows, key) { return (rows || []).reduce((acc, row) => acc + num(typeof key === 'function' ? key(row) : row[key]), 0); }
