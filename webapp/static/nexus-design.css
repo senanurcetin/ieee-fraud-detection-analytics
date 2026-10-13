@@ -955,3 +955,16 @@ body.light .supporting-visuals summary span {color:#637d96;}
   .sidebar .nav::before {display:none;}
   .sidebar .nav-btn {padding-left:40px;}
 }
+
+/* Balanced threshold operating-point gallery: avoid an orphan sixth metric. */
+.report-canvas .visual-card #threshold-summary .kpi-row {
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:11px;
+  margin-top:15px;
+}
+.report-canvas .visual-card #threshold-summary .kpi-card {min-height:118px;}
+.report-canvas .visual-card #threshold-summary .kpi-value {font-size:clamp(19px,1.75vw,28px);}
+@media(max-width:760px){
+ .report-canvas .visual-card #threshold-summary .kpi-row {grid-template-columns:repeat(2,minmax(0,1fr));}
+ .report-canvas .visual-card #threshold-summary .kpi-card {min-height:122px;}
+}
