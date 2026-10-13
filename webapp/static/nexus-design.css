@@ -927,3 +927,31 @@ body.light .supporting-visuals summary span {color:#637d96;}
  .donut-layout svg{max-height:230px;}
  .report-canvas .visual-card .kpi-card{min-height:105px;}
 }
+
+/* Numbered analytical workspaces make navigation scannable at a glance. */
+.sidebar .nav {counter-reset:nexus-workspace;}
+.sidebar .nav::before {
+  content:"ANALYSIS WORKSPACES  /  09";
+  color:#769fc7;
+  font-size:9px;
+  letter-spacing:.155em;
+  font-weight:790;
+  margin:0 0 8px 13px;
+}
+.sidebar .nav-btn {counter-increment:nexus-workspace;padding-left:43px;}
+.sidebar .nav-btn::before {
+  content:counter(nexus-workspace,decimal-leading-zero);
+  position:absolute;top:15px;left:12px;
+  font-size:10px;font-weight:760;
+  font-variant-numeric:tabular-nums;
+  color:#6c97c1;
+  line-height:1.2;
+}
+.sidebar .nav-btn[aria-current="page"]::before {color:#b6d7ff;}
+@media(max-width:1240px) {
+  .sidebar .nav::before {grid-column:1/-1;padding-top:5px;}
+}
+@media(max-width:820px) {
+  .sidebar .nav::before {display:none;}
+  .sidebar .nav-btn {padding-left:40px;}
+}
