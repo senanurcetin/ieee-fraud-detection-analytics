@@ -163,3 +163,14 @@ body.light .report-canvas { box-shadow:0 14px 32px rgba(25,62,110,.09); }
 @media(max-width:1240px) {
   body.light .sidebar { border-bottom:1px solid #c9ddeb; }
 }
+
+/* A visual connection badge must never call an unavailable report "LIVE". */
+.nexus-backend-status { display:inline-flex;align-items:center;gap:7px;font-weight:760;letter-spacing:.035em; }
+.nexus-backend-status::before { content:"";width:7px;height:7px;border-radius:50%;background:#9fb5ca; }
+.nexus-backend-status[data-state="connected"] { border-color:rgba(67,201,157,.44);color:#8de7c0;background:rgba(35,108,86,.15); }
+.nexus-backend-status[data-state="connected"]::before { background:#43c99d; }
+.nexus-backend-status[data-state="unavailable"] { border-color:rgba(246,185,95,.44);color:#f9ce8d;background:rgba(133,95,41,.14); }
+.nexus-backend-status[data-state="unavailable"]::before { background:#f6b95f; }
+body.light .nexus-backend-status[data-state="connected"] { color:#176044;background:#dff6eb;border-color:#a2d9c1; }
+body.light .nexus-backend-status[data-state="unavailable"] { color:#8c5418;background:#fff2d9;border-color:#e4c18a; }
+body.light .nexus-backend-status[data-state="connecting"] { color:#405f7d;background:#e8f3ff;border-color:#b5d4ef; }

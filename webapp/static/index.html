@@ -990,7 +990,7 @@
           <p>Interactive web report built from governed fraud reporting marts.</p>
         </div>
         <div class="top-actions">
-          <span class="pill live" id="backend-pill">Connecting</span>
+          <span class="pill nexus-backend-status" id="backend-pill" data-state="connecting" role="status" aria-live="polite">CONNECTING TO DATA SOURCE</span>
           <span class="pill" id="dataset-pill">Dataset pending</span>
           <span class="pill" id="freshness-pill">Freshness pending</span>
           <button class="btn" id="theme-btn" type="button">Light Mode</button>
@@ -1243,6 +1243,11 @@
         hideState();
         render();
       } catch (error) {
+        const sourceStatus = document.getElementById('backend-pill');
+        if (sourceStatus) {
+          sourceStatus.dataset.state = 'unavailable';
+          sourceStatus.textContent = 'REPORT DATA UNAVAILABLE';
+        }
         showState(error.message || 'Dashboard data could not be loaded.', true);
       }
     }
@@ -1273,11 +1278,17 @@
 
     function updateStatus() {
       const meta = state.dashboard?.meta || {};
-      const backendLabel = { duckdb: 'DuckDB local', snapshot: 'BigQuery snapshot' };
-      document.getElementById('backend-pill').textContent = backendLabel[meta.backend] || 'BigQuery live';
-      document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'fraud_project_reporting');
-      const freshLabel = meta.backend === 'snapshot' ? 'Built: ' : 'Fresh: ';
-      document.getElementById('freshness-pill').textContent = freshLabel + new Date(meta.refreshed_at || Date.now()).toLocaleString('en-US');
+      const backendLabel = { duckdb: 'DuckDB local', snapshot: 'BigQuery snapshot', bigquery: 'BigQuery' };
+      const backendPill = document.getElementById('backend-pill');
+      backendPill.dataset.state = 'connected';
+      backendPill.textContent = backendLabel[meta.backend] || 'Source backend unspecified';
+      document.getElementById('dataset-pill').textContent = 'Dataset: ' + (meta.dataset || 'not supplied');
+      const sourceTime = meta.refreshed_at ? new Date(meta.refreshed_at) : null;
+      const validSourceTime = sourceTime && Number.isFinite(sourceTime.getTime());
+      const freshLabel = meta.backend === 'snapshot' ? 'Built: ' : 'Source timestamp: ';
+      document.getElementById('freshness-pill').textContent = validSourceTime
+        ? freshLabel + sourceTime.toLocaleString('en-US')
+        : 'Source timestamp unavailable';
     }
 
     function render() {
