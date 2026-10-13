@@ -854,3 +854,40 @@ body.light .supporting-visuals summary span {color:#637d96;}
 @media(prefers-reduced-motion:reduce){
  .report-canvas .heatmap-editorial .heat-observed {transition:none;}
 }
+
+/* Model evaluation studio: axis-aware distinct ROC/PR panels and truthful confusion matrix. */
+.threshold-readout {display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:14px 17px;border-radius:11px;border:1px solid #d8e5f3;background:#edf5ff;color:#244767;}
+.threshold-readout strong {font-size:12px;letter-spacing:.07em;}
+.threshold-readout span {font-size:10px;color:#617c99;max-width:440px;line-height:1.5;}
+.chart-series-legend {display:flex;flex-wrap:wrap;gap:12px 22px;padding:16px 0 8px;color:#546d88;font-size:11px;}
+.chart-series-legend span {display:inline-flex;align-items:center;gap:7px;}
+.chart-series-legend i {display:inline-block;width:17px;height:4px;border-radius:3px;}
+.chart-series-legend strong {font-variant-numeric:tabular-nums;color:#1d405f;}
+.curve-panels {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+.curve-panel {min-width:0;padding:13px;border:1px solid #dfe8f3;border-radius:12px;background:#fbfdff;}
+.curve-panel-head {display:flex;flex-wrap:wrap;gap:7px;align-items:baseline;justify-content:space-between;padding:0 0 9px;margin-bottom:7px;border-bottom:1px solid #e5edf5;}
+.curve-panel-head strong {font-size:12px;color:#1d4163;}
+.curve-panel-head span {font-size:11px;color:#487cae;font-weight:760;font-variant-numeric:tabular-nums;}
+.curve-panel svg {height:auto;width:100%;max-height:280px;}
+.confusion-canvas {max-width:740px;margin:auto;padding:14px;border-radius:12px;background:#f3f8ff;border:1px solid #dce8f4;}
+.confusion-axis {color:#6c819a;font-size:9px;font-weight:800;letter-spacing:.15em;text-align:center;margin-bottom:13px;}
+.confusion-labels {display:grid;grid-template-columns:110px repeat(2,minmax(0,1fr));gap:7px;margin-bottom:7px;text-align:center;font-size:10px;color:#3c6180;font-weight:740;}
+.confusion-matrix {display:grid;grid-template-columns:110px repeat(2,minmax(0,1fr));gap:7px;align-items:stretch;}
+.confusion-row-label {display:flex;align-items:center;justify-content:center;text-align:center;padding:9px;color:#4e6985;font-size:11px;font-weight:770;}
+.confusion-tile {min-height:119px;display:flex;flex-direction:column;justify-content:center;gap:7px;border:1px solid #b9d5e8;border-radius:10px;padding:14px 11px;background:linear-gradient(135deg,#e4f3ff,#d7e9ff);}
+.confusion-tile span {font-size:9px;letter-spacing:.10em;font-weight:790;color:#447095;}
+.confusion-tile strong {font-size:clamp(18px,1.8vw,31px);font-weight:790;letter-spacing:-.05em;color:#163f67;font-variant-numeric:tabular-nums;}
+.confusion-tile small {font-size:10px;color:#587d9f;}
+.confusion-tile.false-negative {background:#fff0f1;border-color:#efbfc8;}
+.confusion-tile.false-negative span,.confusion-tile.false-negative strong {color:#a14356;}
+.confusion-tile.false-positive {background:#fff7ee;border-color:#e8ccaa;}
+.confusion-tile.false-positive span,.confusion-tile.false-positive strong {color:#94613b;}
+.confusion-tile.true-negative {background:#edf2fb;border-color:#cbd9ed;}
+.confusion-canvas>p {font-size:10px;color:#69839c;margin:14px 0 0;line-height:1.6;}
+@media(max-width:720px) {
+  .curve-panels {grid-template-columns:1fr;}
+  .confusion-labels,.confusion-matrix{grid-template-columns:72px repeat(2,minmax(0,1fr));gap:5px;}
+  .confusion-tile{padding:10px 8px;min-height:105px;}
+  .confusion-row-label{font-size:9px;padding:4px;}
+  .confusion-tile strong{font-size:21px;}
+}
