@@ -1321,6 +1321,7 @@
       document.getElementById('page-purpose').textContent = page.purpose;
       renderActiveFilters();
       document.body.classList.toggle('nexus-studio-overview', state.page === 'overview' && !state.drill);
+      document.body.classList.toggle('nexus-studio-trend', state.page === 'trend' && !state.drill);
       const target = document.getElementById('report-body');
       if (state.drill) {
         document.getElementById('page-title').textContent = 'Segment Drill-through';
