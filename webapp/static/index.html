@@ -1219,6 +1219,13 @@
       const chart = event.target.closest('.visual-card[data-chart-title]');
       if (chart) openChartDrillDrawer(readChartDataset(chart));
     });
+    document.addEventListener('keydown', event => {
+      const target = event.target.closest('.risk-band-card[role="button"]');
+      if (target && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        target.click();
+      }
+    });
     document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
 
@@ -2932,43 +2939,44 @@
     }
 
     function thresholdCurve(id) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const rows = thresholdRows();
-      if (!rows.length) { target.innerHTML = empty('No threshold data available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
-      const x = index => padLeft + index / Math.max(rows.length - 1, 1) * (w - padLeft - padRight);
-      const y = value => h - padBottom - num(value) * (h - padTop - padBottom);
-      const capture = rows.map((row, index) => x(index) + ',' + y(row.fraud_capture_rate)).join(' ');
-      const precision = rows.map((row, index) => x(index) + ',' + y(row.precision_rate)).join(' ');
-      const workload = rows.map((row, index) => x(index) + ',' + y(row.workload_share)).join(' ');
-      const selectedX = x(state.selectedThreshold);
-      const yTicks = yAxisSvg(axisTicks(1), y, padLeft, w - padRight, fmtPct);
-      const xTicks = indexedTicks(rows, 'score_threshold', 5).map(tick => '<text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtScore(rows[tick.index].score_threshold) + '</text>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><polyline points="' + capture + '" fill="none" stroke="#18a999" stroke-width="3"/><polyline points="' + precision + '" fill="none" stroke="#c98012" stroke-width="3"/><polyline points="' + workload + '" fill="none" stroke="#2563eb" stroke-width="3"/><line x1="' + selectedX + '" y1="' + padTop + '" x2="' + selectedX + '" y2="' + (h - padBottom) + '" stroke="#d92d3a" stroke-width="2" stroke-dasharray="5 5"/>' + xTicks + '<text x="' + padLeft + '" y="18" fill="#18a999" font-size="12">Validation capture</text><text x="' + (padLeft + 126) + '" y="18" fill="#c98012" font-size="12">Precision</text><text x="' + (padLeft + 218) + '" y="18" fill="#2563eb" font-size="12">Workload</text></svg>';
+      const target=document.getElementById(id);
+      if(!target)return;
+      const rows=thresholdRows();
+      if(!rows.length){target.innerHTML=empty('No threshold data available.');return;}
+      const w=760,h=310,padLeft=59,padRight=25,padTop=35,padBottom=46;
+      const x=i=>padLeft+i/Math.max(rows.length-1,1)*(w-padLeft-padRight);
+      const y=v=>h-padBottom-Math.max(0,Math.min(1,num(v)))*(h-padTop-padBottom);
+      const metrics=[
+        {key:'fraud_capture_rate',label:'Recall',color:'#2474b7'},
+        {key:'precision_rate',label:'Precision',color:'#895fc5'},
+        {key:'workload_share',label:'Review share',color:'#dc9269'}
+      ];
+      const selected=Math.max(0,Math.min(rows.length-1,state.selectedThreshold));
+      const grid=yAxisSvg(axisTicks(1),y,padLeft,w-padRight,fmtPct);
+      const xTicks=indexedTicks(rows,'score_threshold',5).map(t=>'<text class="svg-axis" x="'+x(t.index)+'" y="'+(h-13)+'" text-anchor="middle">'+fmtScore(rows[t.index].score_threshold)+'</text>').join('');
+      const paths=metrics.map(m=>'<polyline points="'+rows.map((r,i)=>x(i)+','+y(r[m.key])).join(' ')+'" fill="none" stroke="'+m.color+'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(selected)+'" cy="'+y(rows[selected][m.key])+'" r="5.5" stroke="#fff" stroke-width="2" fill="'+m.color+'"/>').join('');
+      const legend=metrics.map(m=>'<span><i style="background:'+m.color+'"></i>'+m.label+' · <strong>'+fmtPct(rows[selected][m.key])+'</strong></span>').join('');
+      target.innerHTML='<div class="threshold-readout"><strong>SELECTED SCORE '+fmtScore(rows[selected].score_threshold)+'</strong><span>Holdout validation · thresholds are operating points, not calibrated probabilities</span></div><div class="chart-series-legend">'+legend+'</div><div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Validation recall, precision, and workload share by scoring threshold">'+grid+'<rect x="'+(x(selected)-8)+'" y="'+padTop+'" width="16" height="'+(h-padTop-padBottom)+'" fill="#d5e8fc" opacity=".4"/>'+paths+'<line x1="'+x(selected)+'" y1="'+padTop+'" x2="'+x(selected)+'" y2="'+(h-padBottom)+'" stroke="#386b9a" stroke-width="1.3" stroke-dasharray="5 5"/>'+xTicks+'<text class="svg-label" x="'+padLeft+'" y="20">Share of holdout</text></svg></div>';
     }
+
     function modelReferenceCurves(id) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const rows = thresholdRows();
-      if (!rows.length) { target.innerHTML = empty('No model curve data available.'); return; }
-      const registry = state.registry || (state.meta && state.meta.model_registry) || {};
-      const holdout = registry.holdout_metrics || {};
-      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 38, padBottom = 46;
-      const x = value => padLeft + num(value) * (w - padLeft - padRight);
-      const y = value => h - padBottom - num(value) * (h - padTop - padBottom);
-      const roc = rows.map(row => {
-        const recall = num(row.fraud_capture_rate);
-        const fpr = num(row.false_positive_rate) || num(row.workload_share) * (1 - num(row.precision_rate));
-        return x(Math.min(1, fpr)) + ',' + y(recall);
-      }).join(' ');
-      const pr = rows.map(row => {
-        const recall = num(row.fraud_capture_rate);
-        const precision = num(row.precision_rate);
-        return x(recall) + ',' + y(precision);
-      }).join(' ');
-      const ticks = axisTicks(1).map(value => '<g><line class="svg-grid" x1="' + x(value) + '" y1="' + padTop + '" x2="' + x(value) + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + x(value) + '" y="' + (h - 13) + '" text-anchor="middle">' + fmtPct(value) + '</text><text class="svg-axis" x="' + (padLeft - 8) + '" y="' + (y(value) + 4) + '" text-anchor="end">' + fmtPct(value) + '</text></g>').join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '"><rect x="' + padLeft + '" y="' + padTop + '" width="' + (w - padLeft - padRight) + '" height="' + (h - padTop - padBottom) + '" fill="#f8fafc" stroke="#d8e0ea"/>' + ticks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + padTop + '" stroke="#cbd5e1" stroke-dasharray="4 5"/><polyline points="' + roc + '" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/><polyline points="' + pr + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round"/><text x="' + padLeft + '" y="18" fill="#2563eb" font-size="12">ROC-AUC ' + fmtScore(holdout.roc_auc || .9139) + '</text><text x="' + (padLeft + 115) + '" y="18" fill="#d92d3a" font-size="12">PR-AUC ' + fmtScore(holdout.average_precision || .5370) + '</text><text x="' + (w - padRight) + '" y="' + (h - 10) + '" text-anchor="end" fill="#64748b" font-size="11">Recall / false positive tradeoff</text></svg>';
+      const target=document.getElementById(id);
+      if(!target)return;
+      const rows=thresholdRows();
+      if(!rows.length){target.innerHTML=empty('No model curve data available.');return;}
+      const registry=state.registry||(state.meta&&state.meta.model_registry)||{};
+      const holdout=registry.holdout_metrics||{};
+      const w=480,h=340,pad=56,top=39,right=28,bottom=48;
+      const x=v=>pad+Math.max(0,Math.min(1,num(v)))*(w-pad-right);
+      const y=v=>h-bottom-Math.max(0,Math.min(1,num(v)))*(h-top-bottom);
+      const ticks=axisTicks(1).map(v=>'<g><line class="svg-grid" x1="'+x(v)+'" y1="'+top+'" x2="'+x(v)+'" y2="'+(h-bottom)+'"/><line class="svg-grid" x1="'+pad+'" y1="'+y(v)+'" x2="'+(w-right)+'" y2="'+y(v)+'"/><text class="svg-axis" x="'+x(v)+'" y="'+(h-19)+'" text-anchor="middle">'+fmtPct(v)+'</text><text class="svg-axis" x="'+(pad-9)+'" y="'+(y(v)+4)+'" text-anchor="end">'+fmtPct(v)+'</text></g>').join('');
+      const rocRows=rows.map(r=>({x:r.false_positive_rate!==undefined?num(r.false_positive_rate):num(r.false_positive_count)/Math.max(validationTotalRows()-validationFraudTotal(),1),y:num(r.fraud_capture_rate)})).sort((a,b)=>a.x-b.x);
+      const prRows=rows.map(r=>({x:num(r.fraud_capture_rate),y:num(r.precision_rate)})).sort((a,b)=>a.x-b.x);
+      const panels=[
+        {name:'ROC curve',axis:'FALSE POSITIVE RATE',yAxis:'RECALL',color:'#276fbd',points:rocRows,metric:holdout.roc_auc,metricLabel:'ROC-AUC',baseline:'<line x1="'+x(0)+'" y1="'+y(0)+'" x2="'+x(1)+'" y2="'+y(1)+'" stroke="#b9cadc" stroke-dasharray="6 5"/>'},
+        {name:'Precision–recall',axis:'RECALL',yAxis:'PRECISION',color:'#9366c6',points:prRows,metric:holdout.average_precision,metricLabel:'PR-AUC',baseline:''}
+      ];
+      target.innerHTML='<div class="curve-panels">'+panels.map(p=>'<div class="curve-panel"><div class="curve-panel-head"><strong>'+p.name+'</strong><span>'+p.metricLabel+' '+(p.metric===undefined||p.metric===null?'N/A':fmtScore(p.metric))+'</span></div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+p.name+' computed from validation threshold rows">'+ticks+p.baseline+'<polyline points="'+p.points.map(r=>x(r.x)+','+y(r.y)).join(' ')+'" fill="none" stroke="'+p.color+'" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="'+pad+'" y="23">'+p.yAxis+'</text><text class="svg-axis" x="'+(w-right)+'" y="'+(h-9)+'" text-anchor="end">'+p.axis+'</text></svg></div>').join('')+'</div>';
     }
 
     function modelRegistryCard(id) {
@@ -3015,15 +3023,16 @@
     }
 
     function confusionMatrix(id) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const row = selectedThreshold();
-      const tp = num(row.captured_fraud_count);
-      const fp = num(row.false_positive_count) || Math.max(num(row.review_count) - tp, 0);
-      const fn = num(row.false_negative_count) || Math.max(validationFraudTotal() - tp, 0);
-      const total = validationTotalRows();
-      const tn = Math.max(total - tp - fp - fn, 0);
-      target.innerHTML = '<div class="heatmap"><div class="heat-row" style="--cols:2"><div class="heat-cell head"></div><div class="heat-cell head">Predicted fraud</div><div class="heat-cell head">Predicted normal</div></div><div class="heat-row" style="--cols:2"><div class="heat-cell head">Actual fraud</div><div class="heat-cell" style="background:rgba(24,169,153,.24)"><span class="heat-value">' + fmtInt(tp) + '</span>TP</div><div class="heat-cell" style="background:rgba(217,45,58,.22)"><span class="heat-value">' + fmtInt(fn) + '</span>FN</div></div><div class="heat-row" style="--cols:2"><div class="heat-cell head">Actual normal</div><div class="heat-cell" style="background:rgba(201,128,18,.20)"><span class="heat-value">' + fmtInt(fp) + '</span>FP</div><div class="heat-cell" style="background:rgba(37,99,235,.16)"><span class="heat-value">' + fmtInt(tn) + '</span>TN</div></div></div>';
+      const target=document.getElementById(id);
+      if(!target)return;
+      const row=selectedThreshold();
+      const tp=num(row.captured_fraud_count);
+      const fp=row.false_positive_count!==undefined?num(row.false_positive_count):Math.max(num(row.review_count)-tp,0);
+      const fn=row.false_negative_count!==undefined?num(row.false_negative_count):Math.max(validationFraudTotal()-tp,0);
+      const total=validationTotalRows();
+      const tn=Math.max(total-tp-fp-fn,0);
+      const tile=(name,count,caption,tone)=>'<div class="confusion-tile '+tone+'"><span>'+name+'</span><strong>'+fmtInt(count)+'</strong><small>'+caption+'</small></div>';
+      target.innerHTML='<div class="confusion-canvas"><div class="confusion-axis">HOLDOUT PREDICTION</div><div class="confusion-labels"><span></span><span>Flagged fraud</span><span>Cleared normal</span></div><div class="confusion-matrix"><div class="confusion-row-label">Actual fraud</div>'+tile('TRUE POSITIVE',tp,'Fraud caught','true-positive')+tile('FALSE NEGATIVE',fn,'Fraud missed','false-negative')+'<div class="confusion-row-label">Actual normal</div>'+tile('FALSE POSITIVE',fp,'Unnecessary reviews','false-positive')+tile('TRUE NEGATIVE',tn,'Correctly cleared','true-negative')+'</div><p>Counts reflect the selected validation threshold; they are not production decisions.</p></div>';
     }
 
     function waterfallChart(id, rows) {
