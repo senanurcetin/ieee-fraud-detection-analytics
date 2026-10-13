@@ -94,3 +94,28 @@ body.nexus-studio-overview .report-canvas {padding-top:clamp(16px,1.5vw,26px)}
  .studio-overview-analysis .studio-chart{padding:17px!important}
  .studio-overview-companion .risk-band-card{padding:10px}
 }
+
+/* A second page archetype: investigative time series, not a smaller executive grid. */
+body.nexus-studio-trend .canvas-head{display:none}
+body.nexus-studio-trend .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.studio-trend-brief{display:grid;grid-template-columns:minmax(0,1.32fr) minmax(230px,.68fr);gap:29px;align-items:center;padding:clamp(25px,3vw,46px);border:1px solid #35547c;border-radius:18px;background:linear-gradient(115deg,#102f50,#0a2341 70%,#111d3b)}
+.studio-trend-kicker{font-size:10px;font-weight:790;letter-spacing:.16em;color:#a6c8f2}
+.studio-trend-brief h3{font-size:clamp(33px,3.5vw,53px);font-weight:750;line-height:1.03;letter-spacing:-.055em;color:#f5faff;margin:18px 0 13px}
+.studio-trend-brief h3 em{font-style:normal;color:#b5b0ff}
+.studio-trend-brief p{color:#b3c9e4;font-size:12px;line-height:1.72;max-width:640px}
+.studio-trend-context{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px 21px;color:#91b4d9;font-size:10px}
+.studio-trend-context span:before{content:"";display:inline-block;width:6px;height:6px;background:#86bfff;border-radius:50%;vertical-align:1px;margin-right:7px}
+.studio-trend-focus{padding:23px 22px;border:1px solid #38648d;border-radius:15px;background:rgba(34,77,127,.33);display:flex;flex-direction:column;gap:12px}
+.studio-trend-focus>span{font-size:10px;font-weight:780;letter-spacing:.13em;color:#add0f7}
+.studio-trend-focus>strong{font-size:clamp(47px,5.2vw,76px);font-weight:740;letter-spacing:-.07em;color:#f8fbff;line-height:1;font-variant-numeric:tabular-nums}
+.studio-trend-focus>small{font-size:11px;color:#abc5df;line-height:1.6}
+.studio-trend-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.studio-trend-metrics .kpi-card{margin:0;min-height:127px}
+.studio-trend-evidence{display:grid;grid-template-columns:minmax(0,1.53fr) minmax(230px,.72fr);gap:15px;align-items:stretch}
+.studio-trend-evidence .visual-card{height:100%;min-height:465px}
+.studio-trend-evidence .visual-card .visual-body{min-height:330px}
+.studio-trend-secondary .executive-bar-row{grid-template-columns:minmax(77px,35%) minmax(0,1fr) auto}
+.studio-trend-takeaways .insight-row{margin:0}
+@media(max-width:1180px){.studio-trend-evidence{grid-template-columns:1fr}.studio-trend-evidence .visual-card{min-height:300px}}
+@media(max-width:850px){.studio-trend-brief{grid-template-columns:1fr}.studio-trend-focus{max-width:460px}.studio-trend-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.studio-trend-brief{padding:21px 16px}.studio-trend-metrics{grid-template-columns:1fr}.studio-trend-brief h3{font-size:33px}}
