@@ -826,3 +826,31 @@ body.light .supporting-visuals summary span {color:#637d96;}
  .waterfall-replacement .bar-row{grid-template-columns:minmax(89px,37%) minmax(0,1fr) 48px;}
 }
 @media(prefers-reduced-motion:reduce){.risk-band-card{transition:none;}.risk-band-card:hover{transform:none;}}
+
+/* Accessible quantified matrix: absence is not a fabricated zero. */
+.report-canvas .heatmap-editorial {overflow-x:auto;overflow-y:hidden;background:#f9fbff;padding:10px;border-radius:13px;}
+.report-canvas .heatmap-editorial .heat-row {gap:5px;}
+.report-canvas .heatmap-editorial .heat-cell {min-height:63px;border-radius:7px;border:1px solid rgba(75,112,151,.08);}
+.report-canvas .heatmap-editorial .heat-observed {
+  background-color:rgba(49,100,166,var(--heat-alpha,.12));
+  color:var(--heat-text,#193b59);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:4px;
+  transition:filter .16s ease;
+}
+.report-canvas .heatmap-editorial .heat-observed .heat-value {color:inherit;font-size:clamp(10px,.93vw,14px);font-weight:770;}
+.report-canvas .heatmap-editorial .heat-observed small {font-size:9px;color:inherit;opacity:.78;}
+.report-canvas .heatmap-editorial .heat-observed:hover {filter:saturate(1.5) contrast(1.05);}
+.report-canvas .heatmap-editorial .heat-unavailable {background:repeating-linear-gradient(135deg,#eef2f7,#eef2f7 6px,#f8fafd 6px,#f8fafd 12px);color:#7e91a8;text-align:center;display:grid;place-items:center;}
+.report-canvas .heatmap-editorial .low-support {outline:1px dashed #ae7e47;outline-offset:-3px;}
+.report-canvas .heatmap-legend {display:flex;flex-wrap:wrap;gap:9px 17px;margin:12px 0 0;color:#59728e;font-size:10px;}
+.report-canvas .heatmap-legend span {display:inline-flex;align-items:center;gap:6px;}
+.report-canvas .heatmap-legend i {display:inline-block;width:15px;height:9px;border-radius:3px;background:rgba(49,100,166,.17);}
+.report-canvas .heatmap-legend span:nth-child(2) i {background:rgba(49,100,166,.9);}
+.report-canvas .waterfall-replacement .bar-fill {background:var(--accent,#86aee0);}
+.report-canvas .chart-figure circle:hover {filter:drop-shadow(0 1px 3px rgba(8,32,67,.23));}
+@media(prefers-reduced-motion:reduce){
+ .report-canvas .heatmap-editorial .heat-observed {transition:none;}
+}
