@@ -1386,29 +1386,30 @@
       const latest = rows[rows.length - 1] || {};
       const peak = rows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, rows[0] || {});
       const avg = average(rows, 'fraud_rate');
-      return pageGrid([
-        kpiRow([
-          kpi('Latest Fraud Rate', fmtPct2(latest.fraud_rate), 'Most recent relative day in the selected window.', '#d92d3a'),
-          kpi('Average Fraud Rate', fmtPct2(avg), 'Mean daily fraud rate in current filter.', '#2563eb'),
-          kpi('Peak Relative Day', String(peak.transaction_day ?? '-'), fmtPct2(peak.fraud_rate) + ' at daily peak.', '#c98012'),
-          kpi('Fraud Transactions', fmtInt(sum(rows, 'fraud_count')), 'Fraud labels in selected relative period.', '#7c3aed'),
-          kpi('Volume', fmtInt(sum(rows, 'transaction_count')), 'Transactions in selected relative period.', '#18a999')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Fraud count and transaction volume', 'Combined view separates rate movement from traffic volume.', '<div class="visual-body" id="trend-combo"></div>', 'span-2'),
-            chartCard('Drift flag distribution', 'Relative days grouped by risk drift band.', '<div class="visual-body" id="trend-drift"></div>')
-          ])
-        ], [
-          chartCard('Peak relative-day ranking', 'Highest daily fraud-rate windows as a chart.', '<div class="visual-body" id="trend-peaks"></div>'),
-          chartCard('Peak fraud-volume windows', 'Supporting ranking by fraud transaction count rather than rate.', '<div class="visual-body" id="trend-volume-peaks"></div>')
-        ]),
-        insightRow([
-          insight('Trend readout', 'Use relative-time movement as drift evidence, not calendar-seasonality evidence.', '#2563eb'),
-          insight('Volume control', 'A fraud-rate spike should be read with transaction volume before changing policy.', '#c98012'),
-          insight('Action', 'Investigate product and amount mix on peak relative days before adjusting score thresholds.', '#18a999')
-        ])
-      ]);
+      const preface = '<header class="studio-trend-brief">' +
+        '<div><span class="studio-trend-kicker">02 / RISK MOVEMENT INTELLIGENCE</span><h3>Detect the shift.<br><em>Follow the evidence.</em></h3>' +
+        '<p>Relative TransactionDT windows indicate changes in transaction behavior. They are not calendar days or evidence of seasonal effects.</p>' +
+        '<div class="studio-trend-context"><span>Window / ' + fmtInt(rows.length) + ' relative-day observations</span><span>Daily volume contextualizes rate peaks</span></div></div>' +
+        '<aside class="studio-trend-focus"><span>LATEST OBSERVED FRAUD RATE</span><strong>' + fmtPct2(latest.fraud_rate) + '</strong><small>Average ' + fmtPct2(avg) + ' · Peak on relative day ' + escapeHtml(String(peak.transaction_day ?? '-')) + '</small></aside></header>';
+      const keyStats = '<div class="studio-trend-metrics">' +
+        kpi('Fraud transactions', fmtInt(sum(rows, 'fraud_count')), 'Labels in current relative-time selection', '#628cde') +
+        kpi('Total volume', fmtInt(sum(rows, 'transaction_count')), 'Transactions in current selection', '#8ea6da') +
+        kpi('Peak fraud rate', fmtPct2(peak.fraud_rate), 'Relative day ' + String(peak.transaction_day ?? '-'), '#ce7585') +
+        '</div>';
+      const main = '<div class="studio-trend-evidence">' +
+        chartCard('Rate vs. transaction volume', 'Independent fraud-rate and transaction-volume axes; inspect peaks with demand context.', '<div class="visual-body" id="trend-combo"></div>', 'studio-trend-primary') +
+        chartCard('Drift flag comparison', 'Risk drift bands for the selected relative-day window.', '<div class="visual-body" id="trend-drift"></div>', 'studio-trend-secondary') +
+        '</div>';
+      return '<div class="studio-screen studio-trend">' + preface + keyStats +
+        visualPanels([main], [
+          chartCard('Highest daily fraud-rate windows', 'Ranked relative days, not calendar dates.', '<div class="visual-body" id="trend-peaks"></div>'),
+          chartCard('Peak fraudulent-transaction volumes', 'Count ranking separates frequency from rate.', '<div class="visual-body" id="trend-volume-peaks"></div>')
+        ]) +
+        '<div class="studio-trend-takeaways">' + insightRow([
+          insight('Movement', 'Read these charts as relative-time risk movement; not as calendar seasonality.', '#628cde'),
+          insight('Denominator', 'Interpret peaks together with transaction volume before changing review policy.', '#8ea6da'),
+          insight('Investigate', 'Cross-filter product and amount segments before recalibrating score thresholds.', '#89bfa9')
+        ]) + '</div></div>';
     }
 
     function renderAmount() {
