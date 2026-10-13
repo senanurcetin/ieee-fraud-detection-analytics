@@ -891,3 +891,39 @@ body.light .supporting-visuals summary span {color:#637d96;}
   .confusion-row-label{font-size:9px;padding:4px;}
   .confusion-tile strong{font-size:21px;}
 }
+
+/* Final visualization parity and strong foreground contrast for model controls. */
+.report-canvas .visual-card .field label {color:#496884;font-size:11px;font-weight:710;}
+.report-canvas .visual-card .field .muted,
+.report-canvas .visual-card .muted {color:#586e85!important;opacity:1!important;}
+.report-canvas .visual-card input[type="number"],
+.report-canvas .visual-card select {
+  color:#1a4162;background:#f9fcff;border:1px solid #c4d5e8;border-radius:9px;
+  min-height:43px;
+}
+.report-canvas .visual-card input[type="range"] {accent-color:#517dc2;}
+.report-canvas .visual-card .kpi-card {
+  min-height:125px;padding:15px;
+}
+.report-canvas .visual-card .kpi-value {font-size:clamp(18px,1.5vw,28px);}
+.donut-layout {display:grid;grid-template-columns:minmax(190px,1fr) minmax(165px,1.3fr);gap:20px;align-items:center;padding:8px;}
+.donut-layout svg {width:100%;height:auto;max-height:300px;}
+.donut-legend {display:grid;gap:8px;}
+.donut-legend-row {display:grid;grid-template-columns:11px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 6px;border-bottom:1px solid #e5edf5;color:#2d4d6d;font-size:11px;}
+.donut-legend-row i {width:10px;height:10px;border-radius:3px;}
+.donut-legend-row span {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.donut-legend-row strong {color:#153d62;font-weight:780;font-variant-numeric:tabular-nums;}
+.decision-legend {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 14px;margin-top:9px;}
+.decision-item {display:grid;grid-template-columns:27px minmax(0,1fr);gap:3px 8px;padding:9px;border-radius:9px;background:#f2f7fd;color:#2f5072;}
+.decision-item b {grid-row:span 2;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid #aac8e9;color:#265f9b;font-size:11px;}
+.decision-item span {font-size:11px;font-weight:720;}
+.decision-item small {color:#687d96;font-size:10px;}
+.report-canvas .table-wrap {border:1px solid #d9e5f2;border-radius:10px;}
+.report-canvas .table-wrap table {font-variant-numeric:tabular-nums;}
+.report-canvas .table-wrap th {color:#3c5976;background:#eaf1fa;font-size:10px;letter-spacing:.06em;}
+.report-canvas .table-wrap tbody tr:hover {background:#f2f7fd;}
+@media(max-width:740px) {
+ .donut-layout,.decision-legend{grid-template-columns:1fr;}
+ .donut-layout svg{max-height:230px;}
+ .report-canvas .visual-card .kpi-card{min-height:105px;}
+}
