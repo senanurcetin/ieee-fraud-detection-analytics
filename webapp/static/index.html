@@ -2807,27 +2807,21 @@
     function dotPlotChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
       const target = document.getElementById(id);
       if (!target) return;
-      const source = (rows || []).filter(Boolean).slice(0, options.limit || 10);
-      if (!source.length) { target.innerHTML = empty('No dot plot data available.'); return; }
-      const w = 720, h = 300, padLeft = 135, padRight = 32, padTop = 34, padBottom = 42;
-      const plotW = w - padLeft - padRight;
-      const rowH = (h - padTop - padBottom) / Math.max(source.length, 1);
-      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
-      const x = value => padLeft + (Math.abs(num(value)) / maxValue) * plotW;
-      const axis = axisTicks(maxValue).map(value => {
-        const xPos = x(value);
-        return '<g><line class="svg-grid" x1="' + xPos + '" y1="' + padTop + '" x2="' + xPos + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + xPos + '" y="' + (h - 14) + '" text-anchor="middle">' + tickLabel(value, formatFn || fmtInt) + '</text></g>';
+      const source=(rows||[]).filter(Boolean).slice().sort((a,b)=>num(valueFn(b))-num(valueFn(a))).slice(0,options.limit||10);
+      if(!source.length){target.innerHTML=empty('No dot plot data available.');return;}
+      const w=750,h=Math.max(265,source.length*41+76),padLeft=187,padRight=86,padTop=37,padBottom=44;
+      const max=Math.max(.0001,...source.map(row=>Math.abs(num(valueFn(row)))));
+      const plotW=w-padLeft-padRight,rowH=(h-padTop-padBottom)/source.length;
+      const x=value=>padLeft+Math.abs(num(value))/max*plotW;
+      const grid=axisTicks(max).map(value=>'<g><line class="svg-grid" x1="'+x(value)+'" y1="'+padTop+'" x2="'+x(value)+'" y2="'+(h-padBottom)+'"/><text class="svg-axis" x="'+x(value)+'" y="'+(h-12)+'" text-anchor="middle">'+tickLabel(value,formatFn||fmtInt)+'</text></g>').join('');
+      const points=source.map((row,index)=>{
+        const label=String(labelFn(row)??'Unknown'),value=num(valueFn(row));
+        const cy=padTop+index*rowH+rowH/2;
+        const attrs=filterKey?' data-filter-key="'+filterKey+'" data-filter-value="'+escapeHtml(label)+'" data-detail-family="'+escapeHtml(labelize(filterKey))+'" data-detail-label="'+escapeHtml(label)+'"':'';
+        const color=index===0?'#2867b1':'#7aa2cf';
+        return '<g'+attrs+' data-tooltip="'+escapeHtml(label+' | '+(formatFn||fmtInt)(value))+'"><line x1="'+padLeft+'" y1="'+cy+'" x2="'+x(value)+'" y2="'+cy+'" stroke="#bfd2e7" stroke-width="3.5" stroke-linecap="round"/><circle cx="'+x(value)+'" cy="'+cy+'" r="6.5" fill="'+color+'" stroke="#fff" stroke-width="2.2"/><text class="svg-label" x="'+(padLeft-11)+'" y="'+(cy+4)+'" text-anchor="end">'+escapeHtml(short(label,27))+'</text><text class="svg-value" x="'+(x(value)+12)+'" y="'+(cy+4)+'">'+escapeHtml((formatFn||fmtInt)(value))+'</text></g>';
       }).join('');
-      const rowsSvg = source.map((row, index) => {
-        const label = String(labelFn(row) ?? 'Unknown');
-        const value = num(valueFn(row));
-        const y = padTop + index * rowH + rowH / 2;
-        const attrs = filterKey
-          ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
-          : '';
-        return '<g' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><text class="svg-label" x="' + (padLeft - 10) + '" y="' + (y + 4) + '" text-anchor="end">' + escapeHtml(short(label, 18)) + '</text><line' + attrs + ' x1="' + padLeft + '" y1="' + y + '" x2="' + x(value) + '" y2="' + y + '" stroke="' + palette[index % palette.length] + '" stroke-width="5" stroke-linecap="round" opacity=".55"/><circle' + attrs + ' cx="' + x(value) + '" cy="' + y + '" r="7" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x(value) + 11) + '" y="' + (y + 4) + '">' + escapeHtml((formatFn || fmtInt)(value)) + '</text></g>';
-      }).join('');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + axis + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + rowsSvg + '<text class="svg-label" x="' + padLeft + '" y="19">' + escapeHtml(options.axisTitle || 'Signal strength') + '</text></svg>';
+      target.innerHTML='<div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+escapeHtml(options.axisTitle||'Ordered signal comparison')+'">'+grid+points+'<text class="svg-label" x="'+padLeft+'" y="19">'+escapeHtml(options.axisTitle||'Signal ranking')+'</text></svg></div>';
     }
 
     function donutChart(id, rows, labelKey, valueKey) {
@@ -2852,52 +2846,50 @@
       if (!target) return;
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No heatmap data available.'); return; }
-      const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0, 8);
-      const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0, 8);
-      const maxValue = Math.max(...source.map(row => num(row[valueKey])), .0001);
-      const lookup = new Map(source.map(row => [String(row[rowKey] ?? 'Unknown') + '||' + String(row[colKey] ?? 'Unknown'), row]));
-      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head"></div>' + colLabels.map(label => '<div class="heat-cell head" title="' + escapeHtml(label) + '">' + escapeHtml(short(label, 24)) + '</div>').join('') + '</div>';
-      const body = rowLabels.map(rowLabel => '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" title="' + escapeHtml(rowLabel) + '">' + escapeHtml(short(rowLabel, 22)) + '</div>' + colLabels.map(colLabel => {
-        const row = lookup.get(rowLabel + '||' + colLabel);
-        const value = num(row?.[valueKey]);
-        const alpha = .05 + value / maxValue * .70;
-        const support = num(row?.transaction_count || row?.validation_transactions || row?.row_count);
-        const fraud = num(row?.fraud_count || row?.validation_fraud_count || row?.observed_fraud_count);
-        const supportText = support ? 'n=' + fmtInt(support) : 'no support';
-        const fraudText = fraud ? 'fraud=' + fmtInt(fraud) : 'fraud=0';
-        const supportClass = support && support < 1000 ? ' low-support' : '';
-        const filterValue = options.filterFrom === 'col' ? colLabel : rowLabel;
-        const attrs = options.filterKey
-          ? ' data-filter-key="' + escapeHtml(options.filterKey) + '" data-filter-value="' + escapeHtml(filterValue) + '" data-detail-family="' + escapeHtml(options.detailFamily || labelize(options.filterKey)) + '" data-detail-label="' + escapeHtml(filterValue) + '"'
-          : '';
-        return '<div class="heat-cell' + supportClass + '"' + attrs + ' style="background:rgba(217,45,58,' + alpha + ')" data-tooltip="' + escapeHtml(rowLabel + ' / ' + colLabel + ' | ' + formatFn(value) + ' | ' + supportText + ' | ' + fraudText) + '"><span class="heat-value">' + formatFn(value) + '</span><small>' + escapeHtml(supportText) + '</small></div>';
-      }).join('') + '</div>').join('');
-      const axes = '<div class="heat-axis"><span>Rows: ' + escapeHtml(options.rowAxis || labelize(rowKey)) + '</span><span>Columns: ' + escapeHtml(options.colAxis || labelize(colKey)) + '</span></div>';
-      target.innerHTML = axes + '<div class="heatmap">' + header + body + '</div>';
+      const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0,8);
+      const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0,8);
+      const maxValue = Math.max(.0001,...source.map(row=>num(row[valueKey])));
+      const lookup = new Map(source.map(row=>[String(row[rowKey] ?? 'Unknown')+'||'+String(row[colKey] ?? 'Unknown'),row]));
+      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" role="columnheader"></div>' + colLabels.map(label=>'<div class="heat-cell head" role="columnheader" title="' + escapeHtml(label) + '">' + escapeHtml(short(label,23)) + '</div>').join('') + '</div>';
+      const body = rowLabels.map(rowLabel=>'<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" role="rowheader" title="' + escapeHtml(rowLabel) + '">' + escapeHtml(short(rowLabel,21)) + '</div>' + colLabels.map(colLabel=>{
+        const row=lookup.get(rowLabel+'||'+colLabel);
+        if(!row)return '<div class="heat-cell heat-unavailable" title="No reported observations for this intersection">—</div>';
+        const value=num(row[valueKey]), ratio=Math.max(0,Math.min(1,value/maxValue));
+        const supportRaw=row.transaction_count ?? row.validation_transactions ?? row.row_count;
+        const support=supportRaw===null||supportRaw===undefined?null:num(supportRaw);
+        const fraud=num(row.fraud_count ?? row.validation_fraud_count ?? row.observed_fraud_count);
+        const supportText=support===null?'Support not reported':'n='+fmtInt(support);
+        const supportClass=support!==null&&support<1000?' low-support':'';
+        const attrs=options.filterKey ? ' data-filter-key="' + escapeHtml(options.filterKey) + '" data-filter-value="' + escapeHtml(options.filterFrom === 'col'?colLabel:rowLabel) + '" data-detail-family="' + escapeHtml(options.detailFamily||labelize(options.filterKey)) + '" data-detail-label="' + escapeHtml(options.filterFrom === 'col'?colLabel:rowLabel) + '"' : '';
+        const alpha=(.08+ratio*.84).toFixed(3);
+        const textColor=ratio>.47?'#fff':'#183954';
+        const tooltip=rowLabel+' / '+colLabel+' | '+formatFn(value)+' | '+supportText+(row.fraud_count!==undefined?' | fraud='+fmtInt(fraud):'');
+        return '<div class="heat-cell heat-observed'+supportClass+'"' + attrs + ' style="--heat-alpha:'+alpha+';--heat-text:'+textColor+'" data-tooltip="'+escapeHtml(tooltip)+'" title="'+escapeHtml(tooltip)+'"><span class="heat-value">'+escapeHtml(formatFn(value))+'</span><small>'+escapeHtml(support===null?'n —':supportText)+'</small></div>';
+      }).join('')+'</div>').join('');
+      const axes='<div class="heat-axis"><span>ROWS · '+escapeHtml(options.rowAxis||labelize(rowKey))+'</span><span>COLUMNS · '+escapeHtml(options.colAxis||labelize(colKey))+'</span></div>';
+      target.innerHTML=axes+'<div class="heatmap heatmap-editorial" role="table" aria-label="'+escapeHtml((options.rowAxis||rowKey)+' by '+(options.colAxis||colKey)+' observed fraud rates')+'">'+header+body+'</div><div class="heatmap-legend"><span><i></i>Lower observed rate</span><span><i></i>Higher observed rate</span><span>— No reported cell · shaded edge = low support</span></div>';
     }
 
     function scatterChart(id, rows, xFn, yFn, groupFn, options = {}) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const source = (rows || []).slice(0, 160);
-      if (!source.length) { target.innerHTML = empty('No transaction sample available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 46;
-      const maxX = Math.max(...source.map(row => num(xFn(row))), 1);
-      const maxY = Math.max(...source.map(row => num(yFn(row))), 1);
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
-      const x = val => padLeft + num(val) / maxX * plotW;
-      const y = val => h - padBottom - num(val) / maxY * plotH;
-      const dots = source.map((row, index) => {
-        const group = String(groupFn(row) || 'Unknown');
-        const color = group.toLowerCase().includes('critical') ? '#d92d3a' : group.toLowerCase().includes('high') ? '#c98012' : palette[index % palette.length];
-        return '<circle cx="' + x(xFn(row)) + '" cy="' + y(yFn(row)) + '" r="4" fill="' + color + '" opacity=".68" data-tooltip="' + escapeHtml('Amount ' + fmtMoney(xFn(row)) + ' | Score ' + fmtScore(yFn(row)) + ' | ' + group) + '"/>';
+      const target=document.getElementById(id);
+      if(!target)return;
+      const source=(rows||[]).slice(0,240);
+      if(!source.length){target.innerHTML=empty('No transaction sample available.');return;}
+      const w=750,h=329,padLeft=67,padRight=30,padTop=42,padBottom=50;
+      const xValues=source.map(xFn).map(num),yValues=source.map(yFn).map(num);
+      const maxX=Math.max(...xValues,1),maxY=Math.max(...yValues,1);
+      const x=v=>padLeft+num(v)/maxX*(w-padLeft-padRight);
+      const y=v=>h-padBottom-num(v)/maxY*(h-padTop-padBottom);
+      const xTicks=axisTicks(maxX).map(v=>'<g><line class="svg-grid" x1="'+x(v)+'" y1="'+padTop+'" x2="'+x(v)+'" y2="'+(h-padBottom)+'"/><text class="svg-axis" x="'+x(v)+'" y="'+(h-12)+'" text-anchor="middle">'+tickLabel(v,options.xFormat||fmtMoney)+'</text></g>').join('');
+      const yTicks=yAxisSvg(axisTicks(maxY),y,padLeft,w-padRight,options.yFormat||fmtScore);
+      const dots=source.map((row,index)=>{
+        const group=String(groupFn(row)||'Unknown').toLowerCase();
+        const high=group.includes('critical')||group.includes('fraud')||group.includes('high');
+        const color=high?'#db596c':'#4b83c2';
+        const tip='X '+(options.xFormat||fmtMoney)(xFn(row))+' | Y '+(options.yFormat||fmtScore)(yFn(row))+' | '+String(groupFn(row)||'Unknown');
+        return '<circle cx="'+x(xFn(row))+'" cy="'+y(yFn(row))+'" r="3.6" fill="'+color+'" fill-opacity="'+(high?'.76':'.35')+'" stroke="#fff" stroke-width=".45" data-tooltip="'+escapeHtml(tip)+'"><title>'+escapeHtml(tip)+'</title></circle>';
       }).join('');
-      const xFormat = options.xFormat || fmtMoney;
-      const yFormat = options.yFormat || fmtScore;
-      const xTicks = axisTicks(maxX).map(value => '<g><line class="svg-grid" x1="' + x(value) + '" y1="' + padTop + '" x2="' + x(value) + '" y2="' + (h - padBottom) + '"/><text class="svg-axis" x="' + x(value) + '" y="' + (h - 13) + '" text-anchor="middle">' + tickLabel(value, xFormat) + '</text></g>').join('');
-      const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, yFormat);
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + xTicks + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + dots + '<text class="svg-label" x="' + padLeft + '" y="19">X: ' + escapeHtml(options.xLabel || 'amount') + ' | Y: ' + escapeHtml(options.yLabel || 'score') + '</text></svg>';
+      target.innerHTML='<div class="chart-scale-note">Diagnostic sample <span>'+fmtInt(source.length)+' rows, not the full portfolio</span></div><div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+escapeHtml('Scatter plot '+(options.xLabel||'x')+' by '+(options.yLabel||'y'))+'">'+xTicks+yTicks+dots+'<text class="svg-label" x="'+padLeft+'" y="20">'+escapeHtml(options.yLabel||'Score')+'</text><text class="svg-axis" x="'+(w-padRight)+'" y="'+(h-10)+'" text-anchor="end">'+escapeHtml(options.xLabel||'Value')+'</text></svg></div>';
     }
 
     function boxplotChart(id, rows) {
