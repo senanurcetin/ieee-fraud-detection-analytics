@@ -1351,7 +1351,7 @@
           chartCard('Risk band exposure (holdout)', 'Observed fraud rate and volume on the 118,108 transactions held out of training.', '<div class="visual-body" id="overview-riskband"></div>', 'wide'),
           grid2([
             chartCard('Product risk ranking', 'Click a product to see its nested amount-band breakdown.', '<div class="visual-body" id="overview-product"></div>'),
-            chartCard('Top risk concentration Pareto', 'Fraud share by highest-priority segments.', '<div class="visual-body" id="overview-pareto"></div>')
+            chartCard('Cross-segment fraud concentration', 'Overlapping segment cuts ranked by fraud share; percentages must not be added together.', '<div class="visual-body" id="overview-pareto"></div>')
           ])
         ], [
           chartCard('Executive economics breakdown', 'Supporting view of capture, review cost, missed exposure, and net benefit.', '<div class="visual-body" id="overview-economics"></div>'),
@@ -1737,7 +1737,7 @@
         lineChart('overview-trend', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
         riskBandExposureChart('overview-riskband');
         segmentedDrillChart('overview-product', 'product');
-        barChart('overview-pareto', getRows('segment_watchlist').slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
+        barChart('overview-pareto', getRows('segment_watchlist').slice().sort((a, b) => num(b.fraud_share) - num(a.fraud_share)).slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
         barChart('overview-economics', executiveEconomicsRows(), row => row.label, row => row.value, fmtMoneyCompact, null);
         barChart('overview-readiness', readinessGateRows(), row => row.label, row => row.value, fmtInt, null);
       }
@@ -2647,7 +2647,6 @@
       if (!source.length) { target.innerHTML = empty('No data available.'); return; }
       const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
       const labels = source.map(row => String(labelFn(row) ?? 'Unknown'));
-      const uniqueLabels = new Set(labels).size === labels.length;
       const scaleNote = '<div class="chart-scale-note">Segment comparison <span>Bar length normalized to largest visible value</span></div>';
       target.innerHTML = scaleNote + '<div class="bar-list executive-bars">' + source.map((row, index) => {
         const label = labels[index];
