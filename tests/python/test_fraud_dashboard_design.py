@@ -2,8 +2,8 @@
 
 They do not claim browser screenshot or BigQuery data parity.
 """
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 

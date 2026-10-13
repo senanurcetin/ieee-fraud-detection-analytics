@@ -7,8 +7,8 @@ automatically published to the project portfolio.
 """
 
 import os
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 BASE_URL = os.environ.get("FRAUD_E2E_BASE_URL", "").rstrip("/")
 
@@ -86,6 +86,21 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
         self.assertEqual(page.locator("#page-title").inner_text(), "Model Performance Analysis")
         self.assertTrue(page.locator("#report-body").is_visible())
         self.screenshot(page, "fraud-nexus-mobile-375.png")
+        self.assertEqual(errors, [])
+
+    def test_global_product_filter_and_reset_use_real_report_data(self):
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        product = page.locator("#product-filter")
+        self.assertGreater(product.locator("option").count(), 1)
+        self.assertEqual(product.input_value(), "All")
+        product.select_option("C")
+        self.assertEqual(product.input_value(), "C")
+        self.assertIn("Product: C", page.locator("#active-filters").inner_text())
+
+        page.locator("#clear-btn").click()
+        self.assertEqual(product.input_value(), "All")
+        self.assertIn("No filters", page.locator("#active-filters").inner_text())
         self.assertEqual(errors, [])
 
     def test_failed_dashboard_load_has_explicit_retry(self):
