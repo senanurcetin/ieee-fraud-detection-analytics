@@ -1595,7 +1595,7 @@
             chartCard('Recommendation priority ranking', 'Actions ranked by impact for the presentation close.', '<div class="visual-body" id="insight-priority"></div>')
           ])
         ], [
-          chartCard('Expected exposure reduction waterfall', 'Supporting estimate from targeting top risk pockets.', '<div class="visual-body" id="insight-waterfall"></div>')
+          chartCard('Prioritized fraud-share signals', 'Overlapping watchlist segments ranked by share; no artificial cumulative waterfall.', '<div class="visual-body" id="insight-waterfall"></div>')
         ]),
         insightRow([
           insight('What happened?', 'Fraud is low in aggregate but concentrated across product, amount, identity, email, and score segments.', '#d92d3a'),
@@ -2737,41 +2737,28 @@
     }
     function riskBandExposureChart(id) {
       const target = document.getElementById(id);
-      // Band quality is a generalisation claim, so read it from the holdout.
-      // The train split is 80% in-sample and reports 44.59% in the High band
-      // against 30.34% on transactions the model never saw during fit.
-      const source = getRows('validation_risk_bands').length ? 'validation_risk_bands' : 'model_risk_bands';
-      const rows = getRows(source).map(row => ({
-        label: row.risk_band,
-        transactions: num(row.transaction_count || row.row_count),
-        fraudRate: num(row.observed_fraud_rate || row.fraud_rate),
-        capture: num(row.expected_fraud_capture || row.fraud_capture_rate)
+      if (!target) return;
+      // A risk-band risk rate and its population share have different denominators.
+      // Present separate comparable scales, never one unlabeled mixed axis.
+      const sourceName = getRows('validation_risk_bands').length ? 'validation_risk_bands' : 'model_risk_bands';
+      const rows = getRows(sourceName).map(row => ({
+        label: String(row.risk_band || ''),
+        transactions: num(row.transaction_count ?? row.row_count),
+        fraudRate: num(row.observed_fraud_rate ?? row.fraud_rate),
+        capture: num(row.expected_fraud_capture ?? row.fraud_capture_rate)
       })).filter(row => row.label);
-      if (!target || !rows.length) { if (target) target.innerHTML = empty('No risk band data available.'); return; }
-      const w = 760, h = 300, padLeft = 62, padRight = 34, padTop = 64, padBottom = 52;
-      const maxTx = Math.max(...rows.map(row => row.transactions), 1);
-      const maxRate = Math.max(...rows.map(row => row.fraudRate), .0001);
-      const plotW = w - padLeft - padRight;
-      const plotH = h - padTop - padBottom;
-      const bw = plotW / rows.length;
-      const yRate = value => h - padBottom - value / maxRate * plotH;
-      const yTx = value => h - padBottom - value / maxTx * plotH;
-      const yTicks = yAxisSvg(axisTicks(maxRate), yRate, padLeft, w - padRight, fmtPct2);
-      const barRects = rows.map((row, index) => {
-        const x = padLeft + index * bw + bw * .18;
-        const width = bw * .64;
-        const attrs = ' data-filter-key="risk" data-filter-value="' + escapeHtml(row.label) + '" data-detail-family="Risk band" data-detail-label="' + escapeHtml(row.label) + '"';
-        return '<g' + attrs + ' data-tooltip="' + escapeHtml(row.label + ' | ' + fmtInt(row.transactions) + ' tx | ' + fmtPct2(row.fraudRate)) + '"><rect' + attrs + ' x="' + x + '" y="' + yTx(row.transactions) + '" width="' + width + '" height="' + (h - padBottom - yTx(row.transactions)) + '" rx="5" fill="rgba(37,99,235,.28)"/><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 18) + '" text-anchor="middle">' + escapeHtml(row.label) + '</text></g>';
+      if (!rows.length) { target.innerHTML = empty('No risk band data available.'); return; }
+      const totalTx = rows.reduce((acc, row) => acc + row.transactions, 0);
+      const maxRate = Math.max(.0001, ...rows.map(row => row.fraudRate));
+      const sourceLabel = sourceName === 'validation_risk_bands' ? 'Holdout validation' : 'Scored portfolio';
+      const cards = rows.map((row, index) => {
+        const attrs = 'data-filter-key="risk" data-filter-value="' + escapeHtml(row.label) + '" data-detail-family="Risk band" data-detail-label="' + escapeHtml(row.label) + '"';
+        const txShare = totalTx ? row.transactions / totalTx : 0;
+        const rateW = Math.max(0, Math.min(100, row.fraudRate / maxRate * 100));
+        const volumeW = Math.max(0, Math.min(100, txShare * 100));
+        return '<div class="risk-band-card" ' + attrs + ' role="button" tabindex="0" aria-label="' + escapeHtml(row.label + ', observed fraud rate ' + fmtPct2(row.fraudRate) + ', ' + fmtInt(row.transactions) + ' transactions') + '"><div class="risk-band-heading"><span class="risk-band-index">0' + (index + 1) + '</span><strong>' + escapeHtml(row.label) + '</strong></div><div class="risk-band-rate">' + fmtPct2(row.fraudRate) + '</div><div class="risk-band-metric">Observed fraud rate<div class="risk-band-track"><i style="width:' + rateW + '%"></i></div></div><div class="risk-band-metric">Share of ' + sourceLabel.toLowerCase() + ' transactions <strong>' + fmtPct(txShare) + '</strong><div class="risk-band-track risk-band-volume"><i style="width:' + volumeW + '%"></i></div></div><div class="risk-band-footer">' + fmtInt(row.transactions) + ' transactions</div></div>';
       }).join('');
-      const barLabels = rows.map((row, index) => {
-        const x = padLeft + index * bw + bw * .18;
-        const width = bw * .64;
-        const pointY = yRate(row.fraudRate);
-        const labelY = Math.max(padTop + 18, pointY - 15);
-        return '<text class="svg-value" x="' + (x + width / 2) + '" y="' + labelY + '" text-anchor="middle">' + fmtPct2(row.fraudRate) + '</text>';
-      }).join('');
-      const points = rows.map((row, index) => (padLeft + index * bw + bw / 2) + ',' + yRate(row.fraudRate)).join(' ');
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + barRects + '<polyline points="' + points + '" fill="none" stroke="#d92d3a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' + barLabels + '<text class="svg-label" x="' + padLeft + '" y="22">Volume bars + fraud-rate line</text></svg>';
+      target.innerHTML = '<div class="risk-band-caption"><span>' + sourceLabel + ' · separate metric scales</span><span>Click a band to cross-filter</span></div><div class="risk-band-grid">' + cards + '</div><p class="risk-band-disclosure">Top bars compare the observed fraud rate across risk bands. Bottom bars represent each band’s share of evaluated transactions. These are separate scales and should not be compared by bar length across rows.</p>';
     }
 
     function proxyShareChart(id) {
@@ -2937,10 +2924,19 @@
     function treemapTiles(id, rows) {
       const target = document.getElementById(id);
       if (!target) return;
-      const source = rows.slice(0, 8);
+      const source = (rows || []).filter(row => num(row.importance) > 0).slice(0, 12).sort((a,b) => num(b.importance) - num(a.importance));
       if (!source.length) { target.innerHTML = empty('No feature family data.'); return; }
-      const maxValue = Math.max(...source.map(row => num(row.importance)), 1);
-      target.innerHTML = '<div class="grid-2">' + source.map((row, index) => '<div class="matrix-card" style="min-height:' + (54 + num(row.importance) / maxValue * 90) + 'px;border-left:5px solid ' + palette[index % palette.length] + '"><strong>' + escapeHtml(row.feature_family || 'Unknown') + '</strong><span>' + fmtInt(row.importance) + '</span></div>').join('') + '</div>';
+      const total = source.reduce((acc,row) => acc + num(row.importance), 0);
+      const mosaic = source.map((row,index) => {
+        const weight = num(row.importance) / total;
+        const color = ['#255fa7','#3778ba','#5d83cf','#7f8bd5','#697db3','#9a9ae1'][index%6];
+        return '<div class="feature-mosaic-tile" style="flex-grow:' + Math.max(0.00001,weight) + ';--tile-color:' + color + '" title="' + escapeHtml(row.feature_family + ' | ' + fmtPct(weight) + ' of importance') + '"><span>' + escapeHtml(short(row.feature_family || 'Unknown', 22)) + '</span><strong>' + fmtPct(weight) + '</strong></div>';
+      }).join('');
+      const ranking = source.map((row,index) => {
+        const weight = num(row.importance) / total;
+        return '<div class="feature-rank-row"><span>' + String(index+1).padStart(2,'0') + '</span><strong>' + escapeHtml(row.feature_family || 'Unknown') + '</strong><i style="width:' + Math.max(0,weight*100) + '%"></i><em>' + fmtPct(weight) + '</em></div>';
+      }).join('');
+      target.innerHTML = '<div class="feature-mosaic"><div class="feature-mosaic-band">' + mosaic + '</div><p>Relative feature-family model importance. Tile width represents share of this displayed total, not population prevalence.</p></div><div class="feature-rank-list">' + ranking + '</div>';
     }
 
     function thresholdCurve(id) {
@@ -3041,24 +3037,15 @@
     function waterfallChart(id, rows) {
       const target = document.getElementById(id);
       if (!target) return;
-      const source = rows || [];
-      if (!source.length) { target.innerHTML = empty('No waterfall data available.'); return; }
-      const w = 720, h = 300, padLeft = 58, padRight = 28, padTop = 34, padBottom = 58;
-      const total = source.reduce((acc, row) => acc + num(row.fraud_share), 0) || 1;
-      const bw = (w - padLeft - padRight) / source.length;
-      let cumulative = 0;
-      const bars = source.map((row, index) => {
-        const share = num(row.fraud_share);
-        const start = cumulative;
-        cumulative += share;
-        const y1 = h - padBottom - start / total * (h - padTop - padBottom);
-        const y2 = h - padBottom - cumulative / total * (h - padTop - padBottom);
-        const x = padLeft + index * bw + 5;
-        return '<g data-tooltip="' + escapeHtml(row.segment_name + ' | ' + fmtPct(share)) + '"><rect x="' + x + '" y="' + y2 + '" width="' + Math.max(16, bw - 10) + '" height="' + Math.max(8, y1 - y2) + '" rx="5" fill="' + palette[index % palette.length] + '"/><text class="svg-value" x="' + (x + Math.max(16, bw - 10) / 2) + '" y="' + (y2 - 6) + '" text-anchor="middle">' + fmtPct(share) + '</text><text class="svg-axis" x="' + (x + 2) + '" y="' + (h - 30) + '">' + escapeHtml(short(row.segment_name, 13)) + '</text></g>';
-      }).join('');
-      const y = value => h - padBottom - value / total * (h - padTop - padBottom);
-      const yTicks = yAxisSvg(axisTicks(total), y, padLeft, w - padRight, fmtPct);
-      target.innerHTML = '<svg viewBox="0 0 ' + w + ' ' + h + '">' + yTicks + '<line x1="' + padLeft + '" y1="' + (h - padBottom) + '" x2="' + (w - padRight) + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/><line x1="' + padLeft + '" y1="' + padTop + '" x2="' + padLeft + '" y2="' + (h - padBottom) + '" stroke="#cbd5e1"/>' + bars + '</svg>';
+      // Watchlist segments span overlapping families. Do not sum their shares
+      // into a fake waterfall / cumulative total.
+      const source = (rows || []).filter(row => row.segment_name).slice().sort((a,b) => num(b.fraud_share) - num(a.fraud_share)).slice(0,10);
+      if (!source.length) { target.innerHTML = empty('No segment concentration data.'); return; }
+      const max = Math.max(.00001, ...source.map(r=>num(r.fraud_share)));
+      target.innerHTML = '<div class="chart-scale-note">Individual segment exposure <span>Overlapping groups; shares are not additive</span></div><div class="executive-bars waterfall-replacement">' + source.map((row,i) => {
+        const value = num(row.fraud_share), percentage = Math.max(0, Math.min(100,value/max*100));
+        return '<div class="bar-row executive-bar-row" data-tooltip="' + escapeHtml(row.segment_family + ' / ' + row.segment_name + ' | ' + fmtPct(value)) + '"><span class="bar-label" title="' + escapeHtml(row.segment_name) + '">' + escapeHtml(short(row.segment_family + ' / ' + row.segment_name, 28)) + '</span><div class="bar-track"><div class="bar-fill" style="--accent:' + (i===0?'#2865b2':'#86b6e1') + ';width:' + percentage + '%"></div></div><strong class="bar-value">' + fmtPct(value) + '</strong></div>';
+      }).join('') + '</div>';
     }
 
     function recommendationMatrix(id) {
