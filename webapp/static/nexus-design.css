@@ -254,3 +254,171 @@ body:not(.light) .state.state-error {
 .nexus-retry-data[hidden] { display:none!important; }
 body.light .nexus-retry-data { background:#dcefff;color:#12486e;border-color:#8fbee4; }
 body.light .nexus-retry-data:hover { background:#cae5ff; }
+
+/* Editorial chart system: consistent comparison marks rather than rainbow bars.
+   Blue indicates the largest displayed magnitude, not an inferred risk label.
+   Red is reserved for actual fraud-rate lines in the combined trend. */
+.report-canvas .visual-card {
+  position: relative;
+  border: 1px solid #cdddeb;
+  border-radius: 15px;
+  padding: clamp(17px, 1.6vw, 24px);
+  background: #fff;
+  box-shadow: 0 10px 29px rgba(19, 58, 103, .055);
+}
+.report-canvas .visual-card::before {
+  content: "";
+  position: absolute;
+  left: 22px;
+  top: 0;
+  width: 47px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: #2678d9;
+}
+.report-canvas .visual-card:hover {
+  border-color: #afcce8;
+  box-shadow: 0 12px 32px rgba(19, 58, 103, .09);
+}
+.report-canvas .visual-head {
+  align-items: flex-start;
+  padding-bottom: 13px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e7edf4;
+}
+.report-canvas .visual-title {
+  color: #102f4e;
+  font-size: clamp(14px, 1vw, 16px);
+  font-weight: 790;
+  line-height: 1.32;
+  letter-spacing: -.02em;
+}
+.report-canvas .visual-note {
+  max-width: 640px;
+  color: #5c738c;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.report-canvas .visual-body { min-height: 0; }
+.report-canvas .chart-figure {
+  width: 100%;
+  min-width: 0;
+  padding: 6px 0 2px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #fcfdff, #fff);
+}
+.report-canvas .chart-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 375px;
+  overflow: visible;
+}
+.report-canvas .chart-figure .svg-grid {
+  stroke: #e8eef5;
+  stroke-width: .9;
+}
+.report-canvas .chart-figure .svg-axis {
+  fill: #667f99;
+  font-size: 11px;
+  font-weight: 610;
+}
+.report-canvas .chart-figure .svg-label {
+  fill: #294967;
+  font-size: 12px;
+  font-weight: 760;
+}
+.report-canvas .chart-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 7px 20px;
+  padding: 8px 0 0 9px;
+  color: #58728c;
+  font-size: 11px;
+  font-weight: 680;
+}
+.report-canvas .chart-legend span { display: inline-flex; gap: 7px; align-items: center; }
+.report-canvas .chart-legend b { width: 17px; height: 9px; border-radius: 3px; }
+.report-canvas .chart-legend .legend-volume { background: #8ebce4; }
+.report-canvas .chart-legend .legend-risk { background: #cd455b; height: 3px; }
+.report-canvas .chart-scale-note {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0 0 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px dashed #dfebf5;
+  color: #244c74;
+  font-size: 10px;
+  font-weight: 790;
+  text-transform: uppercase;
+  letter-spacing: .055em;
+}
+.report-canvas .chart-scale-note span {
+  color: #788ea5;
+  font-size: 10px;
+  font-weight: 590;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.report-canvas .executive-bars { gap: 5px; }
+.report-canvas .executive-bar-row {
+  min-height: 39px;
+  grid-template-columns: minmax(100px, 35%) minmax(0, 1fr) minmax(70px, auto);
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background-color .16s ease, border-color .16s ease;
+}
+.report-canvas .executive-bar-row:hover {
+  background: #f2f7fc;
+  border-color: #dfebf6;
+}
+.report-canvas .executive-bar-row .bar-label {
+  color: #34526f;
+  font-size: 11px;
+  font-weight: 740;
+}
+.report-canvas .executive-bar-row .bar-track {
+  height: 11px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #edf3fa, #f4f8fc);
+}
+.report-canvas .executive-bar-row .bar-fill {
+  border-radius: 4px;
+  min-width: 1px;
+  background: var(--accent, #91b9df);
+}
+.report-canvas .executive-bar-row .bar-value {
+  color: #163a5c;
+  font-size: 11px;
+  font-weight: 780;
+  font-variant-numeric: tabular-nums;
+}
+.report-canvas .kpi-card {
+  border-top-width: 2px;
+  border-radius: 13px;
+  padding: 15px;
+  background: linear-gradient(180deg, #fff, #f9fcff);
+  box-shadow: 0 6px 23px rgba(20, 62, 105, .05);
+}
+.report-canvas .kpi-value { font-variant-numeric: tabular-nums; font-weight: 790; }
+.report-canvas .story-strip { gap: 11px; }
+.report-canvas .story-step { border-top-width: 2px; }
+@media (max-width: 680px) {
+  .report-canvas .visual-card { padding: 15px 12px; }
+  .report-canvas .visual-head { margin-bottom: 10px; }
+  .report-canvas .executive-bar-row {
+    grid-template-columns: minmax(80px, 36%) minmax(0, 1fr) minmax(60px, auto);
+    gap: 7px;
+    padding: 5px 2px;
+  }
+  .report-canvas .chart-legend { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .report-canvas .executive-bar-row { transition: none; }
+}
