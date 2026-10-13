@@ -2769,17 +2769,15 @@
     }
 
     function proxyShareChart(id) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const rows = proxySignalRows().slice(0, 8);
-      if (!rows.length) { target.innerHTML = empty('No proxy share data available.'); return; }
-      target.innerHTML = '<div class="bar-list">' + rows.map((row, index) => {
-        const label = proxySegmentLabel(row);
-        const fraudShare = num(row.fraud_share);
-        const txShare = num(row.transaction_share);
-        const attrs = 'data-filter-key="proxy" data-filter-value="' + escapeHtml(label) + '" data-detail-family="Proxy segment" data-detail-label="' + escapeHtml(label) + '"';
-        return '<div class="bar-row stacked" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | fraud share ' + fmtPct(fraudShare) + ' | volume share ' + fmtPct(txShare)) + '"><div class="bar-label">' + escapeHtml(short(label, 28)) + '</div><div class="bar-track dual"><div class="bar-fill" style="width:' + Math.max(3, fraudShare * 100) + '%;--accent:#d92d3a"></div><div class="bar-fill ghost" style="width:' + Math.max(3, txShare * 100) + '%;--accent:#2563eb"></div></div><div class="bar-value">' + fmtPct(fraudShare) + ' / ' + fmtPct(txShare) + '</div></div>';
-      }).join('') + '<div class="mini-legend"><span><b style="background:#d92d3a"></b>Fraud share</span><span><b style="background:#2563eb"></b>Volume share</span></div></div>';
+      const target=document.getElementById(id);
+      if(!target)return;
+      const rows=proxySignalRows().slice(0,8);
+      if(!rows.length){target.innerHTML=empty('No proxy share data available.');return;}
+      target.innerHTML='<div class="paired-share-head"><span>Observed fraud share</span><span>Transaction share</span></div><div class="paired-share-list">'+rows.map(row=>{
+        const label=proxySegmentLabel(row),fraudShare=num(row.fraud_share),txShare=num(row.transaction_share);
+        const attrs='data-filter-key="proxy" data-filter-value="'+escapeHtml(label)+'" data-detail-family="Proxy segment" data-detail-label="'+escapeHtml(label)+'"';
+        return '<div class="paired-share-row" '+attrs+' data-tooltip="'+escapeHtml(label+' | fraud share '+fmtPct(fraudShare)+' | volume share '+fmtPct(txShare))+'"><div class="paired-share-name" title="'+escapeHtml(label)+'">'+escapeHtml(short(label,30))+'</div><div class="paired-share-comparison"><div class="paired-share-track"><i class="fraud" style="width:'+Math.max(0,Math.min(100,fraudShare*100))+'%"></i></div><div class="paired-share-track"><i class="volume" style="width:'+Math.max(0,Math.min(100,txShare*100))+'%"></i></div></div><span class="paired-share-stat">'+fmtPct(fraudShare)+' / '+fmtPct(txShare)+'</span></div>';
+      }).join('')+'</div><p class="risk-band-disclosure">Both bars use the same 0–100% scale. Proxy segment cuts can overlap; do not add shares between rows.</p>';
     }
 
     function drillContributionChart(id, detail) {
@@ -2797,18 +2795,19 @@
     }
 
     function drillRecommendationChart(id, detail) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const row = exactSegmentRow(detail.key, detail.value) || {};
-      const metric = segmentDetailMetric(detail, row);
-      const rows = [
-        { label: 'Risk intensity', value: Math.min(metric.lift / 4, 1), color: '#d92d3a' },
-        { label: 'Fraud concentration', value: Math.min(metric.fraudShare || 0, 1), color: '#7c3aed' },
-        { label: 'Workload control', value: Math.max(0, 1 - metric.tx / Math.max(num(executiveKpis().total_transactions), 1)), color: '#2563eb' },
-        { label: 'Action confidence', value: metric.lift >= 2 && (metric.fraudShare || 0) >= .05 ? .9 : metric.lift >= 1.2 ? .62 : .35, color: '#18a999' }
+      const target=document.getElementById(id);
+      if(!target)return;
+      const row=exactSegmentRow(detail.key,detail.value)||{};
+      const metric=segmentDetailMetric(detail,row);
+      const data=[
+        {label:'Risk intensity',value:Math.min(metric.lift/4,1)},
+        {label:'Fraud concentration',value:Math.min(metric.fraudShare||0,1)},
+        {label:'Workload headroom',value:Math.max(0,1-metric.tx/Math.max(num(executiveKpis().total_transactions),1))},
+        {label:'Action heuristic',value:metric.lift>=2&&(metric.fraudShare||0)>=.05?.9:metric.lift>=1.2?.62:.35}
       ];
-      const maxValue = 1;
-      target.innerHTML = '<div class="bar-list">' + rows.map(row => '<div class="bar-row" data-tooltip="' + escapeHtml(row.label + ' | ' + fmtPct(row.value)) + '"><div class="bar-label">' + escapeHtml(row.label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, row.value / maxValue * 100) + '%;--accent:' + row.color + '"></div></div><div class="bar-value">' + fmtPct(row.value) + '</div></div>').join('') + '</div>';
+      target.innerHTML='<div class="chart-scale-note">Normalized decision indicators <span>Heuristic scales; not causal or calibrated probabilities</span></div><div class="executive-bars">'+data.map((r,i)=>{
+        return '<div class="bar-row executive-bar-row" data-tooltip="'+escapeHtml(r.label+' | '+fmtPct(r.value))+'"><div class="bar-label">'+escapeHtml(r.label)+'</div><div class="bar-track"><div class="bar-fill" style="--accent:'+(i===0?'#2867b1':'#8ab2db')+';width:'+Math.max(0,Math.min(100,r.value*100))+'%"></div></div><div class="bar-value">'+fmtPct(r.value)+'</div></div>';
+      }).join('')+'</div>';
     }
 
     function dotPlotChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
@@ -2980,25 +2979,21 @@
     }
 
     function modelRegistryCard(id) {
-      const target = document.getElementById(id);
-      if (!target) return;
-      const registry = state.registry || (state.meta && state.meta.model_registry) || {};
-      if (!registry.model_version) { target.innerHTML = empty('No model registry data available.'); return; }
-      const featureScope = registry.feature_scope || {};
-      const rolling = registry.rolling_cv_summary || {};
-      const windows = registry.rolling_cv_windows || [];
-      const maxAuc = Math.max(.0001, ...windows.map(row => num(row.roc_auc)));
-      const bars = windows.map((row, index) => {
-        const auc = num(row.roc_auc);
-        const label = 'Window ' + row.window_number;
-        return '<div class="bar-row" data-tooltip="' + escapeHtml(label + ' | ROC-AUC ' + fmtPct2(auc) + ' | PR-AUC ' + fmtPct2(row.average_precision)) + '"><div class="bar-label">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, auc / maxAuc * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + fmtPct2(auc) + '</div></div>';
+      const target=document.getElementById(id);
+      if(!target)return;
+      const registry=state.registry||(state.meta&&state.meta.model_registry)||{};
+      if(!registry.model_version){target.innerHTML=empty('No model registry data available.');return;}
+      const featureScope=registry.feature_scope||{},rolling=registry.rolling_cv_summary||{},windows=registry.rolling_cv_windows||[];
+      const bars=windows.map((row,index)=>{
+        const auc=num(row.roc_auc),label='Window '+row.window_number;
+        return '<div class="bar-row executive-bar-row" data-tooltip="'+escapeHtml(label+' | ROC-AUC '+fmtPct2(auc)+' | PR-AUC '+fmtPct2(row.average_precision))+'"><span class="bar-label">'+escapeHtml(label)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.max(0,Math.min(100,auc*100))+'%;--accent:'+(index===0?'#2867b1':'#8ab2db')+'"></div></div><strong class="bar-value">'+fmtPct2(auc)+'</strong></div>';
       }).join('');
-      target.innerHTML = '<div class="registry-grid">' + [
-        registryMetric('Model version', registry.model_version, registry.training_date || '-', '#2563eb', true),
-        registryMetric('Feature scope', featureScope.v_feature_range || '-', fmtInt(featureScope.feature_count) + ' features used.', '#18a999'),
-        registryMetric('V features', fmtInt(featureScope.v_features_selected), 'Missingness ceiling ' + fmtPct2(featureScope.v_missingness_threshold), '#7c3aed'),
-        registryMetric('Rolling AUC', fmtPct2(rolling.roc_auc_mean), 'Minimum ' + fmtPct2(rolling.roc_auc_min), '#c98012')
-      ].join('') + '</div><div class="bar-list" style="margin-top:12px">' + bars + '</div>';
+      target.innerHTML='<div class="registry-grid">'+[
+        registryMetric('Model version',registry.model_version,registry.training_date||'-','#2867b1',true),
+        registryMetric('Feature scope',featureScope.v_feature_range||'-',fmtInt(featureScope.feature_count)+' features used.','#5c91d1'),
+        registryMetric('V features',fmtInt(featureScope.v_features_selected),'Missingness ceiling '+fmtPct2(featureScope.v_missingness_threshold),'#887dca'),
+        registryMetric('Rolling AUC',fmtPct2(rolling.roc_auc_mean),'Minimum '+fmtPct2(rolling.roc_auc_min),'#a68acb')
+      ].join('')+'</div><div class="chart-scale-note" style="margin-top:18px">Rolling validation quality <span>ROC-AUC on the fixed 0–100% scale</span></div><div class="executive-bars">'+bars+'</div>';
     }
 
     function renderThresholdSummary() {
