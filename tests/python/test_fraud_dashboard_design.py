@@ -28,6 +28,10 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn(".report-canvas", css)
         self.assertIn(".sidebar", css)
         self.assertIn("prefers-reduced-motion", css)
+        self.assertIn("body.light .sidebar", css)
+        self.assertIn("body.light .topbar h1", css)
+        self.assertIn("body.light .nav-btn.active", css)
+        self.assertIn("body.light .pill.live", css)
 
 
 if __name__ == "__main__":

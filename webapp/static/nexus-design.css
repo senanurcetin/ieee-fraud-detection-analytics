@@ -127,3 +127,39 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 @media(prefers-reduced-motion:reduce) {
   .kpi-card:hover,.visual-card:hover { transform:none!important; }
 }
+
+/* A real light-mode control exists in the BI report. Preserve that preference
+   instead of leaving nearly-black text on NEXUS's forced dark background. */
+body.light { background:#edf2f7; color:#111827; }
+body.light .sidebar {
+  background:linear-gradient(180deg,#ffffff 0%,#f0f6fc 100%);
+  border-right-color:#cad9e7;
+  box-shadow:10px 0 26px rgba(30,67,110,.07);
+}
+body.light .brand { border-bottom-color:#d7e3ee; }
+body.light .brand strong { color:#123351; }
+body.light .brand .nexus-fraud-kicker { color:#1263a7; }
+body.light .brand span:not(.nexus-fraud-kicker) { color:#516d89; }
+body.light .nav-btn { color:#405a77; }
+body.light .nav-btn:hover { color:#123351; background:#e4f0fb; }
+body.light .nav-btn.active, body.light .nav-btn[aria-current="page"] {
+  color:#124e82;
+  background:linear-gradient(90deg,#d9eaff,#f1f7ff);
+  border-color:#abcce9;
+  box-shadow:inset 3px 0 #2678d9;
+}
+body.light .nav-btn span { color:#5c7590; }
+body.light .topbar {
+  background:linear-gradient(115deg,#e8f3ff,#f9fcff);
+  border-color:#c9ddeb;
+  box-shadow:0 10px 25px rgba(20,55,91,.08);
+}
+body.light .topbar h1 { color:#123351; }
+body.light .topbar p { color:#405f7d; }
+body.light .nexus-fraud-eyebrow { color:#1263a7; }
+body.light .pill { color:#405f7d; background:#f3f8ff; border-color:#c9ddeb; }
+body.light .pill.live { color:#176044; background:#e1f7ec; border-color:#aad9c0; }
+body.light .report-canvas { box-shadow:0 14px 32px rgba(25,62,110,.09); }
+@media(max-width:1240px) {
+  body.light .sidebar { border-bottom:1px solid #c9ddeb; }
+}
