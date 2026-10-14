@@ -10,7 +10,7 @@ At a baseline fraud rate of **3.50%**, risk concentration and review capacity ma
 |---|---|
 | Are the risks concentrated? | Product C has an **11.7% fraud rate**, **3.34× lift**, and **38.8% of fraud labels**; see [key findings](../README.md#key-findings) |
 | Was ranking assessed out of time? | Holdout ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision**; see [model layer](../README.md#ml-scoring-layer) |
-| Why not report random-split AUC as the headline? | [Time vs random validation study](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage) |
+| Why not report random-split AUC as the headline? | [Time-split model validation evidence](model_validation_evidence.md) (previous Kaggle comparison notebook is no longer publicly reachable) |
 | Is there visual proof? | [Executive dashboard screenshot](assets/web_dashboard_executive_overview.png), [threshold screenshot](assets/web_dashboard_model_threshold.png), and [live web dashboard](https://fraud-project-web.vercel.app) |
 | Is data quality inspectable? | [dbt models](../models/), [tests](../tests/) and [README quality checks](../README.md#quality-gates) |
 
