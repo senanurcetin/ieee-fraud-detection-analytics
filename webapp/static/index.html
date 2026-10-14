@@ -661,13 +661,14 @@
     .svg-grid { stroke: #e2e8f0; stroke-width: 1; }
     .svg-label { fill: #0f172a; font-size: 11px; font-weight: 900; }
     .svg-value {
-      fill: #0f172a;
-      font-size: 10px;
-      font-weight: 900;
-      paint-order: stroke;
-      stroke: rgba(255,255,255,.94);
-      stroke-width: 4px;
-      stroke-linejoin: round;
+      fill: #183b5e;
+      font-size: 13px;
+      font-weight: 760;
+      font-variant-numeric: tabular-nums;
+      paint-order: normal;
+      stroke: none;
+      text-shadow: none;
+      filter: none;
     }
 
     .table-wrap {
@@ -2802,7 +2803,10 @@
       const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, options.yFormat || fmtInt);
       const xTicks = indexedTicks(source, xKey).map(tick => '<text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
       const accessible = escapeHtml('Trend over ' + source.length + ' reporting periods; latest ' + (options.yFormat || fmtInt)(value(latest)));
-      target.innerHTML = '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + accessible + '"><defs><linearGradient id="' + gradientId + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + lineColor + '" stop-opacity=".22"/><stop offset="100%" stop-color="' + lineColor + '" stop-opacity=".015"/></linearGradient></defs>' + yTicks + bars + '<path d="' + area + '" fill="url(#' + gradientId + ')"/><polyline points="' + points + '" fill="none" stroke="' + lineColor + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5.5" fill="#fff" stroke="' + lineColor + '" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Latest · ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg></div>';
+      target.innerHTML = '<div class="chart-current-readout" aria-label="Latest observed data point"><span>Latest observed rate</span><strong>' +
+        escapeHtml((options.yFormat || fmtInt)(value(latest))) +
+        '</strong><small>Relative day ' + escapeHtml(String(latest[xKey] ?? '—')) + '</small></div>' +
+        '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + accessible + '"><defs><linearGradient id="' + gradientId + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + lineColor + '" stop-opacity=".22"/><stop offset="100%" stop-color="' + lineColor + '" stop-opacity=".015"/></linearGradient></defs>' + yTicks + bars + '<path d="' + area + '" fill="url(#' + gradientId + ')"/><polyline points="' + points + '" fill="none" stroke="' + lineColor + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5.5" fill="#fff" stroke="' + lineColor + '" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Latest · ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg></div>';
     }
 
     function comboChart(id, rows, xKey, barKey, lineKey) {
