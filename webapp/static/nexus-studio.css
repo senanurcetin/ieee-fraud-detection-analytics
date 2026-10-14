@@ -1197,3 +1197,21 @@ body.light .report-canvas .chart-inspect-btn:hover {background:#e0ebf8}
   .report-canvas .visual-head{gap:7px}
   .report-canvas .chart-inspect-btn{font-size:10px;padding:7px 8px}
 }
+
+/* Cohort provenance: risk-band training aggregates and independent holdout
+   charts must not appear as one slice or one common denominator. */
+.studio-command .studio-scope-caveat {
+  margin:16px 0 0;
+  padding:12px 15px;
+  border:1px solid rgba(137,184,238,.37);
+  border-left:3px solid #86baff;
+  border-radius:0 8px 8px 0;
+  background:rgba(14,46,79,.68);
+  color:#d0e6fd;
+  font-size:11px;
+  font-weight:550;
+  line-height:1.65;
+}
+.studio-exposure-lead strong {overflow-wrap:anywhere}
+.studio-exposure-ribbon .kpi-card strong {overflow-wrap:anywhere}
+body.light .studio-command .studio-scope-caveat{background:#e9f3ff;color:#234864;border-color:#a5c4e9}
