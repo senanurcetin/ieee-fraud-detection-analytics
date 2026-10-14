@@ -196,3 +196,55 @@ body.nexus-studio-model .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
  .studio-model-inputs,.studio-model-assumptions{grid-template-columns:1fr}
  .studio-model-simulator #threshold-summary .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Remaining four distinct NEXUS workspaces: proxy, behavior, model drivers, decisions. */
+body.nexus-studio-proxy .canvas-head,
+body.nexus-studio-behavior .canvas-head,
+body.nexus-studio-features .canvas-head,
+body.nexus-studio-insights .canvas-head{display:none}
+body.nexus-studio-proxy .report-canvas,
+body.nexus-studio-behavior .report-canvas,
+body.nexus-studio-features .report-canvas,
+body.nexus-studio-insights .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.studio-proxy-hero{background:radial-gradient(ellipse at 84% 5%,rgba(81,143,208,.21),transparent 54%),linear-gradient(117deg,#102d4c,#0d2642 67%,#112d48)}
+.studio-proxy-hero h3 em{color:#a4c7ee}
+.studio-proxy-compare{display:grid;grid-template-columns:minmax(0,.79fr) minmax(0,1.21fr);gap:16px}
+.studio-proxy-compare .visual-card{min-height:400px}
+.studio-proxy-matrix{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(240px,.7fr);gap:16px}
+.studio-proxy-matrix .visual-card{min-height:400px}
+.studio-proxy .studio-proxy-matrix .studio-wide-heatmap{padding:17px!important}
+.behavior-hero{background:radial-gradient(ellipse at 85% 8%,rgba(111,125,220,.22),transparent 56%),linear-gradient(119deg,#102f51,#09223b 70%,#161e48)}
+.behavior-hero h3 em{color:#b3b5fb}
+.studio-behavior-primary{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr);gap:16px}
+.studio-behavior-primary .visual-card{min-height:395px}
+.studio-behavior-drivers{min-height:340px}
+.feature-hero{background:radial-gradient(ellipse at 86% 12%,rgba(145,115,226,.2),transparent 55%),linear-gradient(115deg,#122e50,#0a223c 68%,#231e49)}
+.feature-hero h3 em{color:#c0b2ff}
+.studio-feature-lead{min-height:430px}
+.studio-feature-lead .executive-bars{max-width:950px;margin:0 auto}
+.studio-feature-context{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:16px}
+.studio-feature-context .visual-card{min-height:420px}
+.decision-hero{background:radial-gradient(ellipse at 80% 5%,rgba(96,117,220,.25),transparent 55%),linear-gradient(115deg,#102e52,#0b2039 70%,#242047)}
+.decision-hero h3 em{color:#b8b1ff}
+.decision-hero .studio-domain-focus strong{font-size:clamp(25px,2.7vw,39px);line-height:1.17}
+.studio-decision-lanes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.studio-decision-lane{position:relative;display:flex;flex-direction:column;gap:12px;min-height:193px;padding:19px 16px;border:1px solid #3b5775;border-radius:13px;background:linear-gradient(150deg,#153758,#0e2945)}
+.studio-decision-lane:before{content:"";position:absolute;left:16px;top:0;width:40px;height:3px;border-radius:0 0 4px 4px;background:#83b8fa}
+.studio-decision-lane:nth-child(2):before{background:#9da5f8}
+.studio-decision-lane:nth-child(3):before{background:#8bd0c1}
+.studio-decision-lane:nth-child(4):before{background:#c6abd9}
+.studio-decision-lane span{color:#a7c8e9;font-size:10px;font-weight:790;letter-spacing:.13em}
+.studio-decision-lane strong{font-size:clamp(17px,1.6vw,24px);color:#f1f7ff;font-weight:740;letter-spacing:-.032em}
+.studio-decision-lane p{color:#aac0d9;font-size:11px;line-height:1.7}
+.studio-decision-analytics{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:16px}
+.studio-decision-analytics .visual-card{min-height:450px}
+@media(max-width:1190px){
+ .studio-proxy-compare,.studio-proxy-matrix,.studio-behavior-primary,.studio-feature-context,.studio-decision-analytics{grid-template-columns:1fr}
+ .studio-decision-lanes{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .studio-proxy-compare .visual-card,.studio-proxy-matrix .visual-card,.studio-behavior-primary .visual-card{min-height:320px}
+}
+@media(max-width:650px){
+ .studio-decision-lanes{grid-template-columns:1fr}
+ .studio-decision-lane{min-height:150px}
+ .studio-feature-lead{min-height:310px}
+}
