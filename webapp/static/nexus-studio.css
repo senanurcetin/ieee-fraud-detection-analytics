@@ -1154,3 +1154,46 @@ body.light .report-canvas .model-calibration-warning {
 }
 body.light .report-canvas .model-calibration-warning strong {color:#754c30}
 body.light .report-canvas .model-calibration-warning p {color:#73563f}
+
+/* Accessible, explicit chart inspection; no invisible click-only hotspots. */
+.report-canvas .visual-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+.report-canvas .visual-head>div {min-width:0;flex:1}
+.report-canvas .chart-inspect-btn {
+  flex:none;
+  padding:7px 11px;
+  min-height:35px;
+  border:1px solid #50769b;
+  border-radius:8px;
+  background:#204365;
+  color:#dceeff;
+  cursor:pointer;
+  font:inherit;
+  font-size:11px;
+  font-weight:760;
+  letter-spacing:.01em;
+}
+.report-canvas .chart-inspect-btn:hover {
+  background:#2a567d;
+  border-color:#8db9ec;
+  color:#fff;
+}
+.report-canvas .chart-inspect-btn:focus-visible,
+#drawer-close:focus-visible {
+  outline:3px solid #9ecfff;
+  outline-offset:3px;
+}
+body.light .report-canvas .chart-inspect-btn {
+  color:#244c74;
+  background:#f0f6fc;
+  border-color:#bdcee0;
+}
+body.light .report-canvas .chart-inspect-btn:hover {background:#e0ebf8}
+@media(max-width:430px){
+  .report-canvas .visual-head{gap:7px}
+  .report-canvas .chart-inspect-btn{font-size:10px;padding:7px 8px}
+}
