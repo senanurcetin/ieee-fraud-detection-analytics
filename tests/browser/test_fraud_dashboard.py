@@ -124,5 +124,308 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+    def test_nine_distinct_studios_and_supporting_charts(self):
+        """Every studio must render genuine data at desktop and mobile widths."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                for name in (
+                    "overview", "trend", "amount", "customer", "geo",
+                    "behavior", "features", "model", "insights",
+                ):
+                    with self.subTest(viewport=width, workspace=name):
+                        page.locator(f'[data-page="{name}"]').click()
+                        self.assertEqual(page.locator("#report-body .studio-screen").count(), 1)
+                        self.assertEqual(
+                            page.locator("#report-body .visual-body").evaluate_all(
+                                "(nodes) => nodes.filter(node => !node.innerHTML.trim()).length"
+                            ),
+                            0,
+                            "An analytical chart must not be silently empty",
+                        )
+                        self.assertLessEqual(
+                            page.evaluate(
+                                "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                            ),
+                            1,
+                        )
+                        button = page.locator('[data-visual-mode="support"]')
+                        if button.count():
+                            button.click()
+                            self.assertGreater(page.locator("#report-body .visual-card").count(), 0)
+                            self.assertEqual(
+                                page.locator("#report-body .visual-body").evaluate_all(
+                                    "(nodes) => nodes.filter(node => !node.innerHTML.trim()).length"
+                                ),
+                                0,
+                            )
+                            page.locator('[data-visual-mode="main"]').click()
+                self.assertEqual(errors, [])
+
+    def test_model_threshold_simulation_keeps_real_validation_feedback(self):
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        page.locator('[data-page="model"]').click()
+        self.assertTrue(page.locator(".studio-model-simulator").is_visible())
+        slider = page.locator("#threshold-slider")
+        self.assertGreater(int(slider.get_attribute("max")), 3)
+        slider.fill("3")
+        page.wait_for_function(
+            "() => document.querySelector('#threshold-slider')?.value === '3'"
+        )
+        self.assertEqual(page.locator("#threshold-summary .kpi-card").count(), 6)
+        self.assertEqual(page.locator("#model-confusion .confusion-tile").count(), 4)
+        self.assertEqual(errors, [])
+
+
+    def test_rate_uncertainty_and_heatmap_support_are_explicit(self):
+        """Reject the old visual failure: n=2 must not appear as a stable 100% heat cell."""
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        page.locator('[data-page="amount"]').click()
+        page.locator("#amount-bar .rate-evidence-chart").wait_for(timeout=15000)
+        self.assertGreater(page.locator("#amount-bar .rate-value").count(), 0)
+        self.assertGreater(page.locator("#amount-bar .rate-denominator").count(), 0)
+        self.assertTrue(page.locator("#amount-bar .rate-evidence-legend").is_visible())
+        sparse = page.locator("#amount-heatmap .heat-insufficient")
+        self.assertGreater(sparse.count(), 0, "Sparse cells must be explicitly identified")
+        self.assertGreater(page.locator('#amount-heatmap [data-stat-status="observed"]').count(), 0)
+        for cell in sparse.all():
+            self.assertIn("n < 30", cell.inner_text())
+            self.assertNotIn("%", cell.locator(".heat-value").inner_text())
+            self.assertIn("observed rate", cell.get_attribute("data-tooltip"))
+        self.assertEqual(errors, [])
+
+    def test_customer_and_proxy_rates_show_measured_denominators(self):
+        """Do not revert evidence charts to unlabeled percentage bars."""
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        for name, chart_ids in (
+            ("customer", ("customer-identity", "customer-email")),
+            ("geo", ("proxy-risk",)),
+        ):
+            page.locator(f'[data-page="{name}"]').click()
+            for chart_id in chart_ids:
+                with self.subTest(workspace=name, chart=chart_id):
+                    plot = page.locator(f"#{chart_id}")
+                    plot.locator(".rate-evidence-chart").wait_for(timeout=15000)
+                    self.assertGreater(plot.locator(".rate-denominator").count(), 0)
+                    self.assertIn("Wilson 95%", plot.inner_text())
+        self.assertEqual(errors, [])
+
+
+    def test_dark_nexus_chart_surfaces_and_evidence_drill(self):
+        """Overview SVG, risk bands, segment drill and chart drawer stay on dark surfaces."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                page.locator("#overview-trend svg").wait_for(timeout=15000)
+                for selector in (
+                    ".studio-overview .visual-card",
+                    ".studio-overview .risk-band-card",
+                    ".studio-overview .chart-figure",
+                ):
+                    background = page.locator(selector).first.evaluate(
+                        "(node) => getComputedStyle(node).backgroundImage"
+                    )
+                    self.assertNotIn("rgb(255, 255, 255)", background)
+                self.assertIn(
+                    "linear-gradient",
+                    page.locator(".studio-overview .risk-band-card").first.evaluate(
+                        "(node) => getComputedStyle(node).backgroundImage"
+                    ),
+                )
+                page.locator(".risk-band-card[data-filter-key]").first.click()
+                self.assertTrue(page.locator(".studio-drill-hero").is_visible())
+                self.assertEqual(page.locator(".studio-drill-metrics .kpi-card").count(), 4)
+                self.assertIn(
+                    "No finer cohort has been published",
+                    page.locator("#drill-nested").inner_text(),
+                )
+                self.assertGreater(page.locator("#drill-peers svg").count(), 0)
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ),
+                    1,
+                )
+                page.locator("#drill-back-btn").click()
+                page.locator("#overview-trend").locator(
+                    "xpath=ancestor::article[contains(@class, 'visual-card')]"
+                ).locator(".visual-title").click()
+                drawer = page.locator("#detail-drawer")
+                self.assertTrue(drawer.is_visible())
+                self.assertEqual(drawer.get_attribute("role"), "dialog")
+                self.assertNotIn(
+                    "rgb(255, 255, 255)",
+                    drawer.evaluate("(node) => getComputedStyle(node).backgroundImage"),
+                )
+                page.keyboard.press("Escape")
+                self.assertFalse(drawer.is_visible())
+                self.assertEqual(errors, [])
+
+
+    def test_fraud_chart_numbers_have_no_white_halo_or_scaled_down_axes(self):
+        """Guard against the SVG 4px white text stroke and miniature chart numerals."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                page.locator("#overview-trend svg .svg-axis").first.wait_for(timeout=15000)
+                axis = page.locator("#overview-trend svg .svg-axis").first
+                style = axis.evaluate(
+                    """(element) => {
+                      const s = getComputedStyle(element);
+                      return {stroke: s.stroke, strokeWidth: s.strokeWidth,
+                        shadow: s.textShadow, filter: s.filter, opacity: s.opacity,
+                        font: parseFloat(s.fontSize)};
+                    }"""
+                )
+                self.assertEqual(style["stroke"], "none")
+                self.assertEqual(style["strokeWidth"], "0px")
+                self.assertEqual(style["shadow"], "none")
+                self.assertEqual(style["filter"], "none")
+                self.assertEqual(style["opacity"], "1")
+                self.assertGreaterEqual(style["font"], 12)
+
+                latest = page.locator("#overview-trend .chart-current-readout")
+                self.assertTrue(latest.is_visible())
+                self.assertIn("%", latest.inner_text())
+
+                geometry = page.locator("#overview-trend .chart-figure").evaluate(
+                    """figure => ({
+                      client: figure.clientWidth,
+                      scroll: figure.scrollWidth,
+                      svg: figure.querySelector('svg').getBoundingClientRect().width
+                    })"""
+                )
+                if width == 1440:
+                    self.assertGreaterEqual(geometry["svg"], 740)
+                else:
+                    self.assertGreater(geometry["scroll"], geometry["client"])
+
+                page.locator('[data-page="geo"]').click()
+                label = page.locator("#report-body svg .svg-value").first
+                label.wait_for(timeout=15000)
+                metrics = label.evaluate(
+                    """element => {
+                      const s = getComputedStyle(element);
+                      return {stroke: s.stroke, strokeWidth: s.strokeWidth,
+                        shadow: s.textShadow, filter: s.filter, font: parseFloat(s.fontSize)};
+                    }"""
+                )
+                self.assertEqual(metrics["stroke"], "none")
+                self.assertEqual(metrics["strokeWidth"], "0px")
+                self.assertEqual(metrics["shadow"], "none")
+                self.assertEqual(metrics["filter"], "none")
+                self.assertGreaterEqual(metrics["font"], 13)
+
+                page.locator('[data-page="model"]').click()
+                tile = page.locator(".confusion-tile strong").first
+                tile.wait_for(timeout=15000)
+                self.assertEqual(
+                    tile.evaluate("(element) => getComputedStyle(element).textShadow"), "none"
+                )
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ), 1
+                )
+                self.assertEqual(errors, [])
+
+
+    def test_diagnostic_svg_scale_and_dark_model_panels(self):
+        """Support diagnostics must not shrink labels to 37% or retain white tables."""
+        for width, height in ((1440, 900), (1024, 768), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                checks = (
+                    ("geo", "main", "#proxy-importance svg"),
+                    ("features", "main", "#feature-scatter svg"),
+                    ("amount", "support", "#amount-boxplot svg"),
+                    ("model", "support", "#model-curves .curve-panel svg"),
+                )
+                for view, mode, target in checks:
+                    with self.subTest(view=view, mode=mode):
+                        page.locator(f'[data-page="{view}"]').click()
+                        if mode == "support":
+                            page.locator('[data-visual-mode="support"]').click()
+                        element = page.locator(target).first
+                        element.wait_for(timeout=15000)
+                        effective_scale = element.evaluate(
+                            "(svg) => svg.getBoundingClientRect().width / svg.viewBox.baseVal.width"
+                        )
+                        self.assertGreaterEqual(
+                            effective_scale, 0.8, f"{view} chart text is scaled too small"
+                        )
+                page.locator('[data-page="model"]').click()
+                page.locator('[data-visual-mode="support"]').click()
+                self.assertEqual(page.locator("#model-curves .curve-axis-caption").count(), 2)
+                self.assertEqual(page.locator("#model-curves .curve-panel svg").count(), 2)
+                for panel in page.locator("#model-curves .curve-panel").all():
+                    svg = panel.locator("svg")
+                    caption = panel.locator(".curve-axis-caption")
+                    # Compare visible text bounds, not the SVG viewport, whose
+                    # preserved aspect ratio can contain unused letterbox space.
+                    x_tick = svg.locator('text.svg-axis[text-anchor="middle"]').last
+                    tick_box = x_tick.bounding_box()
+                    caption_box = caption.bounding_box()
+                    self.assertGreaterEqual(
+                        caption_box["y"], tick_box["y"] + tick_box["height"] + 8,
+                    )
+                cell = page.locator("#model-calibration .table-wrap td").first
+                cell.wait_for(timeout=15000)
+                self.assertNotEqual(
+                    cell.evaluate("(element) => getComputedStyle(element).backgroundColor"),
+                    "rgb(255, 255, 255)",
+                )
+                calibration = page.locator("#model-calibration .metric-grid>.metric").first
+                self.assertEqual(calibration.locator("span").count(), 1)
+                self.assertEqual(calibration.locator("strong").count(), 1)
+                self.assertGreater(
+                    calibration.locator("strong").bounding_box()["y"],
+                    calibration.locator("span").bounding_box()["y"],
+                )
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ), 1
+                )
+                self.assertEqual(errors, [])
+
+
+    def test_risk_band_cross_filter_uses_observed_counts_without_invented_dollars(self):
+        """A training risk cohort has fraud counts, but no monetary exposure mart."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                page.locator(".risk-band-card[data-filter-key]").first.click()
+                page.locator("#drill-back-btn").click()
+                page.locator(".studio-focus-value").wait_for(timeout=12000)
+                focus = page.locator(".studio-command")
+                self.assertIn("96.68%", focus.inner_text())
+                self.assertIn("5,710", focus.inner_text())
+                self.assertIn("train split", focus.inner_text())
+                self.assertIn("retain their separately reported populations", focus.inner_text())
+                exposure = page.locator(".studio-exposure-ribbon")
+                self.assertIn("Not reported", exposure.inner_text())
+                self.assertGreaterEqual(exposure.inner_text().count("Unavailable"), 2)
+                self.assertNotIn("$0", exposure.inner_text())
+                self.assertIn("not reported", page.locator(".studio-overview-decisions").inner_text().lower())
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ), 1
+                )
+                page.locator("#clear-btn").click()
+                self.assertIn("3.50%", page.locator(".studio-command").inner_text())
+                self.assertIn("$3.08M", page.locator(".studio-exposure-ribbon").inner_text())
+                self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()

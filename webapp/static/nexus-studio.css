@@ -1,0 +1,1217 @@
+/* NEXUS Studio / Fraud Executive Workspace
+   A new product composition, not a reskin of the inherited report grid. */
+.studio-screen{--studio-ink:#eaf4ff;--studio-sub:#acc2da;--studio-line:rgba(133,183,235,.23);display:grid;gap:23px;min-width:0}
+.studio-screen .studio-command{position:relative;display:grid;grid-template-columns:minmax(0,1.55fr) minmax(230px,.78fr);min-height:278px;gap:34px;align-items:center;overflow:hidden;padding:clamp(25px,3.3vw,52px);border:1px solid rgba(108,164,224,.33);border-radius:20px;background:radial-gradient(ellipse at 85% 12%,rgba(87,135,224,.26),transparent 52%),linear-gradient(135deg,#143759 0%,#09213b 64%,#101c3c 100%);box-shadow:0 25px 45px rgba(1,8,24,.19),inset 0 1px rgba(234,245,255,.08)}
+.studio-screen .studio-command:after{content:"";pointer-events:none;position:absolute;right:-95px;bottom:-140px;width:330px;height:330px;border-radius:50%;border:1px solid rgba(151,190,250,.13);box-shadow:0 0 0 44px rgba(70,116,196,.035),0 0 0 87px rgba(70,116,196,.025)}
+.studio-command-copy,.studio-command-focus{position:relative;z-index:1}
+.studio-kicker{display:flex;align-items:center;flex-wrap:wrap;gap:10px;color:#b0d0f8;letter-spacing:.15em;font-size:10px;font-weight:780}
+.studio-kicker-marker{display:inline-block;width:20px;height:3px;border-radius:3px;background:#83b4ff}
+.studio-kicker-divider{width:1px;height:12px;background:rgba(194,218,249,.32)}
+.studio-command-copy h3{margin:25px 0 14px;font-size:clamp(32px,3.5vw,55px);letter-spacing:-.065em;line-height:1.02;font-weight:760;color:#f5faff}
+.studio-command-copy h3 em{font-style:normal;background:linear-gradient(90deg,#a3cbff,#b8b0ff);background-clip:text;-webkit-background-clip:text;color:transparent}
+.studio-command-copy>p{max-width:590px;color:#b9cde4;font-size:13px;line-height:1.75}
+.studio-command-meta{display:flex;flex-wrap:wrap;gap:10px 23px;margin-top:26px;font-size:10px;font-weight:650;color:#95b3d3}
+.studio-command-meta span:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:8px;background:#69b1ff;vertical-align:1px}
+.studio-command-focus{padding:24px 25px;border:1px solid rgba(145,188,245,.25);border-radius:15px;background:linear-gradient(150deg,rgba(24,62,109,.55),rgba(6,30,58,.55));backdrop-filter:blur(7px)}
+.studio-focus-label{color:#afd1ff;font-size:10px;letter-spacing:.12em;font-weight:780}
+.studio-focus-value{margin:8px 0 5px;font-size:clamp(51px,6vw,87px);color:#f8fbff;font-weight:740;line-height:1;letter-spacing:-.075em;font-variant-numeric:tabular-nums}
+.studio-focus-foot{color:#c1d3e9;font-size:12px;line-height:1.5}
+.studio-focus-rule{margin-top:23px;padding-top:12px;border-top:1px solid rgba(159,195,238,.19);font-size:10px;line-height:1.55;color:#91badf}
+.studio-exposure-ribbon{display:grid;grid-template-columns:minmax(220px,1.17fr) minmax(0,1fr) minmax(0,1fr);gap:13px;align-items:stretch}
+.studio-exposure-lead{position:relative;display:flex;flex-direction:column;justify-content:center;gap:9px;padding:25px 27px;border-radius:14px;border:1px solid rgba(112,166,227,.33);background:linear-gradient(135deg,#173c61,#112f51)}
+.studio-exposure-lead:before{content:"";position:absolute;top:0;left:23px;width:54px;height:3px;border-radius:0 0 4px 4px;background:#85b5ff}
+.studio-exposure-lead>span{color:#aecff0;font-size:10px;letter-spacing:.12em;font-weight:780}
+.studio-exposure-lead strong{color:#f4f9ff;font-weight:740;font-size:clamp(31px,3.2vw,49px);line-height:1.12;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.studio-exposure-lead small{color:#a6c0da;font-size:11px;line-height:1.5}
+.studio-exposure-ribbon .kpi-card{margin:0!important;min-height:151px!important;justify-content:center}
+.studio-overview-analysis{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(370px,.92fr);gap:17px;align-items:stretch}
+.studio-overview-feature,.studio-overview-companion{display:grid;grid-template-rows:auto 1fr;gap:11px;min-width:0}
+.studio-section-tag{display:flex;align-items:center;gap:11px;flex-wrap:wrap;min-height:30px;color:#c7daf1;font-size:10px;font-weight:760;letter-spacing:.1em}
+.studio-section-tag>span{display:grid;place-items:center;width:35px;height:26px;border:1px solid #4775a7;border-radius:7px;background:#183657;color:#a4c9ff;font-size:10px;letter-spacing:0}
+.studio-section-tag em{font-style:normal;font-weight:500;letter-spacing:0;color:#7e9cbe}
+.studio-overview-analysis .studio-chart{min-height:465px!important;height:100%;padding:25px!important}
+.studio-overview-analysis .studio-chart .visual-body{min-height:330px}
+.studio-overview-feature .studio-chart svg{max-height:375px!important}
+.studio-overview-companion .risk-band-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.studio-overview-companion .risk-band-card{padding:11px;gap:8px}
+.studio-overview-companion .risk-band-card .risk-band-rate{font-size:clamp(20px,2vw,29px)}
+.studio-overview-companion .risk-band-card .risk-band-footer{font-size:10px}
+.studio-overview-companion .risk-band-card .risk-band-metric{font-size:10px}
+.studio-section-heading{display:flex;gap:15px;justify-content:space-between;align-items:end;flex-wrap:wrap;padding:5px 1px 17px;border-bottom:1px solid var(--studio-line);margin-bottom:16px}
+.studio-section-heading span{font-size:10px;color:#96bde9;letter-spacing:.14em;font-weight:770}
+.studio-section-heading h3{margin:7px 0 0;color:#f0f6ff;font-size:clamp(20px,2vw,28px);letter-spacing:-.035em;font-weight:730}
+.studio-section-heading p{font-size:11px;color:#99b3d1;line-height:1.6;max-width:370px}
+.studio-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.studio-overview-rankings>.studio-compare-grid .visual-card{min-height:410px}
+.studio-overview-decisions .insight-row{margin-top:0;gap:13px}
+.studio-overview-decisions .insight-card{min-height:138px}
+.studio-screen .visual-card{border-radius:15px}
+.studio-screen .visual-card .visual-head{margin-bottom:13px}
+.studio-screen .visual-card .visual-title{font-size:clamp(15px,1.1vw,19px)}
+.studio-screen .visual-card .visual-note{line-height:1.6}
+.studio-screen .visual-mode-tabs{justify-self:start;min-width:0;max-width:100%;margin-bottom:-5px}
+@media(max-width:1480px){
+ .studio-overview-analysis{grid-template-columns:minmax(0,1fr)}
+ .studio-overview-companion .risk-band-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .studio-overview-analysis .studio-chart{min-height:380px!important}
+}
+@media(max-width:1050px){
+ .studio-screen .studio-command{grid-template-columns:minmax(0,1fr)}
+ .studio-command-focus{max-width:490px}
+ .studio-exposure-ribbon{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .studio-exposure-lead{grid-column:1/-1}
+}
+@media(max-width:780px){
+ .studio-screen{gap:16px}
+ .studio-screen .studio-command{padding:24px 19px;gap:20px;border-radius:14px}
+ .studio-command-copy h3{font-size:clamp(28px,7vw,41px)}
+ .studio-command-focus{padding:19px}
+ .studio-focus-value{font-size:clamp(47px,11vw,72px)}
+ .studio-compare-grid{grid-template-columns:1fr}
+ .studio-overview-companion .risk-band-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .studio-overview-analysis .studio-chart{padding:18px!important;min-height:300px!important}
+ .studio-exposure-ribbon{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .studio-exposure-ribbon .kpi-value{font-size:clamp(19px,5vw,26px)}
+}
+@media(max-width:430px){
+ .studio-command-meta{gap:10px;flex-direction:column}
+ .studio-kicker{font-size:9px}
+ .studio-exposure-ribbon{grid-template-columns:1fr}
+ .studio-exposure-lead{grid-column:auto}
+ .studio-screen .risk-band-grid{gap:8px}
+ .studio-overview-companion .risk-band-card{padding:9px}
+ .studio-overview-companion .risk-band-card .risk-band-rate{font-size:22px}
+ .studio-section-tag em{flex-basis:100%}
+}
+@media(prefers-reduced-motion:reduce){.studio-screen *{transition:none!important}}
+
+/* A first-class workspace replaces the inherited duplicate report heading. */
+body.nexus-studio-overview .canvas-head {display:none}
+body.nexus-studio-overview .report-canvas {padding-top:clamp(16px,1.5vw,26px)}
+@media(min-width:1220px) and (max-width:1480px){
+ .studio-overview-analysis{grid-template-columns:minmax(0,1.19fr) minmax(0,.87fr);gap:13px}
+ .studio-overview-companion .risk-band-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .studio-overview-analysis .studio-chart{padding:17px!important}
+ .studio-overview-companion .risk-band-card{padding:10px}
+}
+
+/* A second page archetype: investigative time series, not a smaller executive grid. */
+body.nexus-studio-trend .canvas-head{display:none}
+body.nexus-studio-trend .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.studio-trend-brief{display:grid;grid-template-columns:minmax(0,1.32fr) minmax(230px,.68fr);gap:29px;align-items:center;padding:clamp(25px,3vw,46px);border:1px solid #35547c;border-radius:18px;background:linear-gradient(115deg,#102f50,#0a2341 70%,#111d3b)}
+.studio-trend-kicker{font-size:10px;font-weight:790;letter-spacing:.16em;color:#a6c8f2}
+.studio-trend-brief h3{font-size:clamp(33px,3.5vw,53px);font-weight:750;line-height:1.03;letter-spacing:-.055em;color:#f5faff;margin:18px 0 13px}
+.studio-trend-brief h3 em{font-style:normal;color:#b5b0ff}
+.studio-trend-brief p{color:#b3c9e4;font-size:12px;line-height:1.72;max-width:640px}
+.studio-trend-context{margin-top:20px;display:flex;flex-wrap:wrap;gap:10px 21px;color:#91b4d9;font-size:10px}
+.studio-trend-context span:before{content:"";display:inline-block;width:6px;height:6px;background:#86bfff;border-radius:50%;vertical-align:1px;margin-right:7px}
+.studio-trend-focus{padding:23px 22px;border:1px solid #38648d;border-radius:15px;background:rgba(34,77,127,.33);display:flex;flex-direction:column;gap:12px}
+.studio-trend-focus>span{font-size:10px;font-weight:780;letter-spacing:.13em;color:#add0f7}
+.studio-trend-focus>strong{font-size:clamp(47px,5.2vw,76px);font-weight:740;letter-spacing:-.07em;color:#f8fbff;line-height:1;font-variant-numeric:tabular-nums}
+.studio-trend-focus>small{font-size:11px;color:#abc5df;line-height:1.6}
+.studio-trend-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.studio-trend-metrics .kpi-card{margin:0;min-height:127px}
+.studio-trend-evidence{display:grid;grid-template-columns:minmax(0,1.53fr) minmax(230px,.72fr);gap:15px;align-items:stretch}
+.studio-trend-evidence .visual-card{height:100%;min-height:465px}
+.studio-trend-evidence .visual-card .visual-body{min-height:330px}
+.studio-trend-secondary .executive-bar-row{grid-template-columns:minmax(77px,35%) minmax(0,1fr) auto}
+.studio-trend-takeaways .insight-row{margin:0}
+@media(max-width:1180px){.studio-trend-evidence{grid-template-columns:1fr}.studio-trend-evidence .visual-card{min-height:300px}}
+@media(max-width:850px){.studio-trend-brief{grid-template-columns:1fr}.studio-trend-focus{max-width:460px}.studio-trend-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.studio-trend-brief{padding:21px 16px}.studio-trend-metrics{grid-template-columns:1fr}.studio-trend-brief h3{font-size:33px}}
+
+/* Value intelligence + identity intelligence: independent workspace architectures. */
+body.nexus-studio-amount .canvas-head,body.nexus-studio-customer .canvas-head{display:none}
+body.nexus-studio-amount .report-canvas,body.nexus-studio-customer .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.studio-domain-hero{min-height:265px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(230px,.67fr);align-items:center;gap:23px;border:1px solid #3b5b85;border-radius:18px;padding:clamp(25px,3vw,47px);background:radial-gradient(ellipse at 84% 16%,rgba(74,114,211,.25),transparent 53%),linear-gradient(119deg,#112e52,#09213b 66%,#182044)}
+.studio-domain-eyebrow{color:#9ac6fb;font-size:10px;font-weight:800;letter-spacing:.17em}
+.studio-domain-hero h3{margin:22px 0 14px;color:#f5f9ff;font-size:clamp(30px,3.2vw,52px);line-height:1.04;letter-spacing:-.055em;font-weight:755}
+.studio-domain-hero h3 em{font-style:normal;color:#b1b7fa}
+.studio-domain-hero p{max-width:570px;color:#b5cbe5;font-size:12px;line-height:1.72}
+.studio-domain-meta{display:flex;gap:9px 18px;flex-wrap:wrap;margin-top:23px;font-size:10px;color:#91b5da}
+.studio-domain-meta span:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#89bfff;vertical-align:1px;margin-right:7px}
+.studio-domain-focus{align-self:stretch;min-height:160px;display:flex;flex-direction:column;justify-content:center;gap:11px;padding:22px;border:1px solid #446996;border-radius:13px;background:rgba(35,75,130,.28)}
+.studio-domain-focus>span{color:#a4c5ed;font-size:10px;font-weight:780;letter-spacing:.1em;line-height:1.65}
+.studio-domain-focus>strong{color:#fff;font-size:clamp(32px,3vw,48px);font-weight:750;letter-spacing:-.048em;line-height:1.12;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.studio-domain-focus>em{color:#b6d0e7;font-size:11px;font-style:normal;line-height:1.55}
+.studio-domain-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.studio-domain-facts .kpi-card{min-height:132px}
+.studio-evidence-section{display:block;min-width:0}
+.studio-wide-heatmap{padding:25px!important}
+.studio-wide-heatmap .heatmap-editorial{max-width:100%}
+.studio-evidence-section .visual-card{min-height:360px}
+.studio-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.studio-duo .visual-card{min-height:420px}
+.studio-details{min-height:310px!important}
+.studio-action-notes .insight-row{margin:0}
+.identity-hero{background:radial-gradient(ellipse at 90% 10%,rgba(138,116,218,.22),transparent 53%),linear-gradient(113deg,#122e4e,#0a2240 70%,#201d49)}
+.identity-hero .studio-domain-hero h3 em{color:#b8aafa}
+.studio-identity-overview{display:grid;grid-template-columns:minmax(0,.77fr) minmax(0,1.23fr);gap:17px}
+.studio-identity-left,.studio-identity-right{min-width:0;display:flex;flex-direction:column}
+.studio-identity-left .visual-card,.studio-identity-right .visual-card{flex:1;min-height:465px}
+.studio-identity-left .visual-body,.studio-identity-right .visual-body{min-height:300px}
+.studio-identity-overview .studio-section-heading{align-items:end;min-height:91px}
+@media(max-width:1150px){
+ .studio-identity-overview{grid-template-columns:1fr}
+ .studio-identity-overview .studio-section-heading{min-height:0}
+}
+@media(max-width:900px){
+ .studio-domain-hero{grid-template-columns:1fr}
+ .studio-domain-focus{max-width:540px}
+ .studio-duo{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+ .studio-domain-hero{padding:22px 17px}
+ .studio-domain-hero h3{font-size:clamp(29px,8.1vw,40px)}
+ .studio-domain-facts{grid-template-columns:1fr}
+ .studio-domain-facts .kpi-card{min-height:110px}
+ .studio-wide-heatmap{padding:15px!important}
+ .studio-identity-left .visual-card,.studio-identity-right .visual-card{min-height:310px}
+}
+
+/* Model governance is a control-room archetype: decision input above diagnostic evidence. */
+body.nexus-studio-model .canvas-head{display:none}
+body.nexus-studio-model .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.model-hero{background:radial-gradient(ellipse at 88% 5%,rgba(141,113,223,.23),transparent 52%),linear-gradient(119deg,#102e52,#0a213c 65%,#221f4d)}
+.model-hero .studio-domain-hero h3 em{color:#b5adff}
+.studio-model-control{display:grid;gap:13px}
+.studio-model-inputs,.studio-model-assumptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:13px 0}
+.studio-model-inputs .field,.studio-model-assumptions .field{min-width:0}
+.studio-model-inputs .field label,.studio-model-assumptions .field label{display:block;padding-bottom:6px}
+.studio-model-inputs input[type=range]{display:block;width:100%;min-height:36px;cursor:pointer}
+.studio-model-assumptions{background:#edf4fc;border:1px solid #dae7f4;border-radius:11px;padding:18px}
+.studio-model-disclosure{margin:10px 0 0;padding:11px 15px;color:#58728e;font-size:11px;line-height:1.7;border-left:3px solid #6c99cc;background:#f4f8fd;border-radius:0 6px 6px 0}
+.studio-model-simulator{min-height:0!important;padding:clamp(19px,2vw,29px)!important}
+.studio-model-simulator .visual-head{margin-bottom:18px}
+.studio-model-simulator #threshold-summary .kpi-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.studio-model-simulator #threshold-summary .kpi-card{min-height:120px}
+.studio-model-primary{display:grid;grid-template-columns:minmax(0,1.23fr) minmax(290px,.84fr);gap:16px}
+.studio-model-primary .visual-card{min-height:405px}
+.studio-model-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.studio-model-secondary .visual-card{min-height:395px}
+.studio-model .studio-evidence-section>.studio-section-heading{margin-top:4px}
+@media(max-width:1150px){.studio-model-primary{grid-template-columns:1fr}}
+@media(max-width:790px){.studio-model-secondary{grid-template-columns:1fr}}
+@media(max-width:600px){
+ .studio-model-inputs,.studio-model-assumptions{grid-template-columns:1fr}
+ .studio-model-simulator #threshold-summary .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Remaining four distinct NEXUS workspaces: proxy, behavior, model drivers, decisions. */
+body.nexus-studio-proxy .canvas-head,
+body.nexus-studio-behavior .canvas-head,
+body.nexus-studio-features .canvas-head,
+body.nexus-studio-insights .canvas-head{display:none}
+body.nexus-studio-proxy .report-canvas,
+body.nexus-studio-behavior .report-canvas,
+body.nexus-studio-features .report-canvas,
+body.nexus-studio-insights .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.studio-proxy-hero{background:radial-gradient(ellipse at 84% 5%,rgba(81,143,208,.21),transparent 54%),linear-gradient(117deg,#102d4c,#0d2642 67%,#112d48)}
+.studio-proxy-hero h3 em{color:#a4c7ee}
+.studio-proxy-compare{display:grid;grid-template-columns:minmax(0,.79fr) minmax(0,1.21fr);gap:16px}
+.studio-proxy-compare .visual-card{min-height:400px}
+.studio-proxy-matrix{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(240px,.7fr);gap:16px}
+.studio-proxy-matrix .visual-card{min-height:400px}
+.studio-proxy .studio-proxy-matrix .studio-wide-heatmap{padding:17px!important}
+.behavior-hero{background:radial-gradient(ellipse at 85% 8%,rgba(111,125,220,.22),transparent 56%),linear-gradient(119deg,#102f51,#09223b 70%,#161e48)}
+.behavior-hero h3 em{color:#b3b5fb}
+.studio-behavior-primary{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(250px,.8fr);gap:16px}
+.studio-behavior-primary .visual-card{min-height:395px}
+.studio-behavior-drivers{min-height:340px}
+.feature-hero{background:radial-gradient(ellipse at 86% 12%,rgba(145,115,226,.2),transparent 55%),linear-gradient(115deg,#122e50,#0a223c 68%,#231e49)}
+.feature-hero h3 em{color:#c0b2ff}
+.studio-feature-lead{min-height:430px}
+.studio-feature-lead .executive-bars{max-width:950px;margin:0 auto}
+.studio-feature-context{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:16px}
+.studio-feature-context .visual-card{min-height:420px}
+.decision-hero{background:radial-gradient(ellipse at 80% 5%,rgba(96,117,220,.25),transparent 55%),linear-gradient(115deg,#102e52,#0b2039 70%,#242047)}
+.decision-hero h3 em{color:#b8b1ff}
+.decision-hero .studio-domain-focus strong{font-size:clamp(25px,2.7vw,39px);line-height:1.17}
+.studio-decision-lanes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px}
+.studio-decision-lane{position:relative;display:flex;flex-direction:column;gap:12px;min-height:193px;padding:19px 16px;border:1px solid #3b5775;border-radius:13px;background:linear-gradient(150deg,#153758,#0e2945)}
+.studio-decision-lane:before{content:"";position:absolute;left:16px;top:0;width:40px;height:3px;border-radius:0 0 4px 4px;background:#83b8fa}
+.studio-decision-lane:nth-child(2):before{background:#9da5f8}
+.studio-decision-lane:nth-child(3):before{background:#8bd0c1}
+.studio-decision-lane:nth-child(4):before{background:#c6abd9}
+.studio-decision-lane span{color:#a7c8e9;font-size:10px;font-weight:790;letter-spacing:.13em}
+.studio-decision-lane strong{font-size:clamp(17px,1.6vw,24px);color:#f1f7ff;font-weight:740;letter-spacing:-.032em}
+.studio-decision-lane p{color:#aac0d9;font-size:11px;line-height:1.7}
+.studio-decision-analytics{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:16px}
+.studio-decision-analytics .visual-card{min-height:450px}
+@media(max-width:1190px){
+ .studio-proxy-compare,.studio-proxy-matrix,.studio-behavior-primary,.studio-feature-context,.studio-decision-analytics{grid-template-columns:1fr}
+ .studio-decision-lanes{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .studio-proxy-compare .visual-card,.studio-proxy-matrix .visual-card,.studio-behavior-primary .visual-card{min-height:320px}
+}
+@media(max-width:650px){
+ .studio-decision-lanes{grid-template-columns:1fr}
+ .studio-decision-lane{min-height:150px}
+ .studio-feature-lead{min-height:310px}
+}
+
+/* Studio-specific light mode preserves evidence contrast without changing the brand. */
+body.light .studio-screen{--studio-line:#c9d8e7}
+body.light .studio-section-heading{border-bottom-color:#cfdfed}
+body.light .studio-section-heading span,
+body.light .studio-domain-meta{color:#3974ac}
+body.light .studio-section-heading h3{color:#153758}
+body.light .studio-section-heading p{color:#486885}
+body.light .studio-section-tag{color:#2c577f}
+body.light .studio-section-tag em{color:#55718c}
+body.light .studio-evidence-section > .studio-section-heading span{color:#326b9e}
+body.light .studio-trend-evidence .visual-card,
+body.light .studio-domain-facts .kpi-card{box-shadow:0 10px 28px rgba(27,61,110,.06)}
+body.light .studio-decision-lanes .studio-decision-lane{background:linear-gradient(150deg,#163959,#102c4a);border-color:#406185}
+body.light .studio-model-assumptions{background:#edf4fb}
+body.light .studio-model-disclosure{color:#47627e}
+@media print{
+ .studio-domain-hero,.studio-command,.studio-trend-brief{box-shadow:none}
+ .studio-domain-hero h3,.studio-command h3,.studio-trend-brief h3{color:#f5faff}
+}
+
+/* NEXUS continuous chart canvas
+   Replace floating white report tiles with integrated dark analytical workspaces.
+   Never change chart data, axis baselines or the semantic colour of the metrics. */
+body:not(.light) .report-canvas {
+  --plot-surface:#102a45;
+  --plot-deep:#0b233c;
+  --plot-rule:#2c4d6d;
+  --plot-text:#e8f2ff;
+  --plot-muted:#a3bdd9;
+  --plot-accent:#7db5f6;
+}
+body:not(.light) .report-canvas .visual-card {
+  background:linear-gradient(153deg,#132f4d,#0d263f 76%);
+  border:1px solid #365779;
+  box-shadow:0 12px 32px rgba(0,7,20,.13),inset 0 1px rgba(207,228,255,.04);
+  color:var(--plot-text);
+}
+body:not(.light) .report-canvas .visual-card::before {
+  background:linear-gradient(90deg,#77b5f8,#a8a5f0);
+}
+body:not(.light) .report-canvas .visual-card:hover {
+  border-color:#4c7399;
+  box-shadow:0 16px 36px rgba(0,7,20,.2),inset 0 1px rgba(207,228,255,.06);
+}
+body:not(.light) .report-canvas .visual-head {
+  border-bottom:1px solid #2b4b69;
+}
+body:not(.light) .report-canvas .visual-title {
+  color:#eef6ff;
+}
+body:not(.light) .report-canvas .visual-note,
+body:not(.light) .report-canvas .chart-scale-note span,
+body:not(.light) .report-canvas .chart-legend {
+  color:#adc5e0;
+}
+body:not(.light) .report-canvas .chart-figure {
+  background:transparent;
+  box-shadow:none;
+  border:0;
+  padding:10px 0;
+}
+body:not(.light) .report-canvas .svg-grid,
+body:not(.light) .report-canvas .chart-figure .svg-grid {
+  stroke:#33536f;
+}
+body:not(.light) .report-canvas .svg-axis,
+body:not(.light) .report-canvas .chart-figure .svg-axis {
+  fill:#a9c1dc;
+}
+body:not(.light) .report-canvas .svg-label,
+body:not(.light) .report-canvas .chart-figure .svg-label {
+  fill:#d4e7fb;
+}
+body:not(.light) .report-canvas .svg-value,
+body:not(.light) .report-canvas .chart-figure .svg-value {
+  fill:#d7eaff;
+}
+body:not(.light) .report-canvas .chart-figure svg text[fill="#163958"],
+body:not(.light) .report-canvas .chart-figure svg text[fill="#193f66"],
+body:not(.light) .report-canvas .chart-figure svg text[fill="#647e98"] {fill:#c5dcf6}
+body:not(.light) .report-canvas .chart-scale-note,
+body:not(.light) .report-canvas .rate-evidence-meta {
+  color:#c5d8f0;
+  border-bottom-color:#335474;
+}
+body:not(.light) .report-canvas .chart-scale-note span {color:#a0bad7}
+body:not(.light) .report-canvas .bar-label,
+body:not(.light) .report-canvas .executive-bar-row .bar-label,
+body:not(.light) .report-canvas .paired-share-name,
+body:not(.light) .report-canvas .rate-plot-label,
+body:not(.light) .report-canvas .feature-rank-row,
+body:not(.light) .report-canvas .rate-plot-metric .rate-value {
+  color:#dae9fc;
+}
+body:not(.light) .report-canvas .bar-value,
+body:not(.light) .report-canvas .executive-bar-row .bar-value,
+body:not(.light) .report-canvas .rate-plot-metric .rate-denominator,
+body:not(.light) .report-canvas .rate-axis-ticks,
+body:not(.light) .report-canvas .rate-evidence-legend {
+  color:#aac5e1;
+}
+body:not(.light) .report-canvas .bar-track,
+body:not(.light) .report-canvas .executive-bar-row .bar-track,
+body:not(.light) .report-canvas .rate-plot-track,
+body:not(.light) .report-canvas .paired-share-track {
+  background:#24425e;
+}
+body:not(.light) .report-canvas .executive-bar-row,
+body:not(.light) .report-canvas .rate-plot-row,
+body:not(.light) .report-canvas .donut-legend-row {
+  border-bottom-color:#2a4866;
+}
+body:not(.light) .report-canvas .executive-bar-row:hover,
+body:not(.light) .report-canvas .rate-plot-row:hover,
+body:not(.light) .report-canvas .bar-row:hover,
+body:not(.light) .report-canvas .paired-share-row:hover {
+  background:#193a5a;
+  border-color:#365b81;
+}
+body:not(.light) .report-canvas .rate-plot-track {
+  border-color:#385875;
+  background:repeating-linear-gradient(90deg,#1b3652,#1b3652 calc(25% - 1px),#365674 calc(25% - 1px),#365674 25%);
+}
+body:not(.light) .report-canvas .rate-plot-ci {background:#7fb2e8}
+body:not(.light) .report-canvas .rate-plot-point {border-color:#152f4b}
+body:not(.light) .report-canvas .rate-evidence-legend,
+body:not(.light) .report-canvas .rate-evidence-meta,
+body:not(.light) .report-canvas .heatmap-legend,
+body:not(.light) .report-canvas .heat-scale-disclosure {
+  color:#b2cce7;
+  border-top-color:#32516f;
+}
+body:not(.light) .report-canvas .heatmap,
+body:not(.light) .report-canvas .heatmap-editorial {
+  border:1px solid #305475;
+  background:#0c253e;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-cell.head {
+  background:#1c3956;
+  color:#d6e7fa;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-observed:not(.heat-insufficient):not(.heat-unknown-support) {
+  background:rgba(76,149,241,var(--heat-alpha,.18));
+  color:#ebf5ff;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-insufficient {
+  background:repeating-linear-gradient(135deg,#1b344f 0,#1b344f 6px,#2a4560 6px,#2a4560 9px)!important;
+  color:#c1d2e6!important;
+  border-color:#6885a4!important;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-insufficient .heat-value,
+body:not(.light) .report-canvas .heatmap-editorial .heat-insufficient small {color:#d8e5f6!important}
+body:not(.light) .report-canvas .heatmap-editorial .heat-unavailable,
+body:not(.light) .report-canvas .heatmap-editorial .heat-unknown-support {
+  background:#1c344e!important;
+  color:#bdcfe2!important;
+}
+body:not(.light) .report-canvas .heat-cell {border-color:#32526e}
+body:not(.light) .report-canvas .matrix-card,
+body:not(.light) .report-canvas .curve-panel,
+body:not(.light) .report-canvas .confusion-canvas,
+body:not(.light) .report-canvas .feature-mosaic,
+body:not(.light) .report-canvas .decision-item {
+  background:#112e49;
+  border-color:#335675;
+  color:#d5e5f8;
+}
+body:not(.light) .report-canvas .curve-panel-head {border-bottom-color:#31506c}
+body:not(.light) .report-canvas .curve-panel-head strong,
+body:not(.light) .report-canvas .feature-mosaic p,
+body:not(.light) .report-canvas .feature-rank-row strong,
+body:not(.light) .report-canvas .decision-item span {color:#d7e8fa}
+body:not(.light) .report-canvas .donut-legend-row span,
+body:not(.light) .report-canvas .donut-legend-row strong {color:#d3e8ff}
+body:not(.light) .report-canvas .threshold-readout,
+body:not(.light) .report-canvas .studio-model-assumptions,
+body:not(.light) .report-canvas .studio-model-disclosure {
+  background:#173752;
+  color:#d4e6f9;
+  border-color:#376089;
+}
+body:not(.light) .report-canvas .threshold-readout strong,
+body:not(.light) .report-canvas .threshold-readout span,
+body:not(.light) .report-canvas .studio-model-assumptions label,
+body:not(.light) .report-canvas .studio-model-disclosure {color:#d4e6f9}
+body:not(.light) .report-canvas .visual-card input[type="number"],
+body:not(.light) .report-canvas .visual-card select {
+  background:#0c253f;
+  color:#f0f7ff;
+  border-color:#47698d;
+}
+body:not(.light) .report-canvas .visual-card .field label,
+body:not(.light) .report-canvas .visual-card .muted {color:#c4d6e9!important}
+body:not(.light) .report-canvas .table-wrap {border-color:#355775}
+body:not(.light) .report-canvas .table-wrap th {background:#1b3c5c;color:#deebfb}
+body:not(.light) .report-canvas .table-wrap td {color:#c5d8ec}
+body:not(.light) .report-canvas .table-wrap tbody tr:hover {background:#193b5b}
+body:not(.light) .report-canvas .empty {background:#102c47;color:#a9c1df;border-color:#486887}
+@media print {
+  body:not(.light) .report-canvas .visual-card,
+  body:not(.light) .report-canvas .chart-figure {background:#fff;color:#183653;border-color:#d2deea}
+  body:not(.light) .report-canvas .visual-title {color:#183653}
+}
+
+/* Drill investigation architecture — one evidence sequence, not four unrelated tiles. */
+body.nexus-studio-drill .canvas-head{display:none}
+body.nexus-studio-drill .report-canvas{padding-top:clamp(16px,2vw,29px)}
+.studio-drill-toolbar{
+ display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 17px;
+ padding:4px 0;color:#9bc3ed;font-size:10px;font-weight:790;letter-spacing:.14em
+}
+.studio-drill-toolbar .btn{font-size:11px;font-weight:760;background:#204b75;color:#f1f8ff;border:1px solid #507ca9;border-radius:9px;min-height:42px;padding:9px 16px;letter-spacing:normal}
+.studio-drill-hero{
+ display:grid;grid-template-columns:minmax(0,1.4fr) minmax(230px,.7fr);gap:20px;
+ padding:clamp(23px,3.3vw,46px);border:1px solid #365f88;border-radius:18px;
+ background:radial-gradient(ellipse at 86% 4%,rgba(108,150,228,.20),transparent 50%),linear-gradient(135deg,#123654,#0a233e 68%,#1b2450)
+}
+.studio-drill-context{color:#c5ddf6;font-size:13px;line-height:1.5;margin:20px 0 11px}
+.studio-drill-intro h3{color:#f7fbff;font-weight:760;font-size:clamp(27px,3.2vw,49px);line-height:1.08;letter-spacing:-.057em}
+.studio-drill-intro h3 em{font-style:normal;color:#b3b4f7}
+.studio-drill-description{color:#b6cce5;font-size:12px;line-height:1.7;margin-top:17px;max-width:670px}
+.studio-drill-flags{display:flex;gap:9px;flex-wrap:wrap;margin-top:21px;color:#c3d9ef;font-size:11px}
+.studio-drill-flags>span{padding:8px 11px;background:rgba(49,98,151,.24);border:1px solid #40688f;border-radius:8px}
+.studio-drill-flags .drill-warning{background:rgba(168,106,79,.14);border-color:#bd8d74;color:#f2c6a6}
+.studio-drill-rate{
+ display:flex;flex-direction:column;justify-content:center;gap:12px;
+ padding:22px;border:1px solid #456f99;border-radius:13px;background:rgba(33,76,128,.28)
+}
+.studio-drill-rate>span:first-child{color:#a9c9ef;letter-spacing:.11em;font-size:10px;font-weight:780;line-height:1.5}
+.studio-drill-rate strong{color:#f5faff;font-size:clamp(28px,3.8vw,56px);font-variant-numeric:tabular-nums;font-weight:760;letter-spacing:-.059em;line-height:1.13;overflow-wrap:anywhere}
+.studio-drill-rate small{color:#b8cfe6;line-height:1.7;font-size:11px}
+.studio-drill-baseline{color:#b5b2fa;padding-top:12px;border-top:1px solid #3a5a7d;font-size:11px;line-height:1.5}
+.studio-drill-summary,.studio-drill-evidence,.studio-drill-decision{min-width:0}
+.studio-drill-summary .drill-path{margin-bottom:15px}
+.studio-drill-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.studio-drill-metrics .kpi-card{min-height:145px;padding:19px 16px}
+.studio-drill-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.studio-drill-evidence-grid .visual-card{min-height:435px}
+.studio-drill-decision-grid{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:15px}
+.studio-drill-decision-grid .visual-card{min-height:350px}
+.studio-drill-decision .insight-row{margin-top:17px}
+body:not(.light) .report-canvas .drill-path{background:#0d2a47;border:1px solid #365c82;padding:11px 13px;gap:8px;border-radius:11px}
+body:not(.light) .report-canvas .drill-step{background:#1c4369;border:1px solid #38658f;color:#d3e9ff;border-radius:7px;padding:5px 10px;font-weight:740;font-size:10px}
+body:not(.light) .report-canvas .drill-arrow{color:#759ec9}
+/* Focused segment and chart drawers are as dark as the reporting canvas. */
+body:not(.light) .detail-backdrop{background:rgba(1,8,19,.68);backdrop-filter:blur(4px)}
+body:not(.light) .detail-drawer{
+ width:min(680px,calc(100vw - 28px));right:14px;top:14px;max-height:calc(100vh - 28px);
+ background:linear-gradient(160deg,#102e4a,#092038);border:1px solid #446a91;
+ border-radius:17px;color:#eaf4ff;box-shadow:-24px 0 85px rgba(0,5,18,.58)
+}
+body:not(.light) .drawer-head{padding:23px 25px;background:#0d2843;border-bottom:1px solid #365675}
+body:not(.light) .drawer-head h3{color:#eff8ff;letter-spacing:-.035em;font-size:21px}
+body:not(.light) .drawer-head p{color:#a9c3df;line-height:1.6}
+body:not(.light) .drawer-close{background:#1d4061;color:#f1f8ff;border:1px solid #52769a;border-radius:9px}
+body:not(.light) .drawer-close:hover{background:#2a5378}
+body:not(.light) .drawer-body{padding:24px;gap:17px}
+body:not(.light) .drawer-body .drill-path{background:#102f4d;border:1px solid #34587c}
+body:not(.light) .drawer-body .drill-step{background:#20466a;color:#dceaff;border:1px solid #436d96;border-radius:7px}
+body:not(.light) .drawer-body .drill-arrow{color:#83a5c8}
+body:not(.light) .drawer-body .metric-mini{background:#143552;border:1px solid #385f83;border-radius:11px;padding:15px}
+body:not(.light) .drawer-body .metric-mini span{color:#b1cee9;font-size:10px;letter-spacing:.06em}
+body:not(.light) .drawer-body .metric-mini strong{color:#ecf7ff;font-size:clamp(17px,1.55vw,24px);line-height:1.26;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+body:not(.light) .drawer-body .drawer-bars{background:#0f2c47;border:1px solid #385f83;border-radius:12px;padding:16px}
+body:not(.light) .drawer-body .drawer-bars .bar-row{grid-template-columns:minmax(96px,37%) minmax(0,1fr) minmax(79px,auto);min-height:40px;gap:10px;padding:5px;border-radius:7px}
+body:not(.light) .drawer-body .drawer-bars .bar-row:hover{background:#1b3d5d}
+body:not(.light) .drawer-body .drawer-bars .bar-label{font-size:11px;color:#d4e5f9;overflow-wrap:anywhere}
+body:not(.light) .drawer-body .drawer-bars .bar-track{background:#28445f;border-radius:4px}
+body:not(.light) .drawer-body .drawer-bars .bar-fill{background:#80b7eb;border-radius:4px}
+body:not(.light) .drawer-body .drawer-bars .bar-value{color:#dceafa;font-weight:770;font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
+body:not(.light) .drawer-body .drawer-copy{background:#122f4b;border:1px solid #355978;border-left:3px solid #9ca5ef;border-radius:10px;color:#cbdff4;line-height:1.75;padding:17px;font-size:12px}
+body:not(.light) .drawer-body .drawer-copy strong{color:#ddeafb;font-size:10px;font-weight:800;letter-spacing:.13em}
+body:not(.light) .drawer-body .drawer-copy p{margin:9px 0 0}
+body:not(.light) .drawer-body .empty{border-color:#486687;background:#102d48;color:#a9c6e5}
+.drawer-section-title{font-size:10px;font-weight:790;letter-spacing:.11em;color:#afcdf0}
+.drill-scale-note{font-size:10px;line-height:1.6;color:#a5bbd5}
+.drill-row-support{display:block;font-size:9px;margin-top:3px;opacity:.78}
+.drawer-support-warning{font-size:11px;color:#f0c6a6;border:1px solid #977255;padding:13px 15px;border-radius:9px;background:rgba(144,92,59,.12)}
+@media(max-width:1100px){
+ .studio-drill-evidence-grid,.studio-drill-decision-grid{grid-template-columns:1fr}
+ .studio-drill-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .studio-drill-hero{grid-template-columns:1fr;padding:22px 17px}
+ .studio-drill-intro h3{font-size:32px}
+ .studio-drill-evidence-grid .visual-card{min-height:310px}
+ body:not(.light) .drawer-body{padding:16px;gap:12px}
+ body:not(.light) .drawer-head{padding:18px}
+ body:not(.light) .drawer-body .drawer-bars .bar-row{grid-template-columns:minmax(80px,37%) minmax(0,1fr) 77px;gap:6px}
+}
+@media(max-width:430px){
+ .studio-drill-metrics{grid-template-columns:1fr}
+ .studio-drill-metrics .kpi-card{min-height:110px}
+ .studio-drill-toolbar .btn{width:100%}
+}
+
+/* First-page risk-band tiles must share the chart palette — no leftover white cards. */
+body:not(.light) .report-canvas .risk-band-card {
+  color:#e7f1fd;
+  background:linear-gradient(147deg,#1d4163,#15334f 78%);
+  border:1px solid #446b8e;
+  box-shadow:inset 0 1px rgba(218,236,255,.06),0 5px 15px rgba(0,5,20,.13);
+}
+body:not(.light) .report-canvas .risk-band-card:hover,
+body:not(.light) .report-canvas .risk-band-card:focus-visible {
+  background:linear-gradient(145deg,#255477,#153751);
+  border-color:#7badde;
+  box-shadow:0 8px 24px rgba(0,6,18,.27);
+}
+body:not(.light) .report-canvas .risk-band-heading,
+body:not(.light) .report-canvas .risk-band-heading strong,
+body:not(.light) .report-canvas .risk-band-rate {
+  color:#f2f8ff;
+}
+body:not(.light) .report-canvas .risk-band-index {color:#9ec2e9}
+body:not(.light) .report-canvas .risk-band-metric,
+body:not(.light) .report-canvas .risk-band-metric strong,
+body:not(.light) .report-canvas .risk-band-footer,
+body:not(.light) .report-canvas .risk-band-disclosure,
+body:not(.light) .report-canvas .risk-band-caption {color:#b9d1e9}
+body:not(.light) .report-canvas .risk-band-track {background:#294d6c}
+body:not(.light) .report-canvas .risk-band-volume {background:#345270}
+body:not(.light) .report-canvas .risk-band-footer {border-top-color:#3a5d7c}
+body:not(.light) .report-canvas .risk-band-track i {background:var(--risk-bar,#80b6eb)}
+body:not(.light) .report-canvas .risk-band-volume i {background:#8eaed8}
+/* Chart and comparison pages follow their content instead of stretching to
+   the height of a sibling risk-band or peer cohort panel. */
+.studio-overview-analysis,
+.studio-drill-evidence-grid,
+.studio-drill-decision-grid {align-items:start}
+.studio-overview-analysis .studio-chart {
+  height:auto!important;
+  min-height:0!important;
+}
+.studio-overview-analysis .studio-chart .visual-body {min-height:205px}
+.studio-overview-feature .studio-chart .chart-figure svg {max-height:none;aspect-ratio:760/306}
+.studio-drill-evidence-grid .visual-card,
+.studio-drill-decision-grid .visual-card {
+  height:auto;
+  min-height:0!important;
+}
+.studio-drill-evidence-grid .visual-body,
+.studio-drill-decision-grid .visual-body {min-height:140px!important}
+@media(max-width:780px){
+  .studio-overview-analysis .studio-chart .visual-body{min-height:160px}
+  .studio-drill-evidence-grid .visual-body{min-height:100px!important}
+}
+
+/* NEXUS legibility audit | 2026-10-14.
+   Numerical evidence has NO white stroke halo or optical glow.
+   Preserve the analyst's ability to read values at native scale. */
+.report-canvas svg text,
+.report-canvas .chart-figure svg text,
+.report-canvas .curve-panel svg text {
+  stroke:none!important;
+  stroke-width:0!important;
+  paint-order:normal!important;
+  text-shadow:none!important;
+  filter:none!important;
+  opacity:1!important;
+  font-variant-numeric:tabular-nums;
+}
+.report-canvas svg .svg-value,
+.report-canvas .chart-figure svg .svg-value {
+  font-size:13px;
+  font-weight:760;
+}
+.report-canvas svg .svg-axis,
+.report-canvas .chart-figure svg .svg-axis {
+  font-size:12.5px;
+  font-weight:680;
+}
+.report-canvas svg .svg-label,
+.report-canvas .chart-figure svg .svg-label {
+  font-size:13px;
+  font-weight:760;
+}
+body:not(.light) .report-canvas svg text.svg-axis,
+body:not(.light) .report-canvas .curve-panel svg text.svg-axis {
+  fill:#c7d9ed!important;
+}
+body:not(.light) .report-canvas svg text.svg-value,
+body:not(.light) .report-canvas svg text.svg-label {
+  fill:#eef5ff!important;
+}
+body:not(.light) .report-canvas svg text:not([class]) {
+  fill:#d6e7fa;
+}
+body:not(.light) .report-canvas .visual-card strong,
+body:not(.light) .report-canvas .kpi-value,
+body:not(.light) .report-canvas .risk-band-rate,
+body:not(.light) .report-canvas .studio-focus-value,
+body:not(.light) .report-canvas .studio-domain-focus>strong,
+body:not(.light) .report-canvas .studio-drill-rate strong,
+body:not(.light) .detail-drawer .metric-mini strong {
+  text-shadow:none!important;
+  filter:none!important;
+  opacity:1!important;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .kpi-value,
+body:not(.light) .report-canvas .risk-band-rate,
+body:not(.light) .report-canvas .studio-focus-value {
+  color:#f5f9ff!important;
+}
+body:not(.light) .report-canvas .bar-value,
+body:not(.light) .report-canvas .executive-bar-row .bar-value,
+body:not(.light) .report-canvas .rate-plot-metric .rate-value,
+body:not(.light) .report-canvas .paired-share-stat,
+body:not(.light) .report-canvas .donut-legend-row strong {
+  color:#f0f6ff!important;
+  font-size:12px;
+  font-weight:760;
+  opacity:1!important;
+  text-shadow:none!important;
+  filter:none!important;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .bar-label,
+body:not(.light) .report-canvas .rate-plot-label,
+body:not(.light) .report-canvas .feature-rank-row strong {
+  color:#d2e3f6!important;
+  font-size:12px;
+  font-weight:680;
+}
+body:not(.light) .report-canvas .risk-band-metric,
+body:not(.light) .report-canvas .risk-band-footer,
+body:not(.light) .report-canvas .rate-plot-metric .rate-denominator {
+  color:#d2e1f3!important;
+  opacity:1;
+  font-size:11px;
+}
+body:not(.light) .report-canvas .heat-cell .heat-value {
+  color:#f1f7ff!important;
+  font-size:clamp(11px,1vw,14px);
+  font-weight:760;
+  text-shadow:none!important;
+  filter:none!important;
+  opacity:1!important;
+}
+body:not(.light) .report-canvas .heat-cell small {
+  color:#d3e4f7!important;
+  opacity:1!important;
+  font-size:10px;
+  font-weight:560;
+}
+body:not(.light) .report-canvas .heat-cell.heat-insufficient .heat-value,
+body:not(.light) .report-canvas .heat-cell.heat-unavailable .heat-value,
+body:not(.light) .report-canvas .heat-cell.heat-unknown-support .heat-value {
+  color:#d3dfef!important;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-observed:hover,
+body:not(.light) .report-canvas .chart-figure circle:hover {
+  filter:none!important;
+}
+body:not(.light) .report-canvas .confusion-canvas {
+  background:#0f2b46!important;
+  border-color:#3b5a7a;
+}
+body:not(.light) .report-canvas .confusion-axis,
+body:not(.light) .report-canvas .confusion-labels,
+body:not(.light) .report-canvas .confusion-row-label,
+body:not(.light) .report-canvas .confusion-canvas>p {
+  color:#b9d2ee;
+}
+body:not(.light) .report-canvas .confusion-tile {
+  background:#204765;
+  border-color:#497392;
+}
+body:not(.light) .report-canvas .confusion-tile.false-negative {
+  background:#422d42;
+  border-color:#78516b;
+}
+body:not(.light) .report-canvas .confusion-tile.false-positive {
+  background:#413948;
+  border-color:#786478;
+}
+body:not(.light) .report-canvas .confusion-tile.true-negative {
+  background:#1c3958;
+  border-color:#4a678a;
+}
+body:not(.light) .report-canvas .confusion-tile span,
+body:not(.light) .report-canvas .confusion-tile strong,
+body:not(.light) .report-canvas .confusion-tile small {
+  color:#e5f0ff!important;
+  opacity:1;
+  text-shadow:none;
+}
+body:not(.light) .report-canvas .confusion-tile strong {
+  font-size:clamp(21px,2vw,32px);
+  font-weight:780;
+}
+body:not(.light) .report-canvas .curve-panel-head strong,
+body:not(.light) .report-canvas .curve-panel-head span,
+body:not(.light) .report-canvas .chart-series-legend strong {
+  color:#ecf5ff;
+}
+body:not(.light) .report-canvas .threshold-readout>span,
+body:not(.light) .report-canvas .rate-evidence-meta,
+body:not(.light) .report-canvas .heatmap-legend {
+  color:#c1d7ef;
+  opacity:1;
+}
+/* The executive line chart must not shrink 760-unit SVG labels to a 5px glyph
+   in a desktop split card. One wide plot, followed by the separate risk-band
+   comparison, makes the chronology legible on 1440px screens. */
+.studio-overview-analysis {
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:17px;
+  align-items:stretch;
+}
+.studio-overview-analysis .studio-chart {
+  min-height:0!important;
+  height:auto!important;
+}
+.studio-overview-companion .risk-band-grid {
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+.studio-overview-feature .chart-figure {
+  max-width:1200px;
+}
+.chart-current-readout {
+  display:flex;align-items:baseline;justify-content:flex-start;
+  flex-wrap:wrap;gap:8px 15px;
+  padding:0 0 12px;
+  border-bottom:1px solid #355674;
+  font-variant-numeric:tabular-nums;
+}
+.chart-current-readout span {
+  color:#a7c9e7;
+  font-size:11px;
+  font-weight:700;
+}
+.chart-current-readout strong {
+  color:#f2f7ff;
+  font-size:clamp(21px,2.1vw,30px);
+  font-weight:760;
+  letter-spacing:-.035em;
+}
+.chart-current-readout small {
+  color:#aac9e7;
+  font-size:11px;
+}
+body.light .chart-current-readout {
+  border-bottom-color:#d6e2f0;
+}
+body.light .chart-current-readout span,
+body.light .chart-current-readout small {color:#476887}
+body.light .chart-current-readout strong {color:#183b5e}
+body.light .report-canvas svg text.svg-value,
+body.light .report-canvas svg text.svg-label {fill:#244767!important}
+body.light .report-canvas svg text.svg-axis {fill:#526f8d!important}
+@media(max-width:940px) {
+  .studio-overview-companion .risk-band-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:660px) {
+  /* Scroll only the plot surface, never the whole document. */
+  .report-canvas .chart-figure {
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+  }
+  .report-canvas .chart-figure>svg {
+    width:100%;
+    min-width:540px;
+    max-height:none;
+  }
+  .studio-overview-feature .chart-figure>svg {min-width:600px}
+  .report-canvas svg .svg-axis{font-size:12px}
+  .report-canvas svg .svg-value{font-size:13px}
+  .report-canvas .heat-cell .heat-value {font-size:11px}
+  .report-canvas .bar-value,.report-canvas .executive-bar-row .bar-value {font-size:12px}
+  .chart-current-readout strong{font-size:23px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .report-canvas .chart-figure svg text {filter:none!important}
+}
+
+/* Compact touch layout: separate percentages from their explanatory labels. */
+@media(max-width:660px) {
+  .studio-overview-feature .chart-figure::before {
+    content:"SWIPE CHART HORIZONTALLY  →  LATER RELATIVE DAYS";
+    display:block;
+    min-width:700px;
+    padding:5px 0 11px;
+    color:#b8d4f0;
+    font-size:10px;
+    font-weight:720;
+    letter-spacing:.04em;
+  }
+  .studio-overview-companion .risk-band-card .risk-band-metric strong {
+    display:block;
+    float:none;
+    margin:4px 0 3px;
+    font-size:12px;
+    font-weight:760;
+    font-variant-numeric:tabular-nums;
+  }
+  .studio-overview-companion .risk-band-card .risk-band-metric {
+    font-size:11px;
+    line-height:1.45;
+  }
+}
+
+@media(max-width:660px) {
+  .studio-overview-feature .chart-figure>svg {min-width:700px}
+  body:not(.light) .studio-overview-companion .risk-band-metric strong {color:#f3f8ff!important}
+  body.light .studio-overview-companion .risk-band-metric strong {color:#1b4166!important}
+  body.light .studio-overview-feature .chart-figure::before {color:#41688d}
+}
+
+/* Analyst-scale diagnostic plots | measured Chromium finding:
+   split cards shrank SVG axes to 37–64% of their intended text size. */
+.studio-support-workspaces {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:17px;
+  align-items:start;
+}
+.studio-support-workspaces>.visual-card {
+  min-width:0;
+  height:auto;
+}
+/* Any evidence with an SVG axis needs a complete plotting canvas, not half a card. */
+.studio-support-workspaces>.visual-card:has(.chart-figure svg),
+.studio-support-workspaces>.visual-card:has(.curve-panels svg),
+.studio-support-workspaces>.visual-card:has(.donut-layout svg) {
+  grid-column:1/-1;
+}
+.studio-support-workspaces>.visual-card:has(.chart-figure svg) .visual-body {
+  min-height:0;
+}
+.studio-proxy-matrix,
+.studio-feature-context {
+  grid-template-columns:minmax(0,1fr)!important;
+}
+/* A labelled SVG has its own horizontal viewport when room is genuinely narrow.
+   Do not shrink the full drawing, including type, to fit a report card. */
+.report-canvas .chart-figure {
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#658cb5 #203c58;
+}
+.report-canvas .chart-figure>svg {
+  min-width:700px!important;
+  height:auto;
+  max-height:none!important;
+}
+.report-canvas .curve-panels {
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:17px;
+}
+.report-canvas .curve-panel {
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#658cb5 #203c58;
+}
+.report-canvas .curve-panel>svg {
+  display:block;
+  min-width:480px;
+  width:100%;
+  max-width:720px;
+  height:auto;
+  max-height:none!important;
+}
+body:not(.light) .report-canvas .curve-panel {
+  background:#102d48;
+  border-color:#385a79;
+}
+body:not(.light) .report-canvas .curve-panel svg text {fill:#d8e8fa}
+body:not(.light) .report-canvas .curve-panel .svg-grid {stroke:#30516d}
+/* The canvas itself provides a discoverable scroll affordance for dense graphics. */
+.studio-support-workspaces>.visual-card:has(.chart-figure svg) .visual-note:after,
+.studio-proxy-matrix>.visual-card:has(.chart-figure svg) .visual-note:after,
+.studio-feature-context>.visual-card:has(.chart-figure svg) .visual-note:after {
+  content:" · Chart scrolls horizontally when needed";
+  color:#a4c9ed;
+  font-weight:690;
+}
+body.light .studio-support-workspaces>.visual-card:has(.chart-figure svg) .visual-note:after,
+body.light .studio-proxy-matrix>.visual-card:has(.chart-figure svg) .visual-note:after,
+body.light .studio-feature-context>.visual-card:has(.chart-figure svg) .visual-note:after {
+  color:#41698f;
+}
+@media(max-width:760px) {
+  .studio-support-workspaces {grid-template-columns:minmax(0,1fr)}
+  .studio-support-workspaces>.visual-card {grid-column:auto!important}
+  .report-canvas .chart-figure>svg {min-width:700px!important}
+}
+/* Preserve the quantitative label hierarchy in compact score legend/readouts. */
+body:not(.light) .report-canvas .chart-series-legend,
+body:not(.light) .report-canvas .chart-series-legend strong {
+  color:#dbeafc;
+  opacity:1;
+  font-size:12px;
+}
+
+/* Chart and registry panels must not revive white demo-looking islands. */
+body:not(.light) .report-canvas .registry-card {
+  background:linear-gradient(145deg,#1b4061,#112e48);
+  border:1px solid #416688;
+  border-top:3px solid var(--accent,#74acdf);
+  color:#e4f1ff;
+  box-shadow:none;
+}
+body:not(.light) .report-canvas .registry-label {
+  color:#b4d0ee;
+  font-weight:760;
+  font-size:11px;
+}
+body:not(.light) .report-canvas .registry-value {
+  color:#f3f9ff;
+  font-weight:760;
+  font-size:clamp(16px,1.3vw,22px);
+  line-height:1.25;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .registry-value.mono{
+  font-size:clamp(12px,1.05vw,16px);
+}
+body:not(.light) .report-canvas .registry-foot {color:#b9cfeb;font-size:11px;line-height:1.5}
+body:not(.light) .report-canvas .table-wrap {
+  background:#102c47;
+  color:#dceafb;
+  border:1px solid #3f6183;
+  border-radius:11px;
+}
+body:not(.light) .report-canvas .table-wrap table {
+  background:#102c47;
+  color:#dceafb;
+  border-collapse:collapse;
+}
+body:not(.light) .report-canvas .table-wrap th {
+  background:#1c4060;
+  color:#e8f3ff;
+  font-weight:770;
+  border-color:#3b5b79;
+}
+body:not(.light) .report-canvas .table-wrap tbody td {
+  background:#112e49;
+  color:#dbe9fa;
+  border-color:#304f6c;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .table-wrap tbody tr:nth-child(even) td {
+  background:#173751;
+}
+body:not(.light) .report-canvas .table-wrap tbody tr:hover td {
+  background:#224564;
+  color:#f2f9ff;
+}
+body:not(.light) .report-canvas .table-wrap td strong {color:#f2f8ff}
+body:not(.light) .report-canvas .curve-axis-caption {
+  margin:22px 0 5px;
+  padding:12px 0 0;
+  border-top:1px solid #345675;
+  text-align:center;
+  color:#c0d9f2;
+  font-size:12px;
+  font-weight:780;
+  letter-spacing:.085em;
+}
+body.light .report-canvas .curve-axis-caption{
+  color:#385e82;
+  border-top:1px solid #cfdeef;
+}
+
+/* Calibrated evidence is a six-measure comparison, not run-on labels. */
+.report-canvas #model-calibration>.metric-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:2px 0 18px;
+}
+.report-canvas #model-calibration>.metric-grid>.metric {
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  align-items:flex-start;
+  min-width:0;
+  min-height:91px;
+  padding:13px 14px;
+  border:1px solid #3c5e80;
+  border-radius:10px;
+  background:#183753;
+}
+.report-canvas #model-calibration>.metric-grid>.metric span {
+  color:#b6d0eb;
+  font-size:11px;
+  font-weight:690;
+  line-height:1.35;
+}
+.report-canvas #model-calibration>.metric-grid>.metric strong {
+  color:#f0f8ff;
+  font-size:clamp(16px,1.2vw,20px);
+  font-weight:770;
+  letter-spacing:-.02em;
+  line-height:1.2;
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+body.light .report-canvas #model-calibration>.metric-grid>.metric {
+  background:#f4f8fd;
+  border-color:#d5e1ee;
+}
+body.light .report-canvas #model-calibration>.metric-grid>.metric span {color:#4d6987}
+body.light .report-canvas #model-calibration>.metric-grid>.metric strong {color:#143858}
+@media(max-width:850px){
+  .report-canvas #model-calibration>.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:460px){
+  .report-canvas #model-calibration>.metric-grid>.metric{min-height:80px;padding:11px}
+  .report-canvas #model-calibration>.metric-grid>.metric strong{font-size:17px}
+}
+
+/* Space axis titles below the SVG plot's allocation at every breakpoint. */
+.report-canvas .curve-axis-caption {
+  margin-top:22px;
+  position:relative;
+  z-index:1;
+}
+
+/* Release-quality governance: historical snapshot and evidence-only drill cards. */
+#freshness-pill[data-freshness="historical"] {
+  border-color:#c79558!important;
+  background:rgba(185,128,52,.14)!important;
+  color:#ffe0ad!important;
+  font-weight:750;
+}
+body.light #freshness-pill[data-freshness="historical"]{
+  border-color:#b87d37!important;
+  background:#fff1d9!important;
+  color:#80531c!important;
+}
+.studio-method-note{
+  max-width:580px;margin:15px 0 0;
+  padding:10px 14px;
+  border-left:3px solid #a3bbef;
+  color:#bfdbf5;font-size:11px;line-height:1.64;
+  background:rgba(21,52,84,.45);
+}
+.drill-measured-shares{display:grid;gap:18px;padding:12px 0}
+.drill-measured-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;color:#bcd6f0;font-size:12px}
+.drill-measured-title strong{color:#f3faff;font-size:18px;font-weight:770;font-variant-numeric:tabular-nums}
+.drill-measured-track{height:12px;background:#274866;border-radius:5px;overflow:hidden;border:1px solid #385d83}
+.drill-measured-track span{display:block;height:100%;border-radius:3px}
+.drill-measured-track .fraud{background:#8d9be9}
+.drill-measured-track .volume{background:#70b5e2}
+.drill-reference-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 13px;padding:14px 0;border-top:1px solid #385774;color:#b7d0ed;font-size:11px}
+.drill-reference-row strong{color:#eef8ff;font-size:14px;font-weight:770;font-variant-numeric:tabular-nums}
+.drill-method-caption{color:#acc7e4;font-size:10px;line-height:1.7;margin-top:8px}
+.drill-interpretation-panel{display:flex;flex-direction:column;gap:13px;padding:17px 5px}
+.drill-interpretation-kicker{color:#9fbeea;font-size:10px;font-weight:780;letter-spacing:.11em}
+.drill-interpretation-panel>strong{color:#f3f9ff;font-size:clamp(19px,2vw,29px);line-height:1.2}
+.drill-interpretation-panel>p{color:#d0e1f4;font-size:12px;line-height:1.75}
+.drill-interpretation-method{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:15px;background:#183955;border:1px solid #395c7c;border-radius:9px;color:#b5cce7;font-size:11px}
+.drill-interpretation-method b{color:#f2f8ff;font-size:14px;font-variant-numeric:tabular-nums}
+.drill-interpretation-panel>small{color:#9ab4d1;font-size:10px;line-height:1.65}
+body.light .drill-reference-row,body.light .drill-measured-title,body.light .drill-method-caption {color:#496886}
+body.light .drill-measured-title strong,body.light .drill-reference-row strong {color:#193f60}
+body.light .drill-measured-track{background:#dbe7f3;border-color:#c6d9eb}
+body.light .drill-interpretation-panel>strong {color:#193e60}
+body.light .drill-interpretation-panel>p {color:#496886}
+body.light .drill-interpretation-method {background:#f1f7fc;border-color:#d4e2f0;color:#52718d}
+body.light .drill-interpretation-method b {color:#173b5d}
+body.light .drill-interpretation-panel>small{color:#56718d}
+body:not(.light) .report-canvas .calibration-gap{color:#f0b6b6;font-weight:730}
+body.light .report-canvas .calibration-gap{color:#a84343;font-weight:730}
+
+/* Distinguish published sparse operating points from full-sample AUC metadata. */
+.report-canvas .model-evidence-disclosure {
+  margin:0 0 17px;padding:13px 17px;border-radius:9px;
+  background:#163956;border-left:3px solid #a7a6ef;
+  color:#d2e5fb;font-size:11px;line-height:1.7;
+}
+.report-canvas .model-calibration-warning {
+  margin:0 0 17px;padding:17px 20px;border-radius:12px;
+  border:1px solid #9d755f;border-left:4px solid #deb28c;
+  background:linear-gradient(145deg,#453a3d,#342c36);
+  color:#ffe3cc;
+}
+.report-canvas .model-calibration-warning strong {
+  display:block;color:#ffe9d6;font-size:13px;font-weight:790;
+}
+.report-canvas .model-calibration-warning p {
+  margin:7px 0 0;color:#f2d4bd;font-size:11px;line-height:1.65;
+}
+body.light .report-canvas .model-evidence-disclosure {
+  background:#eef4fc;color:#385d7f;border-left-color:#7375c1;
+}
+body.light .report-canvas .model-calibration-warning {
+  background:#fff3e9;color:#754c30;border-color:#d1a183;
+}
+body.light .report-canvas .model-calibration-warning strong {color:#754c30}
+body.light .report-canvas .model-calibration-warning p {color:#73563f}
+
+/* Accessible, explicit chart inspection; no invisible click-only hotspots. */
+.report-canvas .visual-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+.report-canvas .visual-head>div {min-width:0;flex:1}
+.report-canvas .chart-inspect-btn {
+  flex:none;
+  padding:7px 11px;
+  min-height:35px;
+  border:1px solid #50769b;
+  border-radius:8px;
+  background:#204365;
+  color:#dceeff;
+  cursor:pointer;
+  font:inherit;
+  font-size:11px;
+  font-weight:760;
+  letter-spacing:.01em;
+}
+.report-canvas .chart-inspect-btn:hover {
+  background:#2a567d;
+  border-color:#8db9ec;
+  color:#fff;
+}
+.report-canvas .chart-inspect-btn:focus-visible,
+#drawer-close:focus-visible {
+  outline:3px solid #9ecfff;
+  outline-offset:3px;
+}
+body.light .report-canvas .chart-inspect-btn {
+  color:#244c74;
+  background:#f0f6fc;
+  border-color:#bdcee0;
+}
+body.light .report-canvas .chart-inspect-btn:hover {background:#e0ebf8}
+@media(max-width:430px){
+  .report-canvas .visual-head{gap:7px}
+  .report-canvas .chart-inspect-btn{font-size:10px;padding:7px 8px}
+}
+
+/* Cohort provenance: risk-band training aggregates and independent holdout
+   charts must not appear as one slice or one common denominator. */
+.studio-command .studio-scope-caveat {
+  margin:16px 0 0;
+  padding:12px 15px;
+  border:1px solid rgba(137,184,238,.37);
+  border-left:3px solid #86baff;
+  border-radius:0 8px 8px 0;
+  background:rgba(14,46,79,.68);
+  color:#d0e6fd;
+  font-size:11px;
+  font-weight:550;
+  line-height:1.65;
+}
+.studio-exposure-lead strong {overflow-wrap:anywhere}
+.studio-exposure-ribbon .kpi-card strong {overflow-wrap:anywhere}
+body.light .studio-command .studio-scope-caveat{background:#e9f3ff;color:#234864;border-color:#a5c4e9}

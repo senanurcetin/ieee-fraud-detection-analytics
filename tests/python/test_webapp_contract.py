@@ -278,7 +278,7 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "/api/enterprise/cases?limit=240" in html
     assert "/api/enterprise/model-registry" in html
     assert "Selected threshold" in html
-    assert "Fraud Exposure" in html
+    assert "OBSERVED FRAUD EXPOSURE" in html
     assert "Capturable Exposure" in html
     assert "Native Location Fields" in html
     assert "Validation threshold simulator" in html
@@ -288,7 +288,10 @@ def test_web_dashboard_contains_interactive_analysis_controls() -> None:
     assert "Distance High Risk" in html
     assert "Segment Drill-through" in html
     assert "drill-back-btn" in html
-    assert html.count("Fraud trend snapshot") == 1
+    assert html.count("Fraud trajectory") == 1
+    assert 'class="studio-command"' in html
+    assert "studio-exposure-ribbon" in html
+    assert "studio-trend-brief" in html
 
 
 def test_threshold_slider_updates_selected_scenario_cards() -> None:
@@ -303,7 +306,8 @@ def test_threshold_slider_updates_selected_scenario_cards() -> None:
     assert "if (!target) return;" in section
     assert "target.innerHTML" in section
     assert "Fraud Capture" in section
-    assert "Missed Exposure" in section
+    assert "Illustrative Missed Amount" in section
+    assert "NOT measured holdout losses" in section
     assert "Precision" in section
     assert "Validation Workload" in section
 
@@ -341,7 +345,8 @@ def test_model_registry_uses_compact_metadata_layout() -> None:
     )[0]
 
     assert ".registry-grid" in html
-    assert "overflow-wrap: anywhere;" in html
+    styles = (REPO_ROOT / "webapp" / "static" / "nexus-design.css").read_text(encoding="utf-8")
+    assert "overflow-wrap:anywhere" in (html + styles).replace(" ", "")
     assert "function registryMetric(" in html
     assert "registryMetric('Model version', registry.model_version" in registry_section
     assert "true)" in registry_section
@@ -478,9 +483,16 @@ def test_cost_assumptions_are_declared_and_priced_on_one_scale() -> None:
 
     # One loss rate prices both the avoided and the residual side.
     assert "const lossRate = Math.max(num(state.fraudLossMultiplier), 0);" in metric_layer
-    assert "const avoidedLoss = captured * lossRate;" in metric_layer
-    assert "const residualLoss = missed * lossRate;" in metric_layer
-    assert "const netBenefit = avoidedLoss - falsePositiveCost;" in metric_layer
+    assert "const avoidedLoss = hasExposure ? captured * lossRate : null;" in metric_layer
+    assert "const residualLoss = hasExposure ? missed * lossRate : null;" in metric_layer
+    assert "const netBenefit = hasExposure ? avoidedLoss - falsePositiveCost : null;" in metric_layer
+    # If a segment mart has no measured monetary amount, none of the exposure
+    # metrics may silently become $0, and portfolio dollars must not leak in.
+    assert "const hasExposure = !segment || segment.fraud_amount === undefined || segment.fraud_amount !== null;" in metric_layer
+    assert "has_exposure: hasExposure" in metric_layer
+    assert "if (!m.has_exposure) return [];" in html
+    assert "observed_fraud_count" in html
+    assert "No monetary figure published for this segment" in html
 
     # The retired asymmetric constants must not come back.
     assert "missed * 0.15" not in metric_layer
@@ -554,12 +566,14 @@ def test_risk_band_quality_is_reported_on_the_holdout() -> None:
     assert "source('raw', 'validation_predictions')" in model_sql
 
     html = (REPO_ROOT / "webapp" / "static" / "index.html").read_text(encoding="utf-8")
-    band_chart = html.split("function riskBandExposureChart(id)", 1)[1].split("const w = 760", 1)[0]
+    band_chart = html.split("function riskBandExposureChart(id)", 1)[1].split("function proxyShareChart", 1)[0]
     assert "validation_risk_bands" in band_chart
 
     assert "function generalisationGapTable(" in html
     assert "generalisationGapTable('model-generalisation');" in html
-    assert "Risk band exposure (holdout)" in html
+    assert "Priority bands" in html
+    assert "Holdout validation" in band_chart
+    assert "risk-band-card" in band_chart
 
 
 def test_calibration_is_published_rather_than_assumed() -> None:
