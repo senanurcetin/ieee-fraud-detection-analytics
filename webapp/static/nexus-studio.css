@@ -452,3 +452,95 @@ body:not(.light) .report-canvas .empty {background:#102c47;color:#a9c1df;border-
   body:not(.light) .report-canvas .chart-figure {background:#fff;color:#183653;border-color:#d2deea}
   body:not(.light) .report-canvas .visual-title {color:#183653}
 }
+
+/* Drill investigation architecture — one evidence sequence, not four unrelated tiles. */
+body.nexus-studio-drill .canvas-head{display:none}
+body.nexus-studio-drill .report-canvas{padding-top:clamp(16px,2vw,29px)}
+.studio-drill-toolbar{
+ display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 17px;
+ padding:4px 0;color:#9bc3ed;font-size:10px;font-weight:790;letter-spacing:.14em
+}
+.studio-drill-toolbar .btn{font-size:11px;font-weight:760;background:#204b75;color:#f1f8ff;border:1px solid #507ca9;border-radius:9px;min-height:42px;padding:9px 16px;letter-spacing:normal}
+.studio-drill-hero{
+ display:grid;grid-template-columns:minmax(0,1.4fr) minmax(230px,.7fr);gap:20px;
+ padding:clamp(23px,3.3vw,46px);border:1px solid #365f88;border-radius:18px;
+ background:radial-gradient(ellipse at 86% 4%,rgba(108,150,228,.20),transparent 50%),linear-gradient(135deg,#123654,#0a233e 68%,#1b2450)
+}
+.studio-drill-context{color:#c5ddf6;font-size:13px;line-height:1.5;margin:20px 0 11px}
+.studio-drill-intro h3{color:#f7fbff;font-weight:760;font-size:clamp(27px,3.2vw,49px);line-height:1.08;letter-spacing:-.057em}
+.studio-drill-intro h3 em{font-style:normal;color:#b3b4f7}
+.studio-drill-description{color:#b6cce5;font-size:12px;line-height:1.7;margin-top:17px;max-width:670px}
+.studio-drill-flags{display:flex;gap:9px;flex-wrap:wrap;margin-top:21px;color:#c3d9ef;font-size:11px}
+.studio-drill-flags>span{padding:8px 11px;background:rgba(49,98,151,.24);border:1px solid #40688f;border-radius:8px}
+.studio-drill-flags .drill-warning{background:rgba(168,106,79,.14);border-color:#bd8d74;color:#f2c6a6}
+.studio-drill-rate{
+ display:flex;flex-direction:column;justify-content:center;gap:12px;
+ padding:22px;border:1px solid #456f99;border-radius:13px;background:rgba(33,76,128,.28)
+}
+.studio-drill-rate>span:first-child{color:#a9c9ef;letter-spacing:.11em;font-size:10px;font-weight:780;line-height:1.5}
+.studio-drill-rate strong{color:#f5faff;font-size:clamp(28px,3.8vw,56px);font-variant-numeric:tabular-nums;font-weight:760;letter-spacing:-.059em;line-height:1.13;overflow-wrap:anywhere}
+.studio-drill-rate small{color:#b8cfe6;line-height:1.7;font-size:11px}
+.studio-drill-baseline{color:#b5b2fa;padding-top:12px;border-top:1px solid #3a5a7d;font-size:11px;line-height:1.5}
+.studio-drill-summary,.studio-drill-evidence,.studio-drill-decision{min-width:0}
+.studio-drill-summary .drill-path{margin-bottom:15px}
+.studio-drill-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.studio-drill-metrics .kpi-card{min-height:145px;padding:19px 16px}
+.studio-drill-evidence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.studio-drill-evidence-grid .visual-card{min-height:435px}
+.studio-drill-decision-grid{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);gap:15px}
+.studio-drill-decision-grid .visual-card{min-height:350px}
+.studio-drill-decision .insight-row{margin-top:17px}
+body:not(.light) .report-canvas .drill-path{background:#0d2a47;border:1px solid #365c82;padding:11px 13px;gap:8px;border-radius:11px}
+body:not(.light) .report-canvas .drill-step{background:#1c4369;border:1px solid #38658f;color:#d3e9ff;border-radius:7px;padding:5px 10px;font-weight:740;font-size:10px}
+body:not(.light) .report-canvas .drill-arrow{color:#759ec9}
+/* Focused segment and chart drawers are as dark as the reporting canvas. */
+body:not(.light) .detail-backdrop{background:rgba(1,8,19,.68);backdrop-filter:blur(4px)}
+body:not(.light) .detail-drawer{
+ width:min(680px,calc(100vw - 28px));right:14px;top:14px;max-height:calc(100vh - 28px);
+ background:linear-gradient(160deg,#102e4a,#092038);border:1px solid #446a91;
+ border-radius:17px;color:#eaf4ff;box-shadow:-24px 0 85px rgba(0,5,18,.58)
+}
+body:not(.light) .drawer-head{padding:23px 25px;background:#0d2843;border-bottom:1px solid #365675}
+body:not(.light) .drawer-head h3{color:#eff8ff;letter-spacing:-.035em;font-size:21px}
+body:not(.light) .drawer-head p{color:#a9c3df;line-height:1.6}
+body:not(.light) .drawer-close{background:#1d4061;color:#f1f8ff;border:1px solid #52769a;border-radius:9px}
+body:not(.light) .drawer-close:hover{background:#2a5378}
+body:not(.light) .drawer-body{padding:24px;gap:17px}
+body:not(.light) .drawer-body .drill-path{background:#102f4d;border:1px solid #34587c}
+body:not(.light) .drawer-body .drill-step{background:#20466a;color:#dceaff;border:1px solid #436d96;border-radius:7px}
+body:not(.light) .drawer-body .drill-arrow{color:#83a5c8}
+body:not(.light) .drawer-body .metric-mini{background:#143552;border:1px solid #385f83;border-radius:11px;padding:15px}
+body:not(.light) .drawer-body .metric-mini span{color:#b1cee9;font-size:10px;letter-spacing:.06em}
+body:not(.light) .drawer-body .metric-mini strong{color:#ecf7ff;font-size:clamp(17px,1.55vw,24px);line-height:1.26;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+body:not(.light) .drawer-body .drawer-bars{background:#0f2c47;border:1px solid #385f83;border-radius:12px;padding:16px}
+body:not(.light) .drawer-body .drawer-bars .bar-row{grid-template-columns:minmax(96px,37%) minmax(0,1fr) minmax(79px,auto);min-height:40px;gap:10px;padding:5px;border-radius:7px}
+body:not(.light) .drawer-body .drawer-bars .bar-row:hover{background:#1b3d5d}
+body:not(.light) .drawer-body .drawer-bars .bar-label{font-size:11px;color:#d4e5f9;overflow-wrap:anywhere}
+body:not(.light) .drawer-body .drawer-bars .bar-track{background:#28445f;border-radius:4px}
+body:not(.light) .drawer-body .drawer-bars .bar-fill{background:#80b7eb;border-radius:4px}
+body:not(.light) .drawer-body .drawer-bars .bar-value{color:#dceafa;font-weight:770;font-size:11px;text-align:right;font-variant-numeric:tabular-nums}
+body:not(.light) .drawer-body .drawer-copy{background:#122f4b;border:1px solid #355978;border-left:3px solid #9ca5ef;border-radius:10px;color:#cbdff4;line-height:1.75;padding:17px;font-size:12px}
+body:not(.light) .drawer-body .drawer-copy strong{color:#ddeafb;font-size:10px;font-weight:800;letter-spacing:.13em}
+body:not(.light) .drawer-body .drawer-copy p{margin:9px 0 0}
+body:not(.light) .drawer-body .empty{border-color:#486687;background:#102d48;color:#a9c6e5}
+.drawer-section-title{font-size:10px;font-weight:790;letter-spacing:.11em;color:#afcdf0}
+.drill-scale-note{font-size:10px;line-height:1.6;color:#a5bbd5}
+.drill-row-support{display:block;font-size:9px;margin-top:3px;opacity:.78}
+.drawer-support-warning{font-size:11px;color:#f0c6a6;border:1px solid #977255;padding:13px 15px;border-radius:9px;background:rgba(144,92,59,.12)}
+@media(max-width:1100px){
+ .studio-drill-evidence-grid,.studio-drill-decision-grid{grid-template-columns:1fr}
+ .studio-drill-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ .studio-drill-hero{grid-template-columns:1fr;padding:22px 17px}
+ .studio-drill-intro h3{font-size:32px}
+ .studio-drill-evidence-grid .visual-card{min-height:310px}
+ body:not(.light) .drawer-body{padding:16px;gap:12px}
+ body:not(.light) .drawer-head{padding:18px}
+ body:not(.light) .drawer-body .drawer-bars .bar-row{grid-template-columns:minmax(80px,37%) minmax(0,1fr) 77px;gap:6px}
+}
+@media(max-width:430px){
+ .studio-drill-metrics{grid-template-columns:1fr}
+ .studio-drill-metrics .kpi-card{min-height:110px}
+ .studio-drill-toolbar .btn{width:100%}
+}
