@@ -1322,6 +1322,8 @@
       renderActiveFilters();
       document.body.classList.toggle('nexus-studio-overview', state.page === 'overview' && !state.drill);
       document.body.classList.toggle('nexus-studio-trend', state.page === 'trend' && !state.drill);
+      document.body.classList.toggle('nexus-studio-amount', state.page === 'amount' && !state.drill);
+      document.body.classList.toggle('nexus-studio-customer', state.page === 'customer' && !state.drill);
       const target = document.getElementById('report-body');
       if (state.drill) {
         document.getElementById('page-title').textContent = 'Segment Drill-through';
@@ -1414,63 +1416,71 @@
     }
 
     function renderAmount() {
-      const amountRows = filteredAmountRows();
-      const top = amountRows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, amountRows[0] || {});
-      const tx = filteredTransactions();
-      return pageGrid([
-        kpiRow([
-          kpi('Highest-Risk Amount Band', top.amount_band || '-', fmtPct2(top.fraud_rate) + ' fraud rate.', '#d92d3a'),
-          kpi('Amount Exposure Proxy', fmtMoneyCompact(sum(amountRows, 'fraud_transaction_amount')), 'Observed fraud amount in these bands.', '#c98012'),
-          kpi('Fraud Count', fmtInt(sum(amountRows, 'fraud_count')), 'Fraud labels by amount bands.', '#7c3aed'),
-          kpi('Diagnostic Sample Avg Amount', fmtMoney(average(tx, 'transaction_amount')), '240-row diagnostic sample; full-population amount bands are shown in the main charts.', '#2563eb'),
-          kpi('Bands Compared', fmtInt(amountRows.length), 'Amount bands in current filter.', '#18a999')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Amount band fraud rate', 'Click a band to cross-filter the report.', '<div class="visual-body" id="amount-bar"></div>'),
-            chartCard('Fraud exposure by amount', 'Financial exposure by amount band.', '<div class="visual-body" id="amount-exposure"></div>'),
-            chartCard('Product x amount heatmap', 'Nested risk pockets, not a single product-only story.', '<div class="visual-body" id="amount-heatmap"></div>'),
-            chartCard('Amount nested breakdown', 'Click an amount band to see product-level risk inside that range.', '<div class="visual-body" id="amount-breakdown"></div>')
-          ])
-        ], [
-          chartCard('Amount vs model score scatter', 'Supporting diagnostic for score and transaction value outliers.', '<div class="visual-body" id="amount-scatter"></div>'),
-          chartCard('Fraud vs normal amount distribution', 'Supporting distribution check from filtered transaction sample.', '<div class="visual-body" id="amount-boxplot"></div>')
-        ]),
-        insightRow([
-          insight('Frequency vs exposure', 'Low-value bands can carry frequency risk while higher bands drive financial exposure.', '#c98012'),
-          insight('Nested segmentation', 'Amount risk should be interpreted together with product and payment type.', '#2563eb'),
-          insight('Policy', 'Use amount-specific thresholds where workload and exposure diverge.', '#18a999')
-        ])
-      ]);
+      const rows = filteredAmountRows();
+      const high = rows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, rows[0] || {});
+      const sample = filteredTransactions();
+      const fraudExposure = sum(rows,'fraud_transaction_amount');
+      const selectedBand = high.amount_band || 'Unavailable';
+      const hero = '<section class="studio-domain-hero amount-hero">' +
+        '<div><span class="studio-domain-eyebrow">03 / TRANSACTION EXPOSURE LAB</span><h3>Value changes<br><em>the risk equation.</em></h3>' +
+        '<p>Study how amount bands concentrate reported fraud value before using diagnostic samples to investigate unusual transactions.</p>' +
+        '<div class="studio-domain-meta"><span>' + fmtInt(rows.length) + ' amount bands</span><span>Observed exposure, not projected loss</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>HIGHEST OBSERVED FRAUD-RATE BAND</span><strong>' + escapeHtml(selectedBand) + '</strong><em>' + fmtPct2(high.fraud_rate) + ' observed fraud rate</em></aside></section>';
+      const pulse = '<section class="studio-domain-facts">' +
+        kpi('Fraud amount in observed bands', fmtMoneyCompact(fraudExposure), 'Aggregated fraud transaction amounts in this band breakdown.', '#7fb1ff') +
+        kpi('Fraud transactions', fmtInt(sum(rows,'fraud_count')), 'Observed fraud labels across compared bands.', '#bd9ff4') +
+        kpi('Diagnostic sample average', fmtMoney(average(sample,'transaction_amount')), 'Only ' + fmtInt(sample.length) + ' diagnostic rows, not the full population.', '#90c6e3') +
+        '</section>';
+      const heat = '<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>01 / EXPOSURE MAP</span><h3>Find the amount–product intersection</h3></div><p>Cell risk rates are reported within their own segments; blank cells are unreported, not zero.</p></div>' +
+        chartCard('Product × amount evidence matrix', 'Fraud rates by product and transaction amount band; click a product to cross-filter.', '<div class="visual-body" id="amount-heatmap"></div>', 'studio-wide-heatmap') + '</section>';
+      const rankings = '<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / VALUE DISTRIBUTION</span><h3>Risk rate versus capital exposure</h3></div></div><div class="studio-duo">' +
+        chartCard('Observed fraud rate', 'Amount-band rates with nested drill-through.', '<div class="visual-body" id="amount-bar"></div>') +
+        chartCard('Observed fraud value', 'Fraud transaction amount by band, not forecast damages.', '<div class="visual-body" id="amount-exposure"></div>') +
+        '</div></section>';
+      return '<div class="studio-screen studio-amount">' + hero + pulse +
+        visualPanels([heat, rankings,
+          chartCard('Product detail by selected band', 'Use the cross-filter to inspect more specific segments.', '<div class="visual-body" id="amount-breakdown"></div>', 'studio-details')], [
+          chartCard('Amount × model score', 'Diagnostic sample only; review score/amount outliers, not portfolio prevalence.', '<div class="visual-body" id="amount-scatter"></div>'),
+          chartCard('Transaction amount quartiles', 'Whiskers and interquartile ranges from the filtered diagnostic sample.', '<div class="visual-body" id="amount-boxplot"></div>')
+        ]) + '<div class="studio-action-notes">' + insightRow([
+          insight('Read the denominator', 'Value concentration and count concentration are different dimensions.', '#87baff'),
+          insight('Segment first', 'Interpret amount risks with product and payment characteristics.', '#a89dea'),
+          insight('Action', 'Test band-specific review policies against observed validation precision and workload.', '#91c2be')
+        ]) + '</div></div>';
     }
 
     function renderCustomer() {
-      const tx = filteredTransactions();
-      return pageGrid([
-        kpiRow([
-          kpi('Identity Coverage', fmtPct2(executiveKpis().identity_coverage_rate), 'Share of transactions with identity join.', '#2563eb'),
-          kpi('Identity Risk Lift', bestLift(getRows('identity_risk')), 'Identity signal versus portfolio baseline.', '#d92d3a'),
-          kpi('Email Groups', fmtInt(filteredEmailRows().length), 'Purchaser email groups profiled.', '#18a999'),
-          kpi('Device Segments', fmtInt(groupBy(tx, 'device_type').length), 'Device groups in transaction sample.', '#7c3aed'),
-          kpi('Diagnostic Sample Rows', fmtInt(tx.length), 'Used only for scatter and device diagnostics.', '#c98012')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Identity status fraud rate', 'Identity availability is a segmentation signal.', '<div class="visual-body" id="customer-identity"></div>'),
-            chartCard('Email group risk ranking', 'Click an email group to cross-filter the report.', '<div class="visual-body" id="customer-email"></div>')
-          ]),
-          chartCard('Payment x email heatmap', 'Payment and purchaser email combinations inside customer proxy context.', '<div class="visual-body" id="customer-payment-email"></div>', 'wide')
-        ], [
-          chartCard('Product x identity matrix', 'Supporting coverage and fraud rate by product/identity status.', '<div class="visual-body" id="customer-matrix"></div>'),
-          chartCard('Device type fraud proxy', 'Observed fraud rate by device across all 590,540 transactions.', '<div class="visual-body" id="customer-device"></div>'),
-          chartCard('Customer proxy nested breakdown', 'Supporting breakdown for selected customer proxy segments.', '<div class="visual-body" id="customer-breakdown"></div>')
-        ]),
-        insightRow([
-          insight('Masked proxies', 'IEEE-CIS does not expose real customers, so this page uses identity, email, device, card, and product proxies.', '#2563eb'),
-          insight('Risk signal', 'Identity presence and email domain groups should be read as risk segmentation variables, not only data quality fields.', '#d92d3a'),
-          insight('Decision', 'Apply policy to nested groups such as product plus identity plus email group.', '#18a999')
-        ])
-      ]);
+      const sample=filteredTransactions();
+      const coverage=num(executiveKpis().identity_coverage_rate);
+      const hero='<section class="studio-domain-hero identity-hero"><div>' +
+        '<span class="studio-domain-eyebrow">04 / IDENTITY SIGNAL INTELLIGENCE</span>' +
+        '<h3>See the gaps.<br><em>Understand the proxy.</em></h3>' +
+        '<p>Customer records are masked. Identity presence, email groups and device classes are cohort-level analytical signals — not verified individual identities.</p>' +
+        '<div class="studio-domain-meta"><span>Masked IEEE-CIS transaction features</span><span>No individual customer attribution</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>IDENTITY JOIN COVERAGE</span><strong>'+fmtPct2(coverage)+'</strong><em>Observed identity-matching availability</em></aside></section>';
+      const facts='<div class="studio-domain-facts">' +
+        kpi('Relative identity risk lift',bestLift(getRows('identity_risk')),'Risk ratio relative to the observed portfolio baseline.','#8baefa') +
+        kpi('Purchaser email groups',fmtInt(filteredEmailRows().length),'Masked-domain group coverage.','#aa98ed') +
+        kpi('Diagnostic sample size',fmtInt(sample.length),'Device diagnostics only; separate from the full reporting population.','#81c2c8') +
+        '</div>';
+      const primary='<section class="studio-identity-overview"><div class="studio-identity-left">' +
+        '<div class="studio-section-heading"><div><span>01 / COVERAGE & RISK</span><h3>Identity availability</h3></div></div>' +
+        chartCard('Identity status fraud rates','Coverage is informative but does not establish customer identity.','<div class="visual-body" id="customer-identity"></div>','studio-tall-chart') +
+        '</div><div class="studio-identity-right"><div class="studio-section-heading"><div><span>02 / COHORT DISTRIBUTION</span><h3>Email risk comparison</h3></div></div>' +
+        chartCard('Purchaser email risk','Click a masked email group to inspect the corresponding report slice.','<div class="visual-body" id="customer-email"></div>','studio-tall-chart') +
+        '</div></section>';
+      const cross='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>03 / INTERSECTION MAP</span><h3>Payment behavior within masked cohorts</h3></div><p>Relative fraud rates by payment and email category; observed support is shown where published.</p></div>' +
+        chartCard('Payment × purchaser-email matrix','Intersection rates reflect observable groups, not a verified customer geography.','<div class="visual-body" id="customer-payment-email"></div>','studio-wide-heatmap')+'</section>';
+      return '<div class="studio-screen studio-customer">'+hero+facts+
+        visualPanels([primary,cross],[
+          chartCard('Product × identity coverage','Supporting cross-product coverage risk.','<div class="visual-body" id="customer-matrix"></div>'),
+          chartCard('Device-group risk','Diagnostic device-type population and observed fraud rate.','<div class="visual-body" id="customer-device"></div>'),
+          chartCard('Nested customer-proxy breakdown','Explore masked nested segment differences.','<div class="visual-body" id="customer-breakdown"></div>')
+        ])+'<div class="studio-action-notes">'+insightRow([
+          insight('Provenance','No direct individual customer identifiers are used by these views.','#94bbf5'),
+          insight('Interpretability','Email and identity presence are segmentation variables, not identity verification.','#c5a5f2'),
+          insight('Investigate','Combine product, payment and identity context before considering an operational control.','#8dc9bd')
+        ])+'</div></div>';
     }
 
     function renderGeo() {
