@@ -596,3 +596,236 @@ body:not(.light) .report-canvas .risk-band-volume i {background:#8eaed8}
   .studio-overview-analysis .studio-chart .visual-body{min-height:160px}
   .studio-drill-evidence-grid .visual-body{min-height:100px!important}
 }
+
+/* NEXUS legibility audit | 2026-10-14.
+   Numerical evidence has NO white stroke halo or optical glow.
+   Preserve the analyst's ability to read values at native scale. */
+.report-canvas svg text,
+.report-canvas .chart-figure svg text,
+.report-canvas .curve-panel svg text {
+  stroke:none!important;
+  stroke-width:0!important;
+  paint-order:normal!important;
+  text-shadow:none!important;
+  filter:none!important;
+  opacity:1!important;
+  font-variant-numeric:tabular-nums;
+}
+.report-canvas svg .svg-value,
+.report-canvas .chart-figure svg .svg-value {
+  font-size:13px;
+  font-weight:760;
+}
+.report-canvas svg .svg-axis,
+.report-canvas .chart-figure svg .svg-axis {
+  font-size:12.5px;
+  font-weight:680;
+}
+.report-canvas svg .svg-label,
+.report-canvas .chart-figure svg .svg-label {
+  font-size:13px;
+  font-weight:760;
+}
+body:not(.light) .report-canvas svg text.svg-axis,
+body:not(.light) .report-canvas .curve-panel svg text.svg-axis {
+  fill:#c7d9ed!important;
+}
+body:not(.light) .report-canvas svg text.svg-value,
+body:not(.light) .report-canvas svg text.svg-label {
+  fill:#eef5ff!important;
+}
+body:not(.light) .report-canvas svg text:not([class]) {
+  fill:#d6e7fa;
+}
+body:not(.light) .report-canvas .visual-card strong,
+body:not(.light) .report-canvas .kpi-value,
+body:not(.light) .report-canvas .risk-band-rate,
+body:not(.light) .report-canvas .studio-focus-value,
+body:not(.light) .report-canvas .studio-domain-focus>strong,
+body:not(.light) .report-canvas .studio-drill-rate strong,
+body:not(.light) .detail-drawer .metric-mini strong {
+  text-shadow:none!important;
+  filter:none!important;
+  opacity:1!important;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .kpi-value,
+body:not(.light) .report-canvas .risk-band-rate,
+body:not(.light) .report-canvas .studio-focus-value {
+  color:#f5f9ff!important;
+}
+body:not(.light) .report-canvas .bar-value,
+body:not(.light) .report-canvas .executive-bar-row .bar-value,
+body:not(.light) .report-canvas .rate-plot-metric .rate-value,
+body:not(.light) .report-canvas .paired-share-stat,
+body:not(.light) .report-canvas .donut-legend-row strong {
+  color:#f0f6ff!important;
+  font-size:12px;
+  font-weight:760;
+  opacity:1!important;
+  text-shadow:none!important;
+  filter:none!important;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .bar-label,
+body:not(.light) .report-canvas .rate-plot-label,
+body:not(.light) .report-canvas .feature-rank-row strong {
+  color:#d2e3f6!important;
+  font-size:12px;
+  font-weight:680;
+}
+body:not(.light) .report-canvas .risk-band-metric,
+body:not(.light) .report-canvas .risk-band-footer,
+body:not(.light) .report-canvas .rate-plot-metric .rate-denominator {
+  color:#d2e1f3!important;
+  opacity:1;
+  font-size:11px;
+}
+body:not(.light) .report-canvas .heat-cell .heat-value {
+  color:#f1f7ff!important;
+  font-size:clamp(11px,1vw,14px);
+  font-weight:760;
+  text-shadow:none!important;
+  filter:none!important;
+  opacity:1!important;
+}
+body:not(.light) .report-canvas .heat-cell small {
+  color:#d3e4f7!important;
+  opacity:1!important;
+  font-size:10px;
+  font-weight:560;
+}
+body:not(.light) .report-canvas .heat-cell.heat-insufficient .heat-value,
+body:not(.light) .report-canvas .heat-cell.heat-unavailable .heat-value,
+body:not(.light) .report-canvas .heat-cell.heat-unknown-support .heat-value {
+  color:#d3dfef!important;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-observed:hover,
+body:not(.light) .report-canvas .chart-figure circle:hover {
+  filter:none!important;
+}
+body:not(.light) .report-canvas .confusion-canvas {
+  background:#0f2b46!important;
+  border-color:#3b5a7a;
+}
+body:not(.light) .report-canvas .confusion-axis,
+body:not(.light) .report-canvas .confusion-labels,
+body:not(.light) .report-canvas .confusion-row-label,
+body:not(.light) .report-canvas .confusion-canvas>p {
+  color:#b9d2ee;
+}
+body:not(.light) .report-canvas .confusion-tile {
+  background:#204765;
+  border-color:#497392;
+}
+body:not(.light) .report-canvas .confusion-tile.false-negative {
+  background:#422d42;
+  border-color:#78516b;
+}
+body:not(.light) .report-canvas .confusion-tile.false-positive {
+  background:#413948;
+  border-color:#786478;
+}
+body:not(.light) .report-canvas .confusion-tile.true-negative {
+  background:#1c3958;
+  border-color:#4a678a;
+}
+body:not(.light) .report-canvas .confusion-tile span,
+body:not(.light) .report-canvas .confusion-tile strong,
+body:not(.light) .report-canvas .confusion-tile small {
+  color:#e5f0ff!important;
+  opacity:1;
+  text-shadow:none;
+}
+body:not(.light) .report-canvas .confusion-tile strong {
+  font-size:clamp(21px,2vw,32px);
+  font-weight:780;
+}
+body:not(.light) .report-canvas .curve-panel-head strong,
+body:not(.light) .report-canvas .curve-panel-head span,
+body:not(.light) .report-canvas .chart-series-legend strong {
+  color:#ecf5ff;
+}
+body:not(.light) .report-canvas .threshold-readout>span,
+body:not(.light) .report-canvas .rate-evidence-meta,
+body:not(.light) .report-canvas .heatmap-legend {
+  color:#c1d7ef;
+  opacity:1;
+}
+/* The executive line chart must not shrink 760-unit SVG labels to a 5px glyph
+   in a desktop split card. One wide plot, followed by the separate risk-band
+   comparison, makes the chronology legible on 1440px screens. */
+.studio-overview-analysis {
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:17px;
+  align-items:stretch;
+}
+.studio-overview-analysis .studio-chart {
+  min-height:0!important;
+  height:auto!important;
+}
+.studio-overview-companion .risk-band-grid {
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+.studio-overview-feature .chart-figure {
+  max-width:1200px;
+}
+.chart-current-readout {
+  display:flex;align-items:baseline;justify-content:flex-start;
+  flex-wrap:wrap;gap:8px 15px;
+  padding:0 0 12px;
+  border-bottom:1px solid #355674;
+  font-variant-numeric:tabular-nums;
+}
+.chart-current-readout span {
+  color:#a7c9e7;
+  font-size:11px;
+  font-weight:700;
+}
+.chart-current-readout strong {
+  color:#f2f7ff;
+  font-size:clamp(21px,2.1vw,30px);
+  font-weight:760;
+  letter-spacing:-.035em;
+}
+.chart-current-readout small {
+  color:#aac9e7;
+  font-size:11px;
+}
+body.light .chart-current-readout {
+  border-bottom-color:#d6e2f0;
+}
+body.light .chart-current-readout span,
+body.light .chart-current-readout small {color:#476887}
+body.light .chart-current-readout strong {color:#183b5e}
+body.light .report-canvas svg text.svg-value,
+body.light .report-canvas svg text.svg-label {fill:#244767!important}
+body.light .report-canvas svg text.svg-axis {fill:#526f8d!important}
+@media(max-width:940px) {
+  .studio-overview-companion .risk-band-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:660px) {
+  /* Scroll only the plot surface, never the whole document. */
+  .report-canvas .chart-figure {
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    scrollbar-width:thin;
+  }
+  .report-canvas .chart-figure>svg {
+    width:100%;
+    min-width:540px;
+    max-height:none;
+  }
+  .studio-overview-feature .chart-figure>svg {min-width:600px}
+  .report-canvas svg .svg-axis{font-size:12px}
+  .report-canvas svg .svg-value{font-size:13px}
+  .report-canvas .heat-cell .heat-value {font-size:11px}
+  .report-canvas .bar-value,.report-canvas .executive-bar-row .bar-value {font-size:12px}
+  .chart-current-readout strong{font-size:23px}
+}
+@media(prefers-reduced-motion:reduce) {
+  .report-canvas .chart-figure svg text {filter:none!important}
+}
