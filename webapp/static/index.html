@@ -1734,7 +1734,7 @@
       if (related.length) {
         barChart('drill-nested', related, row => row.child_segment || row.product_cd || row.segment_name || row.parent_segment || row.proxy_segment, row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, drillChildFilter(detail));
       } else {
-        document.getElementById('drill-nested').innerHTML = empty('No nested segment cut is available for this selection.');
+        document.getElementById('drill-nested').innerHTML = empty('No finer cohort has been published for this selection. Use the same-family peer comparison; no subgroup is inferred from the aggregate.');
       }
       if (peers.length) {
         columnChart('drill-peers', peers, row => peerLabel(detail, row), row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, detail.key, { axisTitle: 'Peer fraud rate', limit: 8 });
@@ -2655,7 +2655,7 @@
       if (detail.key === 'product') return drillRows('Product', 'Amount band').filter(row => row.parent_segment === detail.value);
       if (detail.key === 'amount') return drillRows('Amount band', 'Product').filter(row => row.parent_segment === detail.value);
       if (detail.key === 'email') return getRows('niche_drilldown').filter(row => row.parent_segment === detail.value || row.child_segment === detail.value);
-      if (detail.key === 'risk') return getRows('model_risk_bands').filter(row => row.risk_band === detail.value);
+      if (detail.key === 'risk') return []; // A risk-band aggregate is not a nested segment; show peers instead.
       if (detail.key === 'identity') return getRows('identity_product_coverage').filter(row => row.identity_status === detail.value);
       if (detail.key === 'proxy') return proxyProductMatrixRows().filter(row => proxySegmentLabel(row) === detail.value || row.proxy_segment === detail.value);
       return [];
