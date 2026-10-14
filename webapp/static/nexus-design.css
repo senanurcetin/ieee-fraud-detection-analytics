@@ -1020,3 +1020,51 @@ body.light .supporting-visuals summary span {color:#637d96;}
  .report-canvas .rate-evidence-legend{font-size:9px}
  .report-canvas .heatmap-editorial .heat-insufficient .heat-value{font-size:9px}
 }
+
+/* Responsive HTML interval plot: labels remain legible even in split workspaces. */
+.report-canvas .rate-evidence-chart {display:grid;gap:3px;width:100%;min-width:0}
+.report-canvas .rate-plot-rows {display:grid;gap:2px}
+.report-canvas .rate-plot-row{
+  display:grid;grid-template-columns:minmax(72px,32%) minmax(0,1fr) minmax(63px,auto);
+  gap:9px;align-items:center;min-height:48px;padding:6px 4px;
+  border-bottom:1px solid #edf2f7;border-radius:5px;
+  transition:background .15s ease
+}
+.report-canvas .rate-plot-row:hover {background:#ecf4fc}
+.report-canvas .rate-plot-label {color:#234869;font-size:11px;font-weight:730;line-height:1.35;overflow-wrap:anywhere}
+.report-canvas .rate-plot-track{
+  position:relative;height:28px;min-width:0;
+  background:repeating-linear-gradient(90deg,transparent,transparent calc(25% - 1px),#e4edf6 calc(25% - 1px),#e4edf6 25%);
+  border-left:1px solid #d2dfec;border-right:1px solid #d2dfec
+}
+.report-canvas .rate-axis-baseline{position:absolute;top:-1px;bottom:-1px;width:1px;border-left:1px dashed #a27bca;z-index:1}
+.report-canvas .rate-plot-ci{
+  position:absolute;top:calc(50% - 2px);height:4px;
+  background:#80a7d1;border-radius:4px;z-index:2;min-width:1px
+}
+.report-canvas .rate-plot-ci:before,.report-canvas .rate-plot-ci:after{
+  content:"";position:absolute;top:-4px;height:12px;width:2px;background:#628bb9;border-radius:1px
+}
+.report-canvas .rate-plot-ci:before{left:0}
+.report-canvas .rate-plot-ci:after{right:0}
+.report-canvas .rate-plot-point{
+  position:absolute;top:50%;height:11px;width:11px;
+  transform:translate(-50%,-50%);z-index:3;border:2px solid #fff;border-radius:50%;background:#2769ac;box-shadow:0 0 0 1px #3974af
+}
+.report-canvas .rate-plot-sparse .rate-plot-point{background:#fff;border-color:#8399ac;box-shadow:0 0 0 1px #8399ac}
+.report-canvas .rate-plot-metric {display:flex;flex-direction:column;gap:2px;align-items:flex-end;font-variant-numeric:tabular-nums}
+.report-canvas .rate-plot-metric .rate-value{font-weight:780;color:#173e61;font-size:12px;white-space:nowrap}
+.report-canvas .rate-plot-metric .rate-denominator{font-size:10px;color:#69849b;white-space:nowrap}
+.report-canvas .rate-plot-axis{
+  display:grid;grid-template-columns:minmax(72px,32%) minmax(0,1fr) minmax(63px,auto);
+  align-items:center;gap:9px;padding:4px;color:#6b859c;font-size:9px;font-weight:670
+}
+.report-canvas .rate-axis-ticks{display:flex;justify-content:space-between;align-items:center;font-variant-numeric:tabular-nums;min-width:0}
+.report-canvas .rate-axis-ticks span{font-size:9px}
+@media(max-width:550px){
+ .report-canvas .rate-plot-row{grid-template-columns:minmax(72px,29%) minmax(0,1fr) minmax(56px,auto);gap:6px;padding:6px 2px;min-height:53px}
+ .report-canvas .rate-plot-label{font-size:10px}
+ .report-canvas .rate-plot-metric .rate-value{font-size:11px}
+ .report-canvas .rate-plot-axis{grid-template-columns:minmax(72px,29%) minmax(0,1fr) minmax(56px,auto);gap:6px}
+}
+@media(prefers-reduced-motion:reduce){.report-canvas .rate-plot-row{transition:none}}
