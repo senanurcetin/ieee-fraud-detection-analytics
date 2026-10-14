@@ -1,0 +1,67 @@
+{
+  "date": "2026-10-14",
+  "origin": "public production applications, captured using Chromium Playwright",
+  "original_capture_dir": "C:\\Users\\MONSTER\\Downloads\\NEXUS_REAL_SCREENSHOTS_20261014",
+  "files": [
+    {
+      "asset": "docs/assets/web_dashboard_executive_overview.png",
+      "source_url": "https://fraud-project-web.vercel.app/",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "6a91f96c3252c6774bec05b8cf27862ccd3b81bf7822fa6c6c4c2596bec2f1a4",
+      "capture_method": "Playwright Chromium production capture; no editing or overlays",
+      "date": "2026-10-14",
+      "dataset_note": "Historical governed reporting snapshot, not a live transaction stream"
+    },
+    {
+      "asset": "docs/assets/web_dashboard_customer_risk.png",
+      "source_url": "https://fraud-project-web.vercel.app/",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "2fcf50ebe1ea130f6b7a1bdcab37d921d6770681184ca9d196b13d00e218fd55",
+      "capture_method": "Playwright Chromium production capture; no editing or overlays",
+      "date": "2026-10-14",
+      "dataset_note": "Historical governed reporting snapshot, not a live transaction stream"
+    },
+    {
+      "asset": "docs/assets/web_dashboard_model_threshold.png",
+      "source_url": "https://fraud-project-web.vercel.app/",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "b087204c8af40912e01f536d9ff4fdfc49015f70c5059d2e3371d7a67e43b74c",
+      "capture_method": "Playwright Chromium production capture; no editing or overlays",
+      "date": "2026-10-14",
+      "dataset_note": "Historical governed reporting snapshot, not a live transaction stream"
+    },
+    {
+      "asset": "docs/assets/web_dashboard_masked_proxy.png",
+      "source_url": "https://fraud-project-web.vercel.app/",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "3780306b3101956bed8780545e759c6857ca14e3bdcba1bf98433eadd9494c1a",
+      "capture_method": "Playwright Chromium production capture; no editing or overlays",
+      "date": "2026-10-14",
+      "dataset_note": "Historical governed reporting snapshot, not a live transaction stream"
+    },
+    {
+      "asset": "docs/assets/web_dashboard_mobile_overview.png",
+      "source_url": "https://fraud-project-web.vercel.app/",
+      "pixel_size": [
+        375,
+        900
+      ],
+      "sha256": "1d2936ed9b6d216bf79409dae8bb6079a1161b739de6fe0db3b81992da0fa1c0",
+      "capture_method": "Playwright Chromium production capture; no editing or overlays",
+      "date": "2026-10-14",
+      "dataset_note": "Historical governed reporting snapshot, not a live transaction stream"
+    }
+  ]
+}

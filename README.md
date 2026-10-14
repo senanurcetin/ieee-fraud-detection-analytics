@@ -2,9 +2,9 @@
 
 **Technical reviewer brief:** [Problem, quantitative evidence and limitations](docs/hiring-summary.md).
 
-![Fraud Risk Intelligence executive dashboard: portfolio KPIs, risk bands and threshold decision visuals](docs/assets/web_dashboard_executive_overview.png)
+![Current NEXUS Fraud Analytics production executive overview, captured with Chromium on 2026-10-14](docs/assets/web_dashboard_executive_overview.png)
 
-> **Historical application screenshot:** this is a genuine capture of an earlier dashboard revision, **not** a capture of the current draft NEXUS redesign or a live data feed. A replacement screenshot requires a successful real-browser run, visual review and verification of the deployed revision. Dataset scope, model validation and threshold assumptions are documented below.
+> **Production screenshot (14 October 2026):** captured directly from the deployed NEXUS Fraud Analytics Vercel app using real Chromium after the reporting backend connected. The image shows a governed historical BigQuery reporting snapshot, **not** live transaction monitoring. [Screenshot provenance](docs/assets/production_screenshot_provenance_20261014.json).
 
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
@@ -333,7 +333,7 @@ Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure. N
 
 *Answers: Which customer proxies signal higher fraud? Does identity availability predict risk?*
 
-![Customer risk heatmap](docs/assets/web_dashboard_customer_risk.png)
+![Actual production Customer Risk Analysis workspace](docs/assets/web_dashboard_customer_risk.png)
 
 Identity-present transactions: 7.85% fraud rate (2.24x lift). Identity-missing: 2.09%. Email domain ranking: hotmail.com 5.30%, gmail.com 4.33%. Payment × email heatmap isolates MASTERCARD/CREDIT + gmail.com at 11.16% — the highest observable cross-segment rate.
 
@@ -343,7 +343,7 @@ Identity-present transactions: 7.85% fraud rate (2.24x lift). Identity-missing: 
 
 *Answers: How well does the model rank fraud? Which threshold policy is defensible?*
 
-![Model threshold simulation](docs/assets/web_dashboard_model_threshold.png)
+![Actual production Model Performance Analysis workspace](docs/assets/web_dashboard_model_threshold.png)
 
 Holdout ROC-AUC 0.9134, average precision 0.5354 (vs 3.44% baseline). Interactive threshold simulator: at the 0.50 threshold — 69.78% fraud capture, 25.68% precision, 11,043 reviewed transactions (9.35% workload), 1,228 fraud labels missed. Precision-recall curve and confusion matrix confirm the model separates fraud from legitimate transactions at every operating point.
 
@@ -353,7 +353,7 @@ Holdout ROC-AUC 0.9134, average precision 0.5354 (vs 3.44% baseline). Interactiv
 
 *Answers: Do anonymized address and distance fields carry fraud signal?*
 
-![Masked proxy analysis](docs/assets/web_dashboard_masked_proxy.png)
+![Actual production Masked Address and Distance Analysis workspace](docs/assets/web_dashboard_masked_proxy.png)
 
 Top proxy lift: 3.37x for "Address missing" segment. Product × proxy heatmap: **Product C with address missing shows 11.87% fraud rate** — the single highest observable rate in the dataset. Proxy fraud share vs volume share chart confirms signal strength is independent of population size.
 
@@ -361,13 +361,13 @@ Top proxy lift: 3.37x for "Address missing" segment. Product × proxy heatmap: *
 
 ### 5. Mobile Executive View
 
-![Mobile overview](docs/assets/web_dashboard_mobile_overview.png)
+![Actual production 375px Fraud executive overview](docs/assets/web_dashboard_mobile_overview.png)
 
 Responsive layout for executive review on mobile. Portfolio KPIs and risk band distribution accessible without desktop.
 
 ### Opt-in real-browser dashboard acceptance (local, no hosted CI)
 
-The premium NEXUS dashboard design remains a **draft** until it is inspected in a real browser against actual report responses. The optional [browser acceptance suite](tests/browser/test_fraud_dashboard.py) checks nine-page navigation, the dark/light control, 375px overflow, the visible error/retry state, and uncaught JavaScript exceptions. A live reporting backend is required for the non-error tests; this suite does **not** substitute mocked values for successful business metrics.
+The NEXUS dashboard is deployed in production and its current interface was captured directly from the live app on 14 October 2026. The optional [browser acceptance suite](tests/browser/test_fraud_dashboard.py) checks nine-page navigation, the dark/light control, 375px overflow, the visible error/retry state, and uncaught JavaScript exceptions. A live reporting backend is required for the non-error tests; the production browser suite passed 12/12 on 14 October 2026. It does **not** substitute mocked values for successful business metrics.
 
 Run FastAPI locally with its documented reporting data configuration, install Playwright and Chromium, then execute:
 
