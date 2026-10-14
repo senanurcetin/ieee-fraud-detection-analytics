@@ -162,7 +162,6 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
                             )
                             page.locator('[data-visual-mode="main"]').click()
                 self.assertEqual(errors, [])
-                page.context.close()
 
     def test_model_threshold_simulation_keeps_real_validation_feedback(self):
         page, errors = self.open_report({"width": 1440, "height": 900})
