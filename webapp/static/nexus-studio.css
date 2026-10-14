@@ -1080,3 +1080,50 @@ body.light .report-canvas #model-calibration>.metric-grid>.metric strong {color:
   position:relative;
   z-index:1;
 }
+
+/* Release-quality governance: historical snapshot and evidence-only drill cards. */
+#freshness-pill[data-freshness="historical"] {
+  border-color:#c79558!important;
+  background:rgba(185,128,52,.14)!important;
+  color:#ffe0ad!important;
+  font-weight:750;
+}
+body.light #freshness-pill[data-freshness="historical"]{
+  border-color:#b87d37!important;
+  background:#fff1d9!important;
+  color:#80531c!important;
+}
+.studio-method-note{
+  max-width:580px;margin:15px 0 0;
+  padding:10px 14px;
+  border-left:3px solid #a3bbef;
+  color:#bfdbf5;font-size:11px;line-height:1.64;
+  background:rgba(21,52,84,.45);
+}
+.drill-measured-shares{display:grid;gap:18px;padding:12px 0}
+.drill-measured-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;color:#bcd6f0;font-size:12px}
+.drill-measured-title strong{color:#f3faff;font-size:18px;font-weight:770;font-variant-numeric:tabular-nums}
+.drill-measured-track{height:12px;background:#274866;border-radius:5px;overflow:hidden;border:1px solid #385d83}
+.drill-measured-track span{display:block;height:100%;border-radius:3px}
+.drill-measured-track .fraud{background:#8d9be9}
+.drill-measured-track .volume{background:#70b5e2}
+.drill-reference-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 13px;padding:14px 0;border-top:1px solid #385774;color:#b7d0ed;font-size:11px}
+.drill-reference-row strong{color:#eef8ff;font-size:14px;font-weight:770;font-variant-numeric:tabular-nums}
+.drill-method-caption{color:#acc7e4;font-size:10px;line-height:1.7;margin-top:8px}
+.drill-interpretation-panel{display:flex;flex-direction:column;gap:13px;padding:17px 5px}
+.drill-interpretation-kicker{color:#9fbeea;font-size:10px;font-weight:780;letter-spacing:.11em}
+.drill-interpretation-panel>strong{color:#f3f9ff;font-size:clamp(19px,2vw,29px);line-height:1.2}
+.drill-interpretation-panel>p{color:#d0e1f4;font-size:12px;line-height:1.75}
+.drill-interpretation-method{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:15px;background:#183955;border:1px solid #395c7c;border-radius:9px;color:#b5cce7;font-size:11px}
+.drill-interpretation-method b{color:#f2f8ff;font-size:14px;font-variant-numeric:tabular-nums}
+.drill-interpretation-panel>small{color:#9ab4d1;font-size:10px;line-height:1.65}
+body.light .drill-reference-row,body.light .drill-measured-title,body.light .drill-method-caption {color:#496886}
+body.light .drill-measured-title strong,body.light .drill-reference-row strong {color:#193f60}
+body.light .drill-measured-track{background:#dbe7f3;border-color:#c6d9eb}
+body.light .drill-interpretation-panel>strong {color:#193e60}
+body.light .drill-interpretation-panel>p {color:#496886}
+body.light .drill-interpretation-method {background:#f1f7fc;border-color:#d4e2f0;color:#52718d}
+body.light .drill-interpretation-method b {color:#173b5d}
+body.light .drill-interpretation-panel>small{color:#56718d}
+body:not(.light) .report-canvas .calibration-gap{color:#f0b6b6;font-weight:730}
+body.light .report-canvas .calibration-gap{color:#a84343;font-weight:730}
