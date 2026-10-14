@@ -1127,3 +1127,30 @@ body.light .drill-interpretation-method b {color:#173b5d}
 body.light .drill-interpretation-panel>small{color:#56718d}
 body:not(.light) .report-canvas .calibration-gap{color:#f0b6b6;font-weight:730}
 body.light .report-canvas .calibration-gap{color:#a84343;font-weight:730}
+
+/* Distinguish published sparse operating points from full-sample AUC metadata. */
+.report-canvas .model-evidence-disclosure {
+  margin:0 0 17px;padding:13px 17px;border-radius:9px;
+  background:#163956;border-left:3px solid #a7a6ef;
+  color:#d2e5fb;font-size:11px;line-height:1.7;
+}
+.report-canvas .model-calibration-warning {
+  margin:0 0 17px;padding:17px 20px;border-radius:12px;
+  border:1px solid #9d755f;border-left:4px solid #deb28c;
+  background:linear-gradient(145deg,#453a3d,#342c36);
+  color:#ffe3cc;
+}
+.report-canvas .model-calibration-warning strong {
+  display:block;color:#ffe9d6;font-size:13px;font-weight:790;
+}
+.report-canvas .model-calibration-warning p {
+  margin:7px 0 0;color:#f2d4bd;font-size:11px;line-height:1.65;
+}
+body.light .report-canvas .model-evidence-disclosure {
+  background:#eef4fc;color:#385d7f;border-left-color:#7375c1;
+}
+body.light .report-canvas .model-calibration-warning {
+  background:#fff3e9;color:#754c30;border-color:#d1a183;
+}
+body.light .report-canvas .model-calibration-warning strong {color:#754c30}
+body.light .report-canvas .model-calibration-warning p {color:#73563f}
