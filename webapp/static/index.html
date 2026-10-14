@@ -1393,13 +1393,2121 @@
         '<h3>Locate the risk.<br><em>Protect the portfolio.</em></h3>' +
         '<p>Decision-ready exposure, measurable review capacity and the risk pockets that deserve investigation. Built from the available reporting snapshot, not simulated live alerts.</p>' +
         '<p class="studio-method-note">Scenario estimates multiply holdout capture rates by portfolio fraud amounts; they are illustrative, not validated deployment savings.</p>' +
-        '<div class="studio-command-meta"><span>Evidence: ' + escapeHtml(m.source) + '</span><span>' + fmtInt(m.total_transactions) + ' observed transactions</span></div></div>' +
+        '<div class="studio-command-meta"><span>Evidence: ' + escapeHtml(m.source) + '</span><span>' + fmtInt(m.total_transactions) + ' observed transactions</span></div>' +
+        (state.filters.risk !== 'All' ? '<p class="studio-scope-caveat">Selected risk cohort is based on the labeled training split. Trend and holdout validation charts below retain their separately reported populations; they are not filtered to this cohort.</p>' : '') + '</div>' +
         '<div class="studio-command-focus"><div class="studio-focus-label">PORTFOLIO FRAUD RATE</div><div class="studio-focus-value">' + fmtPct2(m.fraud_rate) + '</div><div class="studio-focus-foot">' + fmtInt(m.fraud_transactions) + ' labeled fraud transactions</div><div class="studio-focus-rule"><span>Holdout and portfolio measures are distinct</span></div></div>' +
         '</section>';
       const economics = '<section class="studio-exposure-ribbon" aria-label="Executive exposure measures">' +
-        '<div class="studio-exposure-lead"><span>OBSERVED FRAUD EXPOSURE</span><strong>' + fmtMoneyCompact(m.fraud_exposure) + '</strong><small>Fraud transaction amount / exposure proxy</small></div>' +
-        kpi('Capturable Exposure', fmtMoneyCompact(m.capturable_exposure), fmtPct(m.recall) + ' capture at selected threshold.', '#77afef') +
-        kpi('Net Benefit Proxy', fmtMoneyCompact(m.net_benefit), 'Scenario: $' + m.review_cost + '/review · ' + m.loss_rate + 'x fraud loss.', '#9d94ef') +
+        '<div class="studio-exposure-lead"><span>OBSERVED FRAUD EXPOSURE</span><strong>' + (m.has_exposure ? fmtMoneyCompact(m.fraud_exposure) : 'Not reported') + '</strong><small>' + (m.has_exposure ? 'Fraud transaction amount / exposure proxy' : 'No monetary figure published for this segment') + '</small></div>' +
+        kpi('Capturable Exposure', m.has_exposure ? fmtMoneyCompact(m.capturable_exposure) : 'Unavailable', m.has_exposure ? fmtPct(m.recall) + ' capture at selected threshold.' : 'Requires segment-specific fraud amount.', '#77afef') +
+        kpi('Net Benefit Proxy', m.has_exposure ? fmtMoneyCompact(m.net_benefit) : 'Unavailable', m.has_exposure ? 'Scenario: 
+      const primary = '<section class="studio-overview-analysis" aria-label="Portfolio evidence">' +
+        '<div class="studio-overview-feature"><div class="studio-section-tag"><span>01A</span> BEHAVIORAL MOVEMENT <em>Relative transaction time</em></div>' +
+          chartCard('Fraud trajectory', 'Fraud rate and context volume across the selected TransactionDT window.', '<div class="visual-body" id="overview-trend"></div>', 'studio-chart studio-primary-plot') +
+        '</div><div class="studio-overview-companion"><div class="studio-section-tag"><span>01B</span> VALIDATION EVIDENCE <em>Holdout validation · 118,108 transactions</em></div>' +
+          chartCard('Priority bands', 'Observed fraud rate and evaluated population use separate explicit scales.', '<div class="visual-body" id="overview-riskband"></div>', 'studio-chart studio-band-plot') +
+        '</div></section>';
+      const ranking = '<section class="studio-overview-rankings" aria-label="Risk concentration and segment actions">' +
+        '<div class="studio-section-heading"><div><span>02 / SEGMENT INTELLIGENCE</span><h3>Where intervention creates leverage</h3></div><p>Ranked observations are not causal explanations. Select a product or band to inspect its underlying slice.</p></div>' +
+        '<div class="studio-compare-grid">' +
+          chartCard('Product risk ranking', 'Click a product to open nested amount-band evidence.', '<div class="visual-body" id="overview-product"></div>', 'studio-chart') +
+          chartCard('Cross-segment fraud concentration', 'Overlapping groups; percentages must not be summed.', '<div class="visual-body" id="overview-pareto"></div>', 'studio-chart') +
+        '</div></section>';
+      const support = [
+        chartCard('Executive economics breakdown', 'Sensitivity of the review-cost and capture assumptions.', '<div class="visual-body" id="overview-economics"></div>'),
+        chartCard('Readiness gate', 'Quality checks behind the reporting evidence.', '<div class="visual-body" id="overview-readiness"></div>')
+      ];
+      return '<div class="studio-screen studio-overview">' + executive + economics +
+        visualPanels([primary, ranking], support) +
+        '<section class="studio-overview-decisions"><div class="studio-section-heading"><div><span>03 / DECISION BRIEF</span><h3>Actions, not just numbers</h3></div></div>' + insightRow(dynamicInsightCards()) + '</section>' +
+        '</div>';
+    }
+
+    function renderTrend() {
+      const rows = filteredDaily();
+      const latest = rows[rows.length - 1] || {};
+      const peak = rows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, rows[0] || {});
+      const avg = average(rows, 'fraud_rate');
+      const preface = '<header class="studio-trend-brief">' +
+        '<div><span class="studio-trend-kicker">02 / RISK MOVEMENT INTELLIGENCE</span><h3>Detect the shift.<br><em>Follow the evidence.</em></h3>' +
+        '<p>Relative TransactionDT windows indicate changes in transaction behavior. They are not calendar days or evidence of seasonal effects.</p>' +
+        '<div class="studio-trend-context"><span>Window / ' + fmtInt(rows.length) + ' relative-day observations</span><span>Daily volume contextualizes rate peaks</span></div></div>' +
+        '<aside class="studio-trend-focus"><span>LATEST OBSERVED FRAUD RATE</span><strong>' + fmtPct2(latest.fraud_rate) + '</strong><small>Average ' + fmtPct2(avg) + ' · Peak on relative day ' + escapeHtml(String(peak.transaction_day ?? '-')) + '</small></aside></header>';
+      const keyStats = '<div class="studio-trend-metrics">' +
+        kpi('Fraud transactions', fmtInt(sum(rows, 'fraud_count')), 'Labels in current relative-time selection', '#628cde') +
+        kpi('Total volume', fmtInt(sum(rows, 'transaction_count')), 'Transactions in current selection', '#8ea6da') +
+        kpi('Peak fraud rate', fmtPct2(peak.fraud_rate), 'Relative day ' + String(peak.transaction_day ?? '-'), '#ce7585') +
+        '</div>';
+      const main = '<div class="studio-trend-evidence">' +
+        chartCard('Rate vs. transaction volume', 'Independent fraud-rate and transaction-volume axes; inspect peaks with demand context.', '<div class="visual-body" id="trend-combo"></div>', 'studio-trend-primary') +
+        chartCard('Drift flag comparison', 'Risk drift bands for the selected relative-day window.', '<div class="visual-body" id="trend-drift"></div>', 'studio-trend-secondary') +
+        '</div>';
+      return '<div class="studio-screen studio-trend">' + preface + keyStats +
+        visualPanels([main], [
+          chartCard('Highest daily fraud-rate windows', 'Ranked relative days, not calendar dates.', '<div class="visual-body" id="trend-peaks"></div>'),
+          chartCard('Peak fraudulent-transaction volumes', 'Count ranking separates frequency from rate.', '<div class="visual-body" id="trend-volume-peaks"></div>')
+        ]) +
+        '<div class="studio-trend-takeaways">' + insightRow([
+          insight('Movement', 'Read these charts as relative-time risk movement; not as calendar seasonality.', '#628cde'),
+          insight('Denominator', 'Interpret peaks together with transaction volume before changing review policy.', '#8ea6da'),
+          insight('Investigate', 'Cross-filter product and amount segments before recalibrating score thresholds.', '#89bfa9')
+        ]) + '</div></div>';
+    }
+
+    function renderAmount() {
+      const rows = filteredAmountRows();
+      const high = rows.reduce((best, row) => num(row.fraud_rate) > num(best.fraud_rate) ? row : best, rows[0] || {});
+      const sample = filteredTransactions();
+      const fraudExposure = sum(rows,'fraud_transaction_amount');
+      const selectedBand = high.amount_band || 'Unavailable';
+      const hero = '<section class="studio-domain-hero amount-hero">' +
+        '<div><span class="studio-domain-eyebrow">03 / TRANSACTION EXPOSURE LAB</span><h3>Value changes<br><em>the risk equation.</em></h3>' +
+        '<p>Study how amount bands concentrate reported fraud value before using diagnostic samples to investigate unusual transactions.</p>' +
+        '<div class="studio-domain-meta"><span>' + fmtInt(rows.length) + ' amount bands</span><span>Observed exposure, not projected loss</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>HIGHEST OBSERVED FRAUD-RATE BAND</span><strong>' + escapeHtml(selectedBand) + '</strong><em>' + fmtPct2(high.fraud_rate) + ' observed fraud rate</em></aside></section>';
+      const pulse = '<section class="studio-domain-facts">' +
+        kpi('Fraud amount in observed bands', fmtMoneyCompact(fraudExposure), 'Aggregated fraud transaction amounts in this band breakdown.', '#7fb1ff') +
+        kpi('Fraud transactions', fmtInt(sum(rows,'fraud_count')), 'Observed fraud labels across compared bands.', '#bd9ff4') +
+        kpi('Diagnostic sample average', fmtMoney(average(sample,'transaction_amount')), 'Only ' + fmtInt(sample.length) + ' diagnostic rows, not the full population.', '#90c6e3') +
+        '</section>';
+      const heat = '<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>01 / EXPOSURE MAP</span><h3>Find the amount–product intersection</h3></div><p>Cell risk rates are reported within their own segments; blank cells are unreported, not zero.</p></div>' +
+        chartCard('Product × amount evidence matrix', 'Fraud rates by product and transaction amount band; click a product to cross-filter.', '<div class="visual-body" id="amount-heatmap"></div>', 'studio-wide-heatmap') + '</section>';
+      const rankings = '<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / VALUE DISTRIBUTION</span><h3>Risk rate versus capital exposure</h3></div></div><div class="studio-duo">' +
+        chartCard('Observed fraud rate', 'Amount-band rates with nested drill-through.', '<div class="visual-body" id="amount-bar"></div>') +
+        chartCard('Observed fraud value', 'Fraud transaction amount by band, not forecast damages.', '<div class="visual-body" id="amount-exposure"></div>') +
+        '</div></section>';
+      return '<div class="studio-screen studio-amount">' + hero + pulse +
+        visualPanels([heat, rankings,
+          chartCard('Product detail by selected band', 'Use the cross-filter to inspect more specific segments.', '<div class="visual-body" id="amount-breakdown"></div>', 'studio-details')], [
+          chartCard('Amount × model score', 'Diagnostic sample only; review score/amount outliers, not portfolio prevalence.', '<div class="visual-body" id="amount-scatter"></div>'),
+          chartCard('Transaction amount quartiles', 'Whiskers and interquartile ranges from the filtered diagnostic sample.', '<div class="visual-body" id="amount-boxplot"></div>')
+        ]) + '<div class="studio-action-notes">' + insightRow([
+          insight('Read the denominator', 'Value concentration and count concentration are different dimensions.', '#87baff'),
+          insight('Segment first', 'Interpret amount risks with product and payment characteristics.', '#a89dea'),
+          insight('Action', 'Test band-specific review policies against observed validation precision and workload.', '#91c2be')
+        ]) + '</div></div>';
+    }
+
+    function renderCustomer() {
+      const sample=filteredTransactions();
+      const coverage=num(executiveKpis().identity_coverage_rate);
+      const hero='<section class="studio-domain-hero identity-hero"><div>' +
+        '<span class="studio-domain-eyebrow">04 / IDENTITY SIGNAL INTELLIGENCE</span>' +
+        '<h3>See the gaps.<br><em>Understand the proxy.</em></h3>' +
+        '<p>Customer records are masked. Identity presence, email groups and device classes are cohort-level analytical signals — not verified individual identities.</p>' +
+        '<div class="studio-domain-meta"><span>Masked IEEE-CIS transaction features</span><span>No individual customer attribution</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>IDENTITY JOIN COVERAGE</span><strong>'+fmtPct2(coverage)+'</strong><em>Observed identity-matching availability</em></aside></section>';
+      const facts='<div class="studio-domain-facts">' +
+        kpi('Relative identity risk lift',bestLift(getRows('identity_risk')),'Risk ratio relative to the observed portfolio baseline.','#8baefa') +
+        kpi('Purchaser email groups',fmtInt(filteredEmailRows().length),'Masked-domain group coverage.','#aa98ed') +
+        kpi('Diagnostic sample size',fmtInt(sample.length),'Device diagnostics only; separate from the full reporting population.','#81c2c8') +
+        '</div>';
+      const primary='<section class="studio-identity-overview"><div class="studio-identity-left">' +
+        '<div class="studio-section-heading"><div><span>01 / COVERAGE & RISK</span><h3>Identity availability</h3></div></div>' +
+        chartCard('Identity status fraud rates','Coverage is informative but does not establish customer identity.','<div class="visual-body" id="customer-identity"></div>','studio-tall-chart') +
+        '</div><div class="studio-identity-right"><div class="studio-section-heading"><div><span>02 / COHORT DISTRIBUTION</span><h3>Email risk comparison</h3></div></div>' +
+        chartCard('Purchaser email risk','Click a masked email group to inspect the corresponding report slice.','<div class="visual-body" id="customer-email"></div>','studio-tall-chart') +
+        '</div></section>';
+      const cross='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>03 / INTERSECTION MAP</span><h3>Payment behavior within masked cohorts</h3></div><p>Relative fraud rates by payment and email category; observed support is shown where published.</p></div>' +
+        chartCard('Payment × purchaser-email matrix','Intersection rates reflect observable groups, not a verified customer geography.','<div class="visual-body" id="customer-payment-email"></div>','studio-wide-heatmap')+'</section>';
+      return '<div class="studio-screen studio-customer">'+hero+facts+
+        visualPanels([primary,cross],[
+          chartCard('Product × identity coverage','Supporting cross-product coverage risk.','<div class="visual-body" id="customer-matrix"></div>'),
+          chartCard('Device-group risk','Diagnostic device-type population and observed fraud rate.','<div class="visual-body" id="customer-device"></div>'),
+          chartCard('Nested customer-proxy breakdown','Explore masked nested segment differences.','<div class="visual-body" id="customer-breakdown"></div>')
+        ])+'<div class="studio-action-notes">'+insightRow([
+          insight('Provenance','No direct individual customer identifiers are used by these views.','#94bbf5'),
+          insight('Interpretability','Email and identity presence are segmentation variables, not identity verification.','#c5a5f2'),
+          insight('Investigate','Combine product, payment and identity context before considering an operational control.','#8dc9bd')
+        ])+'</div></div>';
+    }
+
+    function renderGeo() {
+      const proxies=proxySignalRows(),high=proxies[0]||{};
+      const missing=proxies.find(row=>row.proxy_segment==='Address missing')||{};
+      const distance=proxies.find(row=>row.proxy_segment==='Distance high')||{};
+      const repeat=entityRepeatRows()[0]||{};
+      const hero='<section class="studio-domain-hero studio-proxy-hero"><div>' +
+        '<span class="studio-domain-eyebrow">05 / MASKED ADDRESS & DISTANCE INTELLIGENCE</span>' +
+        '<h3>Signals without<br><em>a location claim.</em></h3>' +
+        '<p>IEEE-CIS provides masked address and distance features, not actual geographic coordinates. This workspace analyzes proxy quality and nested risk; it does not draw invented maps.</p>' +
+        '<div class="studio-domain-meta"><span>Native location fields: 0</span><span>Real geography requires external enrichment</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>LARGEST FRAUD-SHARE PROXY</span><strong>' + fmtPct(high.fraud_share) + '</strong><em>' + escapeHtml(high.proxy_segment||'Not available') + '</em></aside></section>';
+      const facts='<section class="studio-domain-facts">' +
+        kpi('Native Location Fields','0','No country, city, IP or coordinate columns in these reporting views.','#83aef4') +
+        kpi('Address Missing Risk',fmtPct2(missing.fraud_rate),fmtScore(missing.lift||0)+'x lift; '+fmtPct(missing.fraud_share)+' fraud share.','#b39ded') +
+        kpi('Distance High Risk',fmtPct2(distance.fraud_rate),fmtScore(distance.lift||0)+'x lift; '+fmtPct(distance.fraud_share)+' fraud share.','#85c0d5') +
+        '</section>';
+      const evidence='<div class="studio-section-heading"><div><span>01 / MASKED RISK PROXIES</span><h3>Risk intensity against population share</h3></div><p>Overlapping proxy groups are compared but never added together.</p></div>' +
+        '<div class="studio-proxy-compare">' +
+        chartCard('Proxy segment risk intensity','Click an observed proxy segment to inspect its related evidence.','<div class="visual-body" id="proxy-risk"></div>') +
+        chartCard('Fraud share / population share','Matched scales distinguish concentrated fraud labels from segment size.','<div class="visual-body" id="proxy-share"></div>') +
+        '</div>';
+      const intersections='<div class="studio-section-heading"><div><span>02 / INTERSECTION FORENSICS</span><h3>Look beyond individual proxy fields</h3></div></div>' +
+        '<div class="studio-proxy-matrix">' +
+        chartCard('Product × proxy intersection','Observed fraud rates by product and masked proxy group.','<div class="visual-body" id="proxy-product-matrix"></div>','studio-wide-heatmap') +
+        chartCard('Address & distance model signals','Model importance, not inferred geographic attribution.','<div class="visual-body" id="proxy-importance"></div>') + '</div>';
+      return '<div class="studio-screen studio-proxy">' + hero + facts + visualPanels([
+        '<section class="studio-evidence-section">'+evidence+'</section>',
+        '<section class="studio-evidence-section">'+intersections+'</section>'
+      ],[
+        chartCard('Proxy lift versus baseline','Relative observed lift across masked cohorts.','<div class="visual-body" id="proxy-lift"></div>'),
+        chartCard('Address × distance availability','Joint masked address and distance-band analysis.','<div class="visual-body" id="proxy-cross-matrix"></div>')
+      ]) + '<div class="studio-action-notes">' + insightRow([
+        insight('Interpretation','Address and distance are masked numerical proxies, not real geographic location.','#9dbeef'),
+        insight('Repeat signal',short(repeat.repeat_band||'No repeat group',18),'Review-queue proxy concentration is not portfolio prevalence.','#bea8ed'),
+        insight('Action','Only verified IP, location or merchant enrichment can support geographic controls.','#8ac1c7')
+      ]) + '</div></div>';
+    }
+
+    function renderBehavior() {
+      const tx=filteredTransactions();
+      const peak=peakHourLabel();
+      const hero='<section class="studio-domain-hero behavior-hero"><div>' +
+        '<span class="studio-domain-eyebrow">06 / BEHAVIORAL PATTERN RESEARCH</span>' +
+        '<h3>Watch the pattern.<br><em>Question the anomaly.</em></h3>' +
+        '<p>Relative-hour movement, amount fractions and risk-score anomalies provide complementary behavioral diagnostics. They are not calendar-time user activity.</p>' +
+        '<div class="studio-domain-meta"><span>Relative TransactionDT hour</span><span>Diagnostic subsample marked separately</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>PEAK RELATIVE HOUR</span><strong>' + escapeHtml(peak) + '</strong><em>Highest hourly fraud-rate signal from the charted relative-hour pattern.</em></aside></section>';
+      const stats='<section class="studio-domain-facts">' +
+        kpi('Payment groups',fmtInt(getRows('payment_heatmap').length),'Available masked card and payment groups.','#88b4f4') +
+        kpi('Diagnostic high scores',fmtInt(tx.filter(r=>num(r.risk_score)>=80).length),'Count with score ≥ 80 within '+fmtInt(tx.length)+' sample rows.','#b29fea') +
+        kpi('Diagnostic average score',fmtScore(average(tx,'risk_score')),'Filtered transaction sample only; not portfolio mean.','#7fbbd4') + '</section>';
+      const plots='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>01 / OBSERVED MOVEMENT</span><h3>Relative-hour risk intensity</h3></div><p>Pattern analysis remains descriptive; do not infer seasonal, timezone or day-of-week effects.</p></div>' +
+        '<div class="studio-behavior-primary">' +
+          chartCard('Relative-hour fraud-rate pattern','The hourly signal is derived from relative transaction time.','<div class="visual-body" id="behavior-hour-risk"></div>') +
+          chartCard('Observed holdout risk bands','Observed fraud rates by validation risk band.','<div class="visual-body" id="behavior-risk"></div>') +
+        '</div></section>';
+      const drivers='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / SIGNAL DISSECTION</span><h3>Separate recurring patterns from outliers</h3></div></div>' +
+        chartCard('Behavioral signal strength','Relative behavioral-family measures from observed reporting rows.','<div class="visual-body" id="behavior-signal"></div>','studio-behavior-drivers')+'</section>';
+      return '<div class="studio-screen studio-behavior">'+hero+stats+visualPanels([plots,drivers],[
+        chartCard('Relative hour × amount decimal','Observed behavior-cell risk rates and reported support.','<div class="visual-body" id="behavior-hour"></div>'),
+        chartCard('Amount × score diagnostic','Transaction sample outlier view, not full-population attribution.','<div class="visual-body" id="behavior-scatter"></div>')
+      ]) + '<div class="studio-action-notes">'+insightRow([
+        insight('Temporal caveat','Relative hour signals do not establish calendar-time risk.','#8bb5f7'),
+        insight('Behavior intersections','Payment and email intersections can reveal useful review segments.','#baabed'),
+        insight('Investigation','Inspect high-score, unusual-amount combinations before assuming fraud causality.','#81beca')
+      ])+'</div></div>';
+    }
+
+    function renderFeatures() {
+      const rows=getRows('feature_importance');
+      const top=rows[0]||{};
+      const hero='<section class="studio-domain-hero feature-hero"><div>' +
+        '<span class="studio-domain-eyebrow">07 / MODEL DRIVER INTELLIGENCE</span>' +
+        '<h3>Explain the ranking.<br><em>Respect the unknowns.</em></h3>' +
+        '<p>Model importance is descriptive evidence of signal usage, not proof of causality. Masked engineering features must not be assigned invented business definitions.</p>' +
+        '<div class="studio-domain-meta"><span>Observational interpretation</span><span>Model driver / data-quality separation</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>LEADING RANKED FEATURE</span><strong>' + escapeHtml(short(top.feature||'Unavailable',32)) + '</strong><em>Highest reported model importance</em></aside></section>';
+      const stats='<section class="studio-domain-facts">' +
+        kpi('Reported features',fmtInt(rows.length),'Available ranked feature importance rows.','#8aaff4') +
+        kpi('Feature families',fmtInt(unique(rows.map(r=>r.feature_family)).length),'Group-level aggregation used in model reporting.','#b5a4ed') +
+        kpi('Highest family missingness',fmtPct2(max(getRows('data_quality'),'avg_missing_rate')),'Published quality profile, not an imputed result.','#8ec0cc') + '</section>';
+      const primary='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>01 / DRIVER ATTRIBUTION</span><h3>Which features shape the model?</h3></div><p>Ranked importance identifies statistical influence within the fitted model. It does not establish a customer or process cause.</p></div>' +
+        chartCard('Top model drivers','Measured feature importance, shown as a ranked comparison.','<div class="visual-body" id="feature-bar"></div>','studio-feature-lead') + '</section>';
+      const secondary='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / RELIABILITY CONTEXT</span><h3>Importance requires a quality lens</h3></div></div>' +
+        '<div class="studio-feature-context">' +
+          chartCard('Feature-family contribution','Grouped importance shares sum across the displayed families only.','<div class="visual-body" id="feature-family"></div>') +
+          chartCard('Missingness × importance','High-importance / high-missingness intersections deserve monitoring.','<div class="visual-body" id="feature-scatter"></div>') +
+        '</div></section>';
+      return '<div class="studio-screen studio-features">' + hero + stats + visualPanels([primary,secondary],[
+        chartCard('Interpretation confidence / driver strength','A supporting ranking, not a feature-causality test.','<div class="visual-body" id="feature-interpretation"></div>')
+      ]) + '<div class="studio-action-notes">' + insightRow([
+        insight('Meaning','Feature importance does not prove causal actionability.','#86b6f0'),
+        insight('Masked columns','Vesta-engineered signals cannot be assigned unverified semantic identities.','#b9a5ed'),
+        insight('Data assurance','Track missingness and model dependence together before release decisions.','#8cc5c7')
+      ]) + '</div></div>';
+    }
+
+    function renderModel() {
+      const registry = state.registry || (state.meta && state.meta.model_registry) || {};
+      const holdout = registry.holdout_metrics || {};
+      const threshold = selectedThreshold();
+      const hero = '<section class="studio-domain-hero model-hero"><div>' +
+        '<span class="studio-domain-eyebrow">08 / MODEL VALIDATION & GOVERNANCE</span>' +
+        '<h3>Choose a threshold.<br><em>Own the trade-off.</em></h3>' +
+        '<p>Rank-ordering quality, capacity, fraud capture and calibration are different pieces of evidence. Each decision must remain traceable to holdout validation.</p>' +
+        '<div class="studio-domain-meta"><span>Holdout validation</span><span>Score ranks are not calibrated fraud probabilities</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>HOLDOUT PRECISION AT CURRENT THRESHOLD</span><strong>' + fmtPct(threshold.precision_rate) + '</strong><em>' + fmtPct(threshold.fraud_capture_rate) + ' fraud capture · ' + fmtPct(threshold.workload_share) + ' review workload</em></aside></section>';
+      const quality = '<div class="studio-domain-facts">' +
+        kpi('ROC–AUC',holdout.roc_auc==null?'Unavailable':fmtScore(holdout.roc_auc),'Ranking across positive/negative holdout examples.','#7eacfa') +
+        kpi('PR–AUC',holdout.average_precision==null?'Unavailable':fmtScore(holdout.average_precision),'Primary ranking measure under class imbalance.','#b49ee8') +
+        kpi('Validation workload',fmtPct(threshold.workload_share),'Selected-threshold fraction sent for review.','#8dc0c9') +
+        '</div>';
+      const controls = '<div class="studio-model-control"><div class="studio-section-heading"><div><span>01 / OPERATING POINT</span><h3>Threshold decision simulator</h3></div><p>Review capacity and missed fraud change together. Costs below are explicitly scenario assumptions.</p></div>' +
+        chartCard('Validation threshold simulator','Interactive holdout threshold evidence; economics are scenario assumptions, not observed bank costs.','<div class="studio-model-inputs"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%;accent-color:#7eacfa"></div></div><div id="threshold-summary" style="margin-top:12px"></div><div class="studio-model-assumptions"><div class="field"><label for="review-cost-input">Cost per reviewed false positive ($)</label><input id="review-cost-input" type="number" min="0" step="0.5" class="select"></div><div class="field"><label for="loss-rate-input">Loss per $1 of fraud</label><input id="loss-rate-input" type="number" min="0" step="0.1" class="select"></div></div><p class="studio-model-disclosure">IEEE-CIS contains no cost fields. These two economics inputs are adjustable scenario assumptions, not measurements from this dataset. Net benefit = avoided loss − review cost, using the same assumed loss multiplier consistently for captured and missed fraud. External industry research such as the True Cost of Fraud study is context only, not a source for transaction-level costs in this report.</p>', 'studio-model-simulator');
+      const evidence='<div class="studio-section-heading"><div><span>02 / VALIDATION EVIDENCE</span><h3>Measure the decision boundary</h3></div><p>Rates, counts and calibration belong to different denominators; they are never interchangeable.</p></div>' +
+        '<div class="studio-model-primary">' +
+          chartCard('Recall, precision & capacity by threshold','Operating points from holdout validation, with the selected score clearly marked.','<div class="visual-body" id="model-threshold"></div>','studio-model-curves') +
+          chartCard('Validation confusion matrix','Observed holdout classification counts at the chosen threshold.','<div class="visual-body" id="model-confusion"></div>') +
+        '</div><div class="studio-model-secondary">' +
+          chartCard('Segment validation precision at selected threshold','Segment-level holdout precision recalculated for the selected threshold.','<div class="visual-body" id="model-segment-performance"></div>') +
+          chartCard('Risk band distribution','Scored portfolio volume by risk band; not evidence of held-out precision.','<div class="visual-body" id="model-risk"></div>') +
+        '</div>';
+      return '<div class="studio-screen studio-model">' + hero + quality + visualPanels([
+          controls,
+          '<section class="studio-evidence-section">' + evidence + '</section>'
+        ],[
+          chartCard('ROC / PR reference curves','Independent validation axes, distinct from production operating policies.','<div class="visual-body" id="model-curves"></div>'),
+          chartCard('Feature importance recap','Drivers used by the fitted ranking model.','<div class="visual-body" id="model-features"></div>'),
+          chartCard('Model registry and rolling CV','Version, feature scope and temporal validation quality.','<div class="visual-body" id="model-registry"></div>'),
+          chartCard('Score calibration on the holdout','The score is a rank, not a likelihood. Balanced class weights can improve ranking while degrading probability calibration.','<div class="visual-body" id="model-calibration"></div>'),
+          chartCard('In-sample vs holdout by risk band','Train-split fit and generalization must be evaluated separately.','<div class="visual-body" id="model-generalisation"></div>')
+        ]) +
+        '<div class="studio-action-notes">' + insightRow([
+          insight('Trade-off','Higher thresholds usually improve precision but reduce fraud capture and review workload.','#84b6ff'),
+          insight('Governance','The score informs review priority; it is not an automated customer adjudication.','#b4a1ed'),
+          insight('Readiness','Monitor PR–AUC, calibration and drift before changing policy.','#91c7c3')
+        ]) + '</div></div>';
+    }
+
+    function renderInsights() {
+      const hero='<section class="studio-domain-hero decision-hero"><div>' +
+        '<span class="studio-domain-eyebrow">09 / DECISION SUPPORT & NEXT ACTIONS</span>' +
+        '<h3>From evidence<br><em>to accountable action.</em></h3>' +
+        '<p>Concentration suggests where to test controls, but this report does not establish causal return on investment or authorize automated customer decisions.</p>' +
+        '<div class="studio-domain-meta"><span>Portfolio reporting evidence</span><span>Hypotheses clearly separated from measurement</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>RECOMMENDED NEXT STEP</span><strong>Controlled policy pilot</strong><em>Validate segment thresholds and review-cost assumptions before deployment.</em></aside></section>';
+      const decisions='<section class="studio-decision-lanes" aria-label="Evidence to policy decisions">' +
+        '<div class="studio-decision-lane"><span>01 / OBSERVE</span><strong>Concentration</strong><p>Fraud rates and exposure are uneven across product, amount, masked identity and score groups.</p></div>' +
+        '<div class="studio-decision-lane"><span>02 / TEST</span><strong>Segment rules</strong><p>Evaluate candidate thresholds and nested controls against genuine holdout precision, recall and workload.</p></div>' +
+        '<div class="studio-decision-lane"><span>03 / VALIDATE</span><strong>Ranking quality</strong><p>Track model PR–AUC, calibration and temporal drift before scaling operational decisions.</p></div>' +
+        '<div class="studio-decision-lane"><span>04 / ENRICH</span><strong>Location data gap</strong><p>Any real geographic policy requires verified external location attributes, not masked proxies.</p></div>' +
+        '</section>';
+      const plots='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / HYPOTHESIS PLANNING</span><h3>Prioritize without overstating certainty</h3></div><p>Impact/effort positions are explicitly illustrative judgments, not measured causal effects.</p></div>' +
+        '<div class="studio-decision-analytics">' +
+          chartCard('Illustrative decision-priority matrix','Qualitative impact and effort placements; not estimated outcomes.','<div class="visual-body" id="insight-matrix"></div>') +
+          chartCard('Recommendation priority ranking','Indicative action ordering for analyst discussion.','<div class="visual-body" id="insight-priority"></div>') +
+        '</div></section>';
+      return '<div class="studio-screen studio-insights">'+hero+
+        '<div class="studio-section-heading"><div><span>01 / DECISION SEQUENCE</span><h3>Four moves toward a defensible pilot</h3></div></div>' + decisions +
+        visualPanels([plots],[
+          chartCard('Prioritized fraud-share signals','Overlapping observed segment shares are not additive and are not savings forecasts.','<div class="visual-body" id="insight-waterfall"></div>')
+        ]) + '<div class="studio-action-notes">' + insightRow([
+          insight('Finding','Concentrated exposure suggests targeted control experiments.','#90baf7'),
+          insight('Limitation','Masked, observational signals cannot quantify causal policy benefit.','#b3a2eb'),
+          insight('Pilot design','Evaluate precision, capture, review workload and calibration on a held-out cohort.','#93c7ba')
+        ]) + '</div></div>';
+    }
+
+    function renderDrillThrough() {
+      const detail = state.drill || {};
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const related = relatedDrillRows(detail);
+      const peers = peerRows(detail);
+      const support = metric.hasCount ? fmtInt(metric.tx) + ' reported transactions' : 'Denominator not reported';
+      const interval = metric.interval ?
+        'Wilson 95% interval: ' + fmtPct2(metric.interval.lower) + '–' + fmtPct2(metric.interval.upper) :
+        '95% interval unavailable without measured fraud and transaction counts';
+      const sampleWarning = metric.hasCount && metric.tx < 30 ?
+        '<span class="drill-warning">Exploratory segment · fewer than 30 observations</span>' : '';
+      const hero = '<header class="studio-drill-hero"><div class="studio-drill-intro">' +
+        '<div class="studio-domain-eyebrow">NEXUS / SEGMENT INVESTIGATION</div>' +
+        '<p class="studio-drill-context">' + escapeHtml(detail.family || 'Selected family') + ' / ' + escapeHtml(detail.label || 'Selected segment') + '</p>' +
+        '<h3>Investigate the slice.<br><em>Compare like with like.</em></h3>' +
+        '<p class="studio-drill-description">Every comparison stays inside the selected reporting context. Review sample size, baseline and peer cohorts before making a policy recommendation.</p>' +
+        '<div class="studio-drill-flags"><span>' + escapeHtml(support) + '</span>' + sampleWarning + '</div></div>' +
+        '<div class="studio-drill-rate"><span>OBSERVED SEGMENT FRAUD RATE</span><strong>' +
+        (metric.hasRate ? fmtPct2(metric.rate) : 'Not reported') +
+        '</strong><small>' + escapeHtml(interval) + '</small><span class="studio-drill-baseline">' +
+        'Lift vs published portfolio: ' + (metric.hasRate ? fmtScore(metric.lift) + '×' : 'Unavailable') + '</span></div></header>';
+      const summary = '<section class="studio-drill-summary"><div class="studio-section-heading">' +
+        '<div><span>01 / SEGMENT EVIDENCE</span><h3>Population, rate and contribution</h3></div>' +
+        '<p>Missing amount or sample support is shown as unavailable — never inferred as zero.</p></div>' +
+        drawerPathHtml(detail) +
+        '<div class="studio-drill-metrics">' +
+        kpi('Reported transactions', metric.hasCount ? fmtInt(metric.tx) : 'Not reported', 'Current segment population, subject to reporting filters.', '#89bafb') +
+        kpi('Fraud transactions', metric.hasFraudCount ? fmtInt(metric.fraudCount) : 'Not reported', 'Observed fraud labels; no estimated counts.', '#c4a6f1') +
+        kpi('Fraud share', metric.hasFraudShare ? fmtPct(metric.fraudShare) : 'Not reported', 'Share within the published segment denominator.', '#94c8d0') +
+        kpi('Reported fraud amount', metric.hasAmount ? fmtMoney(metric.amount) : 'Not carried', 'Not fabricated from an average-value multiplier.', '#80b6f0') +
+        '</div></section>';
+      const evidence = '<section class="studio-drill-evidence"><div class="studio-section-heading">' +
+        '<div><span>02 / COMPARABLE EVIDENCE</span><h3>Nested and peer comparisons</h3></div>' +
+        '<p>' + fmtInt(related.length) + ' related cuts · ' + fmtInt(peers.length) +
+        ' peer groups available in the reporting mart</p></div><div class="studio-drill-evidence-grid">' +
+        chartCard('Nested segment breakdown', 'Subsegments within this reporting context; support shown where published.', '<div class="visual-body" id="drill-nested"></div>') +
+        chartCard('Same-family peer comparison', 'Absolute rates and denominators where available; avoid comparing unrelated populations.', '<div class="visual-body" id="drill-peers"></div>') +
+        '</div></section>';
+      const decisions = '<section class="studio-drill-decision"><div class="studio-section-heading">' +
+        '<div><span>03 / DECISION CONTEXT</span><h3>Contribution and follow-up</h3></div></div><div class="studio-drill-decision-grid">' +
+        chartCard('Segment contribution profile', 'Observed fraud share and transaction share must be read on their own explicit scales.', '<div class="visual-body" id="drill-contribution"></div>') +
+        chartCard('Recommended interpretation', 'Decision support is exploratory, not a causal estimate.', '<div class="visual-body" id="drill-recommendation"></div>') +
+        '</div>' + insightRow([
+          insight('Selected context', detail.label + ' is isolated under active filters.', '#7fb4f6'),
+          insight('Comparability', 'Use denominators and nested peer intervals before interpreting rate differences.', '#a9a3ed'),
+          insight('Next step', related.length ? 'Select a nested segment to inspect its reporting cohort.' : 'Compare available peer groups before changing any threshold.', '#86c1c6')
+        ]) + '</section>';
+      return '<div class="studio-screen studio-drill">' +
+        '<div class="studio-drill-toolbar"><span>ANALYTICAL DRILL / ' + escapeHtml(pageLabel(state.page)) + '</span>' +
+        '<button class="btn primary" id="drill-back-btn" type="button">← Back to filtered report</button></div>' +
+        hero + summary + evidence + decisions + '</div>';
+    }
+
+    function bindDrillThroughControls() {
+      const button = document.getElementById('drill-back-btn');
+      if (!button) return;
+      button.addEventListener('click', () => {
+        state.drill = null;
+        closeDetailDrawer();
+        render();
+      });
+    }
+
+    function hydrateDrillThroughCharts() {
+      const detail = state.drill || {};
+      const related = relatedDrillRows(detail);
+      const peers = peerRows(detail);
+      if (related.length) {
+        barChart('drill-nested', related, row => row.child_segment || row.product_cd || row.segment_name || row.parent_segment || row.proxy_segment, row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, drillChildFilter(detail));
+      } else {
+        document.getElementById('drill-nested').innerHTML = empty('No finer cohort has been published for this selection. Use the same-family peer comparison; no subgroup is inferred from the aggregate.');
+      }
+      if (peers.length) {
+        columnChart('drill-peers', peers, row => peerLabel(detail, row), row => row.fraud_rate || row.observed_fraud_rate, fmtPct2, detail.key, { axisTitle: 'Peer fraud rate', limit: 8 });
+      } else {
+        document.getElementById('drill-peers').innerHTML = empty('No same-family peer group is available.');
+      }
+      drillContributionChart('drill-contribution', detail);
+      drillRecommendationChart('drill-recommendation', detail);
+    }
+
+    function bindDynamicControls() {
+      document.querySelectorAll('[data-visual-mode]').forEach(button => button.addEventListener('click', () => {
+        state.visualMode = button.dataset.visualMode || 'main';
+        render();
+      }));
+      const slider = document.getElementById('threshold-slider');
+      const thresholdSelect = document.getElementById('threshold-select');
+      const rows = thresholdRows();
+      if (thresholdSelect) {
+        thresholdSelect.innerHTML = rows.map((row, index) => {
+          const label = 'Threshold ' + fmtScore(row.score_threshold) + ' - validation capture ' + fmtPct(row.fraud_capture_rate);
+          return '<option value="' + index + '">' + escapeHtml(label) + '</option>';
+        }).join('');
+        thresholdSelect.value = state.selectedThreshold;
+      }
+      if (slider) {
+        slider.max = Math.max(rows.length - 1, 0);
+        slider.value = state.selectedThreshold;
+      }
+      const reviewCostInput = document.getElementById('review-cost-input');
+      const lossRateInput = document.getElementById('loss-rate-input');
+      if (reviewCostInput) {
+        reviewCostInput.value = state.reviewCost;
+        reviewCostInput.addEventListener('change', event => {
+          const next = Number(event.target.value);
+          if (!Number.isFinite(next) || next < 0 || next === state.reviewCost) return;
+          state.reviewCost = next;
+          render();
+        });
+      }
+      if (lossRateInput) {
+        lossRateInput.value = state.fraudLossMultiplier;
+        lossRateInput.addEventListener('change', event => {
+          const next = Number(event.target.value);
+          if (!Number.isFinite(next) || next < 0 || next === state.fraudLossMultiplier) return;
+          state.fraudLossMultiplier = next;
+          render();
+        });
+      }
+      const updateThreshold = event => {
+        const nextValue = Number(event.target.value || 0);
+        if (nextValue === state.selectedThreshold) return;
+        state.selectedThreshold = nextValue;
+        if (slider) slider.value = state.selectedThreshold;
+        if (thresholdSelect) thresholdSelect.value = state.selectedThreshold;
+        render();
+      };
+      if (thresholdSelect) {
+        thresholdSelect.addEventListener('change', updateThreshold);
+      }
+      if (slider) {
+        const deferredUpdate = event => window.setTimeout(() => updateThreshold(event), 0);
+        ['input', 'change', 'keyup', 'mouseup', 'touchend', 'click'].forEach(eventName => {
+          slider.addEventListener(eventName, deferredUpdate);
+        });
+        const sliderPoll = window.setInterval(() => {
+          if (!document.body.contains(slider)) {
+            window.clearInterval(sliderPoll);
+            return;
+          }
+          if (Number(slider.value || 0) !== state.selectedThreshold) {
+            updateThreshold({ target: slider });
+          }
+        }, 250);
+      }
+    }
+
+    function hydrateCharts() {
+      if (state.page === 'overview') {
+        lineChart('overview-trend', filteredDaily(), 'transaction_day', 'fraud_rate', { yFormat: fmtPct2, color: '#d92d3a', volumeKey: 'transaction_count' });
+        riskBandExposureChart('overview-riskband');
+        segmentedDrillChart('overview-product', 'product');
+        barChart('overview-pareto', getRows('segment_watchlist').slice().sort((a, b) => num(b.fraud_share) - num(a.fraud_share)).slice(0, 10), row => row.segment_name, row => row.fraud_share, fmtPct, null);
+        barChart('overview-economics', executiveEconomicsRows(), row => row.label, row => row.value, fmtMoneyCompact, null);
+        barChart('overview-readiness', readinessGateRows(), row => row.label, row => row.value, fmtInt, null);
+      }
+      if (state.page === 'trend') {
+        comboChart('trend-combo', filteredDaily(), 'transaction_day', 'transaction_count', 'fraud_rate');
+        barChart('trend-drift', driftFlagRows(), row => row.drift_flag, row => row.fraud_rate, fmtPct2, null);
+        barChart('trend-peaks', filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12), row => 'Day ' + row.transaction_day, row => row.fraud_rate, fmtPct2, null);
+        barChart('trend-volume-peaks', filteredDaily().slice().sort((a, b) => num(b.fraud_count) - num(a.fraud_count)).slice(0, 12), row => 'Day ' + row.transaction_day, row => row.fraud_count, fmtInt, null);
+      }
+      if (state.page === 'amount') {
+        fraudRateIntervalPlot('amount-bar', filteredAmountRows(), row => row.amount_band, 'amount');
+        barChart('amount-exposure', filteredAmountRows(), row => row.amount_band, row => row.fraud_transaction_amount, fmtMoneyCompact, 'amount');
+        heatmap('amount-heatmap', drillRows('Product', 'Amount band'), 'parent_segment', 'child_segment', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Amount band' });
+        scatterChart('amount-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
+        boxplotChart('amount-boxplot', filteredTransactions());
+        segmentedDrillChart('amount-breakdown', state.filters.amount !== 'All' ? 'amount-nested' : 'amount-share');
+      }
+      if (state.page === 'customer') {
+        fraudRateIntervalPlot('customer-identity', getRows('identity_risk'), row => identityLabel(row), 'identity');
+        fraudRateIntervalPlot('customer-email', filteredEmailRows().slice(0, 10), row => row.purchaser_email_group, 'email');
+        barChart('customer-device', deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
+        heatmap('customer-payment-email', paymentEmailRows(), 'payment_segment', 'email_segment', 'fraud_rate', fmtPct2, { rowAxis: 'Payment segment', colAxis: 'Email segment' });
+        heatmap('customer-matrix', getRows('identity_product_coverage'), 'product_cd', 'identity_status', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', rowAxis: 'Product', colAxis: 'Identity status' });
+        segmentedDrillChart('customer-breakdown', customerBreakdownMode());
+      }
+      if (state.page === 'geo') {
+        fraudRateIntervalPlot('proxy-risk', proxySignalRows(), row => proxySegmentLabel(row), 'proxy');
+        dotPlotChart('proxy-lift', proxySignalRows(), row => proxySegmentLabel(row), row => row.lift, value => fmtScore(value) + 'x', 'proxy', { axisTitle: 'Lift vs portfolio baseline', limit: 8 });
+        proxyShareChart('proxy-share');
+        heatmap('proxy-product-matrix', proxyProductMatrixRows(), 'product_cd', 'proxy_segment', 'fraud_rate', fmtPct2, { filterKey: 'product', filterFrom: 'row', detailFamily: 'Product within proxy segment', rowAxis: 'Product', colAxis: 'Proxy segment' });
+        heatmap('proxy-cross-matrix', proxyCrossMatrixRows(), 'address_proxy_status', 'distance_proxy_band', 'fraud_rate', fmtPct2, { rowAxis: 'Address proxy', colAxis: 'Distance proxy' });
+        dotPlotChart('proxy-importance', proxyFeatureRows(), row => row.feature, row => row.importance, fmtInt, null, { axisTitle: 'Model importance from masked proxy fields' });
+      }
+      if (state.page === 'behavior') {
+        barChart('behavior-hour-risk', hourRiskRows(), row => relativeHourLabel(row), row => row.fraud_rate, fmtPct2, null);
+        heatmap('behavior-hour', getRows('time_amount_signals'), 'transaction_hour', 'amount_decimal_group', 'fraud_rate', fmtPct2, { rowAxis: 'Relative hour', colAxis: 'Amount decimal pattern' });
+        scatterChart('behavior-scatter', filteredTransactions(), row => row.transaction_amount, row => row.risk_score, row => row.risk_category, { xLabel: 'transaction amount', yLabel: 'risk score' });
+        barChart('behavior-risk', getRows('validation_risk_bands'), row => row.risk_band, row => row.observed_fraud_rate, fmtPct2, null);
+        barChart('behavior-signal', behaviorSignalRows(), row => row.signal, row => row.strength, fmtPct2, null);
+      }
+      if (state.page === 'features') {
+        barChart('feature-bar', getRows('feature_importance'), row => row.feature, row => row.importance, fmtInt, null);
+        treemapTiles('feature-family', featureFamilyRows());
+        scatterChart('feature-scatter', featureMissingImportanceRows(), row => row.missing_rate, row => row.importance, row => row.feature_family, { xFormat: fmtPct2, yFormat: fmtInt });
+        barChart('feature-interpretation', featureInterpretationSignalRows(), row => row.family, row => row.signal_strength, fmtInt, null);
+      }
+      if (state.page === 'model') {
+        thresholdCurve('model-threshold');
+        modelReferenceCurves('model-curves');
+        renderThresholdSummary();
+        generalisationGapTable('model-generalisation');
+        calibrationTable('model-calibration');
+        barChart('model-risk', getRows('model_risk_bands'), row => row.risk_band, row => row.transaction_count || row.row_count, fmtInt, 'risk');
+        barChart('model-segment-performance', segmentModelRows(), row => row.segment_family + ' / ' + row.segment_name, row => row.precision_rate, fmtPct2, null);
+        confusionMatrix('model-confusion');
+        barChart('model-features', getRows('feature_importance').slice(0, 8), row => row.feature, row => row.importance, fmtInt, null);
+        modelRegistryCard('model-registry');
+      }
+      if (state.page === 'insights') {
+        recommendationMatrix('insight-matrix');
+        waterfallChart('insight-waterfall', getRows('segment_watchlist').slice(0, 8));
+        barChart('insight-priority', recommendationScoreRows(), row => row.recommendation, row => row.score, fmtInt, null);
+      }
+    }
+
+    function pageGrid(parts) { return '<div class="page-grid">' + parts.join('') + '</div>'; }
+    function grid2(parts) { return '<div class="grid-2">' + parts.join('') + '</div>'; }
+    function kpiRow(parts) { return '<div class="kpi-row">' + parts.join('') + '</div>'; }
+    function insightRow(parts) { return '<div class="insight-row">' + parts.join('') + '</div>'; }
+    function visualModeTabs(supportCount) {
+      if (!supportCount) return '';
+      const mainActive = state.visualMode !== 'support';
+      const supportActive = state.visualMode === 'support';
+      return '<div class="visual-mode-tabs" role="tablist" aria-label="Visual layer"><button class="visual-tab-btn ' + (mainActive ? 'active' : '') + '" type="button" data-visual-mode="main">Primary Analysis</button><button class="visual-tab-btn ' + (supportActive ? 'active' : '') + '" type="button" data-visual-mode="support">Supporting Visuals<span>' + supportCount + '</span></button></div>';
+    }
+    function visualPanels(mainParts, supportParts) {
+      const supportCount = supportParts.length;
+      // Supporting charts are investigative figures, not thumbnails: preserve
+      // full-sized plotted axes while keeping compact text cards in a two-column grid.
+      const activeParts = state.visualMode === 'support' && supportCount ?
+        ['<section class="studio-support-workspaces" aria-label="Supporting diagnostic visuals">' + supportParts.join('') + '</section>'] :
+        mainParts;
+      return visualModeTabs(supportCount) + activeParts.join('');
+    }
+    function supportingVisuals(parts, title = 'Supporting visuals') {
+      return '<details class="supporting-visuals"><summary>' + escapeHtml(title) + '<span>Diagnostics</span></summary><div class="supporting-body">' + grid2(parts) + '</div></details>';
+    }
+    function storyStrip(pageId) {
+      const rows = storyCues[pageId] || [];
+      if (!rows.length) return '';
+      return '<div class="story-strip">' + rows.map(row => storyStep(row[0], row[1], row[2])).join('') + '</div>';
+    }
+    function storyStep(label, text, color) {
+      return '<div class="story-step" style="--accent:' + color + '"><strong>' + escapeHtml(label) + '</strong><span>' + escapeHtml(text) + '</span></div>';
+    }
+    function kpi(label, value, foot, color) {
+      return '<div class="kpi-card" style="--accent:' + color + '"><div class="kpi-label">' + escapeHtml(label) + '</div><div class="kpi-value">' + escapeHtml(value) + '</div><div class="kpi-foot">' + escapeHtml(foot) + '</div></div>';
+    }
+    function registryMetric(label, value, foot, color, mono = false) {
+      return '<div class="registry-card" style="--accent:' + color + '" title="' + escapeHtml(value) + '"><div class="registry-label">' + escapeHtml(label) + '</div><div class="registry-value ' + (mono ? 'mono' : '') + '">' + escapeHtml(value) + '</div><div class="registry-foot">' + escapeHtml(foot) + '</div></div>';
+    }
+    function insight(title, text, color) {
+      return '<div class="insight-card" style="--accent:' + color + '"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(text) + '</span></div>';
+    }
+    function chartCard(title, note, body, klass) {
+      return '<article class="visual-card ' + (klass || '') + '" data-chart-title="' + escapeHtml(title) + '" data-chart-note="' + escapeHtml(note) + '" data-chart-page="' + escapeHtml(state.page) + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div><button type="button" data-chart-inspect class="chart-inspect-btn" aria-label="Inspect chart: ' + escapeHtml(title) + '">Inspect ↗</button></div>' + body + '</article>';
+    }
+    function readDetailDataset(node) {
+      if (!node) return null;
+      return {
+        key: node.dataset.filterKey || '',
+        value: node.dataset.filterValue || '',
+        family: node.dataset.detailFamily || labelize(node.dataset.filterKey || 'Segment'),
+        label: node.dataset.detailLabel || node.dataset.filterValue || 'Segment'
+      };
+    }
+    function readChartDataset(node) {
+      if (!node) return null;
+      return {
+        page: node.dataset.chartPage || state.page,
+        title: node.dataset.chartTitle || 'Chart',
+        note: node.dataset.chartNote || ''
+      };
+    }
+    function openChartDrillDrawer(detail) {
+      if (!detail) return;
+      document.getElementById('drawer-title').textContent = 'Chart Drill-through | ' + detail.title;
+      document.getElementById('drawer-subtitle').textContent = pageLabel(detail.page) + ' - ' + currentContextLabel();
+      document.getElementById('drawer-body').innerHTML = chartDrillPathHtml(detail) + chartDrillMetricHtml(detail) + chartDrillBarsHtml(detail) + chartDrillInsightHtml(detail);
+      drawerFocusOrigin = document.activeElement;
+      document.getElementById('detail-backdrop').classList.add('open');
+      document.getElementById('detail-drawer').classList.add('open');
+      document.getElementById('drawer-close').focus();
+    }
+    function openDetailDrawer(detail) {
+      if (!detail || !detail.key) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      document.getElementById('drawer-title').textContent = detail.family + ' | ' + detail.label;
+      document.getElementById('drawer-subtitle').textContent = 'Drill-through keeps the comparison inside related populations.';
+      document.getElementById('drawer-body').innerHTML = drawerPathHtml(detail) + drawerMetricHtml(metric) + drawerRelatedChartHtml(detail) + drawerInsightHtml(detail, metric);
+      drawerFocusOrigin = document.activeElement;
+      document.getElementById('detail-backdrop').classList.add('open');
+      document.getElementById('detail-drawer').classList.add('open');
+      document.getElementById('drawer-close').focus();
+    }
+    function closeDetailDrawer() {
+      const drawer = document.getElementById('detail-drawer');
+      const wasOpen = drawer.classList.contains('open');
+      document.getElementById('detail-backdrop').classList.remove('open');
+      drawer.classList.remove('open');
+      if (wasOpen && drawerFocusOrigin && drawerFocusOrigin.isConnected) drawerFocusOrigin.focus();
+      drawerFocusOrigin = null;
+    }
+    function segmentDetailMetric(detail, row) {
+      const hasCount = row.transaction_count != null || row.total_transactions != null;
+      const tx = hasCount ? num(row.transaction_count ?? row.total_transactions) : 0;
+      const hasFraudCount = row.fraud_count != null || row.fraud_transactions != null;
+      const fraudCount = hasFraudCount ? num(row.fraud_count ?? row.fraud_transactions) : 0;
+      const hasRate = row.fraud_rate != null || row.observed_fraud_rate != null || (hasCount && hasFraudCount && tx > 0);
+      const rate = row.fraud_rate != null ? num(row.fraud_rate) :
+        row.observed_fraud_rate != null ? num(row.observed_fraud_rate) :
+        tx > 0 && hasFraudCount ? fraudCount / tx : 0;
+      const lift = hasRate ? segmentLift({ ...row, fraud_rate: rate }) : 0;
+      const hasFraudShare = row.fraud_share != null || row.expected_fraud_capture != null;
+      const fraudShare = hasFraudShare ? num(row.fraud_share ?? row.expected_fraud_capture) : 0;
+      const hasAmount = row.fraud_transaction_amount != null;
+      const amount = hasAmount ? num(row.fraud_transaction_amount) : 0;
+      const interval = hasCount && hasFraudCount && tx > 0 ? wilsonFraudInterval(fraudCount, tx) : null;
+      const priority = row.priority || row.review_priority || (lift >= 2 ? 'High' : lift >= 1.2 ? 'Monitor' : 'Standard');
+      return { tx, fraudCount, rate, lift, fraudShare, amount, priority, hasCount,
+        hasFraudCount, hasRate, hasFraudShare, hasAmount, interval };
+    }
+
+    function drawerMetricHtml(metric) {
+      const values = [
+        ['Transactions', metric.hasCount ? fmtInt(metric.tx) : 'Not reported'],
+        ['Fraud rate', metric.hasRate ? fmtPct2(metric.rate) : 'Not reported'],
+        ['Fraud count', metric.hasFraudCount ? fmtInt(metric.fraudCount) : 'Not reported'],
+        ['Wilson 95% interval', metric.interval ? fmtPct2(metric.interval.lower) + '–' + fmtPct2(metric.interval.upper) : 'Unavailable'],
+        ['Fraud share', metric.hasFraudShare ? fmtPct(metric.fraudShare) : 'Not reported'],
+        ['Fraud amount', metric.hasAmount ? fmtMoney(metric.amount) : 'Not carried']
+      ];
+      return '<div class="drawer-section-title">01 / OBSERVED SEGMENT EVIDENCE</div>' +
+        '<div class="metric-grid">' + values.map(([label, value]) =>
+          '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>'
+        ).join('') + '</div>' +
+        (metric.hasCount && metric.tx < 30 ? '<div class="drawer-support-warning">Low support: fewer than 30 reported transactions. Treat this segment as exploratory.</div>' : '');
+    }
+
+    function drawerPathHtml(detail) {
+      const paths = {
+        product: ['Product', detail.label, 'Amount band', 'Payment / email'],
+        amount: ['Amount band', detail.label, 'Product', 'Risk band'],
+        email: ['Email group', detail.label, 'Product', 'Amount band'],
+        identity: ['Identity status', detail.label, 'Product', 'Email group'],
+        risk: ['Risk band', detail.label, 'Product', 'Amount band'],
+        proxy: ['Masked proxy', detail.label, 'Product', 'Amount band']
+      };
+      const steps = paths[detail.key] || [detail.family, detail.label, 'Related segments'];
+      return '<div class="drill-path">' + steps.map((step, index) => {
+        const chip = '<span class="drill-step">' + escapeHtml(step) + '</span>';
+        return index ? '<span class="drill-arrow">></span>' + chip : chip;
+      }).join('') + '</div>';
+    }
+    function drawerRelatedChartHtml(detail) {
+      const rows = relatedDrillRows(detail).slice(0, 7);
+      if (!rows.length) return '<div class="drawer-bars"><div class="drawer-section-title">02 / NESTED COMPARISONS</div>' + empty('No related subsegments available in the published reporting mart.') + '</div>';
+      const bars = rows.map(row => {
+        const label = row.child_segment || row.segment_name || row.parent_segment || detail.label || 'Segment';
+        const rate = num(row.fraud_rate ?? row.observed_fraud_rate);
+        const support = row.transaction_count == null ? 'n not reported' : 'n=' + fmtInt(num(row.transaction_count));
+        const attrs = 'data-tooltip="' + escapeHtml(label + ' | ' + fmtPct2(rate) + ' | ' + support) + '"';
+        return '<div class="bar-row" ' + attrs + '><div class="bar-label">' + escapeHtml(short(label, 26)) +
+          '</div><div class="bar-track"><div class="bar-fill" style="width:' +
+          Math.max(0, Math.min(100, rate * 100)) + '%;--accent:#80b7eb"></div></div>' +
+          '<div class="bar-value">' + fmtPct2(rate) + '<small class="drill-row-support">' + support + '</small></div></div>';
+      }).join('');
+      return '<div class="drawer-bars"><div class="drawer-section-title">02 / NESTED COMPARISONS</div>' +
+        '<div class="drill-scale-note">Common 0–100% fraud-rate scale · available support displayed</div>' + bars + '</div>';
+    }
+
+    function drawerInsightHtml(detail, metric) {
+      const text = detail.family + ' / ' + detail.label +
+        (metric.hasRate ? ' has observed fraud rate ' + fmtPct2(metric.rate) : ' has no published fraud-rate measure') +
+        (metric.hasCount ? ' across ' + fmtInt(metric.tx) + ' reported transactions' : ' with unreported support') +
+        (metric.hasAmount ? ' and reported fraud amount ' + fmtMoney(metric.amount) : '') +
+        '. Review peer denominators and nested segments before adjusting operational thresholds.';
+      return '<div class="drawer-copy"><strong>03 / ANALYST INTERPRETATION</strong><p>' + escapeHtml(text) + '</p></div>';
+    }
+
+    function chartDrillPathHtml(detail) {
+      const path = [pageLabel(detail.page), detail.title, chartDrillNextStep(detail)];
+      return '<div class="drill-path">' + path.map((step, index) => {
+        const chip = '<span class="drill-step">' + escapeHtml(step) + '</span>';
+        return index ? '<span class="drill-arrow">></span>' + chip : chip;
+      }).join('') + '</div>';
+    }
+    function chartDrillMetricHtml(detail) {
+      const m = metricLayer();
+      const row = selectedThreshold();
+      const metrics = [
+        ['Context', currentContextLabel()],
+        ['Fraud rate', fmtPct2(m.fraud_rate)],
+        ['Exposure proxy', fmtMoneyCompact(m.fraud_exposure)],
+        ['Flagged workload', fmtInt(m.review_workload)],
+        ['Capture', fmtPct(row.fraud_capture_rate)],
+        ['Chart layer', state.visualMode === 'support' ? 'Supporting' : 'Primary']
+      ];
+      return '<div class="metric-grid">' + metrics.map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
+    }
+    function chartDrillRows(detail) {
+      const page = detail.page;
+      if (page === 'overview') return getRows('segment_watchlist').slice(0, 8).map(row => ({ label: row.segment_family + ' / ' + row.segment_name, value: row.fraud_share, format: fmtPct }));
+      if (page === 'trend') return filteredDaily().slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 8).map(row => ({ label: 'Day ' + row.transaction_day, value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'amount') return filteredAmountRows().map(row => ({ label: row.amount_band, value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'customer') return filteredEmailRows().slice(0, 8).map(row => ({ label: row.purchaser_email_group, value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'geo') return proxySignalRows().slice(0, 8).map(row => ({ label: proxySegmentLabel(row), value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'behavior') return hourRiskRows().slice(0, 8).map(row => ({ label: relativeHourLabel(row), value: row.fraud_rate, format: fmtPct2 }));
+      if (page === 'features') return getRows('feature_importance').slice(0, 8).map(row => ({ label: row.feature, value: row.importance, format: fmtInt }));
+      if (page === 'model') return thresholdRows().slice(0, 8).map(row => ({ label: 'T ' + fmtScore(row.score_threshold), value: row.fraud_capture_rate, format: fmtPct }));
+      if (page === 'insights') return recommendationScoreRows().slice(0, 8).map(row => ({ label: row.recommendation, value: row.score, format: fmtInt }));
+      return [];
+    }
+    function chartDrillBarsHtml(detail) {
+      const rows = chartDrillRows(detail);
+      if (!rows.length) return '';
+      const maxValue = Math.max(...rows.map(row => Math.abs(num(row.value))), .0001);
+      const bars = rows.map((row, index) => {
+        const formatter = row.format || fmtInt;
+        return '<div class="bar-row" data-tooltip="' + escapeHtml(row.label + ' | ' + formatter(row.value)) + '"><div class="bar-label">' + escapeHtml(short(row.label, 24)) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(num(row.value)) / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + escapeHtml(formatter(row.value)) + '</div></div>';
+      }).join('');
+      return '<div class="drawer-bars"><div class="filter-title">Comparable drill-through cuts</div>' + bars + '</div>';
+    }
+    function chartDrillInsightHtml(detail) {
+      const sentence = chartDrillCopy(detail);
+      return '<div class="drawer-copy"><strong>Analyst interpretation</strong><br>' + escapeHtml(sentence) + '</div>';
+    }
+    function chartDrillNextStep(detail) {
+      const map = {
+        overview: 'Segment concentration',
+        trend: 'Peak relative windows',
+        amount: 'Amount-band and product cuts',
+        customer: 'Identity, email, and payment cuts',
+        geo: 'Masked proxy subsegments',
+        behavior: 'Relative-hour behavior',
+        features: 'Feature-family signal',
+        model: 'Threshold operating point',
+        insights: 'Action prioritization'
+      };
+      return map[detail.page] || 'Comparable cuts';
+    }
+    function chartDrillCopy(detail) {
+      const title = detail.title;
+      const page = detail.page;
+      if (page === 'model') return title + ' should be read as threshold governance: capture, precision, workload, and missed exposure must move together before changing policy.';
+      if (page === 'geo') return title + ' uses masked address and distance signals only. It supports proxy risk segmentation, not geographic inference.';
+      if (page === 'features') return title + ' explains model signal strength. Treat masked features as observational evidence, not confirmed business definitions.';
+      if (page === 'amount') return title + ' should be drilled into product and payment context before assigning a rule, because amount alone can mix exposure and frequency risk.';
+      if (page === 'customer') return title + ' should be interpreted through nested identity, email, payment, and product cuts, not as a standalone customer identity claim.';
+      if (page === 'trend') return title + ' uses relative TransactionDT windows. Use it for drift behavior, not calendar seasonality.';
+      if (page === 'insights') return title + ' translates analytical evidence into a prioritized business action. Use this view to close the presentation.';
+      return title + ' supports the executive conclusion that fraud is concentrated and should be managed with segment-aware controls.';
+    }
+    function pageLabel(pageId) {
+      return pages.find(page => page.id === pageId)?.title || labelize(pageId);
+    }
+
+    function peerRows(detail) {
+      if (detail.key === 'product') return getRows('product_risk');
+      if (detail.key === 'amount') return getRows('amount_bands');
+      if (detail.key === 'email') return filteredEmailRows();
+      if (detail.key === 'identity') return getRows('identity_risk');
+      if (detail.key === 'risk') return getRows('model_risk_bands').map(row => ({ ...row, fraud_rate: row.observed_fraud_rate || row.fraud_rate }));
+      if (detail.key === 'proxy') return proxySignalRows();
+      return [];
+    }
+    function peerLabel(detail, row) {
+      if (detail.key === 'product') return row.product_cd || row.segment_name || 'Unknown';
+      if (detail.key === 'amount') return row.amount_band || row.segment_name || 'Unknown';
+      if (detail.key === 'email') return row.purchaser_email_group || row.segment_name || 'Unknown';
+      if (detail.key === 'identity') return identityLabel(row);
+      if (detail.key === 'risk') return row.risk_band || row.segment_name || 'Unknown';
+      if (detail.key === 'proxy') return proxySegmentLabel(row);
+      return row.segment_name || row.child_segment || 'Unknown';
+    }
+    function drillChildFilter(detail) {
+      if (detail.key === 'product') return 'amount';
+      if (detail.key === 'amount') return 'product';
+      if (detail.key === 'email') return 'product';
+      if (detail.key === 'identity') return 'product';
+      if (detail.key === 'risk') return 'product';
+      if (detail.key === 'proxy') return 'product';
+      return null;
+    }
+
+    function renderActiveFilters() {
+      const chips = Object.entries(state.filters)
+        .filter(([, value]) => value !== 'All' && value !== 'all')
+        .map(([key, value]) => '<span class="chip">' + escapeHtml(labelize(key)) + ': ' + escapeHtml(value) + '<button type="button" data-clear-filter="' + key + '">x</button></span>');
+      if (state.cross) chips.push('<span class="chip">Cross-filter: ' + escapeHtml(labelize(state.cross.key)) + ' = ' + escapeHtml(state.cross.value) + '<button type="button" data-clear-cross="1">x</button></span>');
+      document.getElementById('active-filters').innerHTML = chips.length ? chips.join('') : '<span class="chip">No filters</span>';
+      document.querySelectorAll('[data-clear-filter]').forEach(button => button.addEventListener('click', () => {
+        const key = button.dataset.clearFilter;
+        state.filters[key] = key === 'day' ? 'all' : 'All';
+        state.cross = null;
+        state.drill = null;
+        syncFilterControls();
+        render();
+      }));
+      document.querySelectorAll('[data-clear-cross]').forEach(button => button.addEventListener('click', () => {
+        state.cross = null;
+        state.drill = null;
+        render();
+      }));
+    }
+
+    function getRows(key) { return state.dashboard?.[key] || []; }
+    function executiveKpis() { return getRows('executive_kpis')[0] || {}; }
+    function thresholdRows() {
+      const validation = getRows('validation_threshold_simulation');
+      return validation.length ? validation : getRows('threshold_simulation');
+    }
+    function selectedThreshold() { return thresholdRows()[Math.max(0, Math.min(state.selectedThreshold, thresholdRows().length - 1))] || {}; }
+    function reportingThresholdAtSelected() {
+      const selected = selectedThreshold();
+      const reporting = getRows('threshold_simulation');
+      if (!reporting.length) return {};
+      return reporting.find(row => Math.abs(num(row.score_threshold) - num(selected.score_threshold)) < .00001) || reporting[Math.max(0, Math.min(state.selectedThreshold, reporting.length - 1))] || {};
+    }
+    function validationTotalRows() {
+      const rows = thresholdRows();
+      const totals = rows
+        .filter(row => num(row.workload_share) > 0)
+        .map(row => num(row.review_count) / num(row.workload_share))
+        .filter(Number.isFinite);
+      return totals.length ? Math.round(Math.max(...totals)) : 0;
+    }
+    function validationFraudTotal() {
+      const rows = thresholdRows();
+      const totals = rows
+        .map(row => num(row.captured_fraud_count) + num(row.false_negative_count))
+        .filter(value => value > 0);
+      return totals.length ? Math.max(...totals) : 0;
+    }
+    function metricLayer() {
+      const k = executiveKpis();
+      const threshold = selectedThreshold();
+      const segment = segmentMetricContext();
+      const total = segment?.transactions ?? num(k.total_transactions);
+      const fraud = segment?.fraud_count ?? num(k.fraud_transactions);
+      const rate = total ? fraud / total : num(k.fraud_rate);
+      // A segment can report an exact fraud count/rate without any monetary
+      // breakdown. Never display missing segment amounts as $0 or substitute
+      // whole-portfolio exposure under a segment filter.
+      const hasExposure = !segment || segment.fraud_amount !== null;
+      const exposure = hasExposure ? (segment ? segment.fraud_amount : fraudExposure()) : null;
+      const captured = hasExposure ? exposure * num(threshold.fraud_capture_rate) : null;
+      const missed = hasExposure ? Math.max(exposure - captured, 0) : null;
+      const review = num(threshold.workload_share) * total;
+      const capturedFraudCount = fraud * num(threshold.fraud_capture_rate);
+      const falsePositives = Math.max(review - capturedFraudCount, 0);
+      // Catching fraud avoids a loss rather than earning revenue, so the same
+      // per-dollar loss rate has to price both the caught and the missed side.
+      // Valuing capture at face value while pricing misses at a fraction made
+      // the two halves of this comparison incommensurable.
+      const lossRate = Math.max(num(state.fraudLossMultiplier), 0);
+      const falsePositiveCost = falsePositives * Math.max(num(state.reviewCost), 0);
+      const avoidedLoss = hasExposure ? captured * lossRate : null;
+      const residualLoss = hasExposure ? missed * lossRate : null;
+      const netBenefit = hasExposure ? avoidedLoss - falsePositiveCost : null;
+      return {
+        source: segment?.source || 'Portfolio',
+        total_transactions: total,
+        fraud_transactions: fraud,
+        fraud_rate: rate,
+        fraud_exposure: exposure,
+        has_exposure: hasExposure,
+        capturable_exposure: captured,
+        missed_exposure: missed,
+        review_workload: review,
+        review_share: num(threshold.workload_share),
+        precision: num(threshold.precision_rate),
+        recall: num(threshold.fraud_capture_rate),
+        false_positive_count: falsePositives,
+        false_positive_cost: falsePositiveCost,
+        avoided_loss: avoidedLoss,
+        residual_loss: residualLoss,
+        loss_rate: lossRate,
+        review_cost: Math.max(num(state.reviewCost), 0),
+        net_benefit: netBenefit,
+        threshold
+      };
+    }
+    function executiveEconomicsRows() {
+      const m = metricLayer();
+      if (!m.has_exposure) return [];
+      return [
+        { label: 'Avoided loss', value: m.avoided_loss },
+        { label: 'Review cost', value: m.false_positive_cost },
+        { label: 'Residual loss', value: m.residual_loss },
+        { label: 'Net benefit', value: m.net_benefit }
+      ];
+    }
+    function readinessGateRows() {
+      const rows = getRows('report_readiness');
+      if (!rows.length) {
+        const meta = state.dashboard?.meta || {};
+        return [
+          { label: 'Readiness passed', value: num(meta.readiness_passed || 0) },
+          { label: 'Readiness total', value: num(meta.readiness_total || 0) }
+        ];
+      }
+      return groupBy(rows, 'readiness_result').map(group => ({
+        label: group.key || 'Readiness check',
+        value: group.rows.length
+      })).sort((a, b) => b.value - a.value);
+    }
+    function segmentMetricContext() {
+      const active = Object.entries(state.filters).filter(([key, value]) => key !== 'day' && value !== 'All');
+      if (!active.length) return null;
+      if (active.length === 1) {
+        const [key, value] = active[0];
+        const row = exactSegmentRow(key, value);
+        if (row) {
+          const fraudField = row.fraud_count ?? row.fraud_transactions ?? row.observed_fraud_count;
+          const txField = row.transaction_count ?? row.total_transactions;
+          const txCount = txField == null ? null : num(txField);
+          const rateField = row.fraud_rate ?? row.observed_fraud_rate;
+          const count = fraudField == null ? (rateField != null && txCount != null ? txCount * num(rateField) : null) : num(fraudField);
+          // Missing monetary fields are null (unavailable), never fabricated $0.
+          const amount = row.fraud_transaction_amount == null ? null : num(row.fraud_transaction_amount);
+          return {
+            source: labelize(key) + ' segment' + (row.split ? ' (' + row.split + ' split)' : ''),
+            transactions: txCount,
+            fraud_count: count,
+            fraud_amount: amount,
+            fraud_rate: rateField == null ? (txCount ? count / txCount : null) : num(rateField),
+            row
+          };
+        }
+      }
+      if (active.length === 2) {
+        const familyA = NICHE_FAMILY_BY_FILTER[active[0][0]];
+        const familyB = NICHE_FAMILY_BY_FILTER[active[1][0]];
+        const cell = familyA && familyB ? nicheCell(familyA, active[0][1], familyB, active[1][1]) : null;
+        if (cell) {
+          return {
+            source: familyA + ' x ' + familyB,
+            transactions: num(cell.transaction_count),
+            fraud_count: num(cell.fraud_count),
+            fraud_amount: cell.fraud_transaction_amount == null ? null : num(cell.fraud_transaction_amount),
+            fraud_rate: num(cell.fraud_rate),
+            row: cell
+          };
+        }
+      }
+      // Deeper filter sets have no governed cross-tab behind them. Reading them
+      // off the risk-ranked review queue reported a 100% fraud rate for every
+      // combination, so fall back to portfolio figures and label them as such
+      // rather than presenting a sample artefact as a segment finding.
+      return { source: 'Portfolio, no governed cross-tab for this filter set' };
+    }
+    function exactSegmentRow(key, value) {
+      if (key === 'product') return getRows('product_risk').find(row => row.product_cd === value);
+      if (key === 'amount') return getRows('amount_bands').find(row => row.amount_band === value);
+      if (key === 'email') return getRows('email_domain_risk').find(row => row.purchaser_email_group === value);
+      if (key === 'risk') return getRows('model_risk_bands').find(row => row.risk_band === value);
+      if (key === 'identity') return getRows('identity_risk').find(row => identityLabel(row) === value || row.identity_status === value);
+      if (key === 'proxy') return proxySignalRows().find(row => proxySegmentLabel(row) === value || row.proxy_segment === value);
+      return null;
+    }
+    function currentContextLabel() {
+      const active = Object.entries(state.filters)
+        .filter(([, value]) => value !== 'All' && value !== 'all')
+        .map(([key, value]) => labelize(key) + ': ' + value);
+      return active.length ? active.join(' | ') : 'Full portfolio';
+    }
+    function recommendedThresholdIndex() {
+      const rows = thresholdRows();
+      const target = rows.findIndex(row => num(row.score_threshold) >= 0.50);
+      return target >= 0 ? target : Math.min(5, rows.length - 1);
+    }
+    function fraudExposure() {
+      const k = executiveKpis();
+      return num(k.fraud_transaction_amount) || num(k.fraud_amount);
+    }
+    function filteredDaily() {
+      const rows = getRows('daily_drift');
+      if (state.filters.day === 'all') return rows;
+      const maxDay = max(rows, 'transaction_day');
+      const start = maxDay - Number(state.filters.day) + 1;
+      return rows.filter(row => num(row.transaction_day) >= start);
+    }
+    function driftFlagRows() {
+      return groupBy(filteredDaily(), 'drift_flag').map(group => {
+        const tx = sum(group.rows, 'transaction_count');
+        const fraud = sum(group.rows, 'fraud_count');
+        return {
+          drift_flag: group.key || 'Unclassified',
+          day_count: group.rows.length,
+          transaction_count: tx,
+          fraud_count: fraud,
+          fraud_rate: tx ? fraud / tx : 0
+        };
+      }).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function hourRiskRows() {
+      return groupBy(getRows('time_amount_signals'), 'transaction_hour').map(group => {
+        const tx = sum(group.rows, 'transaction_count');
+        const fraud = sum(group.rows, 'fraud_count');
+        return {
+          transaction_hour: group.key,
+          transaction_count: tx,
+          fraud_count: fraud,
+          fraud_rate: tx ? fraud / tx : 0
+        };
+      }).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function filteredProductRows() {
+      return getRows('product_risk').filter(row => state.filters.product === 'All' || row.product_cd === state.filters.product);
+    }
+    function filteredAmountRows() {
+      return getRows('amount_bands').filter(row => state.filters.amount === 'All' || row.amount_band === state.filters.amount);
+    }
+    function filteredEmailRows() {
+      return getRows('email_domain_risk').filter(row => state.filters.email === 'All' || row.purchaser_email_group === state.filters.email);
+    }
+    // The review queue is ranked by risk, so nearly every row in it is fraud.
+    // Segment rates must come from the governed cross-tab instead, which covers
+    // the whole portfolio.
+    const NICHE_FAMILY_BY_FILTER = {
+      product: 'Product',
+      amount: 'Amount band',
+      email: 'Email domain',
+      identity: 'Identity',
+      risk: 'Risk band'
+    };
+    function nicheCell(familyA, segmentA, familyB, segmentB) {
+      const rows = getRows('niche_drilldown');
+      return rows.find(row => row.parent_family === familyA && row.parent_segment === segmentA
+          && row.child_family === familyB && row.child_segment === segmentB)
+        || rows.find(row => row.parent_family === familyB && row.parent_segment === segmentB
+          && row.child_family === familyA && row.child_segment === segmentA)
+        || null;
+    }
+    function nicheSegmentRows(family) {
+      const rows = getRows('niche_drilldown').filter(row => row.parent_family === family);
+      if (!rows.length) return [];
+      // Any single child family partitions the whole portfolio exactly once.
+      const child = rows[0].child_family;
+      const map = new Map();
+      rows.filter(row => row.child_family === child).forEach(row => {
+        const key = row.parent_segment || 'Unknown';
+        if (!map.has(key)) map.set(key, { segment: key, transaction_count: 0, fraud_count: 0, fraud_transaction_amount: 0 });
+        const item = map.get(key);
+        item.transaction_count += num(row.transaction_count);
+        item.fraud_count += num(row.fraud_count);
+        item.fraud_transaction_amount += num(row.fraud_transaction_amount);
+      });
+      return [...map.values()]
+        .map(row => ({ ...row, fraud_rate: row.transaction_count ? row.fraud_count / row.transaction_count : 0 }))
+        .sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function filteredTransactions() {
+      return (state.transactions || []).filter(row => {
+        const okProduct = state.filters.product === 'All' || row.product_cd === state.filters.product;
+        const okAmount = state.filters.amount === 'All' || row.amount_band === state.filters.amount;
+        const okEmail = state.filters.email === 'All' || row.purchaser_email_group === state.filters.email;
+        const okIdentity = state.filters.identity === 'All' || row.identity_status === state.filters.identity;
+        const okRisk = state.filters.risk === 'All' || row.risk_category === state.filters.risk || row.risk_band === state.filters.risk;
+        return okProduct && okAmount && okEmail && okIdentity && okRisk;
+      });
+    }
+    function drillRows(parent, child) {
+      return getRows('niche_drilldown').filter(row => row.parent_family === parent && row.child_family === child);
+    }
+    function segmentedDrillChart(id, mode) {
+      if (mode === 'product') {
+        if (state.filters.product !== 'All') {
+          const rows = drillRows('Product', 'Amount band').filter(row => row.parent_segment === state.filters.product);
+          barChart(id, rows, row => row.child_segment, row => row.fraud_rate, fmtPct2, 'amount');
+          return;
+        }
+        barChart(id, filteredProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        return;
+      }
+      if (mode === 'product-nested') {
+        const rows = state.filters.product !== 'All'
+          ? drillRows('Product', 'Amount band').filter(row => row.parent_segment === state.filters.product)
+          : drillRows('Product', 'Amount band').slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12);
+        barChart(id, rows, row => (state.filters.product !== 'All' ? row.child_segment : row.parent_segment + ' / ' + row.child_segment), row => row.fraud_rate, fmtPct2, state.filters.product !== 'All' ? 'amount' : null);
+        return;
+      }
+      if (mode === 'watchlist') {
+        barChart(id, getRows('segment_watchlist').slice(0, 12), row => row.segment_family + ' / ' + row.segment_name, row => row.fraud_rate, fmtPct2, null);
+        return;
+      }
+      if (mode === 'amount') {
+        if (state.filters.amount !== 'All') {
+          const rows = drillRows('Amount band', 'Product').filter(row => row.parent_segment === state.filters.amount);
+          barChart(id, rows, row => row.child_segment, row => row.fraud_rate, fmtPct2, 'product');
+          return;
+        }
+        barChart(id, filteredAmountRows(), row => row.amount_band, row => row.fraud_rate, fmtPct2, 'amount');
+        return;
+      }
+      if (mode === 'amount-nested') {
+        const rows = state.filters.amount !== 'All'
+          ? drillRows('Amount band', 'Product').filter(row => row.parent_segment === state.filters.amount)
+          : drillRows('Amount band', 'Product').slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, 12);
+        barChart(id, rows, row => (state.filters.amount !== 'All' ? row.child_segment : row.parent_segment + ' / ' + row.child_segment), row => row.fraud_rate, fmtPct2, state.filters.amount !== 'All' ? 'product' : null);
+        return;
+      }
+      if (mode === 'amount-share') {
+        barChart(id, filteredAmountRows(), row => row.amount_band, row => row.fraud_share || row.transaction_share, fmtPct, 'amount');
+        return;
+      }
+      if (mode === 'email-product') {
+        barChart(id, emailProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        return;
+      }
+      if (mode === 'identity-product') {
+        barChart(id, identityProductRows(), row => row.product_cd, row => row.fraud_rate, fmtPct2, 'product');
+        return;
+      }
+      if (mode === 'product-email') {
+        barChart(id, productEmailRows(), row => row.purchaser_email_group, row => row.fraud_rate, fmtPct2, 'email');
+        return;
+      }
+      barChart(id, deviceRiskRows(), row => row.device_type, row => row.fraud_rate, fmtPct2, null);
+    }
+    function customerBreakdownMode() {
+      if (state.filters.email !== 'All') return 'email-product';
+      if (state.filters.identity !== 'All') return 'identity-product';
+      if (state.filters.product !== 'All') return 'product-email';
+      return 'device';
+    }
+    function segmentFamilyContribution() {
+      const grouped = groupBy(getRows('segment_watchlist'), 'segment_family').map(group => ({
+        family: group.key,
+        fraud_share: sum(group.rows, 'fraud_share')
+      }));
+      return grouped.sort((a, b) => num(b.fraud_share) - num(a.fraud_share));
+    }
+    function paymentEmailRows() {
+      const rows = getRows('payment_email_matrix');
+      if (rows.length) return rows;
+      const payments = getRows('payment_heatmap').slice(0, 8).map(row => ({
+        payment_segment: (row.card_network || 'Unknown') + ' / ' + (row.card_type || 'Unknown'),
+        email_segment: 'All email',
+        fraud_rate: row.fraud_rate
+      }));
+      return payments.concat(filteredEmailRows().slice(0, 8).map(row => ({
+        payment_segment: 'All payment',
+        email_segment: row.purchaser_email_group,
+        fraud_rate: row.fraud_rate
+      })));
+    }
+    function segmentModelRows() {
+      const rows = getRows('segment_model_performance');
+      const threshold = num(selectedThreshold().score_threshold);
+      const hasThresholdRows = rows.some(row => row.score_threshold !== undefined && row.score_threshold !== null);
+      const thresholdRows = hasThresholdRows
+        ? rows.filter(row => Math.abs(num(row.score_threshold) - threshold) < .00001)
+        : rows;
+      return thresholdRows
+        .filter(row => num(row.validation_transactions) >= 1000)
+        .slice()
+        .sort((a, b) => num(b.precision_rate) - num(a.precision_rate))
+        .slice(0, 12);
+    }
+    function deviceRiskRows() {
+      return nicheSegmentRows('Device').map(row => ({
+        device_type: row.segment,
+        fraud_rate: row.fraud_rate,
+        transaction_count: row.transaction_count
+      }));
+    }
+    function productRiskRows() {
+      return getRows('product_risk').map(row => ({
+        product_cd: row.product_cd || 'Unknown',
+        transaction_count: num(row.transaction_count),
+        fraud_count: num(row.fraud_count),
+        fraud_rate: num(row.fraud_rate)
+      })).sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function emailProductRows() { return productRiskRows(); }
+    function identityProductRows() { return productRiskRows(); }
+    function productEmailRows() {
+      return getRows('email_domain_risk').map(row => ({
+        purchaser_email_group: row.purchaser_email_group || 'Unknown',
+        transaction_count: num(row.transaction_count),
+        fraud_count: num(row.fraud_count),
+        fraud_rate: num(row.fraud_rate)
+      })).sort((a, b) => b.fraud_rate - a.fraud_rate).slice(0, 12);
+    }
+    function proxyQualityRows() {
+      return getRows('data_quality').filter(row => ['Address', 'Distance'].includes(row.column_family));
+    }
+    function proxySignalRows() {
+      return getRows('proxy_signal_risk').map(row => ({ ...row, proxy_key: proxySegmentLabel(row) }));
+    }
+    function proxySegmentLabel(row) {
+      return (row.proxy_family || 'Proxy') + ' | ' + (row.proxy_segment || 'Unknown');
+    }
+    function proxyProductMatrixRows() {
+      return getRows('proxy_product_matrix').filter(row => state.filters.proxy === 'All' || proxySegmentLabel(row) === state.filters.proxy);
+    }
+    function proxyCrossMatrixRows() {
+      return getRows('proxy_cross_matrix');
+    }
+    function proxyFeatureRows() {
+      const rows = getRows('feature_importance').filter(row => {
+        const feature = String(row.feature || '').toLowerCase();
+        return feature.includes('addr') || feature.includes('dist');
+      });
+      if (rows.length) return rows.slice(0, 12);
+      return proxyQualityRows().map(row => ({ feature: row.column_family + ' proxy', importance: Math.round((1 - num(row.avg_missing_rate)) * 1000) }));
+    }
+    function entityRepeatBand(row) {
+      const count = num(row.entity_transaction_count);
+      const fraud = num(row.entity_prior_fraud_proxy);
+      if (fraud >= 2) return 'Prior fraud proxy 2+';
+      if (fraud >= 1) return 'Prior fraud proxy 1';
+      if (count >= 8) return 'Repeat entity 8+';
+      if (count >= 3) return 'Repeat entity 3-7';
+      return 'Single / low repeat';
+    }
+    function entityRepeatRows() {
+      return groupBy(filteredTransactions().map(row => ({ ...row, repeat_band: entityRepeatBand(row) })), 'repeat_band')
+        .map(group => {
+          const tx = group.rows.length;
+          const fraud = group.rows.filter(row => num(row.is_fraud) === 1).length;
+          return { repeat_band: group.key, transaction_count: tx, fraud_count: fraud, fraud_rate: tx ? fraud / tx : 0 };
+        })
+        .sort((a, b) => b.fraud_rate - a.fraud_rate);
+    }
+    function productEntityRows() {
+      const rows = filteredTransactions().map(row => ({ ...row, repeat_band: entityRepeatBand(row) }));
+      const map = new Map();
+      rows.forEach(row => {
+        const key = (row.product_cd || 'Unknown') + '||' + row.repeat_band;
+        if (!map.has(key)) map.set(key, { product_cd: row.product_cd || 'Unknown', repeat_band: row.repeat_band, transaction_count: 0, fraud_count: 0 });
+        const item = map.get(key);
+        item.transaction_count += 1;
+        if (num(row.is_fraud) === 1) item.fraud_count += 1;
+      });
+      return [...map.values()].map(row => ({ ...row, fraud_rate: row.transaction_count ? row.fraud_count / row.transaction_count : 0 }));
+    }
+    function featureFamilyRows() {
+      return groupBy(getRows('feature_importance'), 'feature_family').map(group => ({
+        feature_family: group.key,
+        importance: sum(group.rows, 'importance')
+      })).sort((a, b) => b.importance - a.importance);
+    }
+    function featureMissingImportanceRows() {
+      const quality = new Map(getRows('data_quality').map(row => [row.column_family, row]));
+      return featureFamilyRows().map(row => ({
+        feature_family: row.feature_family,
+        importance: row.importance,
+        missing_rate: num(quality.get(row.feature_family)?.avg_missing_rate)
+      }));
+    }
+    function behaviorMatrixRows() {
+      return [
+        { signal: 'Relative hour', metric: peakHourLabel(), meaning: 'Fraud peaks in specific relative-time windows.' },
+        { signal: 'Payment / email', metric: 'Combination lift', meaning: 'Payment and email intersections support targeted control design.' },
+        { signal: 'Amount / score', metric: 'Outlier score density', meaning: 'High score plus unusual amount may indicate review priority.' },
+        { signal: 'Risk band', metric: 'Observed fraud rate', meaning: 'Score bands translate model probability into BI reporting bins.' }
+      ];
+    }
+    function behaviorSignalRows() {
+      return [
+        { signal: 'Relative hour', strength: num(peakHourRow()?.fraud_rate) },
+        { signal: 'Payment / email', strength: max(paymentEmailRows(), 'fraud_rate') },
+        { signal: 'Amount / score', strength: average(filteredTransactions().filter(row => num(row.risk_score) >= 80), 'risk_score') / 100 },
+        { signal: 'Risk band', strength: max(getRows('model_risk_bands'), 'observed_fraud_rate') || max(getRows('model_risk_bands'), 'fraud_rate') }
+      ];
+    }
+    function featureInterpretationRows() {
+      return [
+        { family: 'Card', use: 'Payment instrument signal', caution: 'Masked field semantics should not be overclaimed.' },
+        { family: 'Identity', use: 'Join coverage and device/email context', caution: 'Identity coverage is partial and segment-dependent.' },
+        { family: 'Vesta engineered V', use: 'High-dimensional behavioral signal', caution: 'Interpret as statistical feature family only.' },
+        { family: 'Amount', use: 'Exposure and transaction-size pattern', caution: 'Frequency risk and loss exposure can diverge.' },
+        { family: 'Relative time', use: 'Drift and hour pattern', caution: 'Not a real calendar timestamp.' }
+      ];
+    }
+    function featureInterpretationSignalRows() {
+      const importance = new Map(featureFamilyRows().map(row => [row.feature_family, row.importance]));
+      return featureInterpretationRows().map(row => ({
+        family: row.family,
+        signal_strength: num(importance.get(row.family)) || (row.family === 'Vesta engineered V' ? 900 : row.family === 'Card' ? 760 : row.family === 'Identity' ? 620 : 380)
+      })).sort((a, b) => b.signal_strength - a.signal_strength);
+    }
+    function recommendationRows() {
+      const top = getRows('segment_watchlist')[0] || {};
+      return [
+        { priority: 'P1', recommendation: 'Prioritize top concentration segments', evidence: (top.segment_family || 'Segment') + ' / ' + (top.segment_name || 'Top segment'), impact: 'Highest immediate exposure control.' },
+        { priority: 'P1', recommendation: 'Use nested segment thresholds', evidence: 'Product x amount x identity patterns', impact: 'Better precision than one global threshold.' },
+        { priority: 'P2', recommendation: 'Add location enrichment', evidence: 'Native location coverage is 0%', impact: 'Unlocks valid region-level fraud reporting.' },
+        { priority: 'P2', recommendation: 'Track model calibration', evidence: 'PR-AUC and threshold simulator', impact: 'Supports governed score usage.' },
+        { priority: 'P3', recommendation: 'Monitor missingness by feature family', evidence: 'Data quality scorecard', impact: 'Reduces feature drift blind spots.' }
+      ];
+    }
+    function recommendationScoreRows() {
+      const scores = {
+        'Prioritize top concentration segments': 95,
+        'Use nested segment thresholds': 90,
+        'Add location enrichment': 62,
+        'Track model calibration': 74,
+        'Monitor missingness by feature family': 68
+      };
+      return recommendationRows().map(row => ({ ...row, score: scores[row.recommendation] || 50 })).sort((a, b) => b.score - a.score);
+    }
+    function relatedDrillRows(detail) {
+      if (detail.key === 'product') return drillRows('Product', 'Amount band').filter(row => row.parent_segment === detail.value);
+      if (detail.key === 'amount') return drillRows('Amount band', 'Product').filter(row => row.parent_segment === detail.value);
+      if (detail.key === 'email') return getRows('niche_drilldown').filter(row => row.parent_segment === detail.value || row.child_segment === detail.value);
+      if (detail.key === 'risk') return []; // A risk-band aggregate is not a nested segment; show peers instead.
+      if (detail.key === 'identity') return getRows('identity_product_coverage').filter(row => row.identity_status === detail.value);
+      if (detail.key === 'proxy') return proxyProductMatrixRows().filter(row => proxySegmentLabel(row) === detail.value || row.proxy_segment === detail.value);
+      return [];
+    }
+    function segmentLift(row) {
+      return num(row.lift || row.fraud_lift || row.observed_lift) || (num(executiveKpis().fraud_rate) ? num(row.fraud_rate || row.observed_fraud_rate) / num(executiveKpis().fraud_rate) : 0);
+    }
+    function dynamicInsightCards() {
+      const m = metricLayer();
+      const top = getRows('segment_watchlist')[0] || {};
+      const context = currentContextLabel();
+      const topText = top.segment_name
+        ? top.segment_family + ' / ' + top.segment_name + ' carries ' + fmtPct(num(top.fraud_share)) + ' of fraud share.'
+        : 'Top segment concentration is available after reporting marts load.';
+      return [
+        insight('Current context', context + ' shows ' + fmtPct2(m.fraud_rate) + ' observed fraud rate' + (m.has_exposure ? ' and ' + fmtMoney(m.fraud_exposure) + ' exposure proxy.' : '; segment fraud amount not reported.'), '#d92d3a'),
+        insight('Concentration driver', topText + ' Prioritize high lift and high fraud share together.', '#2563eb'),
+        insight('Threshold economics', m.has_exposure ? 'Selected threshold captures ' + fmtMoney(m.capturable_exposure) + ' with ' + fmtInt(m.review_workload) + ' reviews and ' + fmtMoney(m.missed_exposure) + ' missed exposure.' : 'No observed fraud amount exists for this selected cohort. Monetary threshold scenarios are unavailable; holdout precision/recall remain separate.', '#18a999')
+      ];
+    }
+
+    function axisTicks(maxValue, steps = 4) {
+      const safeMax = Math.max(num(maxValue), .0001);
+      return Array.from({ length: steps + 1 }, (_, index) => safeMax * index / steps);
+    }
+    function indexedTicks(source, xKey, count = 4) {
+      const last = Math.max((source || []).length - 1, 0);
+      const indexes = unique(Array.from({ length: Math.min(count, last + 1) }, (_, index) => Math.round(index * last / Math.max(Math.min(count, last + 1) - 1, 1))));
+      return indexes.map(index => ({ index, label: String(source[index]?.[xKey] ?? index) }));
+    }
+    function tickLabel(value, formatter) {
+      return escapeHtml((formatter || fmtInt)(value));
+    }
+    function yAxisSvg(ticks, yFn, x1, x2, formatter) {
+      return ticks.map(value => {
+        const y = yFn(value);
+        return '<g><line class="svg-grid" x1="' + x1 + '" y1="' + y + '" x2="' + x2 + '" y2="' + y + '"/><text class="svg-axis" x="' + (x1 - 8) + '" y="' + (y + 4) + '" text-anchor="end">' + tickLabel(value, formatter) + '</text></g>';
+      }).join('');
+    }
+
+    // Wilson 95% score interval. Use only measured counts, never estimated labels.
+    // Descriptive model: independent Bernoulli observations within a segment;
+    // does not adjust for cohort selection or repeated observations.
+    function wilsonFraudInterval(frauds, transactions) {
+      const n = num(transactions), k = num(frauds);
+      if (!Number.isFinite(n) || !Number.isFinite(k) || n <= 0 || k < 0 || k > n) return null;
+      const z = 1.959963984540054, p = k / n, z2 = z * z;
+      const center = (p + z2 / (2 * n)) / (1 + z2 / n);
+      const margin = z * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n)) / (1 + z2 / n);
+      return { lower: Math.max(0, center - margin), upper: Math.min(1, center + margin) };
+    }
+
+    // Analyst-first alternative to relative-width bars: an actual 0-based fraud-rate
+    // axis, 95% Wilson intervals, measured support and a named portfolio reference.
+    // Responsive evidence-first rate plot. Marks are placed on one 0-based
+    // absolute percentage axis; no oversized SVG shrinks labels in narrow cards.
+    function fraudRateIntervalPlot(id, rows, labelFn, filterKey = null, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).filter(row =>
+        row && Number.isFinite(Number(row.transaction_count)) && Number(row.transaction_count) > 0 &&
+        Number.isFinite(Number(row.fraud_count)) && Number(row.fraud_count) >= 0 &&
+        Number(row.fraud_count) <= Number(row.transaction_count)
+      ).slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, options.limit || 12);
+      if (!source.length) {
+        target.innerHTML = empty('Comparison requires measured fraud and transaction counts.');
+        return;
+      }
+      const baselineRow = source.find(row => row.baseline_fraud_rate !== undefined && row.baseline_fraud_rate !== null);
+      const baseline = baselineRow ? num(baselineRow.baseline_fraud_rate) : null;
+      const records = source.map(row => {
+        const count = num(row.transaction_count), fraud = num(row.fraud_count);
+        return { row, label: String(labelFn(row) ?? 'Unknown'), count, fraud,
+          rate: fraud / count, interval: wilsonFraudInterval(fraud, count) };
+      });
+      const bound = Math.max(.0001, ...records.map(record => record.interval.upper), baseline ?? 0);
+      const maxAxis = Math.min(1, Math.max(.02, Math.ceil((bound * 1.08) / .02) * .02));
+      const pos = rate => (Math.max(0, Math.min(1, rate / maxAxis)) * 100).toFixed(2);
+      const baseMark = baseline === null ? '' :
+        '<span class="rate-axis-baseline" style="left:' + pos(baseline) + '%" aria-hidden="true"></span>';
+      const axis = '<div class="rate-axis-ticks" aria-hidden="true"><span>0%</span><span>' +
+        fmtPct2(maxAxis / 2) + '</span><span>' + fmtPct2(maxAxis) + '</span></div>';
+      const marks = records.map(record => {
+        const sparse = record.count < 30;
+        const start = pos(record.interval.lower), end = pos(record.interval.upper);
+        const tip = record.label + ' | observed fraud rate ' + fmtPct2(record.rate) +
+          ' | fraud ' + fmtInt(record.fraud) + ' / transactions ' + fmtInt(record.count) +
+          ' | Wilson 95% interval [' + fmtPct2(record.interval.lower) + ', ' +
+          fmtPct2(record.interval.upper) + ']' +
+          (sparse ? ' | exploratory, n < 30' : '');
+        const attrs = filterKey ?
+          ' data-filter-key="' + escapeHtml(filterKey) +
+          '" data-filter-value="' + escapeHtml(record.label) +
+          '" data-detail-family="' + escapeHtml(labelize(filterKey)) +
+          '" data-detail-label="' + escapeHtml(record.label) + '"' : '';
+        return '<div class="rate-plot-row' + (sparse ? ' rate-plot-sparse' : '') +
+          '"' + attrs + ' data-tooltip="' + escapeHtml(tip) +
+          '" title="' + escapeHtml(tip) + '">' +
+          '<div class="rate-plot-label" title="' + escapeHtml(record.label) + '">' +
+          escapeHtml(record.label) + '</div>' +
+          '<div class="rate-plot-track" aria-hidden="true">' +
+          baseMark +
+          '<span class="rate-plot-ci" style="left:' + start + '%;width:' +
+          (Number(end) - Number(start)).toFixed(2) + '%"></span>' +
+          '<span class="rate-plot-point" style="left:' + pos(record.rate) + '%"></span>' +
+          '</div><div class="rate-plot-metric"><strong class="rate-value">' +
+          fmtPct2(record.rate) + '</strong><small class="rate-denominator">n=' +
+          fmtInt(record.count) + '</small></div></div>';
+      }).join('');
+      const baselineText = baseline === null ? '' :
+        '<span><i class="rate-legend-baseline"></i>Published portfolio baseline ' + fmtPct2(baseline) + '</span>';
+      target.innerHTML = '<div class="rate-evidence-meta"><span>Observed fraud rate / Wilson 95% interval</span>' +
+        '<span>Absolute percentage axis · sorted by rate</span></div>' +
+        '<div class="rate-evidence-chart" role="img" aria-label="Fraud rates by segment, with Wilson confidence intervals, transaction denominators and portfolio reference">' +
+        '<div class="rate-plot-rows">' + marks + '</div><div class="rate-plot-axis">' +
+        '<span>RATE</span>' + axis + '<span></span></div></div>' +
+        '<div class="rate-evidence-legend">' + baselineText +
+        '<span><i class="rate-legend-sparse"></i>Open point = n below 30</span>' +
+        '<span>Intervals are descriptive; do not infer causality or independence</span></div>';
+    }
+
+    function lineChart(id, rows, xKey, yKey, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).slice(-180);
+      if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
+      const w = 760, h = 306, padLeft = 62, padRight = 28, padTop = 47, padBottom = 42;
+      const value = row => num(typeof yKey === 'function' ? yKey(row) : row[yKey]);
+      const values = source.map(value);
+      const maxY = Math.max(...values, .0001) * 1.08;
+      const maxVol = Math.max(...source.map(row => num(row[options.volumeKey])), 1);
+      const plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
+      const x = index => padLeft + index / Math.max(source.length - 1, 1) * plotW;
+      const y = val => h - padBottom - val / maxY * plotH;
+      const lineColor = options.color || '#2678d9';
+      const gradientId = 'area-' + id.replace(/[^a-z0-9_-]/gi, '-');
+      const points = source.map((row, index) => x(index) + ',' + y(value(row))).join(' ');
+      const area = 'M' + x(0) + ' ' + (h - padBottom) + ' L' + source.map((row,index) => x(index) + ' ' + y(value(row))).join(' L') + ' L' + x(source.length - 1) + ' ' + (h - padBottom) + ' Z';
+      const bars = options.volumeKey ? source.map((row, index) => {
+        const bh = num(row[options.volumeKey]) / maxVol * plotH;
+        return '<rect x="' + (x(index) - 1.3) + '" y="' + (h - padBottom - bh) + '" width="2.6" height="' + bh + '" fill="#a6cbe9" opacity=".44" />';
+      }).join('') : '';
+      const latest = source[source.length - 1];
+      const yTicks = yAxisSvg(axisTicks(maxY), y, padLeft, w - padRight, options.yFormat || fmtInt);
+      const xTicks = indexedTicks(source, xKey).map(tick => '<text class="svg-axis" x="' + x(tick.index) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
+      const accessible = escapeHtml('Trend over ' + source.length + ' reporting periods; latest ' + (options.yFormat || fmtInt)(value(latest)));
+      target.innerHTML = '<div class="chart-current-readout" aria-label="Latest observed data point"><span>Latest observed rate</span><strong>' +
+        escapeHtml((options.yFormat || fmtInt)(value(latest))) +
+        '</strong><small>Relative day ' + escapeHtml(String(latest[xKey] ?? '—')) + '</small></div>' +
+        '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + accessible + '"><defs><linearGradient id="' + gradientId + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="' + lineColor + '" stop-opacity=".22"/><stop offset="100%" stop-color="' + lineColor + '" stop-opacity=".015"/></linearGradient></defs>' + yTicks + bars + '<path d="' + area + '" fill="url(#' + gradientId + ')"/><polyline points="' + points + '" fill="none" stroke="' + lineColor + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="' + x(source.length - 1) + '" cy="' + y(value(latest)) + '" r="5.5" fill="#fff" stroke="' + lineColor + '" stroke-width="3"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Latest · ' + escapeHtml((options.yFormat || fmtInt)(value(latest))) + '</text></svg></div>';
+    }
+
+    function comboChart(id, rows, xKey, barKey, lineKey) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).slice(-80);
+      if (!source.length) { target.innerHTML = empty('No trend data available.'); return; }
+      const w = 760, h = 306, padLeft = 65, padRight = 65, padTop = 50, padBottom = 42;
+      const maxBar = Math.max(...source.map(row => num(row[barKey])), 1) * 1.08;
+      const maxLine = Math.max(...source.map(row => num(row[lineKey])), .0001) * 1.08;
+      const plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
+      const bw = plotW / source.length;
+      const x = index => padLeft + index * bw;
+      const yBar = val => h - padBottom - num(val) / maxBar * plotH;
+      const yLine = val => h - padBottom - num(val) / maxLine * plotH;
+      const points = source.map((row, index) => (x(index) + bw / 2) + ',' + yLine(row[lineKey])).join(' ');
+      const bars = source.map((row, index) => '<rect x="' + (x(index) + Math.max(1, bw * .12)) + '" y="' + yBar(row[barKey]) + '" width="' + Math.max(2, bw * .76) + '" height="' + Math.max(0, h - padBottom - yBar(row[barKey])) + '" rx="2" fill="#8ebce4" opacity=".76"/>').join('');
+      const leftTicks = yAxisSvg(axisTicks(maxLine), yLine, padLeft, w - padRight, fmtPct2);
+      const rightTicks = axisTicks(maxBar).map(v => '<text class="svg-axis" x="' + (w - padRight + 9) + '" y="' + (yBar(v) + 4) + '" text-anchor="start">' + escapeHtml(fmtInt(v)) + '</text>').join('');
+      const xTicks = indexedTicks(source, xKey, 5).map(tick => '<text class="svg-axis" x="' + (x(tick.index) + bw / 2) + '" y="' + (h - 12) + '" text-anchor="middle">Day ' + escapeHtml(tick.label) + '</text>').join('');
+      target.innerHTML = '<div class="chart-figure"><div class="chart-legend"><span><b class="legend-volume"></b>Transactions · right axis</span><span><b class="legend-risk"></b>Fraud rate · left axis</span></div><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Transaction volume bars and fraud rate line with independent labeled axes">' + leftTicks + rightTicks + bars + '<polyline points="' + points + '" fill="none" stroke="#cd455b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>' + xTicks + '<text class="svg-label" x="' + padLeft + '" y="21">Fraud rate</text><text class="svg-label" x="' + (w - padRight) + '" y="21" text-anchor="end">Transactions</text></svg></div>';
+    }
+
+    function barChart(id, rows, labelFn, valueFn, formatFn, filterKey) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).filter(Boolean).slice(0, 14);
+      if (!source.length) { target.innerHTML = empty('No data available.'); return; }
+      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001);
+      const labels = source.map(row => String(labelFn(row) ?? 'Unknown'));
+      const scaleNote = '<div class="chart-scale-note">Segment comparison <span>Bar length normalized to largest visible value</span></div>';
+      target.innerHTML = scaleNote + '<div class="bar-list executive-bars">' + source.map((row, index) => {
+        const label = labels[index];
+        const value = num(valueFn(row));
+        const peak = Math.abs(value) >= maxValue - .0000001;
+        const attrs = filterKey
+          ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
+          : '';
+        const fill = peak ? '#2678d9' : '#91b9df';
+        return '<div class="bar-row executive-bar-row" ' + attrs + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><div class="bar-label" title="' + escapeHtml(label) + '">' + escapeHtml(label) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, Math.abs(value) / maxValue * 100) + '%;--accent:' + fill + '"></div></div><div class="bar-value">' + escapeHtml((formatFn || fmtInt)(value)) + '</div></div>';
+      }).join('') + '</div>';
+    }
+
+    function columnChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).filter(Boolean).slice(0, options.limit || 8);
+      if (!source.length) { target.innerHTML = empty('No column chart data available.'); return; }
+      const w = 760, h = 305, padLeft = 66, padRight = 28, padTop = 46, padBottom = 65;
+      const plotW = w - padLeft - padRight, plotH = h - padTop - padBottom;
+      const maxValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))), .0001) * 1.12;
+      const bw = plotW / source.length;
+      const y = value => h - padBottom - Math.abs(num(value)) / maxValue * plotH;
+      const attrsFor = label => filterKey
+        ? ' data-filter-key="' + filterKey + '" data-filter-value="' + escapeHtml(label) + '" data-detail-family="' + escapeHtml(labelize(filterKey)) + '" data-detail-label="' + escapeHtml(label) + '"'
+        : '';
+      const yTicks = yAxisSvg(axisTicks(maxValue), y, padLeft, w - padRight, formatFn || fmtInt);
+      const peakValue = Math.max(...source.map(row => Math.abs(num(valueFn(row)))));
+      const bars = source.map((row, index) => {
+        const label = String(labelFn(row) ?? 'Unknown'), value = num(valueFn(row));
+        const x = padLeft + index * bw + Math.max(5, bw * .16);
+        const width = Math.max(15, bw * .68);
+        const valueY = Math.max(padTop + 13, y(value) - 9);
+        const fill = Math.abs(value) >= peakValue - .0000001 ? '#2678d9' : '#9fc4e6';
+        return '<g' + attrsFor(label) + ' data-tooltip="' + escapeHtml(label + ' | ' + (formatFn || fmtInt)(value)) + '"><title>' + escapeHtml(label + ': ' + (formatFn || fmtInt)(value)) + '</title><rect x="' + x + '" y="' + y(value) + '" width="' + width + '" height="' + Math.max(0, h - padBottom - y(value)) + '" rx="4" fill="' + fill + '"/><text class="svg-value" x="' + (x + width / 2) + '" y="' + valueY + '" text-anchor="middle">' + escapeHtml((formatFn || fmtInt)(value)) + '</text><text class="svg-axis" x="' + (x + width / 2) + '" y="' + (h - 36) + '" text-anchor="middle">' + escapeHtml(short(label, 14)) + '</text></g>';
+      }).join('');
+      target.innerHTML = '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="' + escapeHtml(options.axisTitle || 'Segment value comparison') + '">' + yTicks + bars + '<text class="svg-label" x="' + padLeft + '" y="21">' + escapeHtml(options.axisTitle || 'Segment value') + '</text></svg></div>';
+    }
+
+    function calibrationTable(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const rows = getRows('model_calibration');
+      if (!rows.length) { target.innerHTML = empty('Calibration evidence not available.'); return; }
+      const head = rows[0];
+      const summary = '<div class="metric-grid">' + [
+        ['Mean score', fmtPct2(head.holdout_mean_predicted)],
+        ['Observed rate', fmtPct2(head.holdout_baseline_rate)],
+        ['Overprediction', fmtScore(head.mean_overprediction_ratio) + 'x'],
+        ['Brier', fmtScore4(head.brier_score)],
+        ['Base-rate Brier', fmtScore4(head.baseline_brier_score)],
+        ['ECE', fmtPct2(head.expected_calibration_error)]
+      ].map(pair => '<div class="metric"><span>' + pair[0] + '</span><strong>' + pair[1] + '</strong></div>').join('') + '</div>';
+      const unreliable = num(head.brier_score) > num(head.baseline_brier_score);
+      const warning = unreliable ? '<div class="model-calibration-warning" role="note"><strong>Calibration warning</strong><p>Holdout Brier ' +
+        fmtScore4(head.brier_score) + ' exceeds constant-baseline Brier ' +
+        fmtScore4(head.baseline_brier_score) +
+        '. The raw score ranks risk but should not be treated as a calibrated fraud probability without additional validation and recalibration.</p></div>' : '';
+      target.innerHTML = warning + summary + dataTable(rows, [
+        ['Score decile', row => fmtInt(row.score_decile)],
+        ['Transactions', row => fmtInt(row.transaction_count)],
+        ['Mean score', row => fmtPct2(row.mean_predicted_probability)],
+        ['Observed fraud', row => '<strong>' + fmtPct2(row.observed_fraud_rate) + '</strong>'],
+        ['Gap', row => '<span class="calibration-gap">' + (num(row.calibration_gap) >= 0 ? '+' : '−') + fmtPct2(Math.abs(num(row.calibration_gap))) + '</span>']
+      ]);
+    }
+    function generalisationGapTable(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const holdout = getRows('validation_risk_bands');
+      const train = getRows('model_risk_bands');
+      if (!holdout.length || !train.length) { target.innerHTML = empty('Holdout band evidence not available.'); return; }
+      const byBand = new Map(train.map(row => [row.risk_band, row]));
+      const order = ['Critical', 'High', 'Elevated', 'Low'];
+      const rows = holdout
+        .slice()
+        .sort((a, b) => order.indexOf(a.risk_band) - order.indexOf(b.risk_band))
+        .map(row => {
+          const trainRow = byBand.get(row.risk_band) || {};
+          const trainRate = num(trainRow.observed_fraud_rate);
+          const holdoutRate = num(row.observed_fraud_rate);
+          const gap = trainRate ? (holdoutRate - trainRate) / trainRate : 0;
+          return { band: row.risk_band, trainRate, holdoutRate, gap, n: num(row.transaction_count) };
+        });
+      target.innerHTML = dataTable(rows, [
+        ['Band', row => escapeHtml(row.band)],
+        ['Train split', row => fmtPct2(row.trainRate)],
+        ['Holdout', row => '<strong>' + fmtPct2(row.holdoutRate) + '</strong>'],
+        ['Relative gap', row => '<span style="color:' + (row.gap < 0 ? '#d92d3a' : '#18a999') + '">'
+          + (row.gap > 0 ? '+' : '') + fmtPct(row.gap) + '</span>'],
+        ['Holdout n', row => fmtInt(row.n)]
+      ]);
+    }
+    function riskBandExposureChart(id) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      // A risk-band risk rate and its population share have different denominators.
+      // Present separate comparable scales, never one unlabeled mixed axis.
+      const sourceName = getRows('validation_risk_bands').length ? 'validation_risk_bands' : 'model_risk_bands';
+      const rows = getRows(sourceName).map(row => ({
+        label: String(row.risk_band || ''),
+        transactions: num(row.transaction_count ?? row.row_count),
+        fraudRate: num(row.observed_fraud_rate ?? row.fraud_rate),
+        capture: num(row.expected_fraud_capture ?? row.fraud_capture_rate)
+      })).filter(row => row.label);
+      if (!rows.length) { target.innerHTML = empty('No risk band data available.'); return; }
+      const totalTx = rows.reduce((acc, row) => acc + row.transactions, 0);
+      const maxRate = Math.max(.0001, ...rows.map(row => row.fraudRate));
+      const sourceLabel = sourceName === 'validation_risk_bands' ? 'Holdout validation' : 'Scored portfolio';
+      const cards = rows.map((row, index) => {
+        const attrs = 'data-filter-key="risk" data-filter-value="' + escapeHtml(row.label) + '" data-detail-family="Risk band" data-detail-label="' + escapeHtml(row.label) + '"';
+        const txShare = totalTx ? row.transactions / totalTx : 0;
+        const rateW = Math.max(0, Math.min(100, row.fraudRate / maxRate * 100));
+        const volumeW = Math.max(0, Math.min(100, txShare * 100));
+        return '<div class="risk-band-card" ' + attrs + ' role="button" tabindex="0" aria-label="' + escapeHtml(row.label + ', observed fraud rate ' + fmtPct2(row.fraudRate) + ', ' + fmtInt(row.transactions) + ' transactions') + '"><div class="risk-band-heading"><span class="risk-band-index">0' + (index + 1) + '</span><strong>' + escapeHtml(row.label) + '</strong></div><div class="risk-band-rate">' + fmtPct2(row.fraudRate) + '</div><div class="risk-band-metric">Observed fraud rate<div class="risk-band-track"><i style="width:' + rateW + '%"></i></div></div><div class="risk-band-metric">Share of ' + sourceLabel.toLowerCase() + ' transactions <strong>' + fmtPct(txShare) + '</strong><div class="risk-band-track risk-band-volume"><i style="width:' + volumeW + '%"></i></div></div><div class="risk-band-footer">' + fmtInt(row.transactions) + ' transactions</div></div>';
+      }).join('');
+      target.innerHTML = '<div class="risk-band-caption"><span>' + sourceLabel + ' · separate metric scales</span><span>Click a band to cross-filter</span></div><div class="risk-band-grid">' + cards + '</div><p class="risk-band-disclosure">Top bars compare the observed fraud rate across risk bands. Bottom bars represent each band’s share of evaluated transactions. These are separate scales and should not be compared by bar length across rows.</p>';
+    }
+
+    function proxyShareChart(id) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const rows=proxySignalRows().slice(0,8);
+      if(!rows.length){target.innerHTML=empty('No proxy share data available.');return;}
+      target.innerHTML='<div class="paired-share-head"><span>Observed fraud share</span><span>Transaction share</span></div><div class="paired-share-list">'+rows.map(row=>{
+        const label=proxySegmentLabel(row),fraudShare=num(row.fraud_share),txShare=num(row.transaction_share);
+        const attrs='data-filter-key="proxy" data-filter-value="'+escapeHtml(label)+'" data-detail-family="Proxy segment" data-detail-label="'+escapeHtml(label)+'"';
+        return '<div class="paired-share-row" '+attrs+' data-tooltip="'+escapeHtml(label+' | fraud share '+fmtPct(fraudShare)+' | volume share '+fmtPct(txShare))+'"><div class="paired-share-name" title="'+escapeHtml(label)+'">'+escapeHtml(short(label,30))+'</div><div class="paired-share-comparison"><div class="paired-share-track"><i class="fraud" style="width:'+Math.max(0,Math.min(100,fraudShare*100))+'%"></i></div><div class="paired-share-track"><i class="volume" style="width:'+Math.max(0,Math.min(100,txShare*100))+'%"></i></div></div><span class="paired-share-stat">'+fmtPct(fraudShare)+' / '+fmtPct(txShare)+'</span></div>';
+      }).join('')+'</div><p class="risk-band-disclosure">Both bars use the same 0–100% scale. Proxy segment cuts can overlap; do not add shares between rows.</p>';
+    }
+
+    function drillContributionChart(id, detail) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const total = num(executiveKpis().total_transactions);
+      const txShare = metric.hasCount && total > 0 ? metric.tx / total : null;
+      const rate = metric.hasRate ? metric.rate : null;
+      const baseline = num(executiveKpis().fraud_rate);
+      const shares = [
+        { label: 'Share of fraud labels', value: metric.hasFraudShare ? metric.fraudShare : null },
+        { label: 'Share of transactions', value: txShare }
+      ];
+      const lines = shares.map((measure, index) => {
+        const supported = measure.value !== null && Number.isFinite(measure.value);
+        return '<div class="drill-measured-row">' +
+          '<div class="drill-measured-title"><span>' + measure.label + '</span>' +
+          '<strong>' + (supported ? fmtPct2(measure.value) : 'Not reported') + '</strong></div>' +
+          '<div class="drill-measured-track" aria-hidden="true"><span class="' +
+          (index ? 'volume' : 'fraud') + '" style="width:' +
+          (supported ? Math.max(0, Math.min(100, measure.value * 100)) : 0) + '%"></span></div></div>';
+      }).join('');
+      const rateLine = '<div class="drill-reference-row"><span>Segment fraud rate</span>' +
+        '<strong>' + (rate == null ? 'Not reported' : fmtPct2(rate)) + '</strong>' +
+        '<span>Portfolio baseline</span><strong>' + fmtPct2(baseline) + '</strong></div>';
+      target.innerHTML = '<div class="chart-scale-note">Proportions on a fixed 0–100% share axis <span>Population counts and fraud labels are different denominators</span></div>' +
+        '<div class="drill-measured-shares">' + lines + '</div>' + rateLine +
+        '<p class="drill-method-caption">Fraud-rate and portfolio baseline are displayed separately; they are not added to contribution shares. Overlapping segments may not be summed.</p>';
+    }
+
+    function drillRecommendationChart(id, detail) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const baseline = num(executiveKpis().fraud_rate);
+      const support = !metric.hasCount ? 'Unreported support' :
+        metric.tx < 30 ? 'Sparse: n < 30' :
+        metric.tx < 1000 ? 'Limited support: n < 1,000' : 'Measured: n = ' + fmtInt(metric.tx);
+      const relative = metric.hasRate && baseline > 0 ? metric.rate / baseline : null;
+      const interpretation = !metric.hasRate ? 'No observed fraud-rate measure is published for this slice.' :
+        !metric.hasCount ? 'The rate has no published denominator; verify support before using it.' :
+        metric.tx < 30 ? 'Low sample support makes ranking unstable; investigate before setting a control.' :
+        relative != null && relative > 1 ? 'The observed rate exceeds the portfolio baseline; validate with peer support and holdout performance.' :
+        'The observed rate does not exceed the portfolio baseline. Inspect peer composition before drawing a conclusion.';
+      target.innerHTML = '<div class="drill-interpretation-panel">' +
+        '<span class="drill-interpretation-kicker">OBSERVED EVIDENCE / NOT AN ACTION SCORE</span>' +
+        '<strong>' + escapeHtml(support) + '</strong>' +
+        '<p>' + escapeHtml(interpretation) + '</p>' +
+        '<div class="drill-interpretation-method"><span>Reported rate</span><b>' +
+        (metric.hasRate ? fmtPct2(metric.rate) : 'Unavailable') + '</b>' +
+        '<span>Relative to portfolio</span><b>' +
+        (relative === null ? 'Unavailable' : fmtScore(relative) + '×') + '</b></div>' +
+        '<small>No synthetic priority points, estimated review capacity or causal business impact are computed for this segment.</small></div>';
+    }
+
+    function dotPlotChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source=(rows||[]).filter(Boolean).slice().sort((a,b)=>num(valueFn(b))-num(valueFn(a))).slice(0,options.limit||10);
+      if(!source.length){target.innerHTML=empty('No dot plot data available.');return;}
+      const w=750,h=Math.max(265,source.length*41+76),padLeft=187,padRight=86,padTop=37,padBottom=44;
+      const max=Math.max(.0001,...source.map(row=>Math.abs(num(valueFn(row)))));
+      const plotW=w-padLeft-padRight,rowH=(h-padTop-padBottom)/source.length;
+      const x=value=>padLeft+Math.abs(num(value))/max*plotW;
+      const grid=axisTicks(max).map(value=>'<g><line class="svg-grid" x1="'+x(value)+'" y1="'+padTop+'" x2="'+x(value)+'" y2="'+(h-padBottom)+'"/><text class="svg-axis" x="'+x(value)+'" y="'+(h-12)+'" text-anchor="middle">'+tickLabel(value,formatFn||fmtInt)+'</text></g>').join('');
+      const points=source.map((row,index)=>{
+        const label=String(labelFn(row)??'Unknown'),value=num(valueFn(row));
+        const cy=padTop+index*rowH+rowH/2;
+        const attrs=filterKey?' data-filter-key="'+filterKey+'" data-filter-value="'+escapeHtml(label)+'" data-detail-family="'+escapeHtml(labelize(filterKey))+'" data-detail-label="'+escapeHtml(label)+'"':'';
+        const color=index===0?'#2867b1':'#7aa2cf';
+        return '<g'+attrs+' data-tooltip="'+escapeHtml(label+' | '+(formatFn||fmtInt)(value))+'"><line x1="'+padLeft+'" y1="'+cy+'" x2="'+x(value)+'" y2="'+cy+'" stroke="#bfd2e7" stroke-width="3.5" stroke-linecap="round"/><circle cx="'+x(value)+'" cy="'+cy+'" r="6.5" fill="'+color+'" stroke="#fff" stroke-width="2.2"/><text class="svg-label" x="'+(padLeft-11)+'" y="'+(cy+4)+'" text-anchor="end">'+escapeHtml(short(label,27))+'</text><text class="svg-value" x="'+(x(value)+12)+'" y="'+(cy+4)+'">'+escapeHtml((formatFn||fmtInt)(value))+'</text></g>';
+      }).join('');
+      target.innerHTML='<div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+escapeHtml(options.axisTitle||'Ordered signal comparison')+'">'+grid+points+'<text class="svg-label" x="'+padLeft+'" y="19">'+escapeHtml(options.axisTitle||'Signal ranking')+'</text></svg></div>';
+    }
+
+    function donutChart(id, rows, labelKey, valueKey) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const source=(rows||[]).filter(row=>num(row[valueKey])>0).slice(0,6);
+      if(!source.length){target.innerHTML=empty('No segment share data.');return;}
+      const total=sum(source,valueKey);
+      let offset=25;
+      const colors=['#2867b4','#79a1d4','#a8c6e7','#7f87ce','#bd9cd8','#d06d7e'];
+      const rings=source.map((row,index)=>{
+        const pct=num(row[valueKey])/total*100;
+        const stroke='<circle cx="116" cy="116" r="81" fill="none" stroke="'+colors[index]+'" stroke-width="26" stroke-dasharray="'+pct+' '+(100-pct)+'" stroke-dashoffset="'+offset+'" pathLength="100" transform="rotate(-90 116 116)" data-tooltip="'+escapeHtml(row[labelKey]+' · '+fmtPct(pct/100))+'"><title>'+escapeHtml(row[labelKey]+': '+fmtPct(pct/100))+'</title></circle>';
+        offset-=pct;return stroke;
+      }).join('');
+      const labels=source.map((row,index)=>'<div class="donut-legend-row"><i style="background:'+colors[index]+'"></i><span>'+escapeHtml(row[labelKey]||'Unknown')+'</span><strong>'+fmtPct(num(row[valueKey])/total)+'</strong></div>').join('');
+      target.innerHTML='<div class="donut-layout"><svg viewBox="0 0 232 232" role="img" aria-label="Share of displayed segments"><circle cx="116" cy="116" r="81" fill="none" stroke="#e6eef6" stroke-width="26"/>'+rings+'<text x="116" y="111" text-anchor="middle" fill="#163958" font-size="22" font-weight="760">100%</text><text x="116" y="132" text-anchor="middle" fill="#647e98" font-size="11">displayed total</text></svg><div class="donut-legend">'+labels+'</div></div>';
+    }
+
+    function heatmap(id, rows, rowKey, colKey, valueKey, formatFn, options = {}) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = rows || [];
+      if (!source.length) { target.innerHTML = empty('No heatmap data available.'); return; }
+      const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0, 8);
+      const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0, 8);
+      const observations = row => {
+        const raw = row.transaction_count ?? row.validation_transactions ?? row.row_count;
+        return raw == null || !Number.isFinite(Number(raw)) ? null : num(raw);
+      };
+      // Low-support values must not define the colour scale for the rest of the matrix.
+      const colorRows = source.filter(row => {
+        const n = observations(row);
+        return n !== null && n >= 30;
+      });
+      const colorMax = Math.max(.0001, ...colorRows.map(row => num(row[valueKey])));
+      const lookup = new Map(source.map(row => [
+        String(row[rowKey] ?? 'Unknown') + '||' + String(row[colKey] ?? 'Unknown'), row
+      ]));
+      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" role="columnheader"></div>' +
+        colLabels.map(label => '<div class="heat-cell head" role="columnheader" title="' + escapeHtml(label) + '">' +
+        escapeHtml(short(label, 23)) + '</div>').join('') + '</div>';
+      const cells = rowLabels.map(rowLabel =>
+        '<div class="heat-row" style="--cols:' + colLabels.length + '">' +
+        '<div class="heat-cell head" role="rowheader" title="' + escapeHtml(rowLabel) + '">' +
+        escapeHtml(short(rowLabel, 21)) + '</div>' +
+        colLabels.map(colLabel => {
+          const row = lookup.get(rowLabel + '||' + colLabel);
+          if (!row) return '<div class="heat-cell heat-unavailable" title="No reported observations for this intersection">—</div>';
+          const rate = num(row[valueKey]);
+          const n = observations(row);
+          const insufficient = n !== null && n < 30;
+          const unreportedSupport = n === null;
+          const lowSupport = n !== null && n >= 30 && n < 1000;
+          const fraudRaw = row.fraud_count ?? row.validation_fraud_count ?? row.observed_fraud_count;
+          const fraud = fraudRaw == null ? null : num(fraudRaw);
+          const interval = n !== null && fraud !== null && fraud <= n ? wilsonFraudInterval(fraud, n) : null;
+          const status = insufficient ? 'Insufficient n for intensity comparison' :
+            unreportedSupport ? 'Denominator not reported' :
+            lowSupport ? 'Limited support' : 'Observed cell';
+          const tip = rowLabel + ' / ' + colLabel + ' | observed rate ' + formatFn(rate) +
+            ' | ' + (n === null ? 'n not reported' : 'n=' + fmtInt(n)) +
+            (fraud === null ? '' : ' | fraud=' + fmtInt(fraud)) +
+            (interval === null ? '' : ' | 95% Wilson [' + fmtPct2(interval.lower) + ', ' + fmtPct2(interval.upper) + ']') +
+            ' | ' + status;
+          const attrs = options.filterKey ?
+            ' data-filter-key="' + escapeHtml(options.filterKey) +
+            '" data-filter-value="' + escapeHtml(options.filterFrom === 'col' ? colLabel : rowLabel) +
+            '" data-detail-family="' + escapeHtml(options.detailFamily || labelize(options.filterKey)) +
+            '" data-detail-label="' + escapeHtml(options.filterFrom === 'col' ? colLabel : rowLabel) + '"' : '';
+          const ratio = colorRows.length && !insufficient && !unreportedSupport ?
+            Math.max(0, Math.min(1, rate / colorMax)) : 0;
+          const alpha = (.10 + ratio * .79).toFixed(3);
+          const textColor = ratio > .48 ? '#fff' : '#183954';
+          const cellClass = insufficient ? ' heat-insufficient' : unreportedSupport ? ' heat-unknown-support' : lowSupport ? ' low-support' : '';
+          // A very sparse, 100%-fraud cell should not be visually ranked above
+          // a well-supported 12% cell. Its rate remains available on hover.
+          const mainLabel = insufficient ? 'n < 30' : escapeHtml(formatFn(rate));
+          const subLabel = n === null ? 'n not reported' : 'n=' + fmtInt(n);
+          return '<div class="heat-cell heat-observed' + cellClass + '"' + attrs +
+            ' style="--heat-alpha:' + alpha + ';--heat-text:' + textColor +
+            '" data-stat-status="' + (insufficient ? 'insufficient' : unreportedSupport ? 'unknown' : 'observed') +
+            '" data-tooltip="' + escapeHtml(tip) + '" title="' + escapeHtml(tip) + '">' +
+            '<span class="heat-value">' + mainLabel + '</span><small>' + subLabel + '</small></div>';
+        }).join('') + '</div>').join('');
+      const axes = '<div class="heat-axis"><span>ROWS · ' +
+        escapeHtml(options.rowAxis || labelize(rowKey)) + '</span><span>COLUMNS · ' +
+        escapeHtml(options.colAxis || labelize(colKey)) + '</span></div>';
+      const scaleLabel = colorRows.length ? 'Colour intensity: 0 – ' + formatFn(colorMax) + ' among n ≥ 30 cells' :
+        'No cells with at least 30 reported transactions';
+      target.innerHTML = axes + '<div class="heatmap heatmap-editorial" role="table" aria-label="' +
+        escapeHtml((options.rowAxis || rowKey) + ' by ' + (options.colAxis || colKey) +
+          ' observed fraud rates, with sparse cell values suppressed') + '">' + header + cells +
+        '</div><div class="heatmap-legend"><span><i></i>Lower rate</span><span><i></i>Higher rate</span>' +
+        '<span>Hatched n &lt; 30: rate available in tooltip, not ranked by colour</span>' +
+        '<span>Dashed border: 30 ≤ n &lt; 1,000</span>' +
+        '<span>— No reported cell</span></div><p class="heat-scale-disclosure">' +
+        escapeHtml(scaleLabel) + ' · Rates are descriptive; cells are not necessarily independent cohorts.</p>';
+    }
+
+    function scatterChart(id, rows, xFn, yFn, groupFn, options = {}) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const source=(rows||[]).slice(0,240);
+      if(!source.length){target.innerHTML=empty('No transaction sample available.');return;}
+      const w=750,h=329,padLeft=67,padRight=30,padTop=42,padBottom=50;
+      const xValues=source.map(xFn).map(num),yValues=source.map(yFn).map(num);
+      const maxX=Math.max(...xValues,1),maxY=Math.max(...yValues,1);
+      const x=v=>padLeft+num(v)/maxX*(w-padLeft-padRight);
+      const y=v=>h-padBottom-num(v)/maxY*(h-padTop-padBottom);
+      const xTicks=axisTicks(maxX).map(v=>'<g><line class="svg-grid" x1="'+x(v)+'" y1="'+padTop+'" x2="'+x(v)+'" y2="'+(h-padBottom)+'"/><text class="svg-axis" x="'+x(v)+'" y="'+(h-12)+'" text-anchor="middle">'+tickLabel(v,options.xFormat||fmtMoney)+'</text></g>').join('');
+      const yTicks=yAxisSvg(axisTicks(maxY),y,padLeft,w-padRight,options.yFormat||fmtScore);
+      const dots=source.map((row,index)=>{
+        const group=String(groupFn(row)||'Unknown').toLowerCase();
+        const high=group.includes('critical')||group.includes('fraud')||group.includes('high');
+        const color=high?'#db596c':'#4b83c2';
+        const tip='X '+(options.xFormat||fmtMoney)(xFn(row))+' | Y '+(options.yFormat||fmtScore)(yFn(row))+' | '+String(groupFn(row)||'Unknown');
+        return '<circle cx="'+x(xFn(row))+'" cy="'+y(yFn(row))+'" r="3.6" fill="'+color+'" fill-opacity="'+(high?'.76':'.35')+'" stroke="#fff" stroke-width=".45" data-tooltip="'+escapeHtml(tip)+'"><title>'+escapeHtml(tip)+'</title></circle>';
+      }).join('');
+      target.innerHTML='<div class="chart-scale-note">Diagnostic sample <span>'+fmtInt(source.length)+' rows, not the full portfolio</span></div><div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+escapeHtml('Scatter plot '+(options.xLabel||'x')+' by '+(options.yLabel||'y'))+'">'+xTicks+yTicks+dots+'<text class="svg-label" x="'+padLeft+'" y="20">'+escapeHtml(options.yLabel||'Score')+'</text><text class="svg-axis" x="'+(w-padRight)+'" y="'+(h-10)+'" text-anchor="end">'+escapeHtml(options.xLabel||'Value')+'</text></svg></div>';
+    }
+
+    function boxplotChart(id, rows) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const source=rows||[];
+      if(!source.length){target.innerHTML=empty('No amount sample available.');return;}
+      const groups=[
+        {label:'Critical score',values:source.filter(r=>String(r.risk_category).includes('Critical')).map(r=>num(r.transaction_amount)),color:'#c6586b'},
+        {label:'Other scores',values:source.filter(r=>!String(r.risk_category).includes('Critical')).map(r=>num(r.transaction_amount)),color:'#467dbb'}
+      ];
+      const maxValue=Math.max(1,...source.map(row=>num(row.transaction_amount)));
+      const w=760,h=310,padLeft=69,padRight=38,padTop=52,padBottom=52;
+      const x=value=>padLeft+num(value)/maxValue*(w-padLeft-padRight);
+      const grid=axisTicks(maxValue).map(v=>'<g><line class="svg-grid" x1="'+x(v)+'" y1="'+padTop+'" x2="'+x(v)+'" y2="'+(h-padBottom)+'"/><text class="svg-axis" x="'+x(v)+'" y="'+(h-13)+'" text-anchor="middle">'+fmtMoney(v)+'</text></g>').join('');
+      const marks=groups.map((group,index)=>{
+        if(!group.values.length)return '';
+        const q=quantiles(group.values),cy=109+index*93,color=group.color;
+        return '<g><text class="svg-label" x="'+padLeft+'" y="'+(cy-33)+'">'+escapeHtml(group.label+' · n='+fmtInt(group.values.length))+'</text><line x1="'+x(q.min)+'" y1="'+cy+'" x2="'+x(q.max)+'" y2="'+cy+'" stroke="'+color+'" stroke-width="2"/><line x1="'+x(q.min)+'" y1="'+(cy-11)+'" x2="'+x(q.min)+'" y2="'+(cy+11)+'" stroke="'+color+'" stroke-width="2"/><line x1="'+x(q.max)+'" y1="'+(cy-11)+'" x2="'+x(q.max)+'" y2="'+(cy+11)+'" stroke="'+color+'" stroke-width="2"/><rect x="'+x(q.q1)+'" y="'+(cy-19)+'" width="'+Math.max(2,x(q.q3)-x(q.q1))+'" height="38" rx="6" fill="'+color+'" fill-opacity=".20" stroke="'+color+'" stroke-width="1.5"/><line x1="'+x(q.median)+'" y1="'+(cy-22)+'" x2="'+x(q.median)+'" y2="'+(cy+22)+'" stroke="'+color+'" stroke-width="3"/><text class="svg-value" x="'+(w-padRight)+'" y="'+(cy-32)+'" text-anchor="end">median '+fmtMoney(q.median)+'</text></g>';
+      }).join('');
+      target.innerHTML='<div class="chart-scale-note">Transaction amount distribution <span>Diagnostic sample · whiskers min/max, box Q1–Q3, bar median</span></div><div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Distribution of transaction amounts by critical versus other model score bands">'+grid+marks+'</svg></div>';
+    }
+
+    function treemapTiles(id, rows) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      const source = (rows || []).filter(row => num(row.importance) > 0).slice(0, 12).sort((a,b) => num(b.importance) - num(a.importance));
+      if (!source.length) { target.innerHTML = empty('No feature family data.'); return; }
+      const total = source.reduce((acc,row) => acc + num(row.importance), 0);
+      const mosaic = source.map((row,index) => {
+        const weight = num(row.importance) / total;
+        const color = ['#255fa7','#3778ba','#5d83cf','#7f8bd5','#697db3','#9a9ae1'][index%6];
+        return '<div class="feature-mosaic-tile" style="flex-grow:' + Math.max(0.00001,weight) + ';--tile-color:' + color + '" title="' + escapeHtml(row.feature_family + ' | ' + fmtPct(weight) + ' of importance') + '"><span>' + escapeHtml(short(row.feature_family || 'Unknown', 22)) + '</span><strong>' + fmtPct(weight) + '</strong></div>';
+      }).join('');
+      const ranking = source.map((row,index) => {
+        const weight = num(row.importance) / total;
+        return '<div class="feature-rank-row"><span>' + String(index+1).padStart(2,'0') + '</span><strong>' + escapeHtml(row.feature_family || 'Unknown') + '</strong><i style="width:' + Math.max(0,weight*100) + '%"></i><em>' + fmtPct(weight) + '</em></div>';
+      }).join('');
+      target.innerHTML = '<div class="feature-mosaic"><div class="feature-mosaic-band">' + mosaic + '</div><p>Relative feature-family model importance. Tile width represents share of this displayed total, not population prevalence.</p></div><div class="feature-rank-list">' + ranking + '</div>';
+    }
+
+    function thresholdCurve(id) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const rows=thresholdRows();
+      if(!rows.length){target.innerHTML=empty('No threshold data available.');return;}
+      const w=760,h=310,padLeft=59,padRight=25,padTop=35,padBottom=46;
+      const x=i=>padLeft+i/Math.max(rows.length-1,1)*(w-padLeft-padRight);
+      const y=v=>h-padBottom-Math.max(0,Math.min(1,num(v)))*(h-padTop-padBottom);
+      const metrics=[
+        {key:'fraud_capture_rate',label:'Recall',color:'#2474b7'},
+        {key:'precision_rate',label:'Precision',color:'#895fc5'},
+        {key:'workload_share',label:'Review share',color:'#dc9269'}
+      ];
+      const selected=Math.max(0,Math.min(rows.length-1,state.selectedThreshold));
+      const grid=yAxisSvg(axisTicks(1),y,padLeft,w-padRight,fmtPct);
+      const xTicks=indexedTicks(rows,'score_threshold',5).map(t=>'<text class="svg-axis" x="'+x(t.index)+'" y="'+(h-13)+'" text-anchor="middle">'+fmtScore(rows[t.index].score_threshold)+'</text>').join('');
+      const paths=metrics.map(m=>'<polyline points="'+rows.map((r,i)=>x(i)+','+y(r[m.key])).join(' ')+'" fill="none" stroke="'+m.color+'" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(selected)+'" cy="'+y(rows[selected][m.key])+'" r="5.5" stroke="#fff" stroke-width="2" fill="'+m.color+'"/>').join('');
+      const legend=metrics.map(m=>'<span><i style="background:'+m.color+'"></i>'+m.label+' · <strong>'+fmtPct(rows[selected][m.key])+'</strong></span>').join('');
+      target.innerHTML='<div class="threshold-readout"><strong>SELECTED SCORE '+fmtScore(rows[selected].score_threshold)+'</strong><span>Holdout validation · thresholds are operating points, not calibrated probabilities</span></div><div class="chart-series-legend">'+legend+'</div><div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Validation recall, precision, and workload share by scoring threshold">'+grid+'<rect x="'+(x(selected)-8)+'" y="'+padTop+'" width="16" height="'+(h-padTop-padBottom)+'" fill="#d5e8fc" opacity=".4"/>'+paths+'<line x1="'+x(selected)+'" y1="'+padTop+'" x2="'+x(selected)+'" y2="'+(h-padBottom)+'" stroke="#386b9a" stroke-width="1.3" stroke-dasharray="5 5"/>'+xTicks+'<text class="svg-label" x="'+padLeft+'" y="20">Share of holdout</text></svg></div>';
+    }
+
+    function modelReferenceCurves(id) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const rows=thresholdRows();
+      if(!rows.length){target.innerHTML=empty('No model curve data available.');return;}
+      const registry=state.registry||(state.meta&&state.meta.model_registry)||{};
+      const holdout=registry.holdout_metrics||{};
+      const w=480,h=340,pad=56,top=39,right=28,bottom=48;
+      const x=v=>pad+Math.max(0,Math.min(1,num(v)))*(w-pad-right);
+      const y=v=>h-bottom-Math.max(0,Math.min(1,num(v)))*(h-top-bottom);
+      const ticks=axisTicks(1).map(v=>'<g><line class="svg-grid" x1="'+x(v)+'" y1="'+top+'" x2="'+x(v)+'" y2="'+(h-bottom)+'"/><line class="svg-grid" x1="'+pad+'" y1="'+y(v)+'" x2="'+(w-right)+'" y2="'+y(v)+'"/><text class="svg-axis" x="'+x(v)+'" y="'+(h-19)+'" text-anchor="middle">'+fmtPct(v)+'</text><text class="svg-axis" x="'+(pad-9)+'" y="'+(y(v)+4)+'" text-anchor="end">'+fmtPct(v)+'</text></g>').join('');
+      const rocRows=rows.map(r=>({x:r.false_positive_rate!==undefined?num(r.false_positive_rate):num(r.false_positive_count)/Math.max(validationTotalRows()-validationFraudTotal(),1),y:num(r.fraud_capture_rate)})).sort((a,b)=>a.x-b.x);
+      const prRows=rows.map(r=>({x:num(r.fraud_capture_rate),y:num(r.precision_rate)})).sort((a,b)=>a.x-b.x);
+      const panels=[
+        {name:'ROC curve',axis:'FALSE POSITIVE RATE',yAxis:'RECALL',color:'#276fbd',points:rocRows,metric:holdout.roc_auc,metricLabel:'ROC-AUC',baseline:'<line x1="'+x(0)+'" y1="'+y(0)+'" x2="'+x(1)+'" y2="'+y(1)+'" stroke="#b9cadc" stroke-dasharray="6 5"/>'},
+        {name:'Precision–recall',axis:'RECALL',yAxis:'PRECISION',color:'#9366c6',points:prRows,metric:holdout.average_precision,metricLabel:'PR-AUC',baseline:''}
+      ];
+      target.innerHTML='<p class="model-evidence-disclosure">Illustrative operating-point traces from ' + fmtInt(rows.length) + ' published validation thresholds. ROC-AUC and PR-AUC headings are full holdout metrics from the model registry, not the area under the sparsely sampled polylines.</p><div class="curve-panels">'+panels.map(p=>'<div class="curve-panel"><div class="curve-panel-head"><strong>'+p.name+'</strong><span>'+p.metricLabel+' '+(p.metric===undefined||p.metric===null?'N/A':fmtScore(p.metric))+'</span></div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+p.name+' computed from validation threshold rows">'+ticks+p.baseline+'<polyline points="'+p.points.map(r=>x(r.x)+','+y(r.y)).join(' ')+'" fill="none" stroke="'+p.color+'" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="'+pad+'" y="23">'+p.yAxis+'</text></svg><div class="curve-axis-caption">'+p.axis+'</div></div>').join('')+'</div>';
+    }
+
+    function modelRegistryCard(id) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const registry=state.registry||(state.meta&&state.meta.model_registry)||{};
+      if(!registry.model_version){target.innerHTML=empty('No model registry data available.');return;}
+      const featureScope=registry.feature_scope||{},rolling=registry.rolling_cv_summary||{},windows=registry.rolling_cv_windows||[];
+      const bars=windows.map((row,index)=>{
+        const auc=num(row.roc_auc),label='Window '+row.window_number;
+        return '<div class="bar-row executive-bar-row" data-tooltip="'+escapeHtml(label+' | ROC-AUC '+fmtPct2(auc)+' | PR-AUC '+fmtPct2(row.average_precision))+'"><span class="bar-label">'+escapeHtml(label)+'</span><div class="bar-track"><div class="bar-fill" style="width:'+Math.max(0,Math.min(100,auc*100))+'%;--accent:'+(index===0?'#2867b1':'#8ab2db')+'"></div></div><strong class="bar-value">'+fmtPct2(auc)+'</strong></div>';
+      }).join('');
+      target.innerHTML='<div class="registry-grid">'+[
+        registryMetric('Model version', registry.model_version,registry.training_date||'-','#2867b1',true),
+        registryMetric('Feature scope',featureScope.v_feature_range||'-',fmtInt(featureScope.feature_count)+' features used.','#5c91d1'),
+        registryMetric('V features',fmtInt(featureScope.v_features_selected),'Missingness ceiling '+fmtPct2(featureScope.v_missingness_threshold),'#887dca'),
+        registryMetric('Rolling AUC',fmtPct2(rolling.roc_auc_mean),'Minimum '+fmtPct2(rolling.roc_auc_min),'#a68acb')
+      ].join('')+'</div><div class="chart-scale-note" style="margin-top:18px">Rolling validation quality <span>ROC-AUC on the fixed 0–100% scale</span></div><div class="executive-bars">'+bars+'</div>';
+    }
+
+    function renderThresholdSummary() {
+      const target = document.getElementById('threshold-summary');
+      if (!target) return;
+      const row = selectedThreshold();
+      const k = executiveKpis();
+      const captured = num(row.captured_fraud_count);
+      const review = num(row.review_count);
+      const falsePositives = Math.max(review - captured, 0);
+      const missedFraud = num(row.false_negative_count) || Math.max((validationTotalRows() ? validationFraudTotal() : num(k.fraud_transactions)) - captured, 0);
+      const reportingRow = reportingThresholdAtSelected();
+      const portfolioReview = num(reportingRow.review_count);
+      target.innerHTML = '<div class="kpi-row">' + [
+        kpi('Threshold', fmtScore(row.score_threshold), row.operating_mode || 'Validation operating point', '#2563eb'),
+        kpi('Fraud Capture', fmtPct(row.fraud_capture_rate), fmtInt(captured) + ' holdout fraud labels captured.', '#18a999'),
+        kpi('Precision', fmtPct(row.precision_rate), 'Holdout threshold efficiency.', '#c98012'),
+        kpi('Validation Workload', fmtInt(review), fmtPct(row.workload_share) + ' of holdout transactions.', '#7c3aed'),
+        kpi('Portfolio Flagged Volume', portfolioReview ? fmtInt(portfolioReview) : '-', 'Reporting score simulation at the same threshold.', '#2563eb'),
+        kpi('Illustrative Missed Amount', fmtMoneyCompact(missedFraud * num(executiveKpis().avg_fraud_transaction_amount)), fmtInt(missedFraud) + ' holdout misses × training-set mean fraud amount; NOT measured holdout losses.', '#d92d3a')
+      ].join('') + '</div>';
+    }
+
+    function confusionMatrix(id) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      const row=selectedThreshold();
+      const tp=num(row.captured_fraud_count);
+      const fp=row.false_positive_count!==undefined?num(row.false_positive_count):Math.max(num(row.review_count)-tp,0);
+      const fn=row.false_negative_count!==undefined?num(row.false_negative_count):Math.max(validationFraudTotal()-tp,0);
+      const total=validationTotalRows();
+      const tn=Math.max(total-tp-fp-fn,0);
+      const tile=(name,count,caption,tone)=>'<div class="confusion-tile '+tone+'"><span>'+name+'</span><strong>'+fmtInt(count)+'</strong><small>'+caption+'</small></div>';
+      target.innerHTML='<div class="confusion-canvas"><div class="confusion-axis">HOLDOUT PREDICTION</div><div class="confusion-labels"><span></span><span>Flagged fraud</span><span>Cleared normal</span></div><div class="confusion-matrix"><div class="confusion-row-label">Actual fraud</div>'+tile('TRUE POSITIVE',tp,'Fraud caught','true-positive')+tile('FALSE NEGATIVE',fn,'Fraud missed','false-negative')+'<div class="confusion-row-label">Actual normal</div>'+tile('FALSE POSITIVE',fp,'Unnecessary reviews','false-positive')+tile('TRUE NEGATIVE',tn,'Correctly cleared','true-negative')+'</div><p>Counts reflect the selected validation threshold; they are not production decisions.</p></div>';
+    }
+
+    function waterfallChart(id, rows) {
+      const target = document.getElementById(id);
+      if (!target) return;
+      // Watchlist segments span overlapping families. Do not sum their shares
+      // into a fake waterfall / cumulative total.
+      const source = (rows || []).filter(row => row.segment_name).slice().sort((a,b) => num(b.fraud_share) - num(a.fraud_share)).slice(0,10);
+      if (!source.length) { target.innerHTML = empty('No segment concentration data.'); return; }
+      const max = Math.max(.00001, ...source.map(r=>num(r.fraud_share)));
+      target.innerHTML = '<div class="chart-scale-note">Individual segment exposure <span>Overlapping groups; shares are not additive</span></div><div class="executive-bars waterfall-replacement">' + source.map((row,i) => {
+        const value = num(row.fraud_share), percentage = Math.max(0, Math.min(100,value/max*100));
+        return '<div class="bar-row executive-bar-row" data-tooltip="' + escapeHtml(row.segment_family + ' / ' + row.segment_name + ' | ' + fmtPct(value)) + '"><span class="bar-label" title="' + escapeHtml(row.segment_name) + '">' + escapeHtml(short(row.segment_family + ' / ' + row.segment_name, 28)) + '</span><div class="bar-track"><div class="bar-fill" style="--accent:' + (i===0?'#2865b2':'#86b6e1') + ';width:' + percentage + '%"></div></div><strong class="bar-value">' + fmtPct(value) + '</strong></div>';
+      }).join('') + '</div>';
+    }
+
+    function recommendationMatrix(id) {
+      const target=document.getElementById(id);
+      if(!target)return;
+      // These are explicitly qualitative illustrative placements, not model evidence.
+      const rows=[
+        {action:'Segment thresholds',x:82,y:78},
+        {action:'Location enrichment',x:48,y:70},
+        {action:'Calibration tracking',x:64,y:58},
+        {action:'Feature monitoring',x:55,y:42},
+        {action:'Broad friction',x:28,y:30}
+      ];
+      const w=770,h=350,padLeft=62,padRight=45,padTop=42,padBottom=56;
+      const cx=v=>padLeft+v/100*(w-padLeft-padRight);
+      const cy=v=>h-padBottom-v/100*(h-padTop-padBottom);
+      const ticks=[0,25,50,75,100].map(v=>'<g><line class="svg-grid" x1="'+cx(v)+'" y1="'+padTop+'" x2="'+cx(v)+'" y2="'+(h-padBottom)+'"/><line class="svg-grid" x1="'+padLeft+'" y1="'+cy(v)+'" x2="'+(w-padRight)+'" y2="'+cy(v)+'"/><text class="svg-axis" x="'+cx(v)+'" y="'+(h-26)+'" text-anchor="middle">'+v+'</text><text class="svg-axis" x="'+(padLeft-10)+'" y="'+(cy(v)+4)+'" text-anchor="end">'+v+'</text></g>').join('');
+      const dots=rows.map((row,i)=>{
+        const color=i===0?'#326bb2':'#779dcd',x=cx(row.x),y=cy(row.y);
+        return '<g data-tooltip="'+escapeHtml(row.action+' · illustrative judgment')+'"><circle cx="'+x+'" cy="'+y+'" r="14" fill="#fff" stroke="'+color+'" stroke-width="3.3"/><text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="11" font-weight="790" fill="'+color+'">'+(i+1)+'</text><title>'+escapeHtml(row.action)+'</title></g>';
+      }).join('');
+      const legend=rows.map((row,i)=>'<div class="decision-item"><b>'+(i+1)+'</b><span>'+escapeHtml(row.action)+'</span><small>Impact '+row.x+' / effort '+row.y+'</small></div>').join('');
+      target.innerHTML='<div class="chart-scale-note">Qualitative design exercise <span>Indicative 0–100 judgments, not measured causal impact</span></div><div class="chart-figure"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Illustrative impact and implementation effort decision matrix">'+ticks+'<rect x="'+cx(50)+'" y="'+cy(100)+'" width="'+(cx(100)-cx(50))+'" height="'+(cy(0)-cy(50))+'" fill="#e7f3ff" opacity=".55"/><line x1="'+cx(50)+'" y1="'+padTop+'" x2="'+cx(50)+'" y2="'+(h-padBottom)+'" stroke="#b6c9de" stroke-dasharray="5 4"/><line x1="'+padLeft+'" y1="'+cy(50)+'" x2="'+(w-padRight)+'" y2="'+cy(50)+'" stroke="#b6c9de" stroke-dasharray="5 4"/>'+dots+'<text class="svg-label" x="'+padLeft+'" y="20">EFFORT ↑</text><text class="svg-label" x="'+(w-padRight)+'" y="'+(h-10)+'" text-anchor="end">IMPACT →</text></svg></div><div class="decision-legend">'+legend+'</div>';
+    }
+
+    function dataTable(rows, columns) {
+      if (!rows || !rows.length) return empty('No rows available.');
+      return '<div class="table-wrap"><table><thead><tr>' + columns.map(([label]) => '<th>' + escapeHtml(label) + '</th>').join('') + '</tr></thead><tbody>' + rows.map(row => '<tr>' + columns.map(([, fn]) => '<td>' + fn(row) + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>';
+    }
+
+    function exportCsv() {
+      const rows = ({
+        overview: getRows('segment_watchlist'),
+        trend: filteredDaily(),
+        amount: filteredAmountRows(),
+        customer: filteredTransactions(),
+        geo: proxySignalRows().concat(proxyProductMatrixRows()).concat(proxyCrossMatrixRows()).concat(proxyFeatureRows()),
+        behavior: behaviorMatrixRows(),
+        features: getRows('feature_importance'),
+        model: thresholdRows(),
+        insights: recommendationRows()
+      })[state.page] || [];
+      if (!rows.length) return;
+      const columns = unique(rows.flatMap(row => Object.keys(row)));
+      const csvCell = value => {
+        const raw = value == null ? '' : String(value);
+        // Quoted CSV alone does not prevent spreadsheet formula execution.
+        // Only text fields are escaped; negative numerical measures stay numeric.
+        const stripped = raw.trimStart();
+        const safe = typeof value === 'string' && stripped.length > 0 && '=+-@'.includes(stripped[0])
+          ? "'" + raw : raw;
+        return '"' + safe.replace(/"/g, '""') + '"';
+      };
+      const csv = [columns.map(csvCell).join(',')].concat(
+        rows.map(row => columns.map(col => csvCell(row[col])).join(','))
+      ).join('\n');
+      const blob = new Blob([String.fromCharCode(0xfeff), csv], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = state.page + '-report-data.csv';
+      link.click();
+      // WebKit and Firefox may still be reading the blob after the click.
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    }
+
+    function showState(message, error) {
+      const target = document.getElementById('state');
+      target.textContent = message;
+      target.className = error ? 'state state-error' : 'state state-loading';
+      target.dataset.state = error ? 'error' : 'loading';
+    }
+    function hideState() {
+      document.getElementById('state').className = 'state hidden';
+      document.getElementById('retry-data-btn').hidden = true;
+    }
+    function unique(values) { return [...new Set(values.filter(value => value !== null && value !== undefined && value !== ''))].sort(); }
+    function num(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
+    function sum(rows, key) { return (rows || []).reduce((acc, row) => acc + num(typeof key === 'function' ? key(row) : row[key]), 0); }
+    function average(rows, key) { return rows && rows.length ? sum(rows, key) / rows.length : 0; }
+    function max(rows, key) { return Math.max(...(rows || []).map(row => num(row[key])), 0); }
+    function groupBy(rows, key) {
+      const map = new Map();
+      (rows || []).forEach(row => {
+        const value = row[key] || 'Unknown';
+        if (!map.has(value)) map.set(value, []);
+        map.get(value).push(row);
+      });
+      return [...map.entries()].map(([groupKey, groupRows]) => ({ key: groupKey, rows: groupRows }));
+    }
+    function quantiles(values) {
+      const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);
+      if (!sorted.length) return { min: 0, q1: 0, median: 0, q3: 0, max: 0 };
+      const pick = p => sorted[Math.min(sorted.length - 1, Math.floor(p * (sorted.length - 1)))];
+      return { min: sorted[0], q1: pick(.25), median: pick(.5), q3: pick(.75), max: sorted[sorted.length - 1] };
+    }
+    function peakHourLabel() {
+      const top = peakHourRow();
+      return top ? relativeHourLabel(top) : '-';
+    }
+    function peakHourRow() {
+      return hourRiskRows()[0] || null;
+    }
+    function relativeHourLabel(row) {
+      return row && row.transaction_hour !== undefined && row.transaction_hour !== null ? String(row.transaction_hour) : '-';
+    }
+    function bestLift(rows) {
+      const value = Math.max(...(rows || []).map(row => num(row.fraud_lift || row.lift)), 0);
+      return value ? fmtScore(value) + 'x' : '-';
+    }
+    function identityLabel(row) {
+      if (row.identity_status) return row.identity_status;
+      if (row.has_identity === 1 || row.has_identity === true) return 'Identity present';
+      if (row.has_identity === 0 || row.has_identity === false) return 'Identity missing';
+      return 'Unknown';
+    }
+    function labelize(value) { return String(value).replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase()); }
+    function fmtInt(value) { return nf.format(Math.round(num(value))); }
+    function fmtMoney(value) { return cf.format(num(value)); }
+    function fmtMoneyCompact(value) {
+      const n = num(value);
+      const abs = Math.abs(n);
+      if (abs >= 1000000) return '$' + df.format(n / 1000000) + 'M';
+      if (abs >= 1000) return '$' + df.format(n / 1000) + 'K';
+      return fmtMoney(n);
+    }
+    function fmtPct(value) { return pf.format(num(value)); }
+    function fmtPct2(value) { return pf2.format(num(value)); }
+    function fmtScore(value) { return df.format(num(value)); }
+    function fmtScore4(value) { return num(value).toFixed(4); }
+    function short(value, length) { const text = String(value ?? ''); return text.length > length ? text.slice(0, length - 1) + '...' : text; }
+    function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
+    function empty(text) { return '<div class="empty">' + escapeHtml(text) + '</div>'; }
+    function showTooltip(event) {
+      const node = event.target.closest('[data-tooltip]');
+      if (!node) return;
+      const tip = document.getElementById('tooltip');
+      tip.innerHTML = escapeHtml(node.dataset.tooltip);
+      tip.style.display = 'block';
+      moveTooltip(event);
+    }
+    function moveTooltip(event) {
+      const tip = document.getElementById('tooltip');
+      if (tip.style.display !== 'block') return;
+      tip.style.left = Math.min(window.innerWidth - 340, event.clientX + 14) + 'px';
+      tip.style.top = Math.min(window.innerHeight - 110, event.clientY + 14) + 'px';
+    }
+    function hideTooltip() { document.getElementById('tooltip').style.display = 'none'; }
+  </script>
+</body>
+</html>
+ + m.review_cost + '/review · ' + m.loss_rate + 'x fraud loss.' : 'No measured segment-level amount; scenario not calculated.', '#9d94ef') +
         '</section>';
       const primary = '<section class="studio-overview-analysis" aria-label="Portfolio evidence">' +
         '<div class="studio-overview-feature"><div class="studio-section-tag"><span>01A</span> BEHAVIORAL MOVEMENT <em>Relative transaction time</em></div>' +
@@ -2237,9 +4345,13 @@
       const total = segment?.transactions ?? num(k.total_transactions);
       const fraud = segment?.fraud_count ?? num(k.fraud_transactions);
       const rate = total ? fraud / total : num(k.fraud_rate);
-      const exposure = segment?.fraud_amount ?? fraudExposure();
-      const captured = exposure * num(threshold.fraud_capture_rate);
-      const missed = Math.max(exposure - captured, 0);
+      // A segment can report an exact fraud count/rate without any monetary
+      // breakdown. Never display missing segment amounts as $0 or substitute
+      // whole-portfolio exposure under a segment filter.
+      const hasExposure = !segment || segment.fraud_amount !== null;
+      const exposure = hasExposure ? (segment ? segment.fraud_amount : fraudExposure()) : null;
+      const captured = hasExposure ? exposure * num(threshold.fraud_capture_rate) : null;
+      const missed = hasExposure ? Math.max(exposure - captured, 0) : null;
       const review = num(threshold.workload_share) * total;
       const capturedFraudCount = fraud * num(threshold.fraud_capture_rate);
       const falsePositives = Math.max(review - capturedFraudCount, 0);
@@ -2249,15 +4361,16 @@
       // the two halves of this comparison incommensurable.
       const lossRate = Math.max(num(state.fraudLossMultiplier), 0);
       const falsePositiveCost = falsePositives * Math.max(num(state.reviewCost), 0);
-      const avoidedLoss = captured * lossRate;
-      const residualLoss = missed * lossRate;
-      const netBenefit = avoidedLoss - falsePositiveCost;
+      const avoidedLoss = hasExposure ? captured * lossRate : null;
+      const residualLoss = hasExposure ? missed * lossRate : null;
+      const netBenefit = hasExposure ? avoidedLoss - falsePositiveCost : null;
       return {
         source: segment?.source || 'Portfolio',
         total_transactions: total,
         fraud_transactions: fraud,
         fraud_rate: rate,
         fraud_exposure: exposure,
+        has_exposure: hasExposure,
         capturable_exposure: captured,
         missed_exposure: missed,
         review_workload: review,
@@ -2276,6 +4389,7 @@
     }
     function executiveEconomicsRows() {
       const m = metricLayer();
+      if (!m.has_exposure) return [];
       return [
         { label: 'Avoided loss', value: m.avoided_loss },
         { label: 'Review cost', value: m.false_positive_cost },
@@ -2304,14 +4418,19 @@
         const [key, value] = active[0];
         const row = exactSegmentRow(key, value);
         if (row) {
-          const fraudCount = num(row.fraud_count) || num(row.fraud_transactions);
-          const txCount = num(row.transaction_count) || num(row.total_transactions);
+          const fraudField = row.fraud_count ?? row.fraud_transactions ?? row.observed_fraud_count;
+          const txField = row.transaction_count ?? row.total_transactions;
+          const txCount = txField == null ? null : num(txField);
+          const rateField = row.fraud_rate ?? row.observed_fraud_rate;
+          const count = fraudField == null ? (rateField != null && txCount != null ? txCount * num(rateField) : null) : num(fraudField);
+          // Missing monetary fields are null (unavailable), never fabricated $0.
+          const amount = row.fraud_transaction_amount == null ? null : num(row.fraud_transaction_amount);
           return {
-            source: labelize(key) + ' segment',
+            source: labelize(key) + ' segment' + (row.split ? ' (' + row.split + ' split)' : ''),
             transactions: txCount,
-            fraud_count: fraudCount || txCount * num(row.fraud_rate),
-            fraud_amount: num(row.fraud_transaction_amount),
-            fraud_rate: num(row.fraud_rate || row.observed_fraud_rate),
+            fraud_count: count,
+            fraud_amount: amount,
+            fraud_rate: rateField == null ? (txCount ? count / txCount : null) : num(rateField),
             row
           };
         }
@@ -2325,7 +4444,7 @@
             source: familyA + ' x ' + familyB,
             transactions: num(cell.transaction_count),
             fraud_count: num(cell.fraud_count),
-            fraud_amount: num(cell.fraud_transaction_amount),
+            fraud_amount: cell.fraud_transaction_amount == null ? null : num(cell.fraud_transaction_amount),
             fraud_rate: num(cell.fraud_rate),
             row: cell
           };
