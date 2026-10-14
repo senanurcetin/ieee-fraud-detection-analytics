@@ -1,5 +1,9 @@
 # NEXUS Fraud — Release Readiness Audit (14 October 2026)
 
+> **Retrospective release note — 14 October 2026:** The audit below was written while PR #4 was still a draft. PR #4 subsequently merged (`9f201bb`); Vercel production and **12/12 live Chromium browser tests** passed. README image update PR #5 and documentation reconciliation PR #6 were also merged. The original `draft` and `production unchanged` statements below are **historical at the time of that pre-release audit**, not present-day blockers. Dataset reporting snapshot date (10 September 2026) remains unchanged and is not a live bank feed.
+
+---
+
 **Candidate:** [draft PR #4](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/4), `design/nexus-fraud-chart-hierarchy-20261013`  
 **Production:** unchanged; this audit does **not** approve or trigger a merge.  
 **Evidence scope:** reproducible local Windows FastAPI server with the committed, governed BigQuery reporting snapshot. Local testing is not a GitHub-hosted CI run.
