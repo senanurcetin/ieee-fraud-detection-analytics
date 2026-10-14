@@ -862,3 +862,96 @@ body.light .report-canvas svg text.svg-axis {fill:#526f8d!important}
   body.light .studio-overview-companion .risk-band-metric strong {color:#1b4166!important}
   body.light .studio-overview-feature .chart-figure::before {color:#41688d}
 }
+
+/* Analyst-scale diagnostic plots | measured Chromium finding:
+   split cards shrank SVG axes to 37–64% of their intended text size. */
+.studio-support-workspaces {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:17px;
+  align-items:start;
+}
+.studio-support-workspaces>.visual-card {
+  min-width:0;
+  height:auto;
+}
+/* Any evidence with an SVG axis needs a complete plotting canvas, not half a card. */
+.studio-support-workspaces>.visual-card:has(.chart-figure svg),
+.studio-support-workspaces>.visual-card:has(.curve-panels svg),
+.studio-support-workspaces>.visual-card:has(.donut-layout svg) {
+  grid-column:1/-1;
+}
+.studio-support-workspaces>.visual-card:has(.chart-figure svg) .visual-body {
+  min-height:0;
+}
+.studio-proxy-matrix,
+.studio-feature-context {
+  grid-template-columns:minmax(0,1fr)!important;
+}
+/* A labelled SVG has its own horizontal viewport when room is genuinely narrow.
+   Do not shrink the full drawing, including type, to fit a report card. */
+.report-canvas .chart-figure {
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#658cb5 #203c58;
+}
+.report-canvas .chart-figure>svg {
+  min-width:700px!important;
+  height:auto;
+  max-height:none!important;
+}
+.report-canvas .curve-panels {
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:17px;
+}
+.report-canvas .curve-panel {
+  min-width:0;
+  max-width:100%;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#658cb5 #203c58;
+}
+.report-canvas .curve-panel>svg {
+  display:block;
+  min-width:480px;
+  width:100%;
+  max-width:720px;
+  height:auto;
+  max-height:none!important;
+}
+body:not(.light) .report-canvas .curve-panel {
+  background:#102d48;
+  border-color:#385a79;
+}
+body:not(.light) .report-canvas .curve-panel svg text {fill:#d8e8fa}
+body:not(.light) .report-canvas .curve-panel .svg-grid {stroke:#30516d}
+/* The canvas itself provides a discoverable scroll affordance for dense graphics. */
+.studio-support-workspaces>.visual-card:has(.chart-figure svg) .visual-note:after,
+.studio-proxy-matrix>.visual-card:has(.chart-figure svg) .visual-note:after,
+.studio-feature-context>.visual-card:has(.chart-figure svg) .visual-note:after {
+  content:" · Chart scrolls horizontally when needed";
+  color:#a4c9ed;
+  font-weight:690;
+}
+body.light .studio-support-workspaces>.visual-card:has(.chart-figure svg) .visual-note:after,
+body.light .studio-proxy-matrix>.visual-card:has(.chart-figure svg) .visual-note:after,
+body.light .studio-feature-context>.visual-card:has(.chart-figure svg) .visual-note:after {
+  color:#41698f;
+}
+@media(max-width:760px) {
+  .studio-support-workspaces {grid-template-columns:minmax(0,1fr)}
+  .studio-support-workspaces>.visual-card {grid-column:auto!important}
+  .report-canvas .chart-figure>svg {min-width:700px!important}
+}
+/* Preserve the quantitative label hierarchy in compact score legend/readouts. */
+body:not(.light) .report-canvas .chart-series-legend,
+body:not(.light) .report-canvas .chart-series-legend strong {
+  color:#dbeafc;
+  opacity:1;
+  font-size:12px;
+}
