@@ -1309,8 +1309,12 @@
       const sourceTime = meta.refreshed_at ? new Date(meta.refreshed_at) : null;
       const validSourceTime = sourceTime && Number.isFinite(sourceTime.getTime());
       const freshLabel = meta.backend === 'snapshot' ? 'Built: ' : 'Source timestamp: ';
-      document.getElementById('freshness-pill').textContent = validSourceTime
-        ? freshLabel + sourceTime.toLocaleString('en-US')
+      const ageDays = validSourceTime ? Math.max(0, Math.floor((Date.now() - sourceTime.getTime()) / 86400000)) : null;
+      const staleSnapshot = meta.backend === 'snapshot' && ageDays !== null && ageDays > 30;
+      const freshnessPill = document.getElementById('freshness-pill');
+      freshnessPill.dataset.freshness = staleSnapshot ? 'historical' : validSourceTime ? 'dated' : 'unknown';
+      freshnessPill.textContent = validSourceTime
+        ? (staleSnapshot ? 'Historical snapshot (' + ageDays + 'd since build) · ' : freshLabel) + sourceTime.toLocaleString('en-US')
         : 'Source timestamp unavailable';
     }
 
@@ -1367,6 +1371,7 @@
         '<div class="studio-command-copy"><div class="studio-kicker"><span class="studio-kicker-marker"></span>01 / EXPOSURE INTELLIGENCE<span class="studio-kicker-divider"></span>GOVERNED REPORTING</div>' +
         '<h3>Locate the risk.<br><em>Protect the portfolio.</em></h3>' +
         '<p>Decision-ready exposure, measurable review capacity and the risk pockets that deserve investigation. Built from the available reporting snapshot, not simulated live alerts.</p>' +
+        '<p class="studio-method-note">Scenario estimates multiply holdout capture rates by portfolio fraud amounts; they are illustrative, not validated deployment savings.</p>' +
         '<div class="studio-command-meta"><span>Evidence: ' + escapeHtml(m.source) + '</span><span>' + fmtInt(m.total_transactions) + ' observed transactions</span></div></div>' +
         '<div class="studio-command-focus"><div class="studio-focus-label">PORTFOLIO FRAUD RATE</div><div class="studio-focus-value">' + fmtPct2(m.fraud_rate) + '</div><div class="studio-focus-foot">' + fmtInt(m.fraud_transactions) + ' labeled fraud transactions</div><div class="studio-focus-rule"><span>Holdout and portfolio measures are distinct</span></div></div>' +
         '</section>';
@@ -2899,7 +2904,7 @@
         ['Transactions', row => fmtInt(row.transaction_count)],
         ['Mean score', row => fmtPct2(row.mean_predicted_probability)],
         ['Observed fraud', row => '<strong>' + fmtPct2(row.observed_fraud_rate) + '</strong>'],
-        ['Gap', row => '<span style="color:#d92d3a">+' + fmtPct2(row.calibration_gap) + '</span>']
+        ['Gap', row => '<span class="calibration-gap">' + (num(row.calibration_gap) >= 0 ? '+' : '−') + fmtPct2(Math.abs(num(row.calibration_gap))) + '</span>']
       ]);
     }
     function generalisationGapTable(id) {
@@ -3252,7 +3257,7 @@
         kpi('Precision', fmtPct(row.precision_rate), 'Holdout threshold efficiency.', '#c98012'),
         kpi('Validation Workload', fmtInt(review), fmtPct(row.workload_share) + ' of holdout transactions.', '#7c3aed'),
         kpi('Portfolio Flagged Volume', portfolioReview ? fmtInt(portfolioReview) : '-', 'Reporting score simulation at the same threshold.', '#2563eb'),
-        kpi('Missed Exposure', fmtMoneyCompact(missedFraud * num(executiveKpis().avg_fraud_transaction_amount)), fmtInt(missedFraud) + ' missed labels x observed mean fraud amount.', '#d92d3a')
+        kpi('Illustrative Missed Amount', fmtMoneyCompact(missedFraud * num(executiveKpis().avg_fraud_transaction_amount)), fmtInt(missedFraud) + ' holdout misses × training-set mean fraud amount; NOT measured holdout losses.', '#d92d3a')
       ].join('') + '</div>';
     }
 
@@ -3325,13 +3330,24 @@
       })[state.page] || [];
       if (!rows.length) return;
       const columns = unique(rows.flatMap(row => Object.keys(row)));
-      const csv = [columns.join(',')].concat(rows.map(row => columns.map(col => '"' + String(row[col] ?? '').replace(/"/g, '""') + '"').join(','))).join('\n');
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const csvCell = value => {
+        const raw = value == null ? '' : String(value);
+        // Quoted CSV alone does not prevent spreadsheet formula execution.
+        // Only text fields are escaped; negative numerical measures stay numeric.
+        const safe = typeof value === 'string' && /^[\\s\\u0000-\\u001f]*[=+\\-@]/.test(raw)
+          ? "'" + raw : raw;
+        return '"' + safe.replace(/"/g, '""') + '"';
+      };
+      const csv = [columns.map(csvCell).join(',')].concat(
+        rows.map(row => columns.map(col => csvCell(row[col])).join(','))
+      ).join('\n');
+      const blob = new Blob(['\\ufeff', csv], { type: 'text/csv;charset=utf-8' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = state.page + '-filtered-data.csv';
+      link.download = state.page + '-report-data.csv';
       link.click();
-      URL.revokeObjectURL(link.href);
+      // WebKit and Firefox may still be reading the blob after the click.
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     }
 
     function showState(message, error) {
