@@ -215,5 +215,57 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+    def test_dark_nexus_chart_surfaces_and_evidence_drill(self):
+        """Overview SVG, risk bands, segment drill and chart drawer stay on dark surfaces."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                page.locator("#overview-trend svg").wait_for(timeout=15000)
+                for selector in (
+                    ".studio-overview .visual-card",
+                    ".studio-overview .risk-band-card",
+                    ".studio-overview .chart-figure",
+                ):
+                    background = page.locator(selector).first.evaluate(
+                        "(node) => getComputedStyle(node).backgroundImage"
+                    )
+                    self.assertNotIn("rgb(255, 255, 255)", background)
+                self.assertIn(
+                    "linear-gradient",
+                    page.locator(".studio-overview .risk-band-card").first.evaluate(
+                        "(node) => getComputedStyle(node).backgroundImage"
+                    ),
+                )
+                page.locator(".risk-band-card[data-filter-key]").first.click()
+                self.assertTrue(page.locator(".studio-drill-hero").is_visible())
+                self.assertEqual(page.locator(".studio-drill-metrics .kpi-card").count(), 4)
+                self.assertIn(
+                    "No finer cohort has been published",
+                    page.locator("#drill-nested").inner_text(),
+                )
+                self.assertGreater(page.locator("#drill-peers svg").count(), 0)
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ),
+                    1,
+                )
+                page.locator("#drill-back-btn").click()
+                page.locator("#overview-trend").locator(
+                    "xpath=ancestor::article[contains(@class, 'visual-card')]"
+                ).locator(".visual-title").click()
+                drawer = page.locator("#detail-drawer")
+                self.assertTrue(drawer.is_visible())
+                self.assertEqual(drawer.get_attribute("role"), "dialog")
+                self.assertNotIn(
+                    "rgb(255, 255, 255)",
+                    drawer.evaluate("(node) => getComputedStyle(node).backgroundImage"),
+                )
+                page.keyboard.press("Escape")
+                self.assertFalse(drawer.is_visible())
+                self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
