@@ -2656,6 +2656,8 @@
 
     // Analyst-first alternative to relative-width bars: an actual 0-based fraud-rate
     // axis, 95% Wilson intervals, measured support and a named portfolio reference.
+    // Responsive evidence-first rate plot. Marks are placed on one 0-based
+    // absolute percentage axis; no oversized SVG shrinks labels in narrow cards.
     function fraudRateIntervalPlot(id, rows, labelFn, filterKey = null, options = {}) {
       const target = document.getElementById(id);
       if (!target) return;
@@ -2664,59 +2666,61 @@
         Number.isFinite(Number(row.fraud_count)) && Number(row.fraud_count) >= 0 &&
         Number(row.fraud_count) <= Number(row.transaction_count)
       ).slice().sort((a, b) => num(b.fraud_rate) - num(a.fraud_rate)).slice(0, options.limit || 12);
-      if (!source.length) { target.innerHTML = empty('Rate comparison requires measured fraud and transaction counts.'); return; }
-      const baselineCandidates = source.filter(row => row.baseline_fraud_rate !== undefined && row.baseline_fraud_rate !== null);
-      const baseline = baselineCandidates.length ? num(baselineCandidates[0].baseline_fraud_rate) : null;
+      if (!source.length) {
+        target.innerHTML = empty('Comparison requires measured fraud and transaction counts.');
+        return;
+      }
+      const baselineRow = source.find(row => row.baseline_fraud_rate !== undefined && row.baseline_fraud_rate !== null);
+      const baseline = baselineRow ? num(baselineRow.baseline_fraud_rate) : null;
       const records = source.map(row => {
         const count = num(row.transaction_count), fraud = num(row.fraud_count);
-        return { row, label: String(labelFn(row) ?? 'Unknown'), count, fraud, rate: fraud / count,
-          interval: wilsonFraudInterval(fraud, count) };
+        return { row, label: String(labelFn(row) ?? 'Unknown'), count, fraud,
+          rate: fraud / count, interval: wilsonFraudInterval(fraud, count) };
       });
-      const maxUpper = Math.max(.01, ...(records.map(record => record.interval.upper)), baseline ?? 0);
-      const maxAxis = Math.min(1, maxUpper * 1.09);
-      const w = 820, top = 45, bottom = 61, left = 206, right = 117, rowHeight = 49;
-      const h = top + bottom + records.length * rowHeight;
-      const plotW = w - left - right;
-      const x = rate => left + Math.max(0, Math.min(rate, maxAxis)) / maxAxis * plotW;
-      const ticks = Array.from({ length: 5 }, (_, i) => maxAxis * i / 4);
-      const grid = ticks.map(rate => '<g><line x1="' + x(rate) + '" y1="' + top +
-        '" x2="' + x(rate) + '" y2="' + (h - bottom) + '" class="svg-grid"/>' +
-        '<text class="svg-axis" x="' + x(rate) + '" y="' + (h - 20) + '" text-anchor="middle">' + fmtPct2(rate) + '</text></g>').join('');
-      const base = baseline === null ? '' :
-        '<line class="rate-reference" x1="' + x(baseline) + '" x2="' + x(baseline) +
-        '" y1="' + (top - 4) + '" y2="' + (h - bottom + 5) +
-        '" stroke="#b083d4" stroke-width="1.5" stroke-dasharray="6 4"/>';
-      const marks = records.map((record, index) => {
-        const cy = top + rowHeight * (index + .5), low = x(record.interval.lower), high = x(record.interval.upper);
+      const bound = Math.max(.0001, ...records.map(record => record.interval.upper), baseline ?? 0);
+      const maxAxis = Math.min(1, Math.max(.02, Math.ceil((bound * 1.08) / .02) * .02));
+      const pos = rate => (Math.max(0, Math.min(1, rate / maxAxis)) * 100).toFixed(2);
+      const baseMark = baseline === null ? '' :
+        '<span class="rate-axis-baseline" style="left:' + pos(baseline) + '%" aria-hidden="true"></span>';
+      const axis = '<div class="rate-axis-ticks" aria-hidden="true"><span>0%</span><span>' +
+        fmtPct2(maxAxis / 2) + '</span><span>' + fmtPct2(maxAxis) + '</span></div>';
+      const marks = records.map(record => {
         const sparse = record.count < 30;
-        const stroke = sparse ? '#8c9eae' : '#396fae';
-        const tooltip = record.label + ' | rate ' + fmtPct2(record.rate) +
-          ' | ' + fmtInt(record.fraud) + '/' + fmtInt(record.count) +
-          ' | Wilson 95% [' + fmtPct2(record.interval.lower) + ', ' + fmtPct2(record.interval.upper) + ']' +
-          (sparse ? ' | exploratory: fewer than 30 observations' : '');
+        const start = pos(record.interval.lower), end = pos(record.interval.upper);
+        const tip = record.label + ' | observed fraud rate ' + fmtPct2(record.rate) +
+          ' | fraud ' + fmtInt(record.fraud) + ' / transactions ' + fmtInt(record.count) +
+          ' | Wilson 95% interval [' + fmtPct2(record.interval.lower) + ', ' +
+          fmtPct2(record.interval.upper) + ']' +
+          (sparse ? ' | exploratory, n < 30' : '');
         const attrs = filterKey ?
-          ' data-filter-key="' + escapeHtml(filterKey) + '" data-filter-value="' + escapeHtml(record.label) +
+          ' data-filter-key="' + escapeHtml(filterKey) +
+          '" data-filter-value="' + escapeHtml(record.label) +
           '" data-detail-family="' + escapeHtml(labelize(filterKey)) +
           '" data-detail-label="' + escapeHtml(record.label) + '"' : '';
-        return '<g' + attrs + ' data-tooltip="' + escapeHtml(tooltip) + '">' +
-          '<title>' + escapeHtml(tooltip) + '</title>' +
-          '<text class="svg-label" x="' + (left - 12) + '" y="' + (cy + 4) + '" text-anchor="end">' + escapeHtml(short(record.label, 29)) + '</text>' +
-          '<line x1="' + low + '" y1="' + cy + '" x2="' + high + '" y2="' + cy + '" stroke="' + stroke +
-          '" stroke-width="3.2" stroke-linecap="round"/>' +
-          '<line x1="' + low + '" y1="' + (cy - 6) + '" x2="' + low + '" y2="' + (cy + 6) + '" stroke="' + stroke + '" stroke-width="1.7"/>' +
-          '<line x1="' + high + '" y1="' + (cy - 6) + '" x2="' + high + '" y2="' + (cy + 6) + '" stroke="' + stroke + '" stroke-width="1.7"/>' +
-          '<circle cx="' + x(record.rate) + '" cy="' + cy + '" r="5.8" fill="' + (sparse ? '#fff' : '#296fb3') + '" stroke="' + stroke + '" stroke-width="2.2"/>' +
-          '<text class="rate-value" x="' + (w - right + 13) + '" y="' + (cy - 1) + '">' + fmtPct2(record.rate) + '</text>' +
-          '<text class="rate-denominator" x="' + (w - right + 13) + '" y="' + (cy + 13) + '">n=' + fmtInt(record.count) + '</text></g>';
+        return '<div class="rate-plot-row' + (sparse ? ' rate-plot-sparse' : '') +
+          '"' + attrs + ' data-tooltip="' + escapeHtml(tip) +
+          '" title="' + escapeHtml(tip) + '">' +
+          '<div class="rate-plot-label" title="' + escapeHtml(record.label) + '">' +
+          escapeHtml(record.label) + '</div>' +
+          '<div class="rate-plot-track" aria-hidden="true">' +
+          baseMark +
+          '<span class="rate-plot-ci" style="left:' + start + '%;width:' +
+          (Number(end) - Number(start)).toFixed(2) + '%"></span>' +
+          '<span class="rate-plot-point" style="left:' + pos(record.rate) + '%"></span>' +
+          '</div><div class="rate-plot-metric"><strong class="rate-value">' +
+          fmtPct2(record.rate) + '</strong><small class="rate-denominator">n=' +
+          fmtInt(record.count) + '</small></div></div>';
       }).join('');
-      const foot = baseline === null ? '' : '<span><i class="rate-legend-baseline"></i>Published portfolio reference ' + fmtPct2(baseline) + '</span>';
-      target.innerHTML = '<div class="rate-evidence-meta"><span>Observed rate ± Wilson 95% interval</span><span>Sorted by observed rate · n shown on every row</span></div>' +
-        '<div class="chart-figure"><svg viewBox="0 0 ' + w + ' ' + h +
-        '" role="img" aria-label="Measured fraud rates with Wilson 95% confidence intervals and transaction denominators">' +
-        grid + base + marks + '<text class="svg-label" x="' + left + '" y="24">OBSERVED FRAUD RATE / 95% INTERVAL</text></svg></div>' +
-        '<div class="rate-evidence-legend">' + foot +
-        '<span><i class="rate-legend-sparse"></i>Open marker: n below 30</span>' +
-        '<span>Intervals are descriptive; no causal or independence claims</span></div>';
+      const baselineText = baseline === null ? '' :
+        '<span><i class="rate-legend-baseline"></i>Published portfolio baseline ' + fmtPct2(baseline) + '</span>';
+      target.innerHTML = '<div class="rate-evidence-meta"><span>OBSERVED FRAUD RATE / WILSON 95% INTERVAL</span>' +
+        '<span>Absolute percentage axis · sorted by rate</span></div>' +
+        '<div class="rate-evidence-chart" role="img" aria-label="Fraud rates by segment, with Wilson confidence intervals, transaction denominators and portfolio reference">' +
+        '<div class="rate-plot-rows">' + marks + '</div><div class="rate-plot-axis">' +
+        '<span>RATE</span>' + axis + '<span></span></div></div>' +
+        '<div class="rate-evidence-legend">' + baselineText +
+        '<span><i class="rate-legend-sparse"></i>Open point = n below 30</span>' +
+        '<span>Intervals are descriptive; do not infer causality or independence</span></div>';
     }
 
     function lineChart(id, rows, xKey, yKey, options = {}) {
