@@ -306,7 +306,8 @@ def test_threshold_slider_updates_selected_scenario_cards() -> None:
     assert "if (!target) return;" in section
     assert "target.innerHTML" in section
     assert "Fraud Capture" in section
-    assert "Missed Exposure" in section
+    assert "Illustrative Missed Amount" in section
+    assert "NOT measured holdout losses" in section
     assert "Precision" in section
     assert "Validation Workload" in section
 
