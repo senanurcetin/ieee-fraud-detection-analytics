@@ -3394,14 +3394,15 @@
         const raw = value == null ? '' : String(value);
         // Quoted CSV alone does not prevent spreadsheet formula execution.
         // Only text fields are escaped; negative numerical measures stay numeric.
-        const safe = typeof value === 'string' && /^[\\s\\u0000-\\u001f]*[=+\\-@]/.test(raw)
+        const stripped = raw.trimStart();
+        const safe = typeof value === 'string' && stripped.length > 0 && '=+-@'.includes(stripped[0])
           ? "'" + raw : raw;
         return '"' + safe.replace(/"/g, '""') + '"';
       };
       const csv = [columns.map(csvCell).join(',')].concat(
         rows.map(row => columns.map(col => csvCell(row[col])).join(','))
       ).join('\n');
-      const blob = new Blob(['\\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+      const blob = new Blob([String.fromCharCode(0xfeff), csv], { type: 'text/csv;charset=utf-8' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = state.page + '-report-data.csv';
