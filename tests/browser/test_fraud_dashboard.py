@@ -184,7 +184,7 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
         page, errors = self.open_report({"width": 1440, "height": 900})
         self.wait_for_report(page)
         page.locator('[data-page="amount"]').click()
-        page.locator("#amount-bar svg").wait_for(timeout=15000)
+        page.locator("#amount-bar .rate-evidence-chart").wait_for(timeout=15000)
         self.assertGreater(page.locator("#amount-bar .rate-value").count(), 0)
         self.assertGreater(page.locator("#amount-bar .rate-denominator").count(), 0)
         self.assertTrue(page.locator("#amount-bar .rate-evidence-legend").is_visible())
@@ -209,7 +209,7 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
             for chart_id in chart_ids:
                 with self.subTest(workspace=name, chart=chart_id):
                     plot = page.locator(f"#{chart_id}")
-                    plot.locator("svg").wait_for(timeout=15000)
+                    plot.locator(".rate-evidence-chart").wait_for(timeout=15000)
                     self.assertGreater(plot.locator(".rate-denominator").count(), 0)
                     self.assertIn("Wilson 95%", plot.inner_text())
         self.assertEqual(errors, [])
