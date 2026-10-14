@@ -1229,6 +1229,12 @@
     });
     document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && document.getElementById('detail-drawer').classList.contains('open')) {
+        closeDetailDrawer();
+        document.getElementById('detail-drawer').querySelector('button')?.blur();
+      }
+    });
 
     loadAll();
     document.getElementById('retry-data-btn').addEventListener('click', loadAll);
@@ -1320,6 +1326,7 @@
       document.getElementById('page-title').textContent = page.title;
       document.getElementById('page-purpose').textContent = page.purpose;
       renderActiveFilters();
+      document.body.classList.toggle('nexus-studio-drill', Boolean(state.drill));
       document.body.classList.toggle('nexus-studio-overview', state.page === 'overview' && !state.drill);
       document.body.classList.toggle('nexus-studio-trend', state.page === 'trend' && !state.drill);
       document.body.classList.toggle('nexus-studio-amount', state.page === 'amount' && !state.drill);
@@ -1662,30 +1669,52 @@
       const metric = segmentDetailMetric(detail, row);
       const related = relatedDrillRows(detail);
       const peers = peerRows(detail);
-      return pageGrid([
-        '<div class="drill-toolbar"><div><strong>' + escapeHtml(detail.family + ' | ' + detail.label) + '</strong><span>Drill-through context is restricted to related fields and comparable peer groups.</span></div><button class="btn primary" id="drill-back-btn" type="button">Back to report</button></div>',
-        drawerPathHtml(detail),
-        kpiRow([
-          kpi('Transactions', fmtInt(metric.tx || 0), 'Selected segment population.', '#2563eb'),
-          kpi('Fraud Rate', fmtPct2(metric.rate), 'Segment fraud rate under current slicers.', '#d92d3a'),
-          kpi('Lift', fmtScore(metric.lift) + 'x', 'Against portfolio baseline.', '#c98012'),
-          kpi('Fraud Share', metric.fraudShare ? fmtPct(metric.fraudShare) : '-', 'Share of fraud represented by segment.', '#7c3aed'),
-          kpi('Exposure Proxy', fmtMoney(metric.amount), 'Estimated fraud exposure for this segment.', '#18a999')
-        ]),
-        grid2([
-          chartCard('Nested segment breakdown', 'Comparable subsegments inside the selected context.', '<div class="visual-body" id="drill-nested"></div>'),
-          chartCard('Peer group comparison', 'Same family comparison, not unrelated segment mixing.', '<div class="visual-body" id="drill-peers"></div>')
-        ]),
-        grid2([
-          chartCard('Segment contribution profile', 'Fraud share and transaction share shown together.', '<div class="visual-body" id="drill-contribution"></div>'),
-          chartCard('Recommended interpretation', 'Charted decision support for this segment.', '<div class="visual-body" id="drill-recommendation"></div>')
-        ]),
-        insightRow([
-          insight('What changed?', detail.label + ' is isolated as its own filter context.', '#2563eb'),
-          insight('Why it matters', 'Use nested rates and fraud share together before changing thresholds.', '#c98012'),
-          insight('Next click', related.length ? 'Click a nested chart segment to continue drilling into the next cut.' : 'Use peer comparison to decide whether the signal is exceptional.', '#18a999')
-        ])
-      ]);
+      const support = metric.hasCount ? fmtInt(metric.tx) + ' reported transactions' : 'Denominator not reported';
+      const interval = metric.interval ?
+        'Wilson 95% interval: ' + fmtPct2(metric.interval.lower) + '–' + fmtPct2(metric.interval.upper) :
+        '95% interval unavailable without measured fraud and transaction counts';
+      const sampleWarning = metric.hasCount && metric.tx < 30 ?
+        '<span class="drill-warning">Exploratory segment · fewer than 30 observations</span>' : '';
+      const hero = '<header class="studio-drill-hero"><div class="studio-drill-intro">' +
+        '<div class="studio-domain-eyebrow">NEXUS / SEGMENT INVESTIGATION</div>' +
+        '<p class="studio-drill-context">' + escapeHtml(detail.family || 'Selected family') + ' / ' + escapeHtml(detail.label || 'Selected segment') + '</p>' +
+        '<h3>Investigate the slice.<br><em>Compare like with like.</em></h3>' +
+        '<p class="studio-drill-description">Every comparison stays inside the selected reporting context. Review sample size, baseline and peer cohorts before making a policy recommendation.</p>' +
+        '<div class="studio-drill-flags"><span>' + escapeHtml(support) + '</span>' + sampleWarning + '</div></div>' +
+        '<div class="studio-drill-rate"><span>OBSERVED SEGMENT FRAUD RATE</span><strong>' +
+        (metric.hasRate ? fmtPct2(metric.rate) : 'Not reported') +
+        '</strong><small>' + escapeHtml(interval) + '</small><span class="studio-drill-baseline">' +
+        'Lift vs published portfolio: ' + (metric.hasRate ? fmtScore(metric.lift) + '×' : 'Unavailable') + '</span></div></header>';
+      const summary = '<section class="studio-drill-summary"><div class="studio-section-heading">' +
+        '<div><span>01 / SEGMENT EVIDENCE</span><h3>Population, rate and contribution</h3></div>' +
+        '<p>Missing amount or sample support is shown as unavailable — never inferred as zero.</p></div>' +
+        drawerPathHtml(detail) +
+        '<div class="studio-drill-metrics">' +
+        kpi('Reported transactions', metric.hasCount ? fmtInt(metric.tx) : 'Not reported', 'Current segment population, subject to reporting filters.', '#89bafb') +
+        kpi('Fraud transactions', metric.hasFraudCount ? fmtInt(metric.fraudCount) : 'Not reported', 'Observed fraud labels; no estimated counts.', '#c4a6f1') +
+        kpi('Fraud share', metric.hasFraudShare ? fmtPct(metric.fraudShare) : 'Not reported', 'Share within the published segment denominator.', '#94c8d0') +
+        kpi('Reported fraud amount', metric.hasAmount ? fmtMoney(metric.amount) : 'Not carried', 'Not fabricated from an average-value multiplier.', '#80b6f0') +
+        '</div></section>';
+      const evidence = '<section class="studio-drill-evidence"><div class="studio-section-heading">' +
+        '<div><span>02 / COMPARABLE EVIDENCE</span><h3>Nested and peer comparisons</h3></div>' +
+        '<p>' + fmtInt(related.length) + ' related cuts · ' + fmtInt(peers.length) +
+        ' peer groups available in the reporting mart</p></div><div class="studio-drill-evidence-grid">' +
+        chartCard('Nested segment breakdown', 'Subsegments within this reporting context; support shown where published.', '<div class="visual-body" id="drill-nested"></div>') +
+        chartCard('Same-family peer comparison', 'Absolute rates and denominators where available; avoid comparing unrelated populations.', '<div class="visual-body" id="drill-peers"></div>') +
+        '</div></section>';
+      const decisions = '<section class="studio-drill-decision"><div class="studio-section-heading">' +
+        '<div><span>03 / DECISION CONTEXT</span><h3>Contribution and follow-up</h3></div></div><div class="studio-drill-decision-grid">' +
+        chartCard('Segment contribution profile', 'Observed fraud share and transaction share must be read on their own explicit scales.', '<div class="visual-body" id="drill-contribution"></div>') +
+        chartCard('Recommended interpretation', 'Decision support is exploratory, not a causal estimate.', '<div class="visual-body" id="drill-recommendation"></div>') +
+        '</div>' + insightRow([
+          insight('Selected context', detail.label + ' is isolated under active filters.', '#7fb4f6'),
+          insight('Comparability', 'Use denominators and nested peer intervals before interpreting rate differences.', '#a9a3ed'),
+          insight('Next step', related.length ? 'Select a nested segment to inspect its reporting cohort.' : 'Compare available peer groups before changing any threshold.', '#86c1c6')
+        ]) + '</section>';
+      return '<div class="studio-screen studio-drill">' +
+        '<div class="studio-drill-toolbar"><span>ANALYTICAL DRILL / ' + escapeHtml(pageLabel(state.page)) + '</span>' +
+        '<button class="btn primary" id="drill-back-btn" type="button">← Back to filtered report</button></div>' +
+        hero + summary + evidence + decisions + '</div>';
     }
 
     function bindDrillThroughControls() {
@@ -1932,27 +1961,41 @@
       document.getElementById('detail-drawer').classList.remove('open');
     }
     function segmentDetailMetric(detail, row) {
-      const tx = num(row.transaction_count) || num(row.total_transactions);
-      const fraudCount = num(row.fraud_count) || num(row.fraud_transactions) || tx * num(row.fraud_rate || row.observed_fraud_rate);
-      const rate = num(row.fraud_rate || row.observed_fraud_rate) || (tx ? fraudCount / tx : 0);
-      const lift = segmentLift({ ...row, fraud_rate: rate });
-      const fraudShare = num(row.fraud_share || row.expected_fraud_capture);
-      // Only report an amount the marts actually carry; a flat per-fraud
-      // constant would read as measured exposure.
-      const amount = num(row.fraud_transaction_amount);
+      const hasCount = row.transaction_count != null || row.total_transactions != null;
+      const tx = hasCount ? num(row.transaction_count ?? row.total_transactions) : 0;
+      const hasFraudCount = row.fraud_count != null || row.fraud_transactions != null;
+      const fraudCount = hasFraudCount ? num(row.fraud_count ?? row.fraud_transactions) : 0;
+      const hasRate = row.fraud_rate != null || row.observed_fraud_rate != null || (hasCount && hasFraudCount && tx > 0);
+      const rate = row.fraud_rate != null ? num(row.fraud_rate) :
+        row.observed_fraud_rate != null ? num(row.observed_fraud_rate) :
+        tx > 0 && hasFraudCount ? fraudCount / tx : 0;
+      const lift = hasRate ? segmentLift({ ...row, fraud_rate: rate }) : 0;
+      const hasFraudShare = row.fraud_share != null || row.expected_fraud_capture != null;
+      const fraudShare = hasFraudShare ? num(row.fraud_share ?? row.expected_fraud_capture) : 0;
+      const hasAmount = row.fraud_transaction_amount != null;
+      const amount = hasAmount ? num(row.fraud_transaction_amount) : 0;
+      const interval = hasCount && hasFraudCount && tx > 0 ? wilsonFraudInterval(fraudCount, tx) : null;
       const priority = row.priority || row.review_priority || (lift >= 2 ? 'High' : lift >= 1.2 ? 'Monitor' : 'Standard');
-      return { tx, fraudCount, rate, lift, fraudShare, amount, priority };
+      return { tx, fraudCount, rate, lift, fraudShare, amount, priority, hasCount,
+        hasFraudCount, hasRate, hasFraudShare, hasAmount, interval };
     }
+
     function drawerMetricHtml(metric) {
-      return '<div class="metric-grid">' + [
-        ['Transactions', fmtInt(metric.tx || 0)],
-        ['Fraud Rate', fmtPct2(metric.rate)],
-        ['Lift', fmtScore(metric.lift) + 'x'],
-        ['Fraud Share', metric.fraudShare ? fmtPct(metric.fraudShare) : '-'],
-        ['Fraud Amount', metric.amount ? fmtMoney(metric.amount) : 'Not carried in this mart'],
-        ['Priority', metric.priority || 'Monitor']
-      ].map(([label, value]) => '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>').join('') + '</div>';
+      const values = [
+        ['Transactions', metric.hasCount ? fmtInt(metric.tx) : 'Not reported'],
+        ['Fraud rate', metric.hasRate ? fmtPct2(metric.rate) : 'Not reported'],
+        ['Fraud count', metric.hasFraudCount ? fmtInt(metric.fraudCount) : 'Not reported'],
+        ['Wilson 95% interval', metric.interval ? fmtPct2(metric.interval.lower) + '–' + fmtPct2(metric.interval.upper) : 'Unavailable'],
+        ['Fraud share', metric.hasFraudShare ? fmtPct(metric.fraudShare) : 'Not reported'],
+        ['Fraud amount', metric.hasAmount ? fmtMoney(metric.amount) : 'Not carried']
+      ];
+      return '<div class="drawer-section-title">01 / OBSERVED SEGMENT EVIDENCE</div>' +
+        '<div class="metric-grid">' + values.map(([label, value]) =>
+          '<div class="metric-mini"><span>' + escapeHtml(label) + '</span><strong>' + escapeHtml(value) + '</strong></div>'
+        ).join('') + '</div>' +
+        (metric.hasCount && metric.tx < 30 ? '<div class="drawer-support-warning">Low support: fewer than 30 reported transactions. Treat this segment as exploratory.</div>' : '');
     }
+
     function drawerPathHtml(detail) {
       const paths = {
         product: ['Product', detail.label, 'Amount band', 'Payment / email'],
@@ -1970,19 +2013,30 @@
     }
     function drawerRelatedChartHtml(detail) {
       const rows = relatedDrillRows(detail).slice(0, 7);
-      if (!rows.length) return '';
-      const maxValue = Math.max(...rows.map(row => num(row.fraud_rate || row.observed_fraud_rate)), .0001);
-      const bars = rows.map((row, index) => {
+      if (!rows.length) return '<div class="drawer-bars"><div class="drawer-section-title">02 / NESTED COMPARISONS</div>' + empty('No related subsegments available in the published reporting mart.') + '</div>';
+      const bars = rows.map(row => {
         const label = row.child_segment || row.segment_name || row.parent_segment || detail.label || 'Segment';
-        const value = num(row.fraud_rate || row.observed_fraud_rate);
-        return '<div class="bar-row" data-tooltip="' + escapeHtml(label + ' | ' + fmtPct2(value) + ' | lift ' + fmtScore(segmentLift(row)) + 'x') + '"><div class="bar-label">' + escapeHtml(short(label, 24)) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(3, value / maxValue * 100) + '%;--accent:' + palette[index % palette.length] + '"></div></div><div class="bar-value">' + fmtPct2(value) + '</div></div>';
+        const rate = num(row.fraud_rate ?? row.observed_fraud_rate);
+        const support = row.transaction_count == null ? 'n not reported' : 'n=' + fmtInt(num(row.transaction_count));
+        const attrs = 'data-tooltip="' + escapeHtml(label + ' | ' + fmtPct2(rate) + ' | ' + support) + '"';
+        return '<div class="bar-row" ' + attrs + '><div class="bar-label">' + escapeHtml(short(label, 26)) +
+          '</div><div class="bar-track"><div class="bar-fill" style="width:' +
+          Math.max(0, Math.min(100, rate * 100)) + '%;--accent:#80b7eb"></div></div>' +
+          '<div class="bar-value">' + fmtPct2(rate) + '<small class="drill-row-support">' + support + '</small></div></div>';
       }).join('');
-      return '<div class="drawer-bars"><div class="filter-title">Nested chart</div>' + bars + '</div>';
+      return '<div class="drawer-bars"><div class="drawer-section-title">02 / NESTED COMPARISONS</div>' +
+        '<div class="drill-scale-note">Common 0–100% fraud-rate scale · available support displayed</div>' + bars + '</div>';
     }
+
     function drawerInsightHtml(detail, metric) {
-      const sentence = detail.family + ' segment "' + detail.label + '" shows ' + fmtPct2(metric.rate) + ' fraud rate, ' + fmtScore(metric.lift) + 'x lift, and ' + fmtMoney(metric.amount) + ' exposure proxy. Use this segment only against comparable subsegments before making a threshold decision.';
-      return '<div class="drawer-copy"><strong>Analyst insight</strong><br>' + escapeHtml(sentence) + '</div>';
+      const text = detail.family + ' / ' + detail.label +
+        (metric.hasRate ? ' has observed fraud rate ' + fmtPct2(metric.rate) : ' has no published fraud-rate measure') +
+        (metric.hasCount ? ' across ' + fmtInt(metric.tx) + ' reported transactions' : ' with unreported support') +
+        (metric.hasAmount ? ' and reported fraud amount ' + fmtMoney(metric.amount) : '') +
+        '. Review peer denominators and nested segments before adjusting operational thresholds.';
+      return '<div class="drawer-copy"><strong>03 / ANALYST INTERPRETATION</strong><p>' + escapeHtml(text) + '</p></div>';
     }
+
     function chartDrillPathHtml(detail) {
       const path = [pageLabel(detail.page), detail.title, chartDrillNextStep(detail)];
       return '<div class="drill-path">' + path.map((step, index) => {
