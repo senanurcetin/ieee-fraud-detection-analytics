@@ -2002,8 +2002,8 @@
     function segmentDetailMetric(detail, row) {
       const hasCount = row.transaction_count != null || row.total_transactions != null;
       const tx = hasCount ? num(row.transaction_count ?? row.total_transactions) : 0;
-      const hasFraudCount = row.fraud_count != null || row.fraud_transactions != null;
-      const fraudCount = hasFraudCount ? num(row.fraud_count ?? row.fraud_transactions) : 0;
+      const hasFraudCount = row.fraud_count != null || row.fraud_transactions != null || row.observed_fraud_count != null;
+      const fraudCount = hasFraudCount ? num(row.fraud_count ?? row.fraud_transactions ?? row.observed_fraud_count) : 0;
       const hasRate = row.fraud_rate != null || row.observed_fraud_rate != null || (hasCount && hasFraudCount && tx > 0);
       const rate = row.fraud_rate != null ? num(row.fraud_rate) :
         row.observed_fraud_rate != null ? num(row.observed_fraud_rate) :
@@ -2240,8 +2240,8 @@
       // A segment can report an exact fraud count/rate without any monetary
       // breakdown. Never display missing segment amounts as $0 or substitute
       // whole-portfolio exposure under a segment filter.
-      const hasExposure = !segment || segment.fraud_amount !== null;
-      const exposure = hasExposure ? (segment ? segment.fraud_amount : fraudExposure()) : null;
+      const hasExposure = !segment || segment.fraud_amount === undefined || segment.fraud_amount !== null;
+      const exposure = hasExposure ? (segment?.fraud_amount ?? fraudExposure()) : null;
       const captured = hasExposure ? exposure * num(threshold.fraud_capture_rate) : null;
       const missed = hasExposure ? Math.max(exposure - captured, 0) : null;
       const review = num(threshold.workload_share) * total;
