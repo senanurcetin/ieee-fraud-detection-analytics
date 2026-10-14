@@ -168,3 +168,31 @@ body.nexus-studio-amount .report-canvas,body.nexus-studio-customer .report-canva
  .studio-wide-heatmap{padding:15px!important}
  .studio-identity-left .visual-card,.studio-identity-right .visual-card{min-height:310px}
 }
+
+/* Model governance is a control-room archetype: decision input above diagnostic evidence. */
+body.nexus-studio-model .canvas-head{display:none}
+body.nexus-studio-model .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.model-hero{background:radial-gradient(ellipse at 88% 5%,rgba(141,113,223,.23),transparent 52%),linear-gradient(119deg,#102e52,#0a213c 65%,#221f4d)}
+.model-hero .studio-domain-hero h3 em{color:#b5adff}
+.studio-model-control{display:grid;gap:13px}
+.studio-model-inputs,.studio-model-assumptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:13px 0}
+.studio-model-inputs .field,.studio-model-assumptions .field{min-width:0}
+.studio-model-inputs .field label,.studio-model-assumptions .field label{display:block;padding-bottom:6px}
+.studio-model-inputs input[type=range]{display:block;width:100%;min-height:36px;cursor:pointer}
+.studio-model-assumptions{background:#edf4fc;border:1px solid #dae7f4;border-radius:11px;padding:18px}
+.studio-model-disclosure{margin:10px 0 0;padding:11px 15px;color:#58728e;font-size:11px;line-height:1.7;border-left:3px solid #6c99cc;background:#f4f8fd;border-radius:0 6px 6px 0}
+.studio-model-simulator{min-height:0!important;padding:clamp(19px,2vw,29px)!important}
+.studio-model-simulator .visual-head{margin-bottom:18px}
+.studio-model-simulator #threshold-summary .kpi-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.studio-model-simulator #threshold-summary .kpi-card{min-height:120px}
+.studio-model-primary{display:grid;grid-template-columns:minmax(0,1.23fr) minmax(290px,.84fr);gap:16px}
+.studio-model-primary .visual-card{min-height:405px}
+.studio-model-secondary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+.studio-model-secondary .visual-card{min-height:395px}
+.studio-model .studio-evidence-section>.studio-section-heading{margin-top:4px}
+@media(max-width:1150px){.studio-model-primary{grid-template-columns:1fr}}
+@media(max-width:790px){.studio-model-secondary{grid-template-columns:1fr}}
+@media(max-width:600px){
+ .studio-model-inputs,.studio-model-assumptions{grid-template-columns:1fr}
+ .studio-model-simulator #threshold-summary .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
