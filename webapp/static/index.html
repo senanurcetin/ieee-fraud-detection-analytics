@@ -2977,29 +2977,55 @@
       if (!target) return;
       const row = exactSegmentRow(detail.key, detail.value) || {};
       const metric = segmentDetailMetric(detail, row);
-      const source = [
-        { label: 'Fraud share', value: metric.fraudShare || 0, color: '#d92d3a' },
-        { label: 'Transaction share', value: metric.tx / Math.max(num(executiveKpis().total_transactions), 1), color: '#2563eb' },
-        { label: 'Fraud rate', value: metric.rate || 0, color: '#c98012' },
-        { label: 'Baseline rate', value: num(executiveKpis().fraud_rate), color: '#18a999' }
+      const total = num(executiveKpis().total_transactions);
+      const txShare = metric.hasCount && total > 0 ? metric.tx / total : null;
+      const rate = metric.hasRate ? metric.rate : null;
+      const baseline = num(executiveKpis().fraud_rate);
+      const shares = [
+        { label: 'Share of fraud labels', value: metric.hasFraudShare ? metric.fraudShare : null },
+        { label: 'Share of transactions', value: txShare }
       ];
-      columnChart(id, source, row => row.label, row => row.value, fmtPct2, null, { axisTitle: 'Segment contribution profile', limit: 4 });
+      const lines = shares.map((measure, index) => {
+        const supported = measure.value !== null && Number.isFinite(measure.value);
+        return '<div class="drill-measured-row">' +
+          '<div class="drill-measured-title"><span>' + measure.label + '</span>' +
+          '<strong>' + (supported ? fmtPct2(measure.value) : 'Not reported') + '</strong></div>' +
+          '<div class="drill-measured-track" aria-hidden="true"><span class="' +
+          (index ? 'volume' : 'fraud') + '" style="width:' +
+          (supported ? Math.max(0, Math.min(100, measure.value * 100)) : 0) + '%"></span></div></div>';
+      }).join('');
+      const rateLine = '<div class="drill-reference-row"><span>Segment fraud rate</span>' +
+        '<strong>' + (rate == null ? 'Not reported' : fmtPct2(rate)) + '</strong>' +
+        '<span>Portfolio baseline</span><strong>' + fmtPct2(baseline) + '</strong></div>';
+      target.innerHTML = '<div class="chart-scale-note">Proportions on a fixed 0–100% share axis <span>Population counts and fraud labels are different denominators</span></div>' +
+        '<div class="drill-measured-shares">' + lines + '</div>' + rateLine +
+        '<p class="drill-method-caption">Fraud-rate and portfolio baseline are displayed separately; they are not added to contribution shares. Overlapping segments may not be summed.</p>';
     }
 
     function drillRecommendationChart(id, detail) {
-      const target=document.getElementById(id);
-      if(!target)return;
-      const row=exactSegmentRow(detail.key,detail.value)||{};
-      const metric=segmentDetailMetric(detail,row);
-      const data=[
-        {label:'Risk intensity',value:Math.min(metric.lift/4,1)},
-        {label:'Fraud concentration',value:Math.min(metric.fraudShare||0,1)},
-        {label:'Workload headroom',value:Math.max(0,1-metric.tx/Math.max(num(executiveKpis().total_transactions),1))},
-        {label:'Action heuristic',value:metric.lift>=2&&(metric.fraudShare||0)>=.05?.9:metric.lift>=1.2?.62:.35}
-      ];
-      target.innerHTML='<div class="chart-scale-note">Normalized decision indicators <span>Heuristic scales; not causal or calibrated probabilities</span></div><div class="executive-bars">'+data.map((r,i)=>{
-        return '<div class="bar-row executive-bar-row" data-tooltip="'+escapeHtml(r.label+' | '+fmtPct(r.value))+'"><div class="bar-label">'+escapeHtml(r.label)+'</div><div class="bar-track"><div class="bar-fill" style="--accent:'+(i===0?'#2867b1':'#8ab2db')+';width:'+Math.max(0,Math.min(100,r.value*100))+'%"></div></div><div class="bar-value">'+fmtPct(r.value)+'</div></div>';
-      }).join('')+'</div>';
+      const target = document.getElementById(id);
+      if (!target) return;
+      const row = exactSegmentRow(detail.key, detail.value) || {};
+      const metric = segmentDetailMetric(detail, row);
+      const baseline = num(executiveKpis().fraud_rate);
+      const support = !metric.hasCount ? 'Unreported support' :
+        metric.tx < 30 ? 'Sparse: n < 30' :
+        metric.tx < 1000 ? 'Limited support: n < 1,000' : 'Measured: n = ' + fmtInt(metric.tx);
+      const relative = metric.hasRate && baseline > 0 ? metric.rate / baseline : null;
+      const interpretation = !metric.hasRate ? 'No observed fraud-rate measure is published for this slice.' :
+        !metric.hasCount ? 'The rate has no published denominator; verify support before using it.' :
+        metric.tx < 30 ? 'Low sample support makes ranking unstable; investigate before setting a control.' :
+        relative != null && relative > 1 ? 'The observed rate exceeds the portfolio baseline; validate with peer support and holdout performance.' :
+        'The observed rate does not exceed the portfolio baseline. Inspect peer composition before drawing a conclusion.';
+      target.innerHTML = '<div class="drill-interpretation-panel">' +
+        '<span class="drill-interpretation-kicker">OBSERVED EVIDENCE / NOT AN ACTION SCORE</span>' +
+        '<strong>' + escapeHtml(support) + '</strong>' +
+        '<p>' + escapeHtml(interpretation) + '</p>' +
+        '<div class="drill-interpretation-method"><span>Reported rate</span><b>' +
+        (metric.hasRate ? fmtPct2(metric.rate) : 'Unavailable') + '</b>' +
+        '<span>Relative to portfolio</span><b>' +
+        (relative === null ? 'Unavailable' : fmtScore(relative) + '×') + '</b></div>' +
+        '<small>No synthetic priority points, estimated review capacity or causal business impact are computed for this segment.</small></div>';
     }
 
     function dotPlotChart(id, rows, labelFn, valueFn, formatFn, filterKey, options = {}) {
