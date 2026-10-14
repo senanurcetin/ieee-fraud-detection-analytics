@@ -397,5 +397,35 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
                 self.assertEqual(errors, [])
 
 
+    def test_risk_band_cross_filter_uses_observed_counts_without_invented_dollars(self):
+        """A training risk cohort has fraud counts, but no monetary exposure mart."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                page.locator(".risk-band-card[data-filter-key]").first.click()
+                page.locator("#drill-back-btn").click()
+                page.locator(".studio-focus-value").wait_for(timeout=12000)
+                focus = page.locator(".studio-command")
+                self.assertIn("96.68%", focus.inner_text())
+                self.assertIn("5,710", focus.inner_text())
+                self.assertIn("train split", focus.inner_text())
+                self.assertIn("retain their separately reported populations", focus.inner_text())
+                exposure = page.locator(".studio-exposure-ribbon")
+                self.assertIn("Not reported", exposure.inner_text())
+                self.assertGreaterEqual(exposure.inner_text().count("Unavailable"), 2)
+                self.assertNotIn("$0", exposure.inner_text())
+                self.assertIn("not reported", page.locator(".studio-overview-decisions").inner_text().lower())
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ), 1
+                )
+                page.locator("#clear-btn").click()
+                self.assertIn("3.50%", page.locator(".studio-command").inner_text())
+                self.assertIn("$3.08M", page.locator(".studio-exposure-ribbon").inner_text())
+                self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
