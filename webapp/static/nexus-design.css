@@ -987,3 +987,36 @@ body.light .supporting-visuals summary span {color:#637d96;}
   .paired-share-row{grid-template-columns:minmax(82px,34%) minmax(0,1fr);gap:6px;padding:7px 3px;}
   .paired-share-stat{grid-column:2/3;text-align:left;}
 }
+
+/* Analyst evidence system: measured rate, denominator and Wilson interval. */
+.report-canvas .rate-evidence-meta,
+.report-canvas .rate-evidence-legend {
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  gap:7px 16px;color:#58728e;font-size:10px;line-height:1.5;
+}
+.report-canvas .rate-evidence-meta {margin:3px 0 12px;padding-bottom:10px;border-bottom:1px solid #e0eaf5;font-weight:730}
+.report-canvas .rate-evidence-legend {justify-content:flex-start;padding-top:9px;border-top:1px solid #e0eaf5}
+.report-canvas .rate-evidence-legend span {display:flex;align-items:center;gap:6px}
+.report-canvas .rate-legend-baseline {display:inline-block;width:19px;border-top:2px dashed #b083d4}
+.report-canvas .rate-legend-sparse {display:inline-block;width:9px;height:9px;border:2px solid #8c9eae;border-radius:50%;background:#fff}
+.report-canvas .rate-value {font-size:11px;font-weight:800;fill:#153b60;font-variant-numeric:tabular-nums}
+.report-canvas .rate-denominator {font-size:10px;fill:#647d96;font-variant-numeric:tabular-nums}
+.report-canvas .heatmap-editorial .heat-insufficient {
+  background:repeating-linear-gradient(135deg,#eef2f7 0,#eef2f7 6px,#dce6f1 6px,#dce6f1 9px)!important;
+  color:#5c7187!important;border:1px dashed #9eb0c3!important;
+  cursor:help;
+}
+.report-canvas .heatmap-editorial .heat-insufficient .heat-value {font-size:10px;font-weight:850;color:#536c83}
+.report-canvas .heatmap-editorial .heat-unknown-support {
+  background:#f0f4f9!important;color:#4f6782!important;
+  border:1px dashed #a6b7c8!important;
+}
+.report-canvas .heatmap-editorial .heat-insufficient small {color:#5c7187!important;opacity:1}
+.report-canvas .heat-scale-disclosure {
+  padding:10px 0 1px;color:#536f8c;font-size:10px;line-height:1.65;
+}
+@media(max-width:620px){
+ .report-canvas .rate-evidence-meta{font-size:9px}
+ .report-canvas .rate-evidence-legend{font-size:9px}
+ .report-canvas .heatmap-editorial .heat-insufficient .heat-value{font-size:9px}
+}
