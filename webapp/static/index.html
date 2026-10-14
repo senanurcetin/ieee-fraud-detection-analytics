@@ -1324,6 +1324,7 @@
       document.body.classList.toggle('nexus-studio-trend', state.page === 'trend' && !state.drill);
       document.body.classList.toggle('nexus-studio-amount', state.page === 'amount' && !state.drill);
       document.body.classList.toggle('nexus-studio-customer', state.page === 'customer' && !state.drill);
+      document.body.classList.toggle('nexus-studio-model', state.page === 'model' && !state.drill);
       const target = document.getElementById('report-body');
       if (state.drill) {
         document.getElementById('page-title').textContent = 'Segment Drill-through';
@@ -1579,35 +1580,42 @@
       const registry = state.registry || (state.meta && state.meta.model_registry) || {};
       const holdout = registry.holdout_metrics || {};
       const threshold = selectedThreshold();
-      return pageGrid([
-        kpiRow([
-          kpi('ROC-AUC', (holdout.roc_auc == null ? 'Unavailable' : fmtScore(holdout.roc_auc)), 'Strong rank ordering across thresholds.', '#2563eb'),
-          kpi('PR-AUC', (holdout.average_precision == null ? 'Unavailable' : fmtScore(holdout.average_precision)), 'More meaningful than accuracy for fraud imbalance.', '#18a999'),
-          kpi('Validation Precision', fmtPct(threshold.precision_rate), 'Holdout precision at selected threshold.', '#c98012'),
-          kpi('Validation Recall', fmtPct(threshold.fraud_capture_rate), 'Holdout fraud capture at selected threshold.', '#7c3aed'),
-          kpi('Validation Workload', fmtPct(threshold.workload_share), 'Holdout flagged share at selected threshold.', '#d92d3a')
-        ]),
-        visualPanels([
-          chartCard('Validation threshold simulator', 'Holdout threshold evidence; reporting score simulation is kept as supporting context.', '<div class="grid-2"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%; accent-color:#2563eb"></div></div><div id="threshold-summary" style="margin-top:10px"></div><div class="grid-2" style="margin-top:12px"><div class="field"><label for="review-cost-input">Cost per reviewed false positive ($)</label><input id="review-cost-input" type="number" min="0" step="0.5" class="select"></div><div class="field"><label for="loss-rate-input">Loss per $1 of fraud</label><input id="loss-rate-input" type="number" min="0" step="0.1" class="select"></div></div><p class="muted" style="margin:8px 0 0; font-size:12px; line-height:1.5">IEEE-CIS contains no cost fields, so these two numbers are assumptions, not measurements. Net benefit = avoided loss &minus; review cost, with both sides priced at the same loss rate. A loss rate of 1.0 counts only the transaction amount; LexisNexis&rsquo; 2025 True Cost of Fraud study puts the fully loaded cost nearer 4.6&ndash;5.0 per fraud dollar once operations, chargeback handling and customer churn are included. Per-review cost runs about $3&ndash;5 for automation-assisted screening and $25&ndash;50 for full investigations.</p>', 'compact wide'),
-          grid2([
-            chartCard('Precision-recall threshold curve', 'Threshold movement changes all model KPIs.', '<div class="visual-body" id="model-threshold"></div>'),
-            chartCard('Segment validation precision at selected threshold', 'Segment-level holdout precision recalculated for the selected threshold.', '<div class="visual-body" id="model-segment-performance"></div>'),
-            chartCard('Validation confusion matrix', 'Selected-threshold classification view from holdout counts.', '<div class="visual-body" id="model-confusion"></div>'),
-            chartCard('Risk band distribution', 'Volume of the scored portfolio per band, for review capacity sizing.', '<div class="visual-body" id="model-risk"></div>')
-          ])
-        ], [
-          chartCard('ROC / PR reference curves', 'Supporting reference view for model separation and imbalanced-class behavior.', '<div class="visual-body" id="model-curves"></div>'),
-          chartCard('Feature importance recap', 'Supporting model-driver context behind the score.', '<div class="visual-body" id="model-features"></div>'),
-          chartCard('Model registry and rolling CV', 'Version, V-feature scope, and rolling validation stability evidence.', '<div class="visual-body" id="model-registry"></div>'),
-          chartCard('Score calibration on the holdout', 'The classifier is fitted with balanced class weights, which is good for ranking and bad for probability. The score is a rank, not a likelihood: it averages 5.2x the observed fraud rate, and its Brier score is worse than a constant base-rate forecast.', '<div class="visual-body" id="model-calibration"></div>'),
-          chartCard('In-sample vs holdout by risk band', 'The model is fit on the first 80% of TransactionDT and then scores every row, so the train split flatters each band. Holdout figures are the ones that generalise.', '<div class="visual-body" id="model-generalisation"></div>')
-        ]),
-        insightRow([
-          insight('Threshold tradeoff', 'Higher thresholds reduce workload and usually improve precision, but lower fraud capture.', '#c98012'),
-          insight('Model use', 'The score is a prioritization input for business review, not an automated customer decision.', '#2563eb'),
-          insight('Governance', 'Track PR-AUC, calibration, and drift before changing production policy.', '#18a999')
-        ])
-      ]);
+      const hero = '<section class="studio-domain-hero model-hero"><div>' +
+        '<span class="studio-domain-eyebrow">08 / MODEL VALIDATION & GOVERNANCE</span>' +
+        '<h3>Choose a threshold.<br><em>Own the trade-off.</em></h3>' +
+        '<p>Rank-ordering quality, capacity, fraud capture and calibration are different pieces of evidence. Each decision must remain traceable to holdout validation.</p>' +
+        '<div class="studio-domain-meta"><span>Holdout validation</span><span>Score ranks are not calibrated fraud probabilities</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>HOLDOUT PRECISION AT CURRENT THRESHOLD</span><strong>' + fmtPct(threshold.precision_rate) + '</strong><em>' + fmtPct(threshold.fraud_capture_rate) + ' fraud capture · ' + fmtPct(threshold.workload_share) + ' review workload</em></aside></section>';
+      const quality = '<div class="studio-domain-facts">' +
+        kpi('ROC–AUC',holdout.roc_auc==null?'Unavailable':fmtScore(holdout.roc_auc),'Ranking across positive/negative holdout examples.','#7eacfa') +
+        kpi('PR–AUC',holdout.average_precision==null?'Unavailable':fmtScore(holdout.average_precision),'Primary ranking measure under class imbalance.','#b49ee8') +
+        kpi('Validation workload',fmtPct(threshold.workload_share),'Selected-threshold fraction sent for review.','#8dc0c9') +
+        '</div>';
+      const controls = '<div class="studio-model-control"><div class="studio-section-heading"><div><span>01 / OPERATING POINT</span><h3>Threshold decision simulator</h3></div><p>Review capacity and missed fraud change together. Costs below are explicitly scenario assumptions.</p></div>' +
+        chartCard('Validation threshold simulator','Interactive holdout threshold evidence; economics are scenario assumptions, not observed bank costs.','<div class="studio-model-inputs"><div class="field"><label for="threshold-select">Selected threshold</label><select class="select" id="threshold-select"></select></div><div class="field"><label for="threshold-slider">Threshold scrubber</label><input id="threshold-slider" type="range" min="0" max="0" value="0" style="width:100%;accent-color:#7eacfa"></div></div><div id="threshold-summary" style="margin-top:12px"></div><div class="studio-model-assumptions"><div class="field"><label for="review-cost-input">Cost per reviewed false positive ($)</label><input id="review-cost-input" type="number" min="0" step="0.5" class="select"></div><div class="field"><label for="loss-rate-input">Loss per $1 of fraud</label><input id="loss-rate-input" type="number" min="0" step="0.1" class="select"></div></div><p class="studio-model-disclosure">IEEE-CIS contains no verified investigation-cost or chargeback-loss fields. These economics are user-adjustable hypotheses. Net benefit = assumed avoided loss − assumed review cost.</p>', 'studio-model-simulator');
+      const evidence='<div class="studio-section-heading"><div><span>02 / VALIDATION EVIDENCE</span><h3>Measure the decision boundary</h3></div><p>Rates, counts and calibration belong to different denominators; they are never interchangeable.</p></div>' +
+        '<div class="studio-model-primary">' +
+          chartCard('Recall, precision & capacity by threshold','Operating points from holdout validation, with the selected score clearly marked.','<div class="visual-body" id="model-threshold"></div>','studio-model-curves') +
+          chartCard('Validation confusion matrix','Observed holdout classification counts at the chosen threshold.','<div class="visual-body" id="model-confusion"></div>') +
+        '</div><div class="studio-model-secondary">' +
+          chartCard('Segment validation precision at selected threshold','Segment-level holdout precision recalculated for the selected threshold.','<div class="visual-body" id="model-segment-performance"></div>') +
+          chartCard('Risk band distribution','Scored portfolio volume by risk band; not evidence of held-out precision.','<div class="visual-body" id="model-risk"></div>') +
+        '</div>';
+      return '<div class="studio-screen studio-model">' + hero + quality + visualPanels([
+          controls,
+          '<section class="studio-evidence-section">' + evidence + '</section>'
+        ],[
+          chartCard('ROC / PR reference curves','Independent validation axes, distinct from production operating policies.','<div class="visual-body" id="model-curves"></div>'),
+          chartCard('Feature importance recap','Drivers used by the fitted ranking model.','<div class="visual-body" id="model-features"></div>'),
+          chartCard('Model registry and rolling CV','Version, feature scope and temporal validation quality.','<div class="visual-body" id="model-registry"></div>'),
+          chartCard('Score calibration on the holdout','The score is a rank, not a likelihood. Balanced class weights can improve ranking while degrading probability calibration.','<div class="visual-body" id="model-calibration"></div>'),
+          chartCard('In-sample vs holdout by risk band','Train-split fit and generalization must be evaluated separately.','<div class="visual-body" id="model-generalisation"></div>')
+        ]) +
+        '<div class="studio-action-notes">' + insightRow([
+          insight('Trade-off','Higher thresholds usually improve precision but reduce fraud capture and review workload.','#84b6ff'),
+          insight('Governance','The score informs review priority; it is not an automated customer adjudication.','#b4a1ed'),
+          insight('Readiness','Monitor PR–AUC, calibration and drift before changing policy.','#91c7c3')
+        ]) + '</div></div>';
     }
 
     function renderInsights() {
