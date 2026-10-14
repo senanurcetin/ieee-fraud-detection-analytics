@@ -8,11 +8,10 @@
 
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
-[![Kaggle notebook](https://img.shields.io/badge/Kaggle-notebook-20BEFF)](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**Kaggle notebook:** [IEEE-CIS: How Much of Random-CV AUC Is Leakage?](https://www.kaggle.com/code/senanuretin/ieee-cis-how-much-of-random-cv-auc-is-leakage) measures why this project validates on time: on the same model, random 5-fold gives ROC-AUC 0.971 and the time split 0.921; about half the gap is customers seen in training, half is time drift.
+**Temporal validation:** The headline ranking result uses an out-of-time holdout rather than an optimistic random split. See the [reproducible model validation evidence](docs/model_validation_evidence.md) and [scoring decisions](docs/modeling_decisions.md). A previously linked random-CV Kaggle notebook currently returns HTTP 404 to public visitors; its unpublished comparison numbers are not represented here as independently verifiable.
 
 ## Quick Summary
 
@@ -377,7 +376,7 @@ python -m playwright install chromium
 FRAUD_E2E_BASE_URL=http://127.0.0.1:8000 E2E_SCREENSHOT_DIR=artifacts/dashboard-browser python -m unittest discover -s tests/browser -p 'test_fraud_dashboard.py' -v
 ```
 
-Review the two actual 1440px/375px captures before changing portfolio imagery. This opt-in suite is **not part of the default pytest testpath or hosted CI**, and no browser execution, screenshot approval, preview readiness, or deployment is claimed by adding it.
+The screenshots in this README were captured from the verified production dashboard on 14 October 2026; the opt-in Chromium acceptance suite ran **12/12 successfully** against the live production URL. This browser suite remains separate from the default pytest testpath and hosted CI. [Image SHA-256 and capture provenance](docs/assets/production_screenshot_provenance_20261014.json).
 
 ## Quality Gates
 
