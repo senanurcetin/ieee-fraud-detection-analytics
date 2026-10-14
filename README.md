@@ -1,4 +1,6 @@
-﻿# IEEE-CIS Fraud Risk Intelligence
+# IEEE-CIS Fraud Risk Intelligence
+
+**SEO and social cards:** [Documented canonical URLs, screenshot sources and preview assets](docs/SEO_AND_SOCIAL_PREVIEW_GUIDE.md).
 
 **Technical reviewer brief:** [Problem, quantitative evidence and limitations](docs/hiring-summary.md).
 

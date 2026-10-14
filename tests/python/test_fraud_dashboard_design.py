@@ -15,9 +15,10 @@ class NexusFraudDesignTests(unittest.TestCase):
         self.assertIn("NEXUS / RISK INTELLIGENCE", html)
         self.assertIn("NEXUS / FINANCIAL ANALYTICS", html)
         self.assertIn("Executive Fraud Overview", html)
-        self.assertIn("data:image/svg+xml,", html)
-        self.assertIn("%234ea8ff", html.lower())
-        self.assertIn("%238f9bff", html.lower())
+        self.assertIn('rel="icon" type="image/svg+xml" href="/static/seo/favicon.svg"', html)
+        icon = (ROOT / "webapp/static/seo/favicon.svg").read_text(encoding="utf-8")
+        self.assertIn("#4ea8ff", icon.lower())
+        self.assertIn("#8f9bff", icon.lower())
 
         self.assertIn("aria-current=", html)
         self.assertIn("navigationButton.setAttribute('aria-current'", html)
