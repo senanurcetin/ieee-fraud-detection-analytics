@@ -1012,7 +1012,7 @@ body:not(.light) .report-canvas .table-wrap tbody tr:hover td {
 }
 body:not(.light) .report-canvas .table-wrap td strong {color:#f2f8ff}
 body:not(.light) .report-canvas .curve-axis-caption {
-  margin:2px 0 5px;
+  margin:22px 0 5px;
   padding:12px 0 0;
   border-top:1px solid #345675;
   text-align:center;
@@ -1072,4 +1072,11 @@ body.light .report-canvas #model-calibration>.metric-grid>.metric strong {color:
 @media(max-width:460px){
   .report-canvas #model-calibration>.metric-grid>.metric{min-height:80px;padding:11px}
   .report-canvas #model-calibration>.metric-grid>.metric strong{font-size:17px}
+}
+
+/* Space axis titles below the SVG plot's allocation at every breakpoint. */
+.report-canvas .curve-axis-caption {
+  margin-top:22px;
+  position:relative;
+  z-index:1;
 }
