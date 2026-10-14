@@ -483,9 +483,16 @@ def test_cost_assumptions_are_declared_and_priced_on_one_scale() -> None:
 
     # One loss rate prices both the avoided and the residual side.
     assert "const lossRate = Math.max(num(state.fraudLossMultiplier), 0);" in metric_layer
-    assert "const avoidedLoss = captured * lossRate;" in metric_layer
-    assert "const residualLoss = missed * lossRate;" in metric_layer
-    assert "const netBenefit = avoidedLoss - falsePositiveCost;" in metric_layer
+    assert "const avoidedLoss = hasExposure ? captured * lossRate : null;" in metric_layer
+    assert "const residualLoss = hasExposure ? missed * lossRate : null;" in metric_layer
+    assert "const netBenefit = hasExposure ? avoidedLoss - falsePositiveCost : null;" in metric_layer
+    # If a segment mart has no measured monetary amount, none of the exposure
+    # metrics may silently become $0, and portfolio dollars must not leak in.
+    assert "const hasExposure = !segment || segment.fraud_amount === undefined || segment.fraud_amount !== null;" in metric_layer
+    assert "has_exposure: hasExposure" in metric_layer
+    assert "if (!m.has_exposure) return [];" in html
+    assert "observed_fraud_count" in html
+    assert "No monetary figure published for this segment" in html
 
     # The retired asymmetric constants must not come back.
     assert "missed * 0.15" not in metric_layer
