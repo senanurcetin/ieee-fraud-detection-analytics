@@ -267,5 +267,74 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
                 self.assertEqual(errors, [])
 
 
+    def test_fraud_chart_numbers_have_no_white_halo_or_scaled_down_axes(self):
+        """Guard against the SVG 4px white text stroke and miniature chart numerals."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                page.locator("#overview-trend svg .svg-axis").first.wait_for(timeout=15000)
+                axis = page.locator("#overview-trend svg .svg-axis").first
+                style = axis.evaluate(
+                    """(element) => {
+                      const s = getComputedStyle(element);
+                      return {stroke: s.stroke, strokeWidth: s.strokeWidth,
+                        shadow: s.textShadow, filter: s.filter, opacity: s.opacity,
+                        font: parseFloat(s.fontSize)};
+                    }"""
+                )
+                self.assertEqual(style["stroke"], "none")
+                self.assertEqual(style["strokeWidth"], "0px")
+                self.assertEqual(style["shadow"], "none")
+                self.assertEqual(style["filter"], "none")
+                self.assertEqual(style["opacity"], "1")
+                self.assertGreaterEqual(style["font"], 12)
+
+                latest = page.locator("#overview-trend .chart-current-readout")
+                self.assertTrue(latest.is_visible())
+                self.assertIn("%", latest.inner_text())
+
+                geometry = page.locator("#overview-trend .chart-figure").evaluate(
+                    """figure => ({
+                      client: figure.clientWidth,
+                      scroll: figure.scrollWidth,
+                      svg: figure.querySelector('svg').getBoundingClientRect().width
+                    })"""
+                )
+                if width == 1440:
+                    self.assertGreaterEqual(geometry["svg"], 740)
+                else:
+                    self.assertGreater(geometry["scroll"], geometry["client"])
+
+                page.locator('[data-page="geo"]').click()
+                label = page.locator("#report-body svg .svg-value").first
+                label.wait_for(timeout=15000)
+                metrics = label.evaluate(
+                    """element => {
+                      const s = getComputedStyle(element);
+                      return {stroke: s.stroke, strokeWidth: s.strokeWidth,
+                        shadow: s.textShadow, filter: s.filter, font: parseFloat(s.fontSize)};
+                    }"""
+                )
+                self.assertEqual(metrics["stroke"], "none")
+                self.assertEqual(metrics["strokeWidth"], "0px")
+                self.assertEqual(metrics["shadow"], "none")
+                self.assertEqual(metrics["filter"], "none")
+                self.assertGreaterEqual(metrics["font"], 13)
+
+                page.locator('[data-page="model"]').click()
+                tile = page.locator(".confusion-tile strong").first
+                tile.wait_for(timeout=15000)
+                self.assertEqual(
+                    tile.evaluate("(element) => getComputedStyle(element).textShadow"), "none"
+                )
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ), 1
+                )
+                self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
