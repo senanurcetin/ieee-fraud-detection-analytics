@@ -37,7 +37,7 @@ jobs:
         run: python -m compileall webapp
 
       - name: Dependency audit
-        run: pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277
+        run: pip-audit -r requirements.txt
 
   dbt-duckdb:
     name: dbt build and test
