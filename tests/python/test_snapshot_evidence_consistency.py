@@ -9,10 +9,9 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT = json.loads(
@@ -26,7 +25,7 @@ def test_snapshot_is_dated_and_provenance_is_explicit():
     assert metadata["source_backend"] == "bigquery"
     assert metadata["refreshed_at"]
     timestamp = datetime.fromisoformat(metadata["refreshed_at"].replace("Z", "+00:00"))
-    assert timestamp <= datetime.now(timezone.utc)
+    assert timestamp <= datetime.now(UTC)
     assert metadata["table_count"] >= 25
 
 
