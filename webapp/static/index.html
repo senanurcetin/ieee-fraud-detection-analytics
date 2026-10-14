@@ -2899,7 +2899,12 @@
         ['Base-rate Brier', fmtScore4(head.baseline_brier_score)],
         ['ECE', fmtPct2(head.expected_calibration_error)]
       ].map(pair => '<div class="metric"><span>' + pair[0] + '</span><strong>' + pair[1] + '</strong></div>').join('') + '</div>';
-      target.innerHTML = summary + dataTable(rows, [
+      const unreliable = num(head.brier_score) > num(head.baseline_brier_score);
+      const warning = unreliable ? '<div class="model-calibration-warning" role="note"><strong>Calibration warning</strong><p>Holdout Brier ' +
+        fmtScore4(head.brier_score) + ' exceeds constant-baseline Brier ' +
+        fmtScore4(head.baseline_brier_score) +
+        '. The raw score ranks risk but should not be treated as a calibrated fraud probability without additional validation and recalibration.</p></div>' : '';
+      target.innerHTML = warning + summary + dataTable(rows, [
         ['Score decile', row => fmtInt(row.score_decile)],
         ['Transactions', row => fmtInt(row.transaction_count)],
         ['Mean score', row => fmtPct2(row.mean_predicted_probability)],
@@ -3245,7 +3250,7 @@
         {name:'ROC curve',axis:'FALSE POSITIVE RATE',yAxis:'RECALL',color:'#276fbd',points:rocRows,metric:holdout.roc_auc,metricLabel:'ROC-AUC',baseline:'<line x1="'+x(0)+'" y1="'+y(0)+'" x2="'+x(1)+'" y2="'+y(1)+'" stroke="#b9cadc" stroke-dasharray="6 5"/>'},
         {name:'Precision–recall',axis:'RECALL',yAxis:'PRECISION',color:'#9366c6',points:prRows,metric:holdout.average_precision,metricLabel:'PR-AUC',baseline:''}
       ];
-      target.innerHTML='<div class="curve-panels">'+panels.map(p=>'<div class="curve-panel"><div class="curve-panel-head"><strong>'+p.name+'</strong><span>'+p.metricLabel+' '+(p.metric===undefined||p.metric===null?'N/A':fmtScore(p.metric))+'</span></div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+p.name+' computed from validation threshold rows">'+ticks+p.baseline+'<polyline points="'+p.points.map(r=>x(r.x)+','+y(r.y)).join(' ')+'" fill="none" stroke="'+p.color+'" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="'+pad+'" y="23">'+p.yAxis+'</text></svg><div class="curve-axis-caption">'+p.axis+'</div></div>').join('')+'</div>';
+      target.innerHTML='<p class="model-evidence-disclosure">Illustrative operating-point traces from ' + fmtInt(rows.length) + ' published validation thresholds. ROC-AUC and PR-AUC headings are full holdout metrics from the model registry, not the area under the sparsely sampled polylines.</p><div class="curve-panels">'+panels.map(p=>'<div class="curve-panel"><div class="curve-panel-head"><strong>'+p.name+'</strong><span>'+p.metricLabel+' '+(p.metric===undefined||p.metric===null?'N/A':fmtScore(p.metric))+'</span></div><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+p.name+' computed from validation threshold rows">'+ticks+p.baseline+'<polyline points="'+p.points.map(r=>x(r.x)+','+y(r.y)).join(' ')+'" fill="none" stroke="'+p.color+'" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><text class="svg-label" x="'+pad+'" y="23">'+p.yAxis+'</text></svg><div class="curve-axis-caption">'+p.axis+'</div></div>').join('')+'</div>';
     }
 
     function modelRegistryCard(id) {
