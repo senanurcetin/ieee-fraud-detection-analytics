@@ -124,5 +124,61 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+    def test_nine_distinct_studios_and_supporting_charts(self):
+        """Every studio must render genuine data at desktop and mobile widths."""
+        for width, height in ((1440, 900), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                for name in (
+                    "overview", "trend", "amount", "customer", "geo",
+                    "behavior", "features", "model", "insights",
+                ):
+                    with self.subTest(viewport=width, workspace=name):
+                        page.locator(f'[data-page="{name}"]').click()
+                        self.assertEqual(page.locator("#report-body .studio-screen").count(), 1)
+                        self.assertEqual(
+                            page.locator("#report-body .visual-body").evaluate_all(
+                                "(nodes) => nodes.filter(node => !node.innerHTML.trim()).length"
+                            ),
+                            0,
+                            "An analytical chart must not be silently empty",
+                        )
+                        self.assertLessEqual(
+                            page.evaluate(
+                                "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                            ),
+                            1,
+                        )
+                        button = page.locator('[data-visual-mode="support"]')
+                        if button.count():
+                            button.click()
+                            self.assertGreater(page.locator("#report-body .visual-card").count(), 0)
+                            self.assertEqual(
+                                page.locator("#report-body .visual-body").evaluate_all(
+                                    "(nodes) => nodes.filter(node => !node.innerHTML.trim()).length"
+                                ),
+                                0,
+                            )
+                            page.locator('[data-visual-mode="main"]').click()
+                self.assertEqual(errors, [])
+                page.context.close()
+
+    def test_model_threshold_simulation_keeps_real_validation_feedback(self):
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        page.locator('[data-page="model"]').click()
+        self.assertTrue(page.locator(".studio-model-simulator").is_visible())
+        slider = page.locator("#threshold-slider")
+        self.assertGreater(int(slider.get_attribute("max")), 3)
+        slider.fill("3")
+        page.wait_for_function(
+            "() => document.querySelector('#threshold-slider')?.value === '3'"
+        )
+        self.assertEqual(page.locator("#threshold-summary .kpi-card").count(), 6)
+        self.assertEqual(page.locator("#model-confusion .confusion-tile").count(), 4)
+        self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
