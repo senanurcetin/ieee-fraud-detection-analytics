@@ -544,3 +544,55 @@ body:not(.light) .drawer-body .empty{border-color:#486687;background:#102d48;col
  .studio-drill-metrics .kpi-card{min-height:110px}
  .studio-drill-toolbar .btn{width:100%}
 }
+
+/* First-page risk-band tiles must share the chart palette — no leftover white cards. */
+body:not(.light) .report-canvas .risk-band-card {
+  color:#e7f1fd;
+  background:linear-gradient(147deg,#1d4163,#15334f 78%);
+  border:1px solid #446b8e;
+  box-shadow:inset 0 1px rgba(218,236,255,.06),0 5px 15px rgba(0,5,20,.13);
+}
+body:not(.light) .report-canvas .risk-band-card:hover,
+body:not(.light) .report-canvas .risk-band-card:focus-visible {
+  background:linear-gradient(145deg,#255477,#153751);
+  border-color:#7badde;
+  box-shadow:0 8px 24px rgba(0,6,18,.27);
+}
+body:not(.light) .report-canvas .risk-band-heading,
+body:not(.light) .report-canvas .risk-band-heading strong,
+body:not(.light) .report-canvas .risk-band-rate {
+  color:#f2f8ff;
+}
+body:not(.light) .report-canvas .risk-band-index {color:#9ec2e9}
+body:not(.light) .report-canvas .risk-band-metric,
+body:not(.light) .report-canvas .risk-band-metric strong,
+body:not(.light) .report-canvas .risk-band-footer,
+body:not(.light) .report-canvas .risk-band-disclosure,
+body:not(.light) .report-canvas .risk-band-caption {color:#b9d1e9}
+body:not(.light) .report-canvas .risk-band-track {background:#294d6c}
+body:not(.light) .report-canvas .risk-band-volume {background:#345270}
+body:not(.light) .report-canvas .risk-band-footer {border-top-color:#3a5d7c}
+body:not(.light) .report-canvas .risk-band-track i {background:var(--risk-bar,#80b6eb)}
+body:not(.light) .report-canvas .risk-band-volume i {background:#8eaed8}
+/* Chart and comparison pages follow their content instead of stretching to
+   the height of a sibling risk-band or peer cohort panel. */
+.studio-overview-analysis,
+.studio-drill-evidence-grid,
+.studio-drill-decision-grid {align-items:start}
+.studio-overview-analysis .studio-chart {
+  height:auto!important;
+  min-height:0!important;
+}
+.studio-overview-analysis .studio-chart .visual-body {min-height:205px}
+.studio-overview-feature .studio-chart .chart-figure svg {max-height:none;aspect-ratio:760/306}
+.studio-drill-evidence-grid .visual-card,
+.studio-drill-decision-grid .visual-card {
+  height:auto;
+  min-height:0!important;
+}
+.studio-drill-evidence-grid .visual-body,
+.studio-drill-decision-grid .visual-body {min-height:140px!important}
+@media(max-width:780px){
+  .studio-overview-analysis .studio-chart .visual-body{min-height:160px}
+  .studio-drill-evidence-grid .visual-body{min-height:100px!important}
+}
