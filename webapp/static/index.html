@@ -1896,7 +1896,11 @@
     }
     function visualPanels(mainParts, supportParts) {
       const supportCount = supportParts.length;
-      const activeParts = state.visualMode === 'support' && supportCount ? (supportCount === 1 ? supportParts : [grid2(supportParts)]) : mainParts;
+      // Supporting charts are investigative figures, not thumbnails: preserve
+      // full-sized plotted axes while keeping compact text cards in a two-column grid.
+      const activeParts = state.visualMode === 'support' && supportCount ?
+        ['<section class="studio-support-workspaces" aria-label="Supporting diagnostic visuals">' + supportParts.join('') + '</section>'] :
+        mainParts;
       return visualModeTabs(supportCount) + activeParts.join('');
     }
     function supportingVisuals(parts, title = 'Supporting visuals') {
