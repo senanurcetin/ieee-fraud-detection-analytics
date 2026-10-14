@@ -1140,6 +1140,7 @@
       ]
     };
 
+    let drawerFocusOrigin = null;
     const state = {
       page: 'overview',
       dashboard: null,
@@ -1216,6 +1217,12 @@
         render();
         return;
       }
+      const inspect = event.target.closest('[data-chart-inspect]');
+      if (inspect) {
+        const card = inspect.closest('.visual-card[data-chart-title]');
+        openChartDrillDrawer(readChartDataset(card));
+        return;
+      }
       const ignored = event.target.closest('button, select, input, textarea, label, a, summary');
       if (ignored) return;
       const chart = event.target.closest('.visual-card[data-chart-title]');
@@ -1231,9 +1238,23 @@
     document.getElementById('drawer-close').addEventListener('click', closeDetailDrawer);
     document.getElementById('detail-backdrop').addEventListener('click', closeDetailDrawer);
     document.addEventListener('keydown', event => {
-      if (event.key === 'Escape' && document.getElementById('detail-drawer').classList.contains('open')) {
+      const drawer = document.getElementById('detail-drawer');
+      if (!drawer.classList.contains('open')) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
         closeDetailDrawer();
-        document.getElementById('detail-drawer').querySelector('button')?.blur();
+      } else if (event.key === 'Tab') {
+        const buttons = [...drawer.querySelectorAll('button:not([disabled]), a[href], input:not([disabled]), select:not([disabled])')]
+          .filter(node => node.getClientRects().length > 0);
+        if (!buttons.length) return;
+        const first = buttons[0], last = buttons[buttons.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     });
 
@@ -1929,7 +1950,7 @@
       return '<div class="insight-card" style="--accent:' + color + '"><strong>' + escapeHtml(title) + '</strong><span>' + escapeHtml(text) + '</span></div>';
     }
     function chartCard(title, note, body, klass) {
-      return '<article class="visual-card ' + (klass || '') + '" data-chart-title="' + escapeHtml(title) + '" data-chart-note="' + escapeHtml(note) + '" data-chart-page="' + escapeHtml(state.page) + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div></div>' + body + '</article>';
+      return '<article class="visual-card ' + (klass || '') + '" data-chart-title="' + escapeHtml(title) + '" data-chart-note="' + escapeHtml(note) + '" data-chart-page="' + escapeHtml(state.page) + '"><div class="visual-head"><div><h3 class="visual-title">' + escapeHtml(title) + '</h3><p class="visual-note">' + escapeHtml(note) + '</p></div><button type="button" data-chart-inspect class="chart-inspect-btn" aria-label="Inspect chart: ' + escapeHtml(title) + '">Inspect ↗</button></div>' + body + '</article>';
     }
     function readDetailDataset(node) {
       if (!node) return null;
@@ -1953,8 +1974,10 @@
       document.getElementById('drawer-title').textContent = 'Chart Drill-through | ' + detail.title;
       document.getElementById('drawer-subtitle').textContent = pageLabel(detail.page) + ' - ' + currentContextLabel();
       document.getElementById('drawer-body').innerHTML = chartDrillPathHtml(detail) + chartDrillMetricHtml(detail) + chartDrillBarsHtml(detail) + chartDrillInsightHtml(detail);
+      drawerFocusOrigin = document.activeElement;
       document.getElementById('detail-backdrop').classList.add('open');
       document.getElementById('detail-drawer').classList.add('open');
+      document.getElementById('drawer-close').focus();
     }
     function openDetailDrawer(detail) {
       if (!detail || !detail.key) return;
@@ -1963,12 +1986,18 @@
       document.getElementById('drawer-title').textContent = detail.family + ' | ' + detail.label;
       document.getElementById('drawer-subtitle').textContent = 'Drill-through keeps the comparison inside related populations.';
       document.getElementById('drawer-body').innerHTML = drawerPathHtml(detail) + drawerMetricHtml(metric) + drawerRelatedChartHtml(detail) + drawerInsightHtml(detail, metric);
+      drawerFocusOrigin = document.activeElement;
       document.getElementById('detail-backdrop').classList.add('open');
       document.getElementById('detail-drawer').classList.add('open');
+      document.getElementById('drawer-close').focus();
     }
     function closeDetailDrawer() {
+      const drawer = document.getElementById('detail-drawer');
+      const wasOpen = drawer.classList.contains('open');
       document.getElementById('detail-backdrop').classList.remove('open');
-      document.getElementById('detail-drawer').classList.remove('open');
+      drawer.classList.remove('open');
+      if (wasOpen && drawerFocusOrigin && drawerFocusOrigin.isConnected) drawerFocusOrigin.focus();
+      drawerFocusOrigin = null;
     }
     function segmentDetailMetric(detail, row) {
       const hasCount = row.transaction_count != null || row.total_transactions != null;
