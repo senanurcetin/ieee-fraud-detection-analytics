@@ -42,8 +42,10 @@ jobs:
       - name: Compile web dashboard package
         run: python -m compileall webapp
 
-      - name: Dependency audit
-        run: pip-audit -r requirements.txt
+      - name: Dependency audit (runtime and development)
+        run: |
+          pip-audit -r requirements.txt
+          pip-audit -r requirements-dev.txt
 
   dbt-duckdb:
     name: dbt build and test
