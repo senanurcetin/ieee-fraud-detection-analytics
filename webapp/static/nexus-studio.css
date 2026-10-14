@@ -268,3 +268,187 @@ body.light .studio-model-disclosure{color:#47627e}
  .studio-domain-hero,.studio-command,.studio-trend-brief{box-shadow:none}
  .studio-domain-hero h3,.studio-command h3,.studio-trend-brief h3{color:#f5faff}
 }
+
+/* NEXUS continuous chart canvas
+   Replace floating white report tiles with integrated dark analytical workspaces.
+   Never change chart data, axis baselines or the semantic colour of the metrics. */
+body:not(.light) .report-canvas {
+  --plot-surface:#102a45;
+  --plot-deep:#0b233c;
+  --plot-rule:#2c4d6d;
+  --plot-text:#e8f2ff;
+  --plot-muted:#a3bdd9;
+  --plot-accent:#7db5f6;
+}
+body:not(.light) .report-canvas .visual-card {
+  background:linear-gradient(153deg,#132f4d,#0d263f 76%);
+  border:1px solid #365779;
+  box-shadow:0 12px 32px rgba(0,7,20,.13),inset 0 1px rgba(207,228,255,.04);
+  color:var(--plot-text);
+}
+body:not(.light) .report-canvas .visual-card::before {
+  background:linear-gradient(90deg,#77b5f8,#a8a5f0);
+}
+body:not(.light) .report-canvas .visual-card:hover {
+  border-color:#4c7399;
+  box-shadow:0 16px 36px rgba(0,7,20,.2),inset 0 1px rgba(207,228,255,.06);
+}
+body:not(.light) .report-canvas .visual-head {
+  border-bottom:1px solid #2b4b69;
+}
+body:not(.light) .report-canvas .visual-title {
+  color:#eef6ff;
+}
+body:not(.light) .report-canvas .visual-note,
+body:not(.light) .report-canvas .chart-scale-note span,
+body:not(.light) .report-canvas .chart-legend {
+  color:#adc5e0;
+}
+body:not(.light) .report-canvas .chart-figure {
+  background:transparent;
+  box-shadow:none;
+  border:0;
+  padding:10px 0;
+}
+body:not(.light) .report-canvas .svg-grid,
+body:not(.light) .report-canvas .chart-figure .svg-grid {
+  stroke:#33536f;
+}
+body:not(.light) .report-canvas .svg-axis,
+body:not(.light) .report-canvas .chart-figure .svg-axis {
+  fill:#a9c1dc;
+}
+body:not(.light) .report-canvas .svg-label,
+body:not(.light) .report-canvas .chart-figure .svg-label {
+  fill:#d4e7fb;
+}
+body:not(.light) .report-canvas .svg-value,
+body:not(.light) .report-canvas .chart-figure .svg-value {
+  fill:#d7eaff;
+}
+body:not(.light) .report-canvas .chart-figure svg text[fill="#163958"],
+body:not(.light) .report-canvas .chart-figure svg text[fill="#193f66"],
+body:not(.light) .report-canvas .chart-figure svg text[fill="#647e98"] {fill:#c5dcf6}
+body:not(.light) .report-canvas .chart-scale-note,
+body:not(.light) .report-canvas .rate-evidence-meta {
+  color:#c5d8f0;
+  border-bottom-color:#335474;
+}
+body:not(.light) .report-canvas .chart-scale-note span {color:#a0bad7}
+body:not(.light) .report-canvas .bar-label,
+body:not(.light) .report-canvas .executive-bar-row .bar-label,
+body:not(.light) .report-canvas .paired-share-name,
+body:not(.light) .report-canvas .rate-plot-label,
+body:not(.light) .report-canvas .feature-rank-row,
+body:not(.light) .report-canvas .rate-plot-metric .rate-value {
+  color:#dae9fc;
+}
+body:not(.light) .report-canvas .bar-value,
+body:not(.light) .report-canvas .executive-bar-row .bar-value,
+body:not(.light) .report-canvas .rate-plot-metric .rate-denominator,
+body:not(.light) .report-canvas .rate-axis-ticks,
+body:not(.light) .report-canvas .rate-evidence-legend {
+  color:#aac5e1;
+}
+body:not(.light) .report-canvas .bar-track,
+body:not(.light) .report-canvas .executive-bar-row .bar-track,
+body:not(.light) .report-canvas .rate-plot-track,
+body:not(.light) .report-canvas .paired-share-track {
+  background:#24425e;
+}
+body:not(.light) .report-canvas .executive-bar-row,
+body:not(.light) .report-canvas .rate-plot-row,
+body:not(.light) .report-canvas .donut-legend-row {
+  border-bottom-color:#2a4866;
+}
+body:not(.light) .report-canvas .executive-bar-row:hover,
+body:not(.light) .report-canvas .rate-plot-row:hover,
+body:not(.light) .report-canvas .bar-row:hover,
+body:not(.light) .report-canvas .paired-share-row:hover {
+  background:#193a5a;
+  border-color:#365b81;
+}
+body:not(.light) .report-canvas .rate-plot-track {
+  border-color:#385875;
+  background:repeating-linear-gradient(90deg,#1b3652,#1b3652 calc(25% - 1px),#365674 calc(25% - 1px),#365674 25%);
+}
+body:not(.light) .report-canvas .rate-plot-ci {background:#7fb2e8}
+body:not(.light) .report-canvas .rate-plot-point {border-color:#152f4b}
+body:not(.light) .report-canvas .rate-evidence-legend,
+body:not(.light) .report-canvas .rate-evidence-meta,
+body:not(.light) .report-canvas .heatmap-legend,
+body:not(.light) .report-canvas .heat-scale-disclosure {
+  color:#b2cce7;
+  border-top-color:#32516f;
+}
+body:not(.light) .report-canvas .heatmap,
+body:not(.light) .report-canvas .heatmap-editorial {
+  border:1px solid #305475;
+  background:#0c253e;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-cell.head {
+  background:#1c3956;
+  color:#d6e7fa;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-observed:not(.heat-insufficient):not(.heat-unknown-support) {
+  background:rgba(76,149,241,var(--heat-alpha,.18));
+  color:#ebf5ff;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-insufficient {
+  background:repeating-linear-gradient(135deg,#1b344f 0,#1b344f 6px,#2a4560 6px,#2a4560 9px)!important;
+  color:#c1d2e6!important;
+  border-color:#6885a4!important;
+}
+body:not(.light) .report-canvas .heatmap-editorial .heat-insufficient .heat-value,
+body:not(.light) .report-canvas .heatmap-editorial .heat-insufficient small {color:#d8e5f6!important}
+body:not(.light) .report-canvas .heatmap-editorial .heat-unavailable,
+body:not(.light) .report-canvas .heatmap-editorial .heat-unknown-support {
+  background:#1c344e!important;
+  color:#bdcfe2!important;
+}
+body:not(.light) .report-canvas .heat-cell {border-color:#32526e}
+body:not(.light) .report-canvas .matrix-card,
+body:not(.light) .report-canvas .curve-panel,
+body:not(.light) .report-canvas .confusion-canvas,
+body:not(.light) .report-canvas .feature-mosaic,
+body:not(.light) .report-canvas .decision-item {
+  background:#112e49;
+  border-color:#335675;
+  color:#d5e5f8;
+}
+body:not(.light) .report-canvas .curve-panel-head {border-bottom-color:#31506c}
+body:not(.light) .report-canvas .curve-panel-head strong,
+body:not(.light) .report-canvas .feature-mosaic p,
+body:not(.light) .report-canvas .feature-rank-row strong,
+body:not(.light) .report-canvas .decision-item span {color:#d7e8fa}
+body:not(.light) .report-canvas .donut-legend-row span,
+body:not(.light) .report-canvas .donut-legend-row strong {color:#d3e8ff}
+body:not(.light) .report-canvas .threshold-readout,
+body:not(.light) .report-canvas .studio-model-assumptions,
+body:not(.light) .report-canvas .studio-model-disclosure {
+  background:#173752;
+  color:#d4e6f9;
+  border-color:#376089;
+}
+body:not(.light) .report-canvas .threshold-readout strong,
+body:not(.light) .report-canvas .threshold-readout span,
+body:not(.light) .report-canvas .studio-model-assumptions label,
+body:not(.light) .report-canvas .studio-model-disclosure {color:#d4e6f9}
+body:not(.light) .report-canvas .visual-card input[type="number"],
+body:not(.light) .report-canvas .visual-card select {
+  background:#0c253f;
+  color:#f0f7ff;
+  border-color:#47698d;
+}
+body:not(.light) .report-canvas .visual-card .field label,
+body:not(.light) .report-canvas .visual-card .muted {color:#c4d6e9!important}
+body:not(.light) .report-canvas .table-wrap {border-color:#355775}
+body:not(.light) .report-canvas .table-wrap th {background:#1b3c5c;color:#deebfb}
+body:not(.light) .report-canvas .table-wrap td {color:#c5d8ec}
+body:not(.light) .report-canvas .table-wrap tbody tr:hover {background:#193b5b}
+body:not(.light) .report-canvas .empty {background:#102c47;color:#a9c1df;border-color:#486887}
+@media print {
+  body:not(.light) .report-canvas .visual-card,
+  body:not(.light) .report-canvas .chart-figure {background:#fff;color:#183653;border-color:#d2deea}
+  body:not(.light) .report-canvas .visual-title {color:#183653}
+}
