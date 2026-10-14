@@ -396,6 +396,8 @@ Latest validation snapshot:
 
 ## Documentation
 
+**14 October 2026 source/security follow-up:** [read-only BigQuery executive KPI revalidation](docs/bigquery_source_revalidation_2026-10-14.md) and [runtime/CI dependency security review](docs/dependency_security_review_2026-10-14.md). The competition data is historical; the BigQuery table was last modified 11 September and snapshot generation date remains 10 September. Neither date should be misrepresented as live banking activity.
+
 The `docs/` folder is thorough rather than short. If you are reviewing this
 project, these four cover it:
 
