@@ -829,3 +829,30 @@ body.light .report-canvas svg text.svg-axis {fill:#526f8d!important}
 @media(prefers-reduced-motion:reduce) {
   .report-canvas .chart-figure svg text {filter:none!important}
 }
+
+/* Compact touch layout: separate percentages from their explanatory labels. */
+@media(max-width:660px) {
+  .studio-overview-feature .chart-figure::before {
+    content:"SWIPE CHART HORIZONTALLY  →  LATER RELATIVE DAYS";
+    display:block;
+    min-width:600px;
+    padding:5px 0 11px;
+    color:#b8d4f0;
+    font-size:10px;
+    font-weight:720;
+    letter-spacing:.04em;
+  }
+  .studio-overview-companion .risk-band-card .risk-band-metric strong {
+    display:block;
+    float:none;
+    margin:4px 0 3px;
+    color:#f5f8ff!important;
+    font-size:12px;
+    font-weight:760;
+    font-variant-numeric:tabular-nums;
+  }
+  .studio-overview-companion .risk-band-card .risk-band-metric {
+    font-size:11px;
+    line-height:1.45;
+  }
+}
