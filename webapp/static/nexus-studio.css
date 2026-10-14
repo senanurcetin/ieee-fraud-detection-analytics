@@ -119,3 +119,52 @@ body.nexus-studio-trend .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
 @media(max-width:1180px){.studio-trend-evidence{grid-template-columns:1fr}.studio-trend-evidence .visual-card{min-height:300px}}
 @media(max-width:850px){.studio-trend-brief{grid-template-columns:1fr}.studio-trend-focus{max-width:460px}.studio-trend-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.studio-trend-brief{padding:21px 16px}.studio-trend-metrics{grid-template-columns:1fr}.studio-trend-brief h3{font-size:33px}}
+
+/* Value intelligence + identity intelligence: independent workspace architectures. */
+body.nexus-studio-amount .canvas-head,body.nexus-studio-customer .canvas-head{display:none}
+body.nexus-studio-amount .report-canvas,body.nexus-studio-customer .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
+.studio-domain-hero{min-height:265px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(230px,.67fr);align-items:center;gap:23px;border:1px solid #3b5b85;border-radius:18px;padding:clamp(25px,3vw,47px);background:radial-gradient(ellipse at 84% 16%,rgba(74,114,211,.25),transparent 53%),linear-gradient(119deg,#112e52,#09213b 66%,#182044)}
+.studio-domain-eyebrow{color:#9ac6fb;font-size:10px;font-weight:800;letter-spacing:.17em}
+.studio-domain-hero h3{margin:22px 0 14px;color:#f5f9ff;font-size:clamp(30px,3.2vw,52px);line-height:1.04;letter-spacing:-.055em;font-weight:755}
+.studio-domain-hero h3 em{font-style:normal;color:#b1b7fa}
+.studio-domain-hero p{max-width:570px;color:#b5cbe5;font-size:12px;line-height:1.72}
+.studio-domain-meta{display:flex;gap:9px 18px;flex-wrap:wrap;margin-top:23px;font-size:10px;color:#91b5da}
+.studio-domain-meta span:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#89bfff;vertical-align:1px;margin-right:7px}
+.studio-domain-focus{align-self:stretch;min-height:160px;display:flex;flex-direction:column;justify-content:center;gap:11px;padding:22px;border:1px solid #446996;border-radius:13px;background:rgba(35,75,130,.28)}
+.studio-domain-focus>span{color:#a4c5ed;font-size:10px;font-weight:780;letter-spacing:.1em;line-height:1.65}
+.studio-domain-focus>strong{color:#fff;font-size:clamp(32px,3vw,48px);font-weight:750;letter-spacing:-.048em;line-height:1.12;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.studio-domain-focus>em{color:#b6d0e7;font-size:11px;font-style:normal;line-height:1.55}
+.studio-domain-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.studio-domain-facts .kpi-card{min-height:132px}
+.studio-evidence-section{display:block;min-width:0}
+.studio-wide-heatmap{padding:25px!important}
+.studio-wide-heatmap .heatmap-editorial{max-width:100%}
+.studio-evidence-section .visual-card{min-height:360px}
+.studio-duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.studio-duo .visual-card{min-height:420px}
+.studio-details{min-height:310px!important}
+.studio-action-notes .insight-row{margin:0}
+.identity-hero{background:radial-gradient(ellipse at 90% 10%,rgba(138,116,218,.22),transparent 53%),linear-gradient(113deg,#122e4e,#0a2240 70%,#201d49)}
+.identity-hero .studio-domain-hero h3 em{color:#b8aafa}
+.studio-identity-overview{display:grid;grid-template-columns:minmax(0,.77fr) minmax(0,1.23fr);gap:17px}
+.studio-identity-left,.studio-identity-right{min-width:0;display:flex;flex-direction:column}
+.studio-identity-left .visual-card,.studio-identity-right .visual-card{flex:1;min-height:465px}
+.studio-identity-left .visual-body,.studio-identity-right .visual-body{min-height:300px}
+.studio-identity-overview .studio-section-heading{align-items:end;min-height:91px}
+@media(max-width:1150px){
+ .studio-identity-overview{grid-template-columns:1fr}
+ .studio-identity-overview .studio-section-heading{min-height:0}
+}
+@media(max-width:900px){
+ .studio-domain-hero{grid-template-columns:1fr}
+ .studio-domain-focus{max-width:540px}
+ .studio-duo{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+ .studio-domain-hero{padding:22px 17px}
+ .studio-domain-hero h3{font-size:clamp(29px,8.1vw,40px)}
+ .studio-domain-facts{grid-template-columns:1fr}
+ .studio-domain-facts .kpi-card{min-height:110px}
+ .studio-wide-heatmap{padding:15px!important}
+ .studio-identity-left .visual-card,.studio-identity-right .visual-card{min-height:310px}
+}
