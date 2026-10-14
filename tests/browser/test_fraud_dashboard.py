@@ -368,9 +368,13 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
                 for panel in page.locator("#model-curves .curve-panel").all():
                     svg = panel.locator("svg")
                     caption = panel.locator(".curve-axis-caption")
+                    # Compare visible text bounds, not the SVG viewport, whose
+                    # preserved aspect ratio can contain unused letterbox space.
+                    x_tick = svg.locator('text.svg-axis[text-anchor="middle"]').last
+                    tick_box = x_tick.bounding_box()
+                    caption_box = caption.bounding_box()
                     self.assertGreaterEqual(
-                        caption.bounding_box()["y"],
-                        svg.bounding_box()["y"] + svg.bounding_box()["height"] - 1,
+                        caption_box["y"], tick_box["y"] + tick_box["height"] + 8,
                     )
                 cell = page.locator("#model-calibration .table-wrap td").first
                 cell.wait_for(timeout=15000)
