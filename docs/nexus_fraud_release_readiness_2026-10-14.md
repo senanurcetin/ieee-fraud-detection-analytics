@@ -12,7 +12,7 @@
 | Static lint | PASS | `python -m ruff check .`: All checks passed. |
 | Compile | PASS | `python -m compileall -q webapp`. |
 | dbt parse | PASS | DuckDB adapter, `dbt parse --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev`. |
-| Dependency scan | PASS WITH EXCEPTION | `pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277` reported no other known vulnerabilities. The exception is already present in CI and should be reviewed periodically. |
+| Dependency scan | PASS | Unignored `pip-audit -r requirements.txt` reported **no known vulnerabilities**. Removed the old PYSEC-2024-277 ignore from CI. |
 | Chromium regressions | PASS | All **11** scenarios in `tests/browser/test_fraud_dashboard.py` passed locally. |
 | Cross-engine tests | PASS | **Chromium, Firefox and WebKit**, each at 1440px and 375px, across all nine main and supporting views; no empty visual containers, document overflow or uncaught JavaScript errors. |
 | Exports | PASS | CSV download/parse across engines, UTF-8 BOM, test-only spreadsheet formula injection escaping. Chromium produced valid PDF bytes; inspected a prior full-page print with four nonempty text pages. |
@@ -51,7 +51,7 @@ python -m ruff check .
 python -m pytest -q
 python -m compileall -q webapp
 dbt parse --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
-python -m pip_audit -r requirements.txt --ignore-vuln PYSEC-2024-277
+python -m pip_audit -r requirements.txt
 
 # In a separate terminal:
 python -m uvicorn webapp.main:app --host 127.0.0.1 --port 8891
