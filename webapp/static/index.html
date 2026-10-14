@@ -2973,28 +2973,80 @@
       if (!target) return;
       const source = rows || [];
       if (!source.length) { target.innerHTML = empty('No heatmap data available.'); return; }
-      const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0,8);
-      const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0,8);
-      const maxValue = Math.max(.0001,...source.map(row=>num(row[valueKey])));
-      const lookup = new Map(source.map(row=>[String(row[rowKey] ?? 'Unknown')+'||'+String(row[colKey] ?? 'Unknown'),row]));
-      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" role="columnheader"></div>' + colLabels.map(label=>'<div class="heat-cell head" role="columnheader" title="' + escapeHtml(label) + '">' + escapeHtml(short(label,23)) + '</div>').join('') + '</div>';
-      const body = rowLabels.map(rowLabel=>'<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" role="rowheader" title="' + escapeHtml(rowLabel) + '">' + escapeHtml(short(rowLabel,21)) + '</div>' + colLabels.map(colLabel=>{
-        const row=lookup.get(rowLabel+'||'+colLabel);
-        if(!row)return '<div class="heat-cell heat-unavailable" title="No reported observations for this intersection">—</div>';
-        const value=num(row[valueKey]), ratio=Math.max(0,Math.min(1,value/maxValue));
-        const supportRaw=row.transaction_count ?? row.validation_transactions ?? row.row_count;
-        const support=supportRaw===null||supportRaw===undefined?null:num(supportRaw);
-        const fraud=num(row.fraud_count ?? row.validation_fraud_count ?? row.observed_fraud_count);
-        const supportText=support===null?'Support not reported':'n='+fmtInt(support);
-        const supportClass=support!==null&&support<1000?' low-support':'';
-        const attrs=options.filterKey ? ' data-filter-key="' + escapeHtml(options.filterKey) + '" data-filter-value="' + escapeHtml(options.filterFrom === 'col'?colLabel:rowLabel) + '" data-detail-family="' + escapeHtml(options.detailFamily||labelize(options.filterKey)) + '" data-detail-label="' + escapeHtml(options.filterFrom === 'col'?colLabel:rowLabel) + '"' : '';
-        const alpha=(.08+ratio*.84).toFixed(3);
-        const textColor=ratio>.47?'#fff':'#183954';
-        const tooltip=rowLabel+' / '+colLabel+' | '+formatFn(value)+' | '+supportText+(row.fraud_count!==undefined?' | fraud='+fmtInt(fraud):'');
-        return '<div class="heat-cell heat-observed'+supportClass+'"' + attrs + ' style="--heat-alpha:'+alpha+';--heat-text:'+textColor+'" data-tooltip="'+escapeHtml(tooltip)+'" title="'+escapeHtml(tooltip)+'"><span class="heat-value">'+escapeHtml(formatFn(value))+'</span><small>'+escapeHtml(support===null?'n —':supportText)+'</small></div>';
-      }).join('')+'</div>').join('');
-      const axes='<div class="heat-axis"><span>ROWS · '+escapeHtml(options.rowAxis||labelize(rowKey))+'</span><span>COLUMNS · '+escapeHtml(options.colAxis||labelize(colKey))+'</span></div>';
-      target.innerHTML=axes+'<div class="heatmap heatmap-editorial" role="table" aria-label="'+escapeHtml((options.rowAxis||rowKey)+' by '+(options.colAxis||colKey)+' observed fraud rates')+'">'+header+body+'</div><div class="heatmap-legend"><span><i></i>Lower observed rate</span><span><i></i>Higher observed rate</span><span>— No reported cell · shaded edge = low support</span></div>';
+      const rowLabels = unique(source.map(row => String(row[rowKey] ?? 'Unknown'))).slice(0, 8);
+      const colLabels = unique(source.map(row => String(row[colKey] ?? 'Unknown'))).slice(0, 8);
+      const observations = row => {
+        const raw = row.transaction_count ?? row.validation_transactions ?? row.row_count;
+        return raw == null || !Number.isFinite(Number(raw)) ? null : num(raw);
+      };
+      // Low-support values must not define the colour scale for the rest of the matrix.
+      const colorRows = source.filter(row => {
+        const n = observations(row);
+        return n !== null && n >= 30;
+      });
+      const colorMax = Math.max(.0001, ...colorRows.map(row => num(row[valueKey])));
+      const lookup = new Map(source.map(row => [
+        String(row[rowKey] ?? 'Unknown') + '||' + String(row[colKey] ?? 'Unknown'), row
+      ]));
+      const header = '<div class="heat-row" style="--cols:' + colLabels.length + '"><div class="heat-cell head" role="columnheader"></div>' +
+        colLabels.map(label => '<div class="heat-cell head" role="columnheader" title="' + escapeHtml(label) + '">' +
+        escapeHtml(short(label, 23)) + '</div>').join('') + '</div>';
+      const cells = rowLabels.map(rowLabel =>
+        '<div class="heat-row" style="--cols:' + colLabels.length + '">' +
+        '<div class="heat-cell head" role="rowheader" title="' + escapeHtml(rowLabel) + '">' +
+        escapeHtml(short(rowLabel, 21)) + '</div>' +
+        colLabels.map(colLabel => {
+          const row = lookup.get(rowLabel + '||' + colLabel);
+          if (!row) return '<div class="heat-cell heat-unavailable" title="No reported observations for this intersection">—</div>';
+          const rate = num(row[valueKey]);
+          const n = observations(row);
+          const insufficient = n !== null && n < 30;
+          const unreportedSupport = n === null;
+          const lowSupport = n !== null && n >= 30 && n < 1000;
+          const fraudRaw = row.fraud_count ?? row.validation_fraud_count ?? row.observed_fraud_count;
+          const fraud = fraudRaw == null ? null : num(fraudRaw);
+          const interval = n !== null && fraud !== null && fraud <= n ? wilsonFraudInterval(fraud, n) : null;
+          const status = insufficient ? 'Insufficient n for intensity comparison' :
+            unreportedSupport ? 'Denominator not reported' :
+            lowSupport ? 'Limited support' : 'Observed cell';
+          const tip = rowLabel + ' / ' + colLabel + ' | observed rate ' + formatFn(rate) +
+            ' | ' + (n === null ? 'n not reported' : 'n=' + fmtInt(n)) +
+            (fraud === null ? '' : ' | fraud=' + fmtInt(fraud)) +
+            (interval === null ? '' : ' | 95% Wilson [' + fmtPct2(interval.lower) + ', ' + fmtPct2(interval.upper) + ']') +
+            ' | ' + status;
+          const attrs = options.filterKey ?
+            ' data-filter-key="' + escapeHtml(options.filterKey) +
+            '" data-filter-value="' + escapeHtml(options.filterFrom === 'col' ? colLabel : rowLabel) +
+            '" data-detail-family="' + escapeHtml(options.detailFamily || labelize(options.filterKey)) +
+            '" data-detail-label="' + escapeHtml(options.filterFrom === 'col' ? colLabel : rowLabel) + '"' : '';
+          const ratio = colorRows.length && !insufficient && !unreportedSupport ?
+            Math.max(0, Math.min(1, rate / colorMax)) : 0;
+          const alpha = (.10 + ratio * .79).toFixed(3);
+          const textColor = ratio > .48 ? '#fff' : '#183954';
+          const cellClass = insufficient ? ' heat-insufficient' : unreportedSupport ? ' heat-unknown-support' : lowSupport ? ' low-support' : '';
+          // A very sparse, 100%-fraud cell should not be visually ranked above
+          // a well-supported 12% cell. Its rate remains available on hover.
+          const mainLabel = insufficient ? 'n < 30' : escapeHtml(formatFn(rate));
+          const subLabel = n === null ? 'n not reported' : 'n=' + fmtInt(n);
+          return '<div class="heat-cell heat-observed' + cellClass + '"' + attrs +
+            ' style="--heat-alpha:' + alpha + ';--heat-text:' + textColor +
+            '" data-stat-status="' + (insufficient ? 'insufficient' : unreportedSupport ? 'unknown' : 'observed') +
+            '" data-tooltip="' + escapeHtml(tip) + '" title="' + escapeHtml(tip) + '">' +
+            '<span class="heat-value">' + mainLabel + '</span><small>' + subLabel + '</small></div>';
+        }).join('') + '</div>').join('');
+      const axes = '<div class="heat-axis"><span>ROWS · ' +
+        escapeHtml(options.rowAxis || labelize(rowKey)) + '</span><span>COLUMNS · ' +
+        escapeHtml(options.colAxis || labelize(colKey)) + '</span></div>';
+      const scaleLabel = colorRows.length ? 'Colour intensity: 0 – ' + formatFn(colorMax) + ' among n ≥ 30 cells' :
+        'No cells with at least 30 reported transactions';
+      target.innerHTML = axes + '<div class="heatmap heatmap-editorial" role="table" aria-label="' +
+        escapeHtml((options.rowAxis || rowKey) + ' by ' + (options.colAxis || colKey) +
+          ' observed fraud rates, with sparse cell values suppressed') + '">' + header + cells +
+        '</div><div class="heatmap-legend"><span><i></i>Lower rate</span><span><i></i>Higher rate</span>' +
+        '<span>Hatched n &lt; 30: rate available in tooltip, not ranked by colour</span>' +
+        '<span>Dashed border: 30 ≤ n &lt; 1,000</span>' +
+        '<span>— No reported cell</span></div><p class="heat-scale-disclosure">' +
+        escapeHtml(scaleLabel) + ' · Rates are descriptive; cells are not necessarily independent cohorts.</p>';
     }
 
     function scatterChart(id, rows, xFn, yFn, groupFn, options = {}) {
