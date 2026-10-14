@@ -12,7 +12,6 @@ import math
 from datetime import UTC, datetime
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 SNAPSHOT = json.loads(
     (ROOT / "webapp" / "snapshots" / "dashboard.json").read_text(encoding="utf-8")
