@@ -68,3 +68,11 @@ python -m unittest discover -s tests/browser -p test_fraud_release_acceptance.py
 ### Dependency pin parity
 
 The repository root and `webapp/requirements.txt` and `pyproject.toml` all pin FastAPI **0.136.3**. Since the local global environment was 0.136.1, the full 36-test suite was also run successfully against FastAPI **0.136.3** installed into an isolated temporary QA directory. No global Python environment upgrade was made.
+
+## Final gate — risk cohort and preview consistency
+
+During inspection of the actual protected Vercel preview, a cross-filtered risk-band drill showed missing cohort counts as zero. The dashboard now reads the governed `model_risk_bands.observed_fraud_count` and `observed_fraud_rate` fields, marks their `train` split explicitly, and preserves holdout and daily charts as separately scoped evidence. For the Critical training cohort, the published snapshot contains **5,710 labeled frauds in 5,906 transactions (96.68%)**. No segment monetary amount is published: exposure, capture dollars and net-benefit scenario read **Not reported / Unavailable**, never fabricated $0.
+
+An accidental duplication of the HTML script/markup during an intermediate edit was removed by rebuilding from the single-document, previously validated revision. Exactly one `</html>` and one `renderDrillThrough` remain. Node syntax and the dedicated desktop/mobile risk-filter regression passed locally. The production release candidate must obtain **new GitHub-hosted CI** and **new Vercel READY preview** statuses for its exact tip commit; passing results attached to earlier commits cannot substitute.
+
+Deployment protection remains enabled. Only user-authorized preview access was used for the live smoke test. No paid upgrade, production merge or unapproved data replacement has occurred.
