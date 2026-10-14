@@ -1,4 +1,4 @@
-﻿"""FastAPI application for the live fraud analytics web dashboard."""
+"""FastAPI application for the live fraud analytics web dashboard."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ from typing import Any
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import bigquery
@@ -1834,6 +1834,21 @@ def health() -> dict[str, Any]:
         "snapshot_served": load_snapshot("dashboard") is not None,
         "cache_seconds": int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS))),
     }
+
+
+# Public search discovery routes; API endpoints are excluded from the sitemap.
+ROBOTS_TXT = "User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: https://fraud-project-web.vercel.app/sitemap.xml\n"
+SITEMAP_XML = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://fraud-project-web.vercel.app/</loc></url>\n</urlset>\n'
+
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots_txt() -> PlainTextResponse:
+    return PlainTextResponse(ROBOTS_TXT)
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap_xml() -> Response:
+    return Response(SITEMAP_XML, media_type="application/xml")
 
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
