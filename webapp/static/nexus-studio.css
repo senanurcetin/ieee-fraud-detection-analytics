@@ -248,3 +248,23 @@ body.nexus-studio-insights .report-canvas{padding-top:clamp(16px,1.5vw,26px)}
  .studio-decision-lane{min-height:150px}
  .studio-feature-lead{min-height:310px}
 }
+
+/* Studio-specific light mode preserves evidence contrast without changing the brand. */
+body.light .studio-screen{--studio-line:#c9d8e7}
+body.light .studio-section-heading{border-bottom-color:#cfdfed}
+body.light .studio-section-heading span,
+body.light .studio-domain-meta{color:#3974ac}
+body.light .studio-section-heading h3{color:#153758}
+body.light .studio-section-heading p{color:#486885}
+body.light .studio-section-tag{color:#2c577f}
+body.light .studio-section-tag em{color:#55718c}
+body.light .studio-evidence-section > .studio-section-heading span{color:#326b9e}
+body.light .studio-trend-evidence .visual-card,
+body.light .studio-domain-facts .kpi-card{box-shadow:0 10px 28px rgba(27,61,110,.06)}
+body.light .studio-decision-lanes .studio-decision-lane{background:linear-gradient(150deg,#163959,#102c4a);border-color:#406185}
+body.light .studio-model-assumptions{background:#edf4fb}
+body.light .studio-model-disclosure{color:#47627e}
+@media print{
+ .studio-domain-hero,.studio-command,.studio-trend-brief{box-shadow:none}
+ .studio-domain-hero h3,.studio-command h3,.studio-trend-brief h3{color:#f5faff}
+}
