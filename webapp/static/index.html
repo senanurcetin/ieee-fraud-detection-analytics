@@ -1400,7 +1400,11 @@
       const economics = '<section class="studio-exposure-ribbon" aria-label="Executive exposure measures">' +
         '<div class="studio-exposure-lead"><span>OBSERVED FRAUD EXPOSURE</span><strong>' + (m.has_exposure ? fmtMoneyCompact(m.fraud_exposure) : 'Not reported') + '</strong><small>' + (m.has_exposure ? 'Fraud transaction amount / exposure proxy' : 'No monetary figure published for this segment') + '</small></div>' +
         kpi('Capturable Exposure', m.has_exposure ? fmtMoneyCompact(m.capturable_exposure) : 'Unavailable', m.has_exposure ? fmtPct(m.recall) + ' capture at selected threshold.' : 'Requires segment-specific fraud amount.', '#77afef') +
-        kpi('Net Benefit Proxy', m.has_exposure ? fmtMoneyCompact(m.net_benefit) : 'Unavailable', m.has_exposure ? 'Scenario: 
+        kpi('Net Benefit Proxy', m.has_exposure ? fmtMoneyCompact(m.net_benefit) : 'Unavailable',
+          m.has_exposure ? 'Scenario: USD ' + m.review_cost + '/review; ' + m.loss_rate + 'x fraud loss.' :
+          'No measured segment-level amount; scenario not calculated.', '#9d94ef') +
+        '</section>';
+
       const primary = '<section class="studio-overview-analysis" aria-label="Portfolio evidence">' +
         '<div class="studio-overview-feature"><div class="studio-section-tag"><span>01A</span> BEHAVIORAL MOVEMENT <em>Relative transaction time</em></div>' +
           chartCard('Fraud trajectory', 'Fraud rate and context volume across the selected TransactionDT window.', '<div class="visual-body" id="overview-trend"></div>', 'studio-chart studio-primary-plot') +
