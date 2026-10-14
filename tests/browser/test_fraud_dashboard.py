@@ -179,5 +179,41 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
         self.assertEqual(errors, [])
 
 
+    def test_rate_uncertainty_and_heatmap_support_are_explicit(self):
+        """Reject the old visual failure: n=2 must not appear as a stable 100% heat cell."""
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        page.locator('[data-page="amount"]').click()
+        page.locator("#amount-bar svg").wait_for(timeout=15000)
+        self.assertGreater(page.locator("#amount-bar .rate-value").count(), 0)
+        self.assertGreater(page.locator("#amount-bar .rate-denominator").count(), 0)
+        self.assertTrue(page.locator("#amount-bar .rate-evidence-legend").is_visible())
+        sparse = page.locator("#amount-heatmap .heat-insufficient")
+        self.assertGreater(sparse.count(), 0, "Sparse cells must be explicitly identified")
+        self.assertGreater(page.locator('#amount-heatmap [data-stat-status="observed"]').count(), 0)
+        for cell in sparse.all():
+            self.assertIn("n < 30", cell.inner_text())
+            self.assertNotIn("%", cell.locator(".heat-value").inner_text())
+            self.assertIn("observed rate", cell.get_attribute("data-tooltip"))
+        self.assertEqual(errors, [])
+
+    def test_customer_and_proxy_rates_show_measured_denominators(self):
+        """Do not revert evidence charts to unlabeled percentage bars."""
+        page, errors = self.open_report({"width": 1440, "height": 900})
+        self.wait_for_report(page)
+        for name, chart_ids in (
+            ("customer", ("customer-identity", "customer-email")),
+            ("geo", ("proxy-risk",)),
+        ):
+            page.locator(f'[data-page="{name}"]').click()
+            for chart_id in chart_ids:
+                with self.subTest(workspace=name, chart=chart_id):
+                    plot = page.locator(f"#{chart_id}")
+                    plot.locator("svg").wait_for(timeout=15000)
+                    self.assertGreater(plot.locator(".rate-denominator").count(), 0)
+                    self.assertIn("Wilson 95%", plot.inner_text())
+        self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
