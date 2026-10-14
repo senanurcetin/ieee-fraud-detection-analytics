@@ -1025,3 +1025,51 @@ body.light .report-canvas .curve-axis-caption{
   color:#385e82;
   border-top:1px solid #cfdeef;
 }
+
+/* Calibrated evidence is a six-measure comparison, not run-on labels. */
+.report-canvas #model-calibration>.metric-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:2px 0 18px;
+}
+.report-canvas #model-calibration>.metric-grid>.metric {
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+  align-items:flex-start;
+  min-width:0;
+  min-height:91px;
+  padding:13px 14px;
+  border:1px solid #3c5e80;
+  border-radius:10px;
+  background:#183753;
+}
+.report-canvas #model-calibration>.metric-grid>.metric span {
+  color:#b6d0eb;
+  font-size:11px;
+  font-weight:690;
+  line-height:1.35;
+}
+.report-canvas #model-calibration>.metric-grid>.metric strong {
+  color:#f0f8ff;
+  font-size:clamp(16px,1.2vw,20px);
+  font-weight:770;
+  letter-spacing:-.02em;
+  line-height:1.2;
+  font-variant-numeric:tabular-nums;
+  overflow-wrap:anywhere;
+}
+body.light .report-canvas #model-calibration>.metric-grid>.metric {
+  background:#f4f8fd;
+  border-color:#d5e1ee;
+}
+body.light .report-canvas #model-calibration>.metric-grid>.metric span {color:#4d6987}
+body.light .report-canvas #model-calibration>.metric-grid>.metric strong {color:#143858}
+@media(max-width:850px){
+  .report-canvas #model-calibration>.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:460px){
+  .report-canvas #model-calibration>.metric-grid>.metric{min-height:80px;padding:11px}
+  .report-canvas #model-calibration>.metric-grid>.metric strong{font-size:17px}
+}
