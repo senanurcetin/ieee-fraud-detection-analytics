@@ -1325,6 +1325,8 @@
       document.body.classList.toggle('nexus-studio-amount', state.page === 'amount' && !state.drill);
       document.body.classList.toggle('nexus-studio-customer', state.page === 'customer' && !state.drill);
       document.body.classList.toggle('nexus-studio-model', state.page === 'model' && !state.drill);
+      document.body.classList.toggle('nexus-studio-proxy', state.page === 'geo' && !state.drill);
+      document.body.classList.toggle('nexus-studio-behavior', state.page === 'behavior' && !state.drill);
       const target = document.getElementById('report-body');
       if (state.drill) {
         document.getElementById('page-title').textContent = 'Segment Drill-through';
@@ -1485,67 +1487,71 @@
     }
 
     function renderGeo() {
-      const proxyQuality = proxyQualityRows();
-      const proxyRisk = proxySignalRows();
-      const topProxy = proxyRisk[0] || {};
-      const addressMissing = proxyRisk.find(row => row.proxy_segment === 'Address missing') || {};
-      const distanceHigh = proxyRisk.find(row => row.proxy_segment === 'Distance high') || {};
-      const entityTop = entityRepeatRows()[0] || {};
-      return pageGrid([
-        kpiRow([
-          kpi('Native Location Fields', '0', 'No country, city, IP, or coordinate fields.', '#d92d3a'),
-          kpi('Address Missing Risk', fmtPct2(addressMissing.fraud_rate), fmtScore(addressMissing.lift || 0) + 'x lift; ' + fmtPct(addressMissing.fraud_share) + ' fraud share.', '#d92d3a'),
-          kpi('Distance High Risk', fmtPct2(distanceHigh.fraud_rate), fmtScore(distanceHigh.lift || 0) + 'x lift; ' + fmtPct(distanceHigh.fraud_share) + ' fraud share.', '#c98012'),
-          kpi('Top Proxy Fraud Share', fmtPct(num(topProxy.fraud_share)), short(topProxy.proxy_segment || '-', 22), '#7c3aed'),
-          kpi('Repeat Proxy Signal', short(entityTop.repeat_band || '-', 18), 'Ranked within the high-risk review queue, not the portfolio.', '#18a999')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Proxy segment risk ranking', 'Click a proxy segment to open its drill-through report.', '<div class="visual-body" id="proxy-risk"></div>'),
-            chartCard('Proxy fraud share vs volume share', 'Separates signal strength from population size.', '<div class="visual-body" id="proxy-share"></div>')
-          ]),
-          grid2([
-            chartCard('Product x proxy segment heatmap', 'Nested risk pockets by product and masked proxy segment.', '<div class="visual-body" id="proxy-product-matrix"></div>'),
-            chartCard('Address / distance model signal', 'Importance of addr and dist proxy fields.', '<div class="visual-body" id="proxy-importance"></div>')
-          ])
-        ], [
-          chartCard('Proxy lift vs portfolio', 'Supporting baseline comparison for address and distance cuts.', '<div class="visual-body" id="proxy-lift"></div>'),
-          chartCard('Address x distance proxy matrix', 'Supporting joint proxy availability and distance-band check.', '<div class="visual-body" id="proxy-cross-matrix"></div>')
-        ]),
-        insightRow([
-          insight('Read correctly', 'Address and distance fields are masked risk proxies, not geography.', '#2563eb'),
-          insight('Decision use', 'Use high-lift proxy segments only with product and amount context.', '#d92d3a'),
-          insight('Next layer', 'True geographic reporting requires external IP or merchant-country enrichment.', '#18a999')
-        ])
-      ]);
+      const proxies=proxySignalRows(),high=proxies[0]||{};
+      const missing=proxies.find(row=>row.proxy_segment==='Address missing')||{};
+      const distance=proxies.find(row=>row.proxy_segment==='Distance high')||{};
+      const repeat=entityRepeatRows()[0]||{};
+      const hero='<section class="studio-domain-hero studio-proxy-hero"><div>' +
+        '<span class="studio-domain-eyebrow">05 / MASKED ADDRESS & DISTANCE INTELLIGENCE</span>' +
+        '<h3>Signals without<br><em>a location claim.</em></h3>' +
+        '<p>IEEE-CIS provides masked address and distance features, not actual geographic coordinates. This workspace analyzes proxy quality and nested risk; it does not draw invented maps.</p>' +
+        '<div class="studio-domain-meta"><span>Native location fields: 0</span><span>Real geography requires external enrichment</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>LARGEST FRAUD-SHARE PROXY</span><strong>' + fmtPct(high.fraud_share) + '</strong><em>' + escapeHtml(high.proxy_segment||'Not available') + '</em></aside></section>';
+      const facts='<section class="studio-domain-facts">' +
+        kpi('Native Location Fields','0','No country, city, IP or coordinate columns in these reporting views.','#83aef4') +
+        kpi('Address Missing Risk',fmtPct2(missing.fraud_rate),fmtScore(missing.lift||0)+'x lift; '+fmtPct(missing.fraud_share)+' fraud share.','#b39ded') +
+        kpi('Distance High Risk',fmtPct2(distance.fraud_rate),fmtScore(distance.lift||0)+'x lift; '+fmtPct(distance.fraud_share)+' fraud share.','#85c0d5') +
+        '</section>';
+      const evidence='<div class="studio-section-heading"><div><span>01 / MASKED RISK PROXIES</span><h3>Risk intensity against population share</h3></div><p>Overlapping proxy groups are compared but never added together.</p></div>' +
+        '<div class="studio-proxy-compare">' +
+        chartCard('Proxy segment risk intensity','Click an observed proxy segment to inspect its related evidence.','<div class="visual-body" id="proxy-risk"></div>') +
+        chartCard('Fraud share / population share','Matched scales distinguish concentrated fraud labels from segment size.','<div class="visual-body" id="proxy-share"></div>') +
+        '</div>';
+      const intersections='<div class="studio-section-heading"><div><span>02 / INTERSECTION FORENSICS</span><h3>Look beyond individual proxy fields</h3></div></div>' +
+        '<div class="studio-proxy-matrix">' +
+        chartCard('Product × proxy intersection','Observed fraud rates by product and masked proxy group.','<div class="visual-body" id="proxy-product-matrix"></div>','studio-wide-heatmap') +
+        chartCard('Address & distance model signals','Model importance, not inferred geographic attribution.','<div class="visual-body" id="proxy-importance"></div>') + '</div>';
+      return '<div class="studio-screen studio-proxy">' + hero + facts + visualPanels([
+        '<section class="studio-evidence-section">'+evidence+'</section>',
+        '<section class="studio-evidence-section">'+intersections+'</section>'
+      ],[
+        chartCard('Proxy lift versus baseline','Relative observed lift across masked cohorts.','<div class="visual-body" id="proxy-lift"></div>'),
+        chartCard('Address × distance availability','Joint masked address and distance-band analysis.','<div class="visual-body" id="proxy-cross-matrix"></div>')
+      ]) + '<div class="studio-action-notes">' + insightRow([
+        insight('Interpretation','Address and distance are masked numerical proxies, not real geographic location.','#9dbeef'),
+        insight('Repeat signal',short(repeat.repeat_band||'No repeat group',18),'Review-queue proxy concentration is not portfolio prevalence.','#bea8ed'),
+        insight('Action','Only verified IP, location or merchant enrichment can support geographic controls.','#8ac1c7')
+      ]) + '</div></div>';
     }
 
     function renderBehavior() {
-      const tx = filteredTransactions();
-      return pageGrid([
-        kpiRow([
-          kpi('Peak Relative Hour', peakHourLabel(), 'Highest hourly fraud-rate signal from the charted relative-hour pattern.', '#d92d3a'),
-          kpi('Payment Groups', fmtInt(getRows('payment_heatmap').length), 'Card network/type combinations.', '#2563eb'),
-          kpi('Email Risk Groups', fmtInt(filteredEmailRows().length), 'Purchaser email domains profiled.', '#18a999'),
-          kpi('Diagnostic High Scores', fmtInt(tx.filter(row => num(row.risk_score) >= 80).length), 'Rows above score 80 in the diagnostic sample.', '#7c3aed'),
-          kpi('Diagnostic Avg Score', fmtScore(average(tx, 'risk_score')), 'Filtered 240-row sample only.', '#c98012')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Relative hour fraud pattern', 'Hourly fraud intensity by relative TransactionDT hour.', '<div class="visual-body" id="behavior-hour-risk"></div>'),
-            chartCard('Risk band behavior distribution', 'Holdout fraud rate per band; the scored portfolio is sized on the model page.', '<div class="visual-body" id="behavior-risk"></div>')
-          ]),
-          chartCard('Behavior signal strength', 'Main behavior families compared as charted signals.', '<div class="visual-body" id="behavior-signal"></div>', 'wide')
-        ], [
-          chartCard('Relative hour x amount behavior', 'Supporting heatmap of hour and amount-decimal fraud signals.', '<div class="visual-body" id="behavior-hour"></div>'),
-          chartCard('Amount x score anomaly scatter', 'Supporting outlier diagnostic across transaction amount and score.', '<div class="visual-body" id="behavior-scatter"></div>')
-        ]),
-        insightRow([
-          insight('Time behavior', 'Relative hour patterns can inform monitoring windows, but they are not calendar-time effects.', '#2563eb'),
-          insight('Payment behavior', 'Payment and email intersections reveal more usable controls than broad product-only views.', '#d92d3a'),
-          insight('Outliers', 'High score plus unusual amount combinations should be investigated as policy calibration candidates.', '#18a999')
-        ])
-      ]);
+      const tx=filteredTransactions();
+      const peak=peakHourLabel();
+      const hero='<section class="studio-domain-hero behavior-hero"><div>' +
+        '<span class="studio-domain-eyebrow">06 / BEHAVIORAL PATTERN RESEARCH</span>' +
+        '<h3>Watch the pattern.<br><em>Question the anomaly.</em></h3>' +
+        '<p>Relative-hour movement, amount fractions and risk-score anomalies provide complementary behavioral diagnostics. They are not calendar-time user activity.</p>' +
+        '<div class="studio-domain-meta"><span>Relative TransactionDT hour</span><span>Diagnostic subsample marked separately</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>PEAK RELATIVE HOUR</span><strong>' + escapeHtml(peak) + '</strong><em>Highest hourly fraud-rate signal from the charted relative-hour pattern.</em></aside></section>';
+      const stats='<section class="studio-domain-facts">' +
+        kpi('Payment groups',fmtInt(getRows('payment_heatmap').length),'Available masked card and payment groups.','#88b4f4') +
+        kpi('Diagnostic high scores',fmtInt(tx.filter(r=>num(r.risk_score)>=80).length),'Count with score ≥ 80 within '+fmtInt(tx.length)+' sample rows.','#b29fea') +
+        kpi('Diagnostic average score',fmtScore(average(tx,'risk_score')),'Filtered transaction sample only; not portfolio mean.','#7fbbd4') + '</section>';
+      const plots='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>01 / OBSERVED MOVEMENT</span><h3>Relative-hour risk intensity</h3></div><p>Pattern analysis remains descriptive; do not infer seasonal, timezone or day-of-week effects.</p></div>' +
+        '<div class="studio-behavior-primary">' +
+          chartCard('Relative-hour fraud-rate pattern','The hourly signal is derived from relative transaction time.','<div class="visual-body" id="behavior-hour-risk"></div>') +
+          chartCard('Observed holdout risk bands','Observed fraud rates by validation risk band.','<div class="visual-body" id="behavior-risk"></div>') +
+        '</div></section>';
+      const drivers='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / SIGNAL DISSECTION</span><h3>Separate recurring patterns from outliers</h3></div></div>' +
+        chartCard('Behavioral signal strength','Relative behavioral-family measures from observed reporting rows.','<div class="visual-body" id="behavior-signal"></div>','studio-behavior-drivers')+'</section>';
+      return '<div class="studio-screen studio-behavior">'+hero+stats+visualPanels([plots,drivers],[
+        chartCard('Relative hour × amount decimal','Observed behavior-cell risk rates and reported support.','<div class="visual-body" id="behavior-hour"></div>'),
+        chartCard('Amount × score diagnostic','Transaction sample outlier view, not full-population attribution.','<div class="visual-body" id="behavior-scatter"></div>')
+      ]) + '<div class="studio-action-notes">'+insightRow([
+        insight('Temporal caveat','Relative hour signals do not establish calendar-time risk.','#8bb5f7'),
+        insight('Behavior intersections','Payment and email intersections can reveal useful review segments.','#baabed'),
+        insight('Investigation','Inspect high-score, unusual-amount combinations before assuming fraud causality.','#81beca')
+      ])+'</div></div>';
     }
 
     function renderFeatures() {
