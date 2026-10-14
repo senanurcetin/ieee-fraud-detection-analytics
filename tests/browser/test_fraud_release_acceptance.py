@@ -39,7 +39,7 @@ class FraudReleaseAcceptance(unittest.TestCase):
                             try:
                                 page = context.new_page()
                                 errors = []
-                                page.on("pageerror", lambda exc: errors.append(str(exc)))
+                                page.on("pageerror", lambda exc, bucket=errors: bucket.append(str(exc)))
                                 page.goto(
                                     BASE_URL + "/",
                                     wait_until="domcontentloaded",
