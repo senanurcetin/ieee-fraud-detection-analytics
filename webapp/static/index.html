@@ -1327,6 +1327,8 @@
       document.body.classList.toggle('nexus-studio-model', state.page === 'model' && !state.drill);
       document.body.classList.toggle('nexus-studio-proxy', state.page === 'geo' && !state.drill);
       document.body.classList.toggle('nexus-studio-behavior', state.page === 'behavior' && !state.drill);
+      document.body.classList.toggle('nexus-studio-features', state.page === 'features' && !state.drill);
+      document.body.classList.toggle('nexus-studio-insights', state.page === 'insights' && !state.drill);
       const target = document.getElementById('report-body');
       if (state.drill) {
         document.getElementById('page-title').textContent = 'Segment Drill-through';
@@ -1555,31 +1557,32 @@
     }
 
     function renderFeatures() {
-      const features = getRows('feature_importance');
-      const top = features[0] || {};
-      return pageGrid([
-        kpiRow([
-          kpi('Top Feature', top.feature || '-', 'Highest LightGBM importance rank.', '#2563eb'),
-          kpi('Feature Families', fmtInt(unique(features.map(row => row.feature_family)).length), 'Grouped model driver families.', '#18a999'),
-          kpi('Top Features', fmtInt(features.length), 'Displayed by importance rank.', '#7c3aed'),
-          kpi('Highest Missingness', fmtPct2(max(getRows('data_quality'), 'avg_missing_rate')), 'Feature-family missingness profile.', '#c98012'),
-          kpi('Interpretation Mode', 'Observational', 'Masked fields are not confirmed business definitions.', '#d92d3a')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Top 15 feature importance', 'Most influential model features.', '<div class="visual-body" id="feature-bar"></div>', 'span-2'),
-            chartCard('Feature family treemap', 'Importance grouped by feature family.', '<div class="visual-body" id="feature-family"></div>'),
-            chartCard('Missingness vs importance', 'Data quality and model signal together.', '<div class="visual-body" id="feature-scatter"></div>')
-          ])
-        ], [
-          chartCard('Feature interpretation strength', 'Supporting roll-up of model and data-quality signal strength.', '<div class="visual-body" id="feature-interpretation"></div>')
-        ]),
-        insightRow([
-          insight('Explainability', 'Feature importance gives direction, not causal proof.', '#2563eb'),
-          insight('Masked features', 'Vesta-engineered variables must be framed as statistical signals.', '#d92d3a'),
-          insight('Data quality', 'High importance plus high missingness should trigger feature monitoring before production use.', '#18a999')
-        ])
-      ]);
+      const rows=getRows('feature_importance');
+      const top=rows[0]||{};
+      const hero='<section class="studio-domain-hero feature-hero"><div>' +
+        '<span class="studio-domain-eyebrow">07 / MODEL DRIVER INTELLIGENCE</span>' +
+        '<h3>Explain the ranking.<br><em>Respect the unknowns.</em></h3>' +
+        '<p>Model importance is descriptive evidence of signal usage, not proof of causality. Masked engineering features must not be assigned invented business definitions.</p>' +
+        '<div class="studio-domain-meta"><span>Observational interpretation</span><span>Model driver / data-quality separation</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>LEADING RANKED FEATURE</span><strong>' + escapeHtml(short(top.feature||'Unavailable',32)) + '</strong><em>Highest reported model importance</em></aside></section>';
+      const stats='<section class="studio-domain-facts">' +
+        kpi('Reported features',fmtInt(rows.length),'Available ranked feature importance rows.','#8aaff4') +
+        kpi('Feature families',fmtInt(unique(rows.map(r=>r.feature_family)).length),'Group-level aggregation used in model reporting.','#b5a4ed') +
+        kpi('Highest family missingness',fmtPct2(max(getRows('data_quality'),'avg_missing_rate')),'Published quality profile, not an imputed result.','#8ec0cc') + '</section>';
+      const primary='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>01 / DRIVER ATTRIBUTION</span><h3>Which features shape the model?</h3></div><p>Ranked importance identifies statistical influence within the fitted model. It does not establish a customer or process cause.</p></div>' +
+        chartCard('Top model drivers','Measured feature importance, shown as a ranked comparison.','<div class="visual-body" id="feature-bar"></div>','studio-feature-lead') + '</section>';
+      const secondary='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / RELIABILITY CONTEXT</span><h3>Importance requires a quality lens</h3></div></div>' +
+        '<div class="studio-feature-context">' +
+          chartCard('Feature-family contribution','Grouped importance shares sum across the displayed families only.','<div class="visual-body" id="feature-family"></div>') +
+          chartCard('Missingness × importance','High-importance / high-missingness intersections deserve monitoring.','<div class="visual-body" id="feature-scatter"></div>') +
+        '</div></section>';
+      return '<div class="studio-screen studio-features">' + hero + stats + visualPanels([primary,secondary],[
+        chartCard('Interpretation confidence / driver strength','A supporting ranking, not a feature-causality test.','<div class="visual-body" id="feature-interpretation"></div>')
+      ]) + '<div class="studio-action-notes">' + insightRow([
+        insight('Meaning','Feature importance does not prove causal actionability.','#86b6f0'),
+        insight('Masked columns','Vesta-engineered signals cannot be assigned unverified semantic identities.','#b9a5ed'),
+        insight('Data assurance','Track missingness and model dependence together before release decisions.','#8cc5c7')
+      ]) + '</div></div>';
     }
 
     function renderModel() {
@@ -1625,28 +1628,32 @@
     }
 
     function renderInsights() {
-      return pageGrid([
-        kpiRow([
-          kpi('Primary Finding', 'Concentration', 'Fraud is clustered, not evenly distributed.', '#d92d3a'),
-          kpi('Priority Lever', 'Segment Rules', 'Use nested controls by product, amount, identity, and payment.', '#2563eb'),
-          kpi('Model Value', 'Ranking', 'The model improves review prioritization.', '#18a999'),
-          kpi('Data Gap', 'Location', 'External enrichment is required.', '#c98012'),
-          kpi('Next Step', 'Pilot Policy', 'Test threshold and segment controls together.', '#7c3aed')
-        ]),
-        visualPanels([
-          grid2([
-            chartCard('Illustrative decision-priority matrix', 'Qualitative impact and effort placements are hypotheses, not measured outcomes.', '<div class="visual-body" id="insight-matrix"></div>'),
-            chartCard('Recommendation priority ranking', 'Actions ranked by impact for the presentation close.', '<div class="visual-body" id="insight-priority"></div>')
-          ])
-        ], [
-          chartCard('Prioritized fraud-share signals', 'Overlapping watchlist segments ranked by share; no artificial cumulative waterfall.', '<div class="visual-body" id="insight-waterfall"></div>')
-        ]),
-        insightRow([
-          insight('What happened?', 'Fraud is low in aggregate but concentrated across product, amount, identity, email, and score segments.', '#d92d3a'),
-          insight('Why serious?', 'Concentration means a small number of targeted controls can affect a large share of exposure.', '#c98012'),
-          insight('What next?', 'Pilot segment-specific thresholds, add location enrichment, and monitor model calibration before automated decisions.', '#18a999')
-        ])
-      ]);
+      const hero='<section class="studio-domain-hero decision-hero"><div>' +
+        '<span class="studio-domain-eyebrow">09 / DECISION SUPPORT & NEXT ACTIONS</span>' +
+        '<h3>From evidence<br><em>to accountable action.</em></h3>' +
+        '<p>Concentration suggests where to test controls, but this report does not establish causal return on investment or authorize automated customer decisions.</p>' +
+        '<div class="studio-domain-meta"><span>Portfolio reporting evidence</span><span>Hypotheses clearly separated from measurement</span></div></div>' +
+        '<aside class="studio-domain-focus"><span>RECOMMENDED NEXT STEP</span><strong>Controlled policy pilot</strong><em>Validate segment thresholds and review-cost assumptions before deployment.</em></aside></section>';
+      const decisions='<section class="studio-decision-lanes" aria-label="Evidence to policy decisions">' +
+        '<div class="studio-decision-lane"><span>01 / OBSERVE</span><strong>Concentration</strong><p>Fraud rates and exposure are uneven across product, amount, masked identity and score groups.</p></div>' +
+        '<div class="studio-decision-lane"><span>02 / TEST</span><strong>Segment rules</strong><p>Evaluate candidate thresholds and nested controls against genuine holdout precision, recall and workload.</p></div>' +
+        '<div class="studio-decision-lane"><span>03 / VALIDATE</span><strong>Ranking quality</strong><p>Track model PR–AUC, calibration and temporal drift before scaling operational decisions.</p></div>' +
+        '<div class="studio-decision-lane"><span>04 / ENRICH</span><strong>Location data gap</strong><p>Any real geographic policy requires verified external location attributes, not masked proxies.</p></div>' +
+        '</section>';
+      const plots='<section class="studio-evidence-section"><div class="studio-section-heading"><div><span>02 / HYPOTHESIS PLANNING</span><h3>Prioritize without overstating certainty</h3></div><p>Impact/effort positions are explicitly illustrative judgments, not measured causal effects.</p></div>' +
+        '<div class="studio-decision-analytics">' +
+          chartCard('Illustrative decision-priority matrix','Qualitative impact and effort placements; not estimated outcomes.','<div class="visual-body" id="insight-matrix"></div>') +
+          chartCard('Recommendation priority ranking','Indicative action ordering for analyst discussion.','<div class="visual-body" id="insight-priority"></div>') +
+        '</div></section>';
+      return '<div class="studio-screen studio-insights">'+hero+
+        '<div class="studio-section-heading"><div><span>01 / DECISION SEQUENCE</span><h3>Four moves toward a defensible pilot</h3></div></div>' + decisions +
+        visualPanels([plots],[
+          chartCard('Prioritized fraud-share signals','Overlapping observed segment shares are not additive and are not savings forecasts.','<div class="visual-body" id="insight-waterfall"></div>')
+        ]) + '<div class="studio-action-notes">' + insightRow([
+          insight('Finding','Concentrated exposure suggests targeted control experiments.','#90baf7'),
+          insight('Limitation','Masked, observational signals cannot quantify causal policy benefit.','#b3a2eb'),
+          insight('Pilot design','Evaluate precision, capture, review workload and calibration on a held-out cohort.','#93c7ba')
+        ]) + '</div></div>';
     }
 
     function renderDrillThrough() {
