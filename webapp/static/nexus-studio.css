@@ -955,3 +955,73 @@ body:not(.light) .report-canvas .chart-series-legend strong {
   opacity:1;
   font-size:12px;
 }
+
+/* Chart and registry panels must not revive white demo-looking islands. */
+body:not(.light) .report-canvas .registry-card {
+  background:linear-gradient(145deg,#1b4061,#112e48);
+  border:1px solid #416688;
+  border-top:3px solid var(--accent,#74acdf);
+  color:#e4f1ff;
+  box-shadow:none;
+}
+body:not(.light) .report-canvas .registry-label {
+  color:#b4d0ee;
+  font-weight:760;
+  font-size:11px;
+}
+body:not(.light) .report-canvas .registry-value {
+  color:#f3f9ff;
+  font-weight:760;
+  font-size:clamp(16px,1.3vw,22px);
+  line-height:1.25;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .registry-value.mono{
+  font-size:clamp(12px,1.05vw,16px);
+}
+body:not(.light) .report-canvas .registry-foot {color:#b9cfeb;font-size:11px;line-height:1.5}
+body:not(.light) .report-canvas .table-wrap {
+  background:#102c47;
+  color:#dceafb;
+  border:1px solid #3f6183;
+  border-radius:11px;
+}
+body:not(.light) .report-canvas .table-wrap table {
+  background:#102c47;
+  color:#dceafb;
+  border-collapse:collapse;
+}
+body:not(.light) .report-canvas .table-wrap th {
+  background:#1c4060;
+  color:#e8f3ff;
+  font-weight:770;
+  border-color:#3b5b79;
+}
+body:not(.light) .report-canvas .table-wrap tbody td {
+  background:#112e49;
+  color:#dbe9fa;
+  border-color:#304f6c;
+  font-variant-numeric:tabular-nums;
+}
+body:not(.light) .report-canvas .table-wrap tbody tr:nth-child(even) td {
+  background:#173751;
+}
+body:not(.light) .report-canvas .table-wrap tbody tr:hover td {
+  background:#224564;
+  color:#f2f9ff;
+}
+body:not(.light) .report-canvas .table-wrap td strong {color:#f2f8ff}
+body:not(.light) .report-canvas .curve-axis-caption {
+  margin:2px 0 5px;
+  padding:12px 0 0;
+  border-top:1px solid #345675;
+  text-align:center;
+  color:#c0d9f2;
+  font-size:12px;
+  font-weight:780;
+  letter-spacing:.085em;
+}
+body.light .report-canvas .curve-axis-caption{
+  color:#385e82;
+  border-top:1px solid #cfdeef;
+}
