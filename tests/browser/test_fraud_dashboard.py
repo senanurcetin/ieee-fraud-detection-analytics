@@ -336,5 +336,62 @@ class FraudNexusBrowserAcceptance(unittest.TestCase):
                 self.assertEqual(errors, [])
 
 
+    def test_diagnostic_svg_scale_and_dark_model_panels(self):
+        """Support diagnostics must not shrink labels to 37% or retain white tables."""
+        for width, height in ((1440, 900), (1024, 768), (375, 812)):
+            with self.subTest(viewport=width):
+                page, errors = self.open_report({"width": width, "height": height})
+                self.wait_for_report(page)
+                checks = (
+                    ("geo", "main", "#proxy-importance svg"),
+                    ("features", "main", "#feature-scatter svg"),
+                    ("amount", "support", "#amount-boxplot svg"),
+                    ("model", "support", "#model-curves .curve-panel svg"),
+                )
+                for view, mode, target in checks:
+                    with self.subTest(view=view, mode=mode):
+                        page.locator(f'[data-page="{view}"]').click()
+                        if mode == "support":
+                            page.locator('[data-visual-mode="support"]').click()
+                        element = page.locator(target).first
+                        element.wait_for(timeout=15000)
+                        effective_scale = element.evaluate(
+                            "(svg) => svg.getBoundingClientRect().width / svg.viewBox.baseVal.width"
+                        )
+                        self.assertGreaterEqual(
+                            effective_scale, 0.8, f"{view} chart text is scaled too small"
+                        )
+                page.locator('[data-page="model"]').click()
+                page.locator('[data-visual-mode="support"]').click()
+                self.assertEqual(page.locator("#model-curves .curve-axis-caption").count(), 2)
+                self.assertEqual(page.locator("#model-curves .curve-panel svg").count(), 2)
+                for panel in page.locator("#model-curves .curve-panel").all():
+                    svg = panel.locator("svg")
+                    caption = panel.locator(".curve-axis-caption")
+                    self.assertGreaterEqual(
+                        caption.bounding_box()["y"],
+                        svg.bounding_box()["y"] + svg.bounding_box()["height"] - 1,
+                    )
+                cell = page.locator("#model-calibration .table-wrap td").first
+                cell.wait_for(timeout=15000)
+                self.assertNotEqual(
+                    cell.evaluate("(element) => getComputedStyle(element).backgroundColor"),
+                    "rgb(255, 255, 255)",
+                )
+                calibration = page.locator("#model-calibration .metric-grid>.metric").first
+                self.assertEqual(calibration.locator("span").count(), 1)
+                self.assertEqual(calibration.locator("strong").count(), 1)
+                self.assertGreater(
+                    calibration.locator("strong").bounding_box()["y"],
+                    calibration.locator("span").bounding_box()["y"],
+                )
+                self.assertLessEqual(
+                    page.evaluate(
+                        "document.documentElement.scrollWidth - document.documentElement.clientWidth"
+                    ), 1
+                )
+                self.assertEqual(errors, [])
+
+
 if __name__ == "__main__":
     unittest.main()
