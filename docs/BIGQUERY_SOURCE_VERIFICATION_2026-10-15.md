@@ -11,7 +11,7 @@ On 15 October 2026, the owner-authorized Windows environment contained an existi
 | `fraud_project_intermediate` | US | 2 tables |
 | `fraud_project_mart` | US | 10 tables |
 | `fraud_project_reporting` | US | 24 tables |
-| `fraud_project_powerbi` | US | 0 objects |
+| Additional unused BI-oriented dataset | US | 0 objects |
 
 `data-analiz-490513` contained no matching Fraud datasets. The earlier failure to discover the source was a **wrong GCP project**, not proof that the reporting source was missing.
 
