@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS — personal brand identity" width="660">
+</p>
+
 # IEEE-CIS Fraud Risk Intelligence
 
 **SEO and social cards:** [Documented canonical URLs, screenshot sources and preview assets](docs/SEO_AND_SOCIAL_PREVIEW_GUIDE.md).
