@@ -30,6 +30,20 @@ On 15 October 2026, the owner-authorized Windows environment contained an existi
 
 The snapshot records `table_count=27`, whereas **24 reporting tables** were observed by listing the current dataset on 15 October. The reporting objects were last modified after the snapshot's recorded refresh time, typically around 11 September. This can reflect schema evolution, and needs reconciliation; do **not** rewrite the historical timestamp, assert a new full snapshot refresh or claim that all 24 tables match solely on the basis of KPI/first-row checks.
 
+## Extended row comparison (15 October 2026)
+
+Using BigQuery `list_rows` (no SQL jobs), snapshot dictionaries were compared to the current reporting tables using shared field names and six-decimal float normalization. This is a **structural snapshot parity check**, not a refreshed dbt build.
+
+**Matched without row differences:** `executive_kpis` (1), `product_risk` (5), `identity_risk` (2), `identity_product_coverage` (5), `amount_bands` (6), `daily_drift` (182), `time_amount_signals` (48), `payment_heatmap` (6), `email_domain_risk` (8), `validation_risk_bands` (4), `model_calibration` (10), `proxy_signal_risk` (6), `threshold_simulation` (16), `validation_threshold_simulation` (16), `segment_model_performance` (528), and `quality_contract` (6).
+
+**Subset relation:** the snapshot's `feature_importance` includes 15 rows matching live report rows, while the current table contains 387; snapshot `model_risk_bands` has four rows versus eight in current table, of which one matched after normalization.
+
+**Investigate before refresh:** `segment_watchlist` (20 of 20 rows differ on combined matching fields), `review_strategy` (3 of 4 differ), `report_narrative` (9 of 9 differ) and `report_readiness` (7 of 8 differ). Some differences may be precision, rendering or report-version changes; no explanation is assumed without a field-level diff.
+
+**No same-named current report table:** `payment_email_matrix`, `data_quality`, `proxy_product_matrix`, `proxy_cross_matrix`, `niche_drilldown`. Their snapshot names may correspond to compositions of other report tables, but this was not validated.
+
+Accordingly, issue #9 is **not yet closed**; static IEEE-CIS source rows and major KPI totals are corroborated, but full report freshness is not established.
+
 ## Closure conditions for issue #9
 
 1. Perform a deterministic all-row comparison for each dashboard-backed report table and record both schema and numeric differences. Decide whether a historical snapshot can be retained or needs regeneration.
