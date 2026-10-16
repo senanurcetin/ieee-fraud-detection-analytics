@@ -52,6 +52,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
       KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
       KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
       FRAUD_PROJECT_DUCKDB_PATH: data/processed/ieee_fraud.duckdb
@@ -71,14 +72,19 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install kaggle
 
-      - name: Check Kaggle secrets
+      - name: Determine data-validation mode (never print credentials)
         id: kaggle
+        shell: bash
         run: |
-          if [ -n "$KAGGLE_USERNAME" ] && [ -n "$KAGGLE_KEY" ]; then
+          if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Full IEEE-CIS data build: NOT RUN (pull request/push CI is metadata-only)." >> "$GITHUB_STEP_SUMMARY"
+          elif [ -n "$KAGGLE_API_TOKEN" ] || { [ -n "$KAGGLE_USERNAME" ] && [ -n "$KAGGLE_KEY" ]; }; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Full IEEE-CIS data build: REQUESTED; Kaggle access will be verified by the download step." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Kaggle secrets are not configured; running dbt parse only."
+            echo "Full IEEE-CIS data build: NOT RUN (no configured repository secret)." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Download Kaggle data
