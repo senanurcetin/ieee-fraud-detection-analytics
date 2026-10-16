@@ -33,3 +33,16 @@ The command invokes only gcloud projects list --format=json and bq ls --format=p
 5. Release a new snapshot with its actual refresh timestamp, or retain the historical snapshot if the competition dataset is unchanged.
 
 This read-only script does not independently certify that reporting values are current or that the dataset is linked to real-time banking transactions.
+
+## Service-account JSON option (no gcloud login required)
+
+An authorized person may supply their existing Google Cloud service-account file directly to the **read-only metadata** check without any shell account switching:
+
+~~~bash
+python scripts/discover_reporting_service_account.py --credentials-file /private/path/workintech-key.json
+~~~
+
+The command uses OAuth with BigQuery **read-only** scope and lists dataset names in the service-account's project, or a specified `--project` for which it has IAM access. It performs no SQL, no storage writes, and **does not log or commit the JSON key**. Do not paste private keys in notebook cells, CI environment outputs, GitHub comments, or shared folders. The 
+service account's `project_id` field identifies its parent project but **does not establish** that the IEEE-CIS reporting datasets live in that project.
+
+A ChatGPT sandbox without outbound OAuth/BigQuery network connectivity cannot authenticate this credential or verify IAM permissions, even if the JSON file parses correctly. Dataset presence/freshness remains unverified until a trusted network-enabled execution returns a report. Revoke/rotate any key exposed through chat after the work.
