@@ -77,6 +77,17 @@
     </section>
     <section class="workspace-section" id="panel-governance" role="tabpanel" aria-labelledby="tab-governance" hidden>
       <article class="studio-card"><div class="card-top"><div><h2>Assumptions and governance</h2><p>Understand masked data, model outputs and limitations.</p></div><span class="card-index">CONTROL / 01</span></div><ul class="fact-list" id="limitations"></ul></article>
+      <article class="studio-card" aria-labelledby="historical-review-heading">
+        <div class="card-top"><div><h2 id="historical-review-heading">Historical analyst review queue</h2><p>A read-only analytical sample of masked IEEE-CIS transactions. Not real cases, real-time alerts, operational decisions or calibrated fraud probabilities.</p></div><span class="card-index">REVIEW / 01</span></div>
+        <div class="studio-review-layout">
+          <div class="studio-review-list" id="historical-review-queue" role="group" aria-label="Historical transactions for analytical inspection">
+            <p role="status">Checking the committed historical case sample.</p>
+          </div>
+          <div class="studio-review-detail" id="historical-review-detail" aria-live="polite">
+            Select a historical transaction to inspect masked score and segment context. No case state can be changed here.
+          </div>
+        </div>
+      </article>
     </section>
     <footer class="footer-strip"><span>© NEXUS · RISK DECISION STUDIO</span><span>Snapshot-backed analytics. No fabricated investigation or customer identity records.</span></footer>
   </main>
