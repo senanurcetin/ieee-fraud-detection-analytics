@@ -990,6 +990,7 @@
   </style>
   <link rel="stylesheet" href="/static/nexus-design.css">
   <link rel="stylesheet" href="/static/nexus-studio.css">
+  <link rel="stylesheet" href="/static/nexus-evidence.css">
 </head>
 <body>
   <div class="app">
@@ -1021,6 +1022,19 @@
           <button class="btn primary" id="pdf-btn" type="button">Export PDF</button>
         </div>
       </header>
+
+      <section class="nexus-evidence-rail" aria-labelledby="nexus-evidence-heading">
+        <div class="nexus-evidence-intro">
+          <span class="nexus-evidence-eyebrow">SOURCE &amp; MODEL TRUST</span>
+          <h2 id="nexus-evidence-heading">Historical evidence, not live transaction monitoring</h2>
+          <p id="nexus-evidence-context" role="status" aria-live="polite">Checking source provenance. Data freshness is not yet verified.</p>
+        </div>
+        <dl class="nexus-evidence-facts">
+          <div><dt>Reporting snapshot</dt><dd id="nexus-evidence-time">Not verified</dd></div>
+          <div><dt>Source parity</dt><dd id="nexus-evidence-parity">Awaiting verification</dd></div>
+          <div><dt>Model interpretation</dt><dd id="nexus-evidence-model">Ranking only · not calibrated</dd></div>
+        </dl>
+      </section>
 
       <section class="report-canvas" aria-label="Fraud analytics report canvas">
         <div class="canvas-head">
@@ -1167,6 +1181,7 @@
       dashboard: null,
       meta: null,
       registry: null,
+      evidence: null,
       transactions: [],
       selectedThreshold: 0,
       // IEEE-CIS carries no cost fields, so these are stated assumptions rather
@@ -1290,15 +1305,17 @@
       sourceStatus.textContent = 'CONNECTING TO DATA SOURCE';
       showState('Loading governed reporting data.');
       try {
-        const [dashboard, meta, tx, registry] = await Promise.all([
+        const [dashboard, meta, tx, registry, evidence] = await Promise.all([
           fetchJson('/api/dashboard'),
           fetchJson('/api/metadata'),
           fetchJson('/api/enterprise/cases?limit=240').catch(() => ({ cases: [] })),
-          fetchJson('/api/enterprise/model-registry').catch(() => null)
+          fetchJson('/api/enterprise/model-registry').catch(() => null),
+          fetchJson('/api/evidence-status').catch(() => null)
         ]);
         state.dashboard = dashboard;
         state.meta = meta;
         state.registry = registry;
+        state.evidence = evidence;
         state.transactions = tx.cases || [];
         state.selectedThreshold = recommendedThresholdIndex();
         populateFilterOptions();
@@ -1312,6 +1329,7 @@
           sourceStatus.dataset.state = 'unavailable';
           sourceStatus.textContent = 'REPORT DATA UNAVAILABLE';
         }
+        renderEvidenceStatus(null);
         showState(error.message || 'Dashboard data could not be loaded.', true);
         retryButton.hidden = false;
       }
@@ -1341,7 +1359,33 @@
       });
     }
 
+    function renderEvidenceStatus(evidence) {
+      const context = document.getElementById('nexus-evidence-context');
+      const built = document.getElementById('nexus-evidence-time');
+      const parity = document.getElementById('nexus-evidence-parity');
+      const interpretation = document.getElementById('nexus-evidence-model');
+      const verifiedTimestamp = evidence && typeof evidence.source_as_of === 'string'
+        && Number.isFinite(Date.parse(evidence.source_as_of));
+      const sourceStatus = evidence && typeof evidence.source_status === 'string'
+        ? evidence.source_status : 'unavailable';
+      const sourceIsHistorical = sourceStatus === 'historical_dated'
+        || sourceStatus === 'historical_over_30d';
+      context.dataset.status = sourceIsHistorical ? 'historical' : 'unverified';
+      if (sourceIsHistorical && verifiedTimestamp) {
+        const buildDate = new Date(evidence.source_as_of).toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'short', day: 'numeric' });
+        built.textContent = buildDate + ' (UTC) · ' + evidence.age_days + ' days ago';
+        context.textContent = 'Historical IEEE-CIS masked transactions · ' + evidence.report_groups +
+          ' reporting groups. Not a live banking or fraud alert feed.';
+      } else {
+        built.textContent = 'Timestamp not verified';
+        context.textContent = 'Reporting provenance unavailable. Do not treat these figures as current.';
+      }
+      parity.textContent = 'Current BigQuery parity unverified';
+      interpretation.textContent = 'Uncalibrated ranking · explanations require evidence';
+    }
+
     function updateStatus() {
+      renderEvidenceStatus(state.evidence);
       const meta = state.dashboard?.meta || {};
       const backendLabel = { duckdb: 'DuckDB local', snapshot: 'BigQuery snapshot', bigquery: 'BigQuery' };
       const backendPill = document.getElementById('backend-pill');
