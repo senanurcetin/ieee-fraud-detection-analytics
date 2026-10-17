@@ -15,17 +15,17 @@ including raw transaction or segment contents.
 from __future__ import annotations
 
 import argparse
+import decimal
 import hashlib
 import json
 import sys
 from collections import Counter, defaultdict
-from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 SNAPSHOT_PATH = ROOT / "webapp" / "snapshots" / "dashboard.json"
-PRECISION = Decimal("0.000001")
+PRECISION = decimal.Decimal("0.000001")
 MAX_EXAMPLES = 5
 
 # Mirrors BIGQUERY_TABLES in webapp/main.py; guarded by an offline contract test.
@@ -112,13 +112,13 @@ def canonical(value: Any) -> Any:
         return ("null",)
     if isinstance(value, bool):
         return ("boolean", value)
-    if isinstance(value, int | float | Decimal):
+    if isinstance(value, int | float | decimal.Decimal):
         try:
-            decimal = Decimal(str(value))
-            if not decimal.is_finite():
+            amount = decimal.Decimal(str(value))
+            if not amount.is_finite():
                 return ("nonfinite", str(value))
-            return ("number", format(decimal.quantize(PRECISION, rounding=ROUND_HALF_EVEN), "f"))
-        except InvalidOperation:
+            return ("number", format(amount.quantize(PRECISION, rounding=decimal.ROUND_HALF_EVEN), "f"))
+        except decimal.InvalidOperation:
             return ("nonfinite", str(value))
     if isinstance(value, str):
         return ("string", value)
