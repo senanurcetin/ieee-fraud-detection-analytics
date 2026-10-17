@@ -83,14 +83,14 @@ Wilson confidence bands in the retained JSON artifact are only approximate
 transaction-level binomial intervals, **not** cluster-robust or prospective
 uncertainty bounds.
 
-| Method | Queue | Reviewed | Fraud captured | Precision | Fraud recall | Lift vs 3.4409% |
-|---|---|---:|---:|---:|---:|---:|
-| Isotonic | Top 1% | 1,182 | 1,026 | 86.802% | 25.246% | 25.23x |
-| Isotonic | Top 5% | 5,906 | 2,039 | 34.524% | 50.172% | 10.03x |
-| Isotonic | Top 10% | 11,811 | 2,632 | 22.284% | 64.764% | 6.48x |
-| Platt | Top 1% | 1,182 | 1,026 | 86.802% | 25.246% | 25.23x |
-| Platt | Top 5% | 5,906 | 2,041 | 34.558% | 50.221% | 10.04x |
-| Platt | Top 10% | 11,811 | 2,628 | 22.250% | 64.665% | 6.47x |
+| Method | Queue | Reviewed | Fraud captured | Precision | Approx. Wilson 95% precision interval | Fraud recall | Lift vs 3.4409% |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Isotonic | Top 1% | 1,182 | 1,026 | 86.802% | 84.753–88.613% | 25.246% | 25.23x |
+| Isotonic | Top 5% | 5,906 | 2,039 | 34.524% | 33.322–35.747% | 50.172% | 10.03x |
+| Isotonic | Top 10% | 11,811 | 2,632 | 22.284% | 21.543–23.044% | 64.764% | 6.48x |
+| Platt | Top 1% | 1,182 | 1,026 | 86.802% | 84.753–88.613% | 25.246% | 25.23x |
+| Platt | Top 5% | 5,906 | 2,041 | 34.558% | 33.356–35.781% | 50.221% | 10.04x |
+| Platt | Top 10% | 11,811 | 2,628 | 22.250% | 21.509–23.010% | 64.665% | 6.47x |
 
 The constant-score prior has **no meaningful score-based top-k ranking**:
 identical scores are broken by fixed input-row order, which can accidentally
