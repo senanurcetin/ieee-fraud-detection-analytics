@@ -2044,6 +2044,12 @@ def sitemap_xml() -> Response:
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
+@app.get("/studio", include_in_schema=False)
+def decision_studio() -> FileResponse:
+    """Serve the optional, snapshot-backed historical Decision Studio."""
+    return FileResponse(STATIC_DIR / "decision-studio.html")
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC_DIR / "index.html")
