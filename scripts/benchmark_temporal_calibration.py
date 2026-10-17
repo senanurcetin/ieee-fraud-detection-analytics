@@ -52,6 +52,54 @@ def temporal_three_way_split(
     return core, calibration, final_holdout
 
 
+def review_queue_metrics(
+    labels: np.ndarray, scores: np.ndarray,
+    fractions: tuple[float, ...] = (0.01, 0.05, 0.10),
+) -> dict[str, dict[str, Any]]:
+    """Deterministic top-k workload, capture and approximate precision uncertainty.
+
+    Queue membership is determined by score and original record order only,
+    never by the fraud labels. Stable ties matter for isotonic calibration.
+    Wilson intervals describe binomial precision uncertainty, not account-
+    cluster-aware confidence or evidence of a prospective deployment.
+    """
+    y = np.asarray(labels, dtype="int8")
+    p = np.asarray(scores, dtype="float64")
+    if y.ndim != 1 or p.ndim != 1 or y.size != p.size or not y.size:
+        raise ValueError("Invalid review queue score/label dimensions")
+    if not np.isin(y, [0, 1]).all() or not np.isfinite(p).all():
+        raise ValueError("Invalid review queue labels or scores")
+    if not fractions or any(not 0 < fraction <= 1 for fraction in fractions):
+        raise ValueError("Invalid review queue fractions")
+    # Compute the ordering once; no label-informed threshold selection.
+    order = np.argsort(-p, kind="stable")
+    cumulative = np.cumsum(y[order], dtype="int64")
+    n = int(y.size)
+    fraud_total = int(y.sum())
+    baseline = fraud_total / n
+    z = 1.96
+    result: dict[str, dict[str, Any]] = {}
+    for fraction in fractions:
+        k = min(n, max(1, int(np.ceil(n * fraction))))
+        positives = int(cumulative[k - 1])
+        precision = positives / k
+        recall = positives / fraud_total if fraud_total else None
+        denom = 1 + z * z / k
+        center = (precision + z * z / (2 * k)) / denom
+        half = z * np.sqrt(precision * (1 - precision) / k + z * z / (4 * k * k)) / denom
+        name = f"top_{round(100 * fraction)}pct"
+        result[name] = {
+            "review_rows": k,
+            "actual_workload_fraction": k / n,
+            "fraud_cases_captured": positives,
+            "precision": precision,
+            "recall": recall,
+            "lift_vs_holdout_fraud_rate": precision / baseline if baseline else None,
+            "precision_wilson_95pct": [max(0.0, center - half), min(1.0, center + half)],
+        }
+    return result
+
+
 def calibration_metrics(
     labels: np.ndarray,
     scores: np.ndarray,
@@ -94,6 +142,7 @@ def calibration_metrics(
         "brier_score": float(brier_score_loss(y, p)),
         "log_loss": float(log_loss(y, p, labels=[0, 1])),
         "expected_calibration_error": float(ece),
+        "top_k_review_queue": review_queue_metrics(y, p),
         "reliability_bins": reliability,
     }
 
