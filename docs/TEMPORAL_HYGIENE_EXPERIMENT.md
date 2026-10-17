@@ -1,5 +1,8 @@
 # F03 — Temporal leakage hygiene research (experimental)
 
+> **Full-source update, 17 October 2026:** The user-authorized F03 experiment completed on original 590,540-record Kaggle data and was repeated after explicit tie-order determinism fixes. See [canonical stable results and provenance](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md), not the earlier first-run values. The public historical 500-tree model remains unchanged.
+
+
 ## What this changes
 
 The published LightGBM output and static web dashboard remain unchanged. This
