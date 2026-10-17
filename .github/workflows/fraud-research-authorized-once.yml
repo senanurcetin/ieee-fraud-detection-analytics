@@ -1,0 +1,199 @@
+name: Authorized Fraud Research — Single Branch Run
+
+# One specifically authorized user-requested execution. Never triggers on PR
+# or main pushes. This branch is disposable after evidence is reviewed.
+on:
+  push:
+    branches:
+      - research/authorized-fraud-20261017
+    paths:
+      - .github/workflows/fraud-research-authorized-once.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: authorized-fraud-research-20261017
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  PYTHONUNBUFFERED: "1"
+  OMP_NUM_THREADS: "2"
+  OPENBLAS_NUM_THREADS: "2"
+  MKL_NUM_THREADS: "2"
+
+jobs:
+  kaggle-experiments:
+    # Only the single Git commit explicitly requested in this conversation.
+    if: github.repository == 'senanurcetin/ieee-fraud-detection-analytics' && github.event.head_commit.message == 'RUN_AUTHORIZED_FRAUD_RESEARCH_20261017'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      max-parallel: 1
+      fail-fast: false
+      matrix:
+        study: [temporal_hygiene, calibration]
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout immutable commit
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check Kaggle secret presence without disclosure
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        shell: bash
+        run: |
+          if [ -z "${KAGGLE_API_TOKEN:-}" ]; then
+            echo "BLOCKED: KAGGLE_API_TOKEN not configured" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+      - name: Install pinned research dependencies and competition client
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install kaggle
+      - name: Download original IEEE-CIS competition train data to ephemeral runner
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p data/raw/kaggle_ieee_fraud
+          kaggle competitions download -c ieee-fraud-detection -p data/raw/kaggle_ieee_fraud
+          unzip -oq data/raw/kaggle_ieee_fraud/ieee-fraud-detection.zip train_transaction.csv train_identity.csv -d data/raw/kaggle_ieee_fraud
+          test -s data/raw/kaggle_ieee_fraud/train_transaction.csv
+          test -s data/raw/kaggle_ieee_fraud/train_identity.csv
+      - name: Preserve exact source checksum and approved execution facts
+        env:
+          STUDY: ${{ matrix.study }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          def digest(path):
+              h = hashlib.sha256()
+              with path.open("rb") as stream:
+                  for chunk in iter(lambda: stream.read(1024*1024), b""):
+                      h.update(chunk)
+              return h.hexdigest()
+          d = Path("data/raw/kaggle_ieee_fraud")
+          out = Path("outputs/research")
+          out.mkdir(parents=True, exist_ok=True)
+          manifest = {
+              "source": "kaggle/competitions/ieee-fraud-detection",
+              "study": os.environ["STUDY"],
+              "commit": os.environ["GITHUB_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "train_transaction_sha256": digest(d / "train_transaction.csv"),
+              "train_identity_sha256": digest(d / "train_identity.csv"),
+              "full_dataset_mode": True,
+              "raw_records_uploaded": False,
+              "bigquery_sql_jobs": 0,
+              "model_promotion": False,
+              "public_snapshot_changed": False,
+          }
+          (out / "source_manifest.json").write_text(
+              json.dumps(manifest, indent=2)+"\n", encoding="utf-8"
+          )
+          PY
+      - name: Import original train source and enforce canonical row counts
+        run: |
+          python -m scripts.prepare_research_duckdb \
+            --source data/raw/kaggle_ieee_fraud \
+            --duckdb data/processed/ieee_fraud.duckdb
+      - name: Verify full-row chronology and preprocessing (F03)
+        if: matrix.study == 'temporal_hygiene'
+        run: |
+          python -m scripts.benchmark_temporal_hygiene \
+            --duckdb data/processed/ieee_fraud.duckdb \
+            --n-estimators 100 --windows 1 --min-train-rows 10000 \
+            --output outputs/research/research_report.json
+      - name: Evaluate independent temporal calibration (F04)
+        if: matrix.study == 'calibration'
+        run: |
+          python -m scripts.benchmark_temporal_calibration \
+            --duckdb data/processed/ieee_fraud.duckdb \
+            --n-estimators 150 \
+            --output outputs/research/research_report.json
+      - name: Store only safe aggregate experiment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fraud-research-${{ matrix.study }}-${{ github.run_id }}
+          path: |
+            outputs/research/research_report.json
+            outputs/research/source_manifest.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Delete original competition data and DuckDB
+        if: always()
+        run: |
+          rm -rf data/raw/kaggle_ieee_fraud data/processed/ieee_fraud.duckdb data/processed/ieee_fraud.duckdb.wal
+
+  bigquery-parity:
+    if: github.repository == 'senanurcetin/ieee-fraud-detection-analytics' && github.event.head_commit.message == 'RUN_AUTHORIZED_FRAUD_RESEARCH_20261017'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout immutable commit
+        uses: actions/checkout@v4
+      - name: Check for repository-specific WIF credentials
+        id: identity
+        env:
+          GCP_WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+          GCP_BIGQUERY_READONLY_SA: ${{ vars.GCP_BIGQUERY_READONLY_SA }}
+        shell: bash
+        run: |
+          if [ -z "${GCP_WIF_PROVIDER:-}" ] || [ -z "${GCP_BIGQUERY_READONLY_SA:-}" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "BLOCKED: Fraud-specific WIF repository variables missing. No Google API read attempted." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Repository variables present; authorization still requires a real API check." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Authenticate via OIDC/WIF without stored keys
+        if: steps.identity.outputs.enabled == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_BIGQUERY_READONLY_SA }}
+          project_id: workintech-working
+          create_credentials_file: true
+      - name: Set up Python
+        if: steps.identity.outputs.enabled == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install read-only metadata/tabledata client
+        if: steps.identity.outputs.enabled == 'true'
+        run: python -m pip install google-cloud-bigquery==3.41.0
+      - name: Read bounded direct reporting data and compare historic fields
+        if: steps.identity.outputs.enabled == 'true'
+        run: |
+          python -m scripts.verify_reporting_tables_bigquery_readonly \
+            --use-adc --project workintech-working \
+            --dataset fraud_project_reporting --max-source-rows 10000 \
+            --output outputs/research/bigquery_direct_parity.json
+      - name: Upload sanitized diff/status report only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fraud-bigquery-parity-${{ github.run_id }}
+          path: outputs/research/bigquery_direct_parity.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Cleanup temporary source and WIF files
+        if: always()
+        run: |
+          rm -f gha-creds-*.json outputs/research/bigquery_direct_parity.json
