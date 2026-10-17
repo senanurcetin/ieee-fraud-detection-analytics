@@ -19,6 +19,7 @@ def test_decision_studio_is_real_fastapi_route() -> None:
     assert 'id="historical-review-queue"' in response.text
     assert 'id="studio-evidence-source"' in response.text
     assert "/static/risk-decision-studio.js" in response.text
+    assert 'id="selected-detail"' in response.text
 
 
 def test_main_dashboard_has_accessible_studio_link() -> None:
