@@ -5,8 +5,9 @@ Implemented on branch `fix/fraud-production-trust-gates-20261017`.
 ## What changed
 
 - The five public API routes that accept `?refresh=true` now require a secret passed in the `X-Internal-Refresh-Token` header. The secret must match `WEB_INTERNAL_REFRESH_TOKEN` using constant-time comparison. Missing, incorrect, or unconfigured tokens return HTTP 403 *before* live reporting is built.
-- Ordinary `GET /api/dashboard` remains public and serves the governed historical snapshot. The token is not a query parameter and is never emitted in an API response.
+- Ordinary `GET /api/dashboard` remains public and serves the governed historical snapshot. If a required snapshot is missing in BigQuery mode, the public endpoint returns HTTP 503 rather than running an unbounded warehouse fallback. The token is not a query parameter and is never emitted in an API response.
 - `scripts/build_web_snapshot.py` creates a process-local, short-lived token before importing FastAPI and supplies it to its internal `TestClient` requests. This preserves authorized offline snapshot generation without storing a persistent credential or passing one on the command line.
+- Unsnapshotted `/api/enterprise/cases/{id}`, `/api/enterprise/cases/{id}/explain`, and `/api/diagnostics` require the same internal token for BigQuery reads. Public `/api/enterprise/cases` and `/api/enterprise/segments` use saved snapshots and fail with HTTP 503 if a required snapshot is absent.
 - `.github/workflows/vercel-deploy.yml` is **manual-only** (`workflow_dispatch`) to avoid duplicate automatic deploys and free-tier quota use. If deployment secrets are missing, the run fails with a clear BLOCKED summary; it never reports a successful but skipped release.
 - `.github/workflows/ci.yml` keeps normal PR/push data-free quality checks. A manually requested full-data run without Kaggle credentials now fails, rather than turning green while doing no full-data work.
 
@@ -20,9 +21,11 @@ Direct internal API usage: set `WEB_INTERNAL_REFRESH_TOKEN` to a strong server-o
 
 Publish: run the **Vercel Deploy** workflow manually after green CI and review; configure `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` via encrypted repository secrets. Verify the deployed commit and the resulting site rather than treating a CLI step alone as proof of public readiness.
 
-## Important remaining exposure for F01 follow-up
+## Known limitations for subsequent phases
 
-These changes gate explicit `refresh=true` requests only. Public case-detail, transaction explanation, and diagnostic routes may still access BigQuery if the runtime has warehouse credentials. Full cost / quota hardening for these routes remains necessary before claiming all public query access is bounded.
+- The internal-token check restricts the known public routes that can trigger BigQuery, but the backend still allows authorized query execution. Admin operations require budget, explicit runtime credential boundaries, quotas, and monitoring.
+- The public case-detail and explanation endpoints now return 403 without internal authorization in BigQuery mode; this is an intentional security trade-off. A fully public case-explanation experience should use precomputed, appropriately governed artifacts or a separate authenticated service.
+- Snapshot contents are historical; token authorization does not prove dataset parity or make the model ready for automated decisions. F02 remains open.
 
 ## Tests
 
