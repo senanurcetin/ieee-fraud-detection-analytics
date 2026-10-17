@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import secrets
 import sqlite3
 import time
@@ -1510,8 +1511,17 @@ def public_evidence_status(snapshot: dict[str, Any] | None, *, now: datetime | N
 
 @app.get("/api/evidence-status")
 def evidence_status() -> dict[str, Any]:
-    """Public, bounded source disclosure; no BigQuery access or data refresh."""
-    return public_evidence_status(load_snapshot("dashboard"))
+    """Public, bounded source disclosure and optional provider build revision.
+
+    Revision is Vercel's own build metadata (if enabled); it is never a
+    caller-controlled query parameter or evidence of current BigQuery parity.
+    """
+    result = public_evidence_status(load_snapshot("dashboard"))
+    revision = os.getenv("VERCEL_GIT_COMMIT_SHA", "").strip()
+    result["deployed_git_commit"] = (
+        revision.lower() if re.fullmatch(r"[a-fA-F0-9]{40}", revision) else None
+    )
+    return result
 
 
 @app.get("/api/metadata")

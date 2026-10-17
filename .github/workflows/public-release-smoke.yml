@@ -1,0 +1,48 @@
+name: Public Production Attestation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/public-release-smoke.yml"
+      - "webapp/**"
+      - "scripts/verify_public_release.py"
+      - "scripts/verify_snapshot_release.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fraud-public-attestation-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  verify-release:
+    name: Verify exact live Vercel SHA and historical report over HTTPS
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python without cloud credentials
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Attest production surface; fail if SSO protected or stale
+        env:
+          EXPECTED_GIT_SHA: ${{ github.sha }}
+        run: |
+          python -m scripts.verify_public_release \
+            --expected-sha "$EXPECTED_GIT_SHA" \
+            --attempts 16 --delay-seconds 8
+          echo "Exact production Git SHA and historical public HTTP contract: PASS." >> "$GITHUB_STEP_SUMMARY"
+          echo "Live BigQuery source parity, full model training/calibration: NOT VERIFIED." >> "$GITHUB_STEP_SUMMARY"
+          echo "This workflow does not deploy, promote, access secrets or relax protection." >> "$GITHUB_STEP_SUMMARY"
