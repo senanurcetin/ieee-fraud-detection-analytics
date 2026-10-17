@@ -94,8 +94,6 @@ def test_container_is_non_root_snapshot_only_and_loopback_exposed() -> None:
 def test_snapshot_only_evidence_and_dashboard_routes_do_not_need_bigquery(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import os
-
     monkeypatch.setenv("WEB_DATA_BACKEND", "bigquery")
     monkeypatch.delenv("WEB_SNAPSHOT_DISABLE", raising=False)
     monkeypatch.setattr(api, "run_query", lambda *a, **k: pytest.fail("Unexpected warehouse query"))
