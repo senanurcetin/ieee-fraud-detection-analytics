@@ -8,6 +8,8 @@ For push and pull requests, Ruff, offline unit tests, dependency audits and dbt 
 
 An authorized maintainer can provision a **fresh** Kaggle token as the GitHub Actions encrypted repository secret named KAGGLE_API_TOKEN (preferred), or keep the historical KAGGLE_USERNAME / KAGGLE_KEY pair. The CI workflow's manual **Run workflow** action is the only mode that may download Kaggle source rows and execute modeling and dbt run/test.
 
+For **research-only** execution without the 500-estimator default modeling/dbt build, use the [manual Kaggle Research Evidence workflow](KAGGLE_RESEARCH_RUNBOOK.md). Its `access_check`, `random_vs_time`, `temporal_hygiene`, and `calibration` choices upload only safe aggregated metrics and source hashes, never original CSVs. It cannot run on a push/PR; manual `workflow_dispatch` is required.
+
 The Kaggle competition may still require acceptance of competition rules. Failures to authenticate or download are real failures; do not invent experiment results. Do not print or commit credentials. Delete temporary GitHub secrets after use, and revoke tokens with Kaggle; these are two separate operations.
 
 ## BigQuery and evidence policy
