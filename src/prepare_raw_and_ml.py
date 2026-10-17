@@ -14,6 +14,12 @@ import shap
 from lightgbm import LGBMClassifier
 from sklearn.metrics import average_precision_score, roc_auc_score, roc_curve
 
+# Support both module import (pytest / python -m) and the existing direct CLI.
+if __package__:
+    from .local_shap import build_local_shap_explanations, save_explanations
+else:
+    from local_shap import build_local_shap_explanations, save_explanations
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -464,7 +470,24 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(shap_frame)
     if isinstance(shap_values, list):
-        shap_values = shap_values[1]
+        shap_values = shap_values[-1]
+    elif np.asarray(shap_values).ndim == 3:
+        shap_values = np.asarray(shap_values)[:, :, -1]
+
+    # Compute verifiable *local* SHAP attribution for the sampled holdout only.
+    # Never expose raw feature values, customer data or labels in this artifact.
+    local_explanations = build_local_shap_explanations(
+        transaction_ids=train_df.loc[shap_frame.index, "TransactionID"].astype("int64").to_numpy(),
+        feature_names=features,
+        shap_values=shap_values,
+        expected_value=explainer.expected_value,
+        raw_margins=model.predict(shap_frame, raw_score=True),
+        ranking_scores=model.predict_proba(shap_frame)[:, 1],
+        model_version=MODEL_VERSION,
+    )
+    local_shap_store = TABLES_DIR / "local_shap_explanations.sqlite"
+    save_explanations(local_shap_store, local_explanations)
+
     shap_df = pd.DataFrame(
         {
             "feature": features,
@@ -566,6 +589,14 @@ def train_and_score(con: duckdb.DuckDBPyConnection) -> dict:
             "raw_train_transactions": int(len(train_df)),
             "fraud_rate": float(y.mean()),
             "transaction_dt_note": "TransactionDT is a relative timedelta, not a calendar timestamp.",
+        },
+        "local_explanation_evidence": {
+            "method": "TreeSHAP",
+            "output_space": "raw_margin",
+            "source_split": "validation_holdout_sample",
+            "verified_local_cases": len(local_explanations),
+            "artifact_path": str(local_shap_store.relative_to(ROOT)),
+            "publication": "private_offline_artifact_only",
         },
         "feature_scope": {
             "feature_count": int(len(features)),
