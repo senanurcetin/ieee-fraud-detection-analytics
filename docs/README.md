@@ -1,5 +1,7 @@
 # Documentation
 
+**Project status: PAUSED (18 October 2026).** The final verified [deterministic Kaggle research results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) have been merged; source/model/production gates listed in [Release status](RELEASE_STATUS.md) remain open. This is a handoff archive, not a request to schedule new work.
+
 This directory contains **maintained project reference** and **dated research/release evidence**. For a short introduction and working commands, start with the [repository README](../README.md).
 
 The product is a **historical IEEE-CIS analytics demonstration**, not live bank monitoring. Model scores are **uncalibrated rankings** unless a separately validated calibration artifact exists. A green CI run does not by itself establish source freshness or live production readiness.
