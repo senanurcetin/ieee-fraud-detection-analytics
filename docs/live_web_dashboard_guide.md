@@ -1,5 +1,8 @@
 # Live Fraud Analytics Report Guide
 
+> **Published web application ≠ live data ingestion.** This guide describes the historic snapshot-backed nine-page report, not a real-time BigQuery feed. For current deployment, parity and model caveats see [release status](RELEASE_STATUS.md).
+
+
 The live web application is the primary presentation layer for the IEEE-CIS fraud analytics project. It is structured as a BI-style analytical report embedded in a web app.
 
 ## Production URL

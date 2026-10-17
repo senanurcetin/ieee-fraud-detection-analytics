@@ -1,5 +1,8 @@
 # Production Validation Gate
 
+> **Historical validation record.** The PASS values below refer to a prior dataset/build and web presentation acceptance. They do **not** verify current BigQuery table parity, a newly calibrated production model, or the exact presently deployed Vercel SHA. For current gates see [release status](RELEASE_STATUS.md) and GitHub Issues.
+
+
 This document records the release checks required before the public web dashboard is used in a portfolio or executive presentation.
 
 ## Live Reporting Contract

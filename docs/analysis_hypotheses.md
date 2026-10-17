@@ -1,4 +1,4 @@
-﻿# 03 - Analysis Hypotheses
+# Analysis Hypotheses
 
 ## H1 - Product Family Separates Risk
 
@@ -45,4 +45,3 @@ The analysis should start with fraud concentration, not tooling. The recommended
 3. Amount, payment, email, and relative time explain operational patterns.
 4. Model risk bands convert the evidence into threshold-policy scenarios.
 5. dbt tests, row-count reconciliation, and data quality checks prove the pipeline is trustworthy.
-
