@@ -2,10 +2,14 @@
 from __future__ import annotations
 
 import importlib
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
 audit = importlib.import_module("scripts.audit_reporting_snapshot")
 verify = importlib.import_module("scripts.verify_reporting_tables_bigquery_readonly")
 
