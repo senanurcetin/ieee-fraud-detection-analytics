@@ -1,5 +1,8 @@
 # Full-source IEEE-CIS temporal and calibration acceptance evidence
 
+> **SUPERSEDED RESEARCH MEASUREMENT:** These are the initial 17 October full-source results before same-timestamp SQL ties were deterministically ordered. Source CSV hashes match but row-order fingerprints differed between runners. Use the [canonical deterministically ordered full-source F03/F04 results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) for the latest empirical values. This dated record is retained for transparent provenance, not production metrics.
+
+
 **Execution date:** 17 October 2026  
 **Authorized run:** [GitHub Actions #39067832865](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39067832865) — both `temporal_hygiene` and `calibration` **SUCCESS**.  
 **Source commit:** `58ca142dad7b36153ce3b584dc672c1431a6aca6` (one-time research branch based on prior green `main`).  
