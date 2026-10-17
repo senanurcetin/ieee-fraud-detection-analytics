@@ -9,7 +9,7 @@ it from the main dashboard's header.
 
 `.github/workflows/browser-acceptance.yml` creates a real local FastAPI server
 with the committed historical IEEE-CIS snapshot, installs pinned Playwright
-1.56.1 and Chromium, Firefox and WebKit, and runs **all three** opt-in
+1.56.0 and Chromium, Firefox and WebKit, and runs **all three** opt-in
 browser test modules:
 
 - `tests/browser/test_fraud_dashboard.py`: interactive nine-page
@@ -26,7 +26,7 @@ substituted for current/verified or live fraud traffic.
 ## CI reproduction
 
 ```bash
-python -m pip install -r webapp/requirements.txt playwright==1.56.1
+python -m pip install -r webapp/requirements.txt playwright==1.56.0
 python -m playwright install --with-deps chromium firefox webkit
 python -m uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 # In a second shell:
