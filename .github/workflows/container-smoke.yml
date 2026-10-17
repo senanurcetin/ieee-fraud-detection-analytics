@@ -1,0 +1,71 @@
+name: Historical Container Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/container-smoke.yml"
+      - "Dockerfile"
+      - ".dockerignore"
+      - "compose.yaml"
+      - "webapp/**"
+      - "scripts/verify_snapshot_release.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  container-smoke:
+    name: Boot rootless snapshot demo and verify local HTTP
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Compose configuration
+        run: docker compose config --quiet
+
+      - name: Build local-only historical dashboard
+        run: docker compose build
+
+      - name: Start isolated historical dashboard
+        run: docker compose up -d --no-build
+
+      - name: Wait for snapshot evidence endpoint
+        shell: bash
+        run: |
+          ready=0
+          for attempt in $(seq 1 35); do
+            if curl --fail --silent --show-error --max-time 3 \
+              http://127.0.0.1:8000/api/evidence-status >/dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != "1" ]; then
+            echo "Snapshot HTTP server did not start; no release proof." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Check full historical report contract over HTTP
+        run: |
+          python3 -m scripts.verify_snapshot_release \
+            --base-url http://127.0.0.1:8000 > snapshot-smoke.json
+          cat snapshot-smoke.json
+          echo "Docker image boot + HTTP historical snapshot contract: PASS." >> "$GITHUB_STEP_SUMMARY"
+          echo "Live BigQuery/model production validation: NOT RUN." >> "$GITHUB_STEP_SUMMARY"
+          echo "Vercel production deployment: NOT RUN." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop container and avoid retaining sample artifacts
+        if: always()
+        run: docker compose down --volumes --remove-orphans
