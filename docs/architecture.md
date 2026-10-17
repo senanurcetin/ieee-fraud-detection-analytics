@@ -14,8 +14,9 @@ flowchart LR
     F --> G["dbt marts"]
     C --> G
     G --> H["dbt reporting layer"]
-    H --> I["FastAPI analytics API"]
-    I --> J["Executive web dashboard"]
+    H --> S["Verified historical JSON snapshot"]
+    S --> I["FastAPI analytics API"]
+    I --> J["Nine-page NEXUS dashboard"]
 ```
 
 ## BigQuery Datasets
@@ -26,7 +27,7 @@ flowchart LR
 | `fraud_project_staging` | Typed and normalized source views |
 | `fraud_project_intermediate` | Joined transaction and identity records with engineered features |
 | `fraud_project_mart` | Reconciled fraud, segment, risk-band, time, amount, and quality marts |
-| `fraud_project_reporting` | Presentation-ready reporting tables for the live web dashboard |
+| `fraud_project_reporting` | Historical reporting tables used to generate a versioned web dashboard snapshot |
 
 ## dbt Model Layers
 
@@ -39,7 +40,7 @@ flowchart LR
 
 ## Reporting Design
 
-The web dashboard reads only from `fraud_project_reporting` through the FastAPI reporting API. Raw Kaggle tables and staging models are intentionally excluded from the presentation surface. This keeps the reporting model stable, understandable, and suitable for executive presentation.
+The published dashboard normally serves **committed historical JSON snapshots** through FastAPI. The snapshots are derived from the `fraud_project_reporting` layer but are not live BigQuery query results. Internal source refresh or independent data verification is a separate authenticated workflow. Raw Kaggle tables and staging models are intentionally excluded from the public presentation surface. Source freshness and model-scoring limitations are disclosed in the UI and [release status](RELEASE_STATUS.md).
 
 ## Quality Gates
 
@@ -49,7 +50,7 @@ The web dashboard reads only from `fraud_project_reporting` through the FastAPI 
 - Risk-band tests enforce expected risk labels and monotonic behavior.
 - Report-readiness tests verify that the web reporting layer is complete.
 
-Latest production verification:
+Historical BigQuery/dbt build verification (not an assertion about the current source or latest deployment):
 
 ```text
 dbt build: PASS=164 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=165
