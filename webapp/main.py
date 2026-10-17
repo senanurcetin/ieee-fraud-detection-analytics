@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import secrets
 import time
 from datetime import date, datetime
 from decimal import Decimal
@@ -13,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -1120,6 +1121,25 @@ def build_dashboard_payload() -> dict[str, Any]:
     return data
 
 
+
+def require_refresh_authorization(refresh: bool, supplied_token: str | None) -> None:
+    """Prevent public API callers from bypassing the governed reporting snapshot.
+
+    Live refresh is a maintenance operation, not a public dashboard feature.
+    The token stays in the server environment and is never exposed in a URL.
+    """
+    if not refresh:
+        return
+    expected = os.getenv("WEB_INTERNAL_REFRESH_TOKEN", "")
+    if not expected or not isinstance(supplied_token, str) or not secrets.compare_digest(
+        supplied_token, expected
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Live reporting refresh requires an authorized internal token.",
+        )
+
+
 def cached_dashboard_payload(refresh: bool = False) -> dict[str, Any]:
     if not refresh:
         snapshot = load_snapshot("dashboard")
@@ -1438,7 +1458,11 @@ def metadata() -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/summary")
-def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_summary(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
     payload = cached_dashboard_payload(refresh=refresh)
     kpis = (payload.get("executive_kpis") or [{}])[0]
     threshold_rows = payload.get("validation_threshold_simulation") or payload.get("threshold_simulation") or []
@@ -1619,7 +1643,11 @@ def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/segments")
-def enterprise_segments(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_segments(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
     if not refresh:
         snapshot = load_snapshot("enterprise-segments")
         if snapshot is not None:
@@ -1665,7 +1693,11 @@ limit 20
 
 
 @app.get("/api/enterprise/alerts")
-def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_alerts(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
     payload = cached_dashboard_payload(refresh=refresh)
     alerts: list[dict[str, Any]] = []
     drift_rows = payload.get("daily_drift", [])
@@ -1725,7 +1757,11 @@ def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/model-monitoring")
-def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_model_monitoring(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
     payload = cached_dashboard_payload(refresh=refresh)
     return {
         "model_version": MODEL_REGISTRY["model_version"],
@@ -1770,7 +1806,11 @@ def enterprise_metadata() -> dict[str, Any]:
 
 
 @app.get("/api/dashboard")
-def dashboard(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def dashboard(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
     return cached_dashboard_payload(refresh=refresh)
 
 
