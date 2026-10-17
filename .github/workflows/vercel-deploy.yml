@@ -1,9 +1,7 @@
 name: Vercel Deploy
 
 on:
-  push:
-    branches:
-      - main
+  # Intentional manual release avoids duplicate Vercel deploys and free-tier quota usage.
   workflow_dispatch:
 
 env:
@@ -27,8 +25,8 @@ jobs:
           if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_ORG_ID" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
           else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Vercel deployment skipped because VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID is not configured."
+            echo "Vercel release: BLOCKED (missing deployment secrets). No deployment occurred." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
 
       - name: Prepare Vercel project link
@@ -38,6 +36,7 @@ jobs:
           printf '{"orgId":"%s","projectId":"%s"}' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > webapp/.vercel/project.json
 
       - name: Deploy production dashboard
-        if: steps.vercel_secrets.outputs.enabled == 'true'
         working-directory: webapp
-        run: npx vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+        run: |
+          npx vercel deploy --prod --yes --token "$VERCEL_TOKEN"
+          echo "Vercel CLI deployment command completed; verify the published version against the intended commit SHA." >> "$GITHUB_STEP_SUMMARY"
