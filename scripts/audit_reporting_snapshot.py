@@ -296,7 +296,7 @@ def main(argv: list[str] | None = None) -> int:
             read_json(args.snapshot),
             read_json(args.current_json) if args.current_json is not None else None,
         )
-    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError, TypeError) as exc:
         # Never include private absolute paths, source data or credential strings.
         print(f"Snapshot audit could not run ({type(exc).__name__})", file=sys.stderr)
         return 2
