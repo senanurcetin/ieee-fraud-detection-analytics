@@ -13,7 +13,7 @@
 > **Production screenshot (14 October 2026):** captured directly from the deployed NEXUS Fraud Analytics Vercel app using real Chromium after the reporting backend connected. The image shows a governed historical BigQuery reporting snapshot, **not** live transaction monitoring. [Screenshot provenance](docs/assets/production_screenshot_provenance_20261014.json).
 
 [![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
-[![Live Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
+[![Historical Dashboard](https://img.shields.io/badge/Historical%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -27,13 +27,37 @@
 | **Core finding** | Fraud is not random. Product C carries **11.7% fraud rate (3.34x lift)** and drives 38.8% of all fraud labels. Identity-present transactions show **7.85% fraud rate (2.24x lift)**. |
 | **Model** | LightGBM — holdout ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision** — 7.12x better than baseline review. Band quality is reported on the time-based holdout, not the split the model was fitted on. |
 | **Stack** | DuckDB → BigQuery → dbt (38 models) → LightGBM → FastAPI → Vercel |
-| **Output** | Live executive dashboard with threshold simulator, segment heat maps, SHAP explainability |
+| **Output** | Historical snapshot-backed BI dashboard; threshold simulator, segment analytics and global SHAP summaries |
 
 ---
 
 End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive live web analytics dashboard.
 
 The business question is simple: where does fraud concentrate, what is the exposure, and which segment-level controls should the business prioritize?
+
+## Zero-budget offline demo
+
+The live website URL is a **published historical analytics interface**, not a
+live banking feed. Source snapshot built: **10 September 2026**. The model's
+`predicted_fraud_probability` is an uncalibrated ranking score; current
+BigQuery source parity and all new F03/F04 real-data experiments still need
+independent acceptance.
+
+For a local, snapshot-only preview without GCP credentials or paid queries:
+
+```bash
+docker compose build
+docker compose up -d
+python -m scripts.verify_snapshot_release --base-url http://127.0.0.1:8000
+docker compose down
+```
+
+The local checker can return `PASS_HISTORICAL_OFFLINE_DEMO`; that result is
+**not** Docker runtime evidence until the commands are actually run, and is
+never approval for production/live payments or a refreshed data claim. Read
+[the F08 deployment runbook](docs/F08_LOCAL_RELEASE.md) and
+[the F07 source trust contract](docs/F07_EVIDENCE_TRUST_RAIL.md) before using
+the output in a demonstration.
 
 ## Problem Statement
 
