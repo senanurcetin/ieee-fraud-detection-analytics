@@ -34,7 +34,12 @@ class HistoricalDecisionStudioBrowserTest(unittest.TestCase):
         response = page.goto(BASE_URL + "/studio?view=overview", wait_until="domcontentloaded")
         self.assertEqual(response.status, 200)
         page.wait_for_function(
-            "() => document.getElementById('hero-title')?.textContent !== 'Loading analysis'",
+            "() => document.getElementById('hero-title')?.textContent === 'Understand the fraud surface before intervening.'",
+            timeout=30000,
+        )
+        self.assertTrue(page.locator("#selected-detail").is_visible())
+        page.wait_for_function(
+            "() => document.getElementById('studio-evidence-source')?.textContent.includes('Historical IEEE-CIS')",
             timeout=30000,
         )
         self.assertIn("Historical IEEE-CIS", page.locator("#studio-evidence-source").inner_text())
