@@ -1,0 +1,81 @@
+name: Historical Browser Acceptance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/browser-acceptance.yml"
+      - "webapp/**"
+      - "tests/browser/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fraud-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  WEB_DATA_BACKEND: bigquery
+  FRAUD_E2E_BASE_URL: http://127.0.0.1:8000
+
+jobs:
+  historical-browser:
+    name: Historical snapshot browser matrix and review workspace
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout immutable test source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal web runtime and pinned browser library
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r webapp/requirements.txt
+          python -m pip install playwright==1.56.1
+
+      - name: Install Chromium, Firefox and WebKit runners
+        run: python -m playwright install --with-deps chromium firefox webkit
+
+      - name: Serve only committed historical reporting snapshot
+        shell: bash
+        run: |
+          python -m uvicorn webapp.main:app --host 127.0.0.1 --port 8000             > /tmp/fraud-browser-server.log 2>&1 &
+          echo "$!" > /tmp/fraud-browser-server.pid
+          ready=0
+          for attempt in $(seq 1 40); do
+            if curl -fsS --max-time 3 http://127.0.0.1:8000/api/evidence-status >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != "1" ]; then
+            echo "Historical FastAPI server unavailable; browser evidence blocked." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Verify actual local snapshot contract
+        run: python -m scripts.verify_snapshot_release --base-url "$FRAUD_E2E_BASE_URL"
+
+      - name: Validate actual three-engine responsive browser behavior
+        run: |
+          python -m unittest discover -s tests/browser -p 'test_*.py' -v
+          echo "Chromium, Firefox, WebKit and studio review browser acceptance: PASS." >> "$GITHUB_STEP_SUMMARY"
+          echo "Real BigQuery parity/model recalibration: NOT RUN." >> "$GITHUB_STEP_SUMMARY"
+          echo "Vercel production release: NOT RUN." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop local test server
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/fraud-browser-server.pid ]; then
+            kill "$(cat /tmp/fraud-browser-server.pid)" || true
+          fi
