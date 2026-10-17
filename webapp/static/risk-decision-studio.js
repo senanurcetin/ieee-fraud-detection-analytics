@@ -215,6 +215,21 @@
   }));
   document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.tab)));
   window.addEventListener('popstate',()=>render(new URLSearchParams(location.search).get('view')||'overview'));
+  fetch('/api/evidence-status',{headers:{Accept:'application/json'}})
+    .then(res=>res.ok?res.json():null)
+    .then(evidence=>{
+      const target=$('studio-evidence-source');
+      if(!target)return;
+      if(evidence && typeof evidence.source_as_of==='string' && Number.isFinite(Date.parse(evidence.source_as_of))
+          && evidence.source_status?.startsWith('historical_')){
+        const day=new Date(evidence.source_as_of).toLocaleDateString('en-US',{timeZone:'UTC',year:'numeric',month:'short',day:'numeric'});
+        target.textContent='Historical IEEE-CIS reporting built '+day+' UTC · '+evidence.age_days+
+          ' days old · BigQuery parity unverified · Uncalibrated model ranking, not a live probability.';
+      } else {
+        target.textContent='Snapshot provenance could not be verified. Do not infer current data or live monitoring.';
+      }
+    })
+    .catch(()=>{text('studio-evidence-source','Source verification unavailable. Historical scope; no live feed.');});
   fetch('/api/dashboard',{headers:{Accept:'application/json'}}).then(async res=>{
     if(!res.ok)throw new Error('Dashboard data unavailable: HTTP '+res.status);
     return res.json();
