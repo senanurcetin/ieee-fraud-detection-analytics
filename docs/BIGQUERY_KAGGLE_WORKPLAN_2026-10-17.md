@@ -120,8 +120,8 @@ Both states are **partial**; neither means a live bank fraud system.
 
 The first `random_vs_time` run and the F03 `temporal_hygiene` / F04
 `calibration` full-source runs **have now completed** as separately evidenced:
-[temporal and calibration measurements](KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md).
-The user-authorized single-use run [#39067832865](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39067832865) executed both research studies; BigQuery auth in the same run was **skipped** because both WIF repo variables were empty. Repeats of the research studies remain manual via the standard opt-in workflow below. Select each explicitly from
+[canonical deterministic temporal and calibration measurements](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md).
+The user-authorized initial run [#39067832865](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39067832865) executed both studies; BigQuery auth was **skipped** because both Fraud WIF repository variables were empty. Later, independent deterministic full-source repeat [#39069399816](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39069399816) successfully ran F03 and F04, and verified **identical input row fingerprints across both runner jobs**. Use the latter for canonical numerical model metrics; it made no BigQuery API calls. Repeats of the research studies remain manual via the standard opt-in workflow below. Select each explicitly from
 [Kaggle Research Evidence](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/kaggle-research-evidence.yml)
 on `main`:
 

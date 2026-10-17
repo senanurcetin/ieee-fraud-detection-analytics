@@ -1,6 +1,6 @@
 # F04 — Temporal fraud risk score calibration (experimental)
 
-> **Verified historical experiment, 17 October 2026:** A full 590,540-record Kaggle temporal 60/20/20 experiment has now run successfully on GitHub. See [source hashes, measured Brier/ECE/AP, reliability caveats and exact run](KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md). This evidence does **not** automatically calibrate the published 500-tree model or authorize production promotion.
+> **Verified historical experiment, 17 October 2026:** A full 590,540-record Kaggle temporal 60/20/20 experiment has now run successfully on GitHub. See [canonical stable source hashes, measured Brier/ECE/AP/top-k results and exact replay](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). This evidence does **not** automatically calibrate the published 500-tree model or authorize production promotion.
 
 
 This research is **stacked on F03** (\`feat/fraud-temporal-hygiene-20261017\`)
