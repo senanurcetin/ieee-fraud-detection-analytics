@@ -22,6 +22,7 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 - [Web application guide](../webapp/README.md) — API, nine-page report, snapshots and local serving.
 - [Source code contribution workflow](../CONTRIBUTING.md) — PR review and reproducible tests.
 - [Security policy](../SECURITY.md) — secret handling, reporting and supported use.
+- [NEXUS official brand identity](BRAND_IDENTITY.md) — approved Drive source files, vector SHA checksums and dashboard/Studio usage.
 
 ## Research and model evidence
 
