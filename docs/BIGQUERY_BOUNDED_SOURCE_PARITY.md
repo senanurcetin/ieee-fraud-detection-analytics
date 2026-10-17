@@ -45,9 +45,19 @@ python -m scripts.verify_reporting_tables_bigquery_readonly \
   --output outputs/research/bigquery_direct_parity.json
 ```
 
-For authenticated interactive users, an extension could use Application
-Default Credentials. The current CLI deliberately accepts **only** an
-explicit service-account file and read-only OAuth scope.
+The verifier now also accepts keyless Application Default Credentials with
+`--use-adc`; the older `--credentials-file` option remains available.
+Both paths request the `bigquery.readonly` OAuth scope. For GitHub runners,
+use [manual keyless BigQuery workflow and WIF setup](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md)
+rather than uploading a long-lived service-account JSON key.
+
+For example, from a **separately authenticated** environment with ADC:
+
+```bash
+python -m scripts.verify_reporting_tables_bigquery_readonly \\
+  --use-adc --project workintech-working --dataset fraud_project_reporting \\
+  --output outputs/research/bigquery_direct_parity.json
+```
 
 The `outputs/` directory is gitignored; inspect the generated JSON locally
 before sharing. The report should not contain any private row values.

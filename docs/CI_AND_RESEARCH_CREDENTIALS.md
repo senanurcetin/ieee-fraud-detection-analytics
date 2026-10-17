@@ -14,7 +14,7 @@ The Kaggle competition may still require acceptance of competition rules. Failur
 
 ## BigQuery and evidence policy
 
-Never commit GCP service-account JSON. The source-inventory utility reads authorized local JSON and lists datasets only, without query charges. Dataset name matches do not verify row lineage or freshness. Obtain a dry-run estimate and explicit approval before billable BigQuery refreshes.
+Never commit GCP service-account JSON. The [keyless, manual GitHub WIF parity workflow](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md) uses temporary OIDC-based ADC and read-only BigQuery metadata/bounded tabledata APIs, provided this Fraud repo has its own properly authorized IAM binding and repository variables. The local source-inventory utility can still read explicitly authorized local JSON. Neither method executes SQL query jobs; API requests may consume quotas. Dataset name matches do not verify row lineage or freshness. Obtain a dry-run estimate and explicit approval before billable BigQuery refreshes.
 
 1. Require green CI checks before merge through repository rulesets/branch protection.
 2. Distinguish metadata-only CI from full-data research evaluation.

@@ -1,0 +1,88 @@
+name: BigQuery Read-Only Source Parity
+
+# Explicit maintainer invocation only. WIF, no service account key and no SQL.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: fraud-bigquery-parity
+  cancel-in-progress: false
+
+jobs:
+  source-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      GCP_WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+      GCP_BIGQUERY_READONLY_SA: ${{ vars.GCP_BIGQUERY_READONLY_SA }}
+      GOOGLE_CLOUD_PROJECT: workintech-working
+
+    steps:
+      - name: Checkout audited historical snapshot
+        uses: actions/checkout@v4
+
+      - name: Fail closed without authorized Workload Identity Federation configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${GCP_WIF_PROVIDER:-}" ] || [ -z "${GCP_BIGQUERY_READONLY_SA:-}" ]; then
+            echo "BLOCKED: set repository variables GCP_WIF_PROVIDER and GCP_BIGQUERY_READONLY_SA before manual execution." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Federation settings present; authorization and source accessibility require live verification." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Authenticate via keyless GitHub OIDC to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_BIGQUERY_READONLY_SA }}
+          project_id: workintech-working
+          create_credentials_file: true
+          export_environment_variables: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install read-only BigQuery client
+        run: python -m pip install google-cloud-bigquery==3.41.0
+
+      - name: Compare 20 direct reporting groups without SQL or writes
+        id: source-parity
+        run: |
+          python -m scripts.verify_reporting_tables_bigquery_readonly \
+            --use-adc \
+            --project workintech-working \
+            --dataset fraud_project_reporting \
+            --max-source-rows 10000 \
+            --output outputs/research/bigquery_direct_parity.json
+
+      - name: Store sanitized result (even on source mismatch)
+        if: success() || (failure() && steps.source-parity.outcome == 'failure')
+        uses: actions/upload-artifact@v4
+        with:
+          name: fraud-bigquery-direct-parity-${{ github.run_id }}
+          path: outputs/research/bigquery_direct_parity.json
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Explain non-certification of derived views and historical refresh
+        if: always()
+        shell: bash
+        run: |
+          echo "Bounded TABLEDATA source inspection only; no BigQuery SQL, export jobs or snapshot writes." >> "$GITHUB_STEP_SUMMARY"
+          echo "Result cannot certify five derived or two filtered dashboard groups." >> "$GITHUB_STEP_SUMMARY"
+          echo "Source lineage, full 27-group parity and actual public release are separate gates." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove ephemeral identity and report files
+        if: always()
+        shell: bash
+        run: |
+          rm -rf outputs/research/bigquery_direct_parity.json
+          rm -f gha-creds-*.json

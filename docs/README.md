@@ -37,6 +37,7 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 ## Data lineage, audits and release controls
 
 - [BigQuery discovery](BIGQUERY_SOURCE_DISCOVERY.md) and [15 Oct source verification](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) — dated metadata and partial source comparison.
+- [BigQuery + Kaggle verified workplan](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md) — prioritized research and source acceptance with keyless WIF prerequisites and scientific gates.
 - [Bounded BigQuery table parity](BIGQUERY_BOUNDED_SOURCE_PARITY.md) and [offline snapshot audit](SNAPSHOT_PARITY_AUDIT.md) — source validation tools with explicit boundaries.
 - [Source revalidation (14 Oct)](bigquery_source_revalidation_2026-10-14.md) — retained historical evidence, not fresh source certification.
 - [CI and research credentials](CI_AND_RESEARCH_CREDENTIALS.md), [security controls](SECURE_RELEASE_GATES.md) and [security review](dependency_security_review_2026-10-14.md) — credential/safety acceptance.
