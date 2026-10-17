@@ -71,3 +71,18 @@
 @media(prefers-reduced-motion:reduce){
   .studio-review-item {scroll-behavior:auto}
 }
+
+.studio-selected-detail {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 14px;
+  padding:11px 13px;
+  margin-top:12px;
+  color:#c5e8f8;
+  background:#0d2b45;
+  border:1px solid #426b90;
+  border-radius:8px;
+  font-size:.78rem;
+  line-height:1.5;
+}
+.studio-selected-detail strong { color:#f3fbff; }
