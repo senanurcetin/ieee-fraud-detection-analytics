@@ -5,7 +5,7 @@ Contributions should improve **reproducibility, source transparency, safety, and
 ## Before you open a pull request
 
 1. Branch from `main` and keep the change scoped.
-2. Use Python 3.11, a virtual environment, and the committed **`config/dbt/profiles.yml`** (there is no `profiles/profiles.example.yml` in this repo).
+2. Use Python 3.11, a virtual environment, and the committed **`config/dbt/profiles.yml`**; no additional profile template needs to be copied.
 3. Work with the **committed historical snapshots** for UI changes. Do not fetch Kaggle or submit warehouse queries as a side effect of unit tests.
 4. Update [the documentation index](docs/README.md) and relevant methodology/evidence files when you change contracts, outputs or behavior.
 5. Run the applicable test gates.
