@@ -1,5 +1,8 @@
 # Reproducible random vs chronological validation (new study)
 
+> **17 Oct 2026 update:** The new study has now run successfully on the original, complete 590,540-row Kaggle IEEE-CIS competition dataset. See [measured results, exact Git run, SHA-256 and interpretation caveats](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md). The unavailable *original* Kaggle notebook remains unverified, and this new study uses different modeling settings.
+
+
 The original Kaggle notebook *IEEE-CIS: How Much of Random-CV AUC Is Leakage?* is inaccessible (public HTTP 404) and its original notebook source has not been verified. This replacement is **new code**, and does not claim to reproduce its historical 0.971/0.921 scores.
 
 ## Data and methodology
