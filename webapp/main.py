@@ -23,7 +23,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-from src.local_shap import load_explanation
+from webapp.explanation_store import load_explanation
 
 load_dotenv()
 

@@ -1,0 +1,24 @@
+# Local-only, no paid cloud services, no real-time transaction feed.
+services:
+  fraud-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nexus-fraud-historical:local
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      WEB_DATA_BACKEND: bigquery
+      WEB_CACHE_SECONDS: "600"
+      WEB_SNAPSHOT_DISABLE: ""
+      # Internal refresh token intentionally not configured for public demo.
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    restart: unless-stopped

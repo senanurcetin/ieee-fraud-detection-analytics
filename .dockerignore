@@ -1,0 +1,13 @@
+# Explicit allowlist: never transmit raw data, credentials, Git, generated models
+# or any project files outside the public web application to Docker build.
+**
+!webapp/
+!webapp/**
+webapp/.env
+webapp/.env.*
+webapp/.vercel/
+webapp/__pycache__/
+webapp/api/__pycache__/
+webapp/**/*.pyc
+webapp/**/*.sqlite
+webapp/**/*.db
