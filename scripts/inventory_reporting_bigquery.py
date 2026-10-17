@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.audit_reporting_snapshot import SOURCES, SNAPSHOT_PATH, read_json
+from scripts.audit_reporting_snapshot import SNAPSHOT_PATH, SOURCES, read_json
 
 
 def inventory(client: Any, project: str, dataset: str, snapshot: dict[str, Any]) -> dict[str, Any]:
