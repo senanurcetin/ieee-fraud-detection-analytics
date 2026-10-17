@@ -61,6 +61,8 @@ def test_calibration_metrics_is_properly_weighted() -> None:
     assert result["brier_score"] == pytest.approx(np.mean((y - score) ** 2))
     assert result["expected_calibration_error"] == pytest.approx(np.abs(score-y).mean())
     assert sum(bin_row["count"] for bin_row in result["reliability_bins"]) == 4
+    assert set(result["top_k_review_queue"]) == {"top_1pct", "top_5pct", "top_10pct"}
+    assert result["top_k_review_queue"]["top_5pct"]["review_rows"] == 1
 
 
 @pytest.mark.parametrize(
@@ -70,6 +72,31 @@ def test_calibration_metrics_is_properly_weighted() -> None:
 def test_bad_calibration_score_contract_raises(labels: list[int], scores: list[float]) -> None:
     with pytest.raises(ValueError):
         calibration.calibration_metrics(np.array(labels), np.array(scores))
+
+
+def test_top_k_review_queue_selects_without_using_labels_for_tiebreaks() -> None:
+    labels = np.array([0, 1, 1, 0, 1, 0, 0, 1, 0, 0])
+    scores = np.array([0.9, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1])
+    queues = calibration.review_queue_metrics(labels, scores, fractions=(0.1, 0.2, 0.5))
+    # With a score tie, the first original row is selected before the
+    # positive second row; labels cannot be consulted to resolve the tie.
+    assert queues["top_10pct"]["review_rows"] == 1
+    assert queues["top_10pct"]["fraud_cases_captured"] == 0
+    assert queues["top_20pct"]["fraud_cases_captured"] == 1
+    assert queues["top_20pct"]["precision"] == pytest.approx(0.5)
+    assert queues["top_20pct"]["recall"] == pytest.approx(0.25)
+    assert queues["top_20pct"]["lift_vs_holdout_fraud_rate"] == pytest.approx(1.25)
+    assert queues["top_50pct"]["fraud_cases_captured"] == 3
+    assert queues["top_50pct"]["precision"] == pytest.approx(0.6)
+    low, high = queues["top_20pct"]["precision_wilson_95pct"]
+    assert 0 <= low < 0.5 < high <= 1
+
+
+def test_review_queue_refuses_invalid_fraction_or_nonbinary_labels() -> None:
+    with pytest.raises(ValueError):
+        calibration.review_queue_metrics(np.array([0, 1]), np.array([0.2, 0.8]), fractions=(0,))
+    with pytest.raises(ValueError):
+        calibration.review_queue_metrics(np.array([0, 2]), np.array([0.2, 0.8]))
 
 
 def test_compare_raw_platt_isotonic_and_core_baseline_on_final_holdout() -> None:
@@ -101,6 +128,8 @@ def test_compare_raw_platt_isotonic_and_core_baseline_on_final_holdout() -> None
         assert values["rows"] == result["split_rows"]["untouched_final_holdout"]
         assert 0 <= values["brier_score"] <= 1
         assert 0 <= values["expected_calibration_error"] <= 1
+        assert set(values["top_k_review_queue"]) == {"top_1pct", "top_5pct", "top_10pct"}
+        assert all(0 <= item["precision"] <= 1 for item in values["top_k_review_queue"].values())
     assert methods["constant_core_prior"]["mean_score"] == pytest.approx(result["core_fraud_rate"])
     assert len(result["source_rows_identity_time_label_sha256"]) == 64
 
