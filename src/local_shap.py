@@ -11,8 +11,9 @@ import math
 import os
 import sqlite3
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
