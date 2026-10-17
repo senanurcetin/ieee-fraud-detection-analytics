@@ -55,6 +55,34 @@ Variables -> New repository variable**, configure:
   read-only service account. This is a **non-secret repository variable**,
   not its JSON private key.
 
+### Previously established GCP identity and exact Fraud repository scope
+
+The owner's earlier WorkinTech federation setup was named pool `nexus-gha`,
+provider `nexus-main`, service account
+`nexus-bq-readonly@workintech-working.iam.gserviceaccount.com`.
+These are **historical setup identifiers, not evidence of current live IAM**.
+Obtain the actual numeric Google Cloud project number from the provider
+details; the complete provider variable has form
+`projects/<ACTUAL_PROJECT_NUMBER>/locations/global/workloadIdentityPools/nexus-gha/providers/nexus-main`.
+
+The actual Fraud GitHub repository numeric ID is **`1242336340`**
+(verified from GitHub repository metadata). Earlier e-commerce WIF setup
+notes scoped the provider to repository ID `1217831974`, main ref and
+`workflow_dispatch`, with a similarly restricted impersonation binding.
+Therefore **do not assume** that the Fraud repository can impersonate this
+service account. The pool/provider attribute condition, if still restricted
+to the old repository, must explicitly permit the Fraud ID **without deleting
+the old ID**, while maintaining `refs/heads/main` and
+`workflow_dispatch` constraints. The service account must separately
+authorize `roles/iam.workloadIdentityUser` for the *Fraud* mapped GitHub
+principal `attribute.repository_id/1242336340` (assuming that provider
+attribute mapping is still in place). Dataset reader IAM must also cover
+`workintech-working.fraud_project_reporting`.
+
+Use the **existing manual workflow on `main`** for this GCP access.
+The single-use research branch is `push`-triggered and **must not be
+added to the GCP trust policy** just to bypass these restrictions.
+
 The service account must have the minimal dataset permissions to
 `get_dataset`, `list_tables`, `get_table` and bounded `list_rows` on
 `workintech-working.fraud_project_reporting`. Its IAM WIF
@@ -90,8 +118,10 @@ Both states are **partial**; neither means a live bank fraud system.
 
 ## Kaggle follow-up
 
-The first `random_vs_time` run is complete. The other two **have not been
-observed**. Select each explicitly from
+The first `random_vs_time` run and the F03 `temporal_hygiene` / F04
+`calibration` full-source runs **have now completed** as separately evidenced:
+[temporal and calibration measurements](KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md).
+The user-authorized single-use run [#39067832865](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39067832865) executed both research studies; BigQuery auth in the same run was **skipped** because both WIF repo variables were empty. Repeats of the research studies remain manual via the standard opt-in workflow below. Select each explicitly from
 [Kaggle Research Evidence](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/kaggle-research-evidence.yml)
 on `main`:
 
