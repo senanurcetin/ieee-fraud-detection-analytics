@@ -263,7 +263,15 @@ def available_feature_columns(con: duckdb.DuckDBPyConnection) -> tuple[list[str]
     return selected, numeric, categorical
 
 
-def feature_query(split: str, features: list[str]) -> str:
+def feature_query(
+    split: str, features: list[str], *, stable_ties: bool = False,
+) -> str:
+    """Generate training-source SQL without changing historical default order.
+
+    Opt-in research mode sorts equal TransactionDT rows by unique TransactionID.
+    This makes identity/label fingerprints and score tie-handling reproducible.
+    The pre-existing default SQL order is preserved for historic artifacts.
+    """
     txn_table = "train_transaction" if split == "train" else "test_transaction"
     id_table = "train_identity" if split == "train" else "test_identity"
     txn_cols = {"TransactionID", "isFraud", "TransactionDT", "TransactionAmt"}
@@ -276,12 +284,13 @@ def feature_query(split: str, features: list[str]) -> str:
         if col in {"id_12", "id_15", "id_16", "id_28", "id_29", "id_31", "id_35", "id_36", "id_37", "id_38", "DeviceType", "DeviceInfo"} or col.startswith("id_"):
             prefix = "i"
         select_parts.append(f"{prefix}.{quote(col)} as {quote(col)}")
+    order_by = 't."TransactionDT", t."TransactionID"' if stable_ties else 't."TransactionDT"'
     return f"""
         select {', '.join(select_parts)}
         from raw.{txn_table} as t
         left join raw.{id_table} as i
             on t."TransactionID" = i."TransactionID"
-        order by t."TransactionDT"
+        order by {order_by}
     """
 
 
