@@ -8,6 +8,7 @@ button{cursor:pointer}a{text-decoration:none;color:inherit}
 .rail{position:sticky;top:0;height:100vh;padding:29px 18px 24px;background:#081729;color:#f0f5ff;display:flex;flex-direction:column;gap:35px;border-right:1px solid #263b52}
 .brand{display:flex;gap:13px;align-items:center;font-size:12px;letter-spacing:.09em;font-weight:760}
 .brand-mark{display:grid;place-items:center;width:43px;height:43px;border:1px solid #5981ba;border-radius:12px;background:linear-gradient(145deg,#25487c,#112749);font-size:17px;font-weight:800;letter-spacing:-.1em;box-shadow:0 9px 28px #020a1780}
+.brand-mark .brand-symbol{display:block;width:36px;height:36px;object-fit:contain}
 .brand strong{display:block;font-size:12px;letter-spacing:.06em}.brand small{display:block;color:#8ca6ca;font-size:9px;letter-spacing:.13em;margin-top:5px}
 .rail-caption{display:block;margin:0 12px 13px;color:#718dae;font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}
 .rail-nav{display:grid;gap:8px}
