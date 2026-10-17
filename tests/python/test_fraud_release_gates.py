@@ -78,6 +78,68 @@ def test_public_snapshot_read_still_works_without_token(monkeypatch: pytest.Monk
     assert response.json() == {"refresh": False, "source": "historical-snapshot"}
 
 
+
+@pytest.mark.parametrize(
+    "route",
+    (
+        "/api/enterprise/cases/123456",
+        "/api/enterprise/cases/123456/explain",
+        "/api/diagnostics",
+    ),
+)
+def test_direct_warehouse_routes_require_internal_token(
+    route: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("WEB_INTERNAL_REFRESH_TOKEN", raising=False)
+    monkeypatch.setenv("WEB_DATA_BACKEND", "bigquery")
+    monkeypatch.setattr(
+        app_module,
+        "direct_aggregate",
+        lambda *args, **kwargs: pytest.fail("Untrusted caller reached BigQuery."),
+    )
+    response = client.get(route)
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    "route",
+    ("/api/dashboard", "/api/enterprise/summary", "/api/enterprise/segments", "/api/enterprise/cases?limit=10"),
+)
+def test_missing_snapshots_fail_closed_instead_of_querying_bigquery(
+    route: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("WEB_INTERNAL_REFRESH_TOKEN", raising=False)
+    monkeypatch.setenv("WEB_DATA_BACKEND", "bigquery")
+    monkeypatch.setattr(app_module, "load_snapshot", lambda name: None)
+    monkeypatch.setattr(
+        app_module,
+        "cached_dashboard_payload",
+        lambda refresh=False: pytest.fail("Snapshot fallback must not execute a query."),
+    )
+    response = client.get(route)
+    assert response.status_code == 503
+    assert "snapshot unavailable" in response.json()["detail"]
+
+
+def test_snapshot_can_be_bypassed_by_authorized_internal_read(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("WEB_DATA_BACKEND", "bigquery")
+    monkeypatch.setenv("WEB_INTERNAL_REFRESH_TOKEN", "private-refresh-secret")
+    monkeypatch.setattr(app_module, "load_snapshot", lambda name: None)
+    monkeypatch.setattr(
+        app_module,
+        "cached_dashboard_payload",
+        lambda refresh=False: {"source": "authorized-warehouse", "refresh": refresh},
+    )
+    response = client.get(
+        "/api/dashboard",
+        headers={"X-Internal-Refresh-Token": "private-refresh-secret"},
+    )
+    assert response.status_code == 200
+    assert response.json() == {"source": "authorized-warehouse", "refresh": False}
+
+
 def test_snapshot_builder_supplies_ephemeral_header() -> None:
     source = (ROOT / "scripts" / "build_web_snapshot.py").read_text(encoding="utf-8")
     assert "secrets.token_urlsafe(32)" in source
