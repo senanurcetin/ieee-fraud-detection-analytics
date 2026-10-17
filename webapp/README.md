@@ -1,5 +1,8 @@
 # Fraud Analytics Web Report
 
+> **Scope:** This is a published application serving **dated IEEE-CIS reporting snapshots**, not a live transaction stream or a calibrated fraud-probability service. Historical source and model limitations are displayed inside the UI. See the [central docs](../docs/README.md) and [release status](../docs/RELEASE_STATUS.md).
+
+
 This web application is the public presentation layer for the fraud analytics project. It recreates a professional BI-style fraud report as a modern browser dashboard, using FastAPI plus a static HTML/CSS/JavaScript frontend connected to the governed reporting marts.
 
 The application is analytical by design and focuses on BI-style report pages, chart interactions, and executive storytelling.
