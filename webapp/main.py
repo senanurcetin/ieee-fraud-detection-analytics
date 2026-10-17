@@ -6,6 +6,7 @@ import base64
 import json
 import os
 import secrets
+import sqlite3
 import time
 from datetime import date, datetime
 from decimal import Decimal
@@ -21,6 +22,8 @@ from fastapi.staticfiles import StaticFiles
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import bigquery
 from google.oauth2 import service_account
+
+from src.local_shap import load_explanation
 
 load_dotenv()
 
@@ -1545,12 +1548,7 @@ def enterprise_case_explain(
     transaction_id: int,
     x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
 ) -> dict[str, Any]:
-    """Feature-importance-based explanation for a specific transaction.
-
-    Combines LightGBM importance rankings from the reporting layer with
-    the transaction's observable attributes to produce an operator-friendly
-    breakdown of the top contributing signals.
-    """
+    """Historical heuristic/global-importance context; NOT instance-level TreeSHAP."""
     require_warehouse_read_access(x_internal_refresh_token)
     rows = direct_aggregate(transaction_detail_sql(transaction_id))
     if not rows:
@@ -1619,7 +1617,7 @@ def enterprise_case_explain(
         "feature_family": "Model output",
         "observed_value": f"{probability:.3f}",
         "signal_direction": "High risk" if probability >= 0.15 else "Low risk",
-        "note": "Predicted fraud probability from LightGBM.",
+        "note": "Uncalibrated LightGBM ranking score, not a validated fraud probability.",
         "global_family_importance": 1.0,
     }
     observable_signals = [model_probability_signal] + attribute_signals[:4]
@@ -1627,6 +1625,9 @@ def enterprise_case_explain(
     return {
         "transaction_id": transaction_id,
         "model_version": MODEL_REGISTRY["model_version"],
+        "explanation_type": "global_importance_heuristic",
+        "is_local_shap": False,
+        "calibrated_probability": False,
         "risk_context": {
             "risk_score": row.get("risk_score"),
             "risk_band": row.get("risk_band"),
@@ -1648,13 +1649,49 @@ def enterprise_case_explain(
             for r in feat_rows[:5]
         ],
         "methodology": (
-            "Signals combine LightGBM feature-family importance rankings from the reporting layer "
-            "with this transaction's observable attributes. Raw feature values (V1-V339, C1-C14, "
-            "D1-D15) are not stored in the reporting fact table and are therefore summarised by "
-            "feature family. For instance-level contribution values, rerun prepare_raw_and_ml.py against "
-            "the full training data."
+            "This endpoint uses GLOBAL importance and observational heuristics, NOT local TreeSHAP "
+            "contributions or causal explanations. Anonymous Vesta features lack verified meanings. "
+            "This model output is a ranking score, NOT a calibrated fraud probability. "
+            "Use the authenticated local-explanation endpoint only after a verified offline SHAP artifact exists."
         ),
     }
+
+
+@app.get("/api/enterprise/cases/{transaction_id}/local-explanation")
+def enterprise_case_local_explanation(
+    transaction_id: int,
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    """Fetch verified local raw-margin SHAP from a private offline-only artifact.
+
+    Never triggers model inference, BigQuery or a data refresh. Internal auth
+    is required even in DuckDB mode; missing cohort IDs are not fabricated.
+    """
+    require_refresh_authorization(True, x_internal_refresh_token)
+    store = os.getenv("WEB_LOCAL_SHAP_DB_PATH", "").strip()
+    if not store:
+        raise HTTPException(status_code=503, detail="No verified local TreeSHAP artifact is configured.")
+    try:
+        payload = load_explanation(Path(store), transaction_id)
+    except (OSError, sqlite3.Error, ValueError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Verified local TreeSHAP artifact is unavailable.",
+        ) from exc
+    if payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail="No measured instance-level TreeSHAP for this historical transaction.",
+        )
+    if (
+        payload.get("method") != "TreeSHAP"
+        or payload.get("model_version") != MODEL_REGISTRY["model_version"]
+        or payload.get("sample_scope") != "validation_holdout_sample"
+        or payload.get("calibrated_probability") is not False
+        or abs(float(payload.get("raw_margin_additivity_residual", float("inf")))) > 1e-3
+    ):
+        raise HTTPException(status_code=503, detail="Local SHAP model/version/evidence gate failed.")
+    return payload
 
 
 @app.get("/api/enterprise/cases/{transaction_id}")
