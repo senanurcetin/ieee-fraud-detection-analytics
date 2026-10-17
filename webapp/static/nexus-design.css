@@ -34,6 +34,7 @@ body {
   white-space: nowrap;
   margin-bottom: 4px;
 }
+.brand-mark .brand-symbol { display: block; width: 36px; height: 36px; object-fit: contain; flex-shrink: 0; }
 .brand strong { color: #f4f8ff; font-size: 14px; font-weight: 780; letter-spacing: -.02em; }
 .brand span:not(.nexus-fraud-kicker) { color: #acc5e5; }
 .nav-btn { border-radius: 9px; color: #a9c3e1; }
