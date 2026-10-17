@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/static/decision-studio.css">
+<link rel="stylesheet" href="/static/nexus-evidence.css">
 <script src="/static/risk-decision-studio.js" defer></script>
 </head>
 <body class="studio-finance">
@@ -33,7 +34,7 @@
     <div class="rail-footer">
       <strong>ANALYTICAL EVIDENCE / V1</strong>
       <span>The report is derived from governed fraud reporting snapshots. Masked variables are not real identities or geography.</span>
-      <span>Preview only · existing production screens unchanged</span>
+      <span>Historical dataset only · no live fraud monitoring or automated enforcement</span>
     </div>
   </aside>
   <main class="workspace" id="main-content">
@@ -48,6 +49,11 @@
         <div><div class="aside-label" id="aside-label">Primary result</div><div class="aside-number" id="aside-number">—</div><p class="aside-caption" id="aside-caption">Evaluation evidence</p></div>
         <div class="source-line"><strong id="source-title">Source lineage</strong><span id="source-context">Loading source attribution.</span></div>
       </div>
+    </section>
+    <section class="studio-evidence-band" aria-label="Reporting provenance and model disclosure">
+      <strong>SOURCE TRUST</strong>
+      <span id="studio-evidence-source" role="status" aria-live="polite">Checking historical snapshot provenance. No live feed is implied.</span>
+      <a href="/" aria-label="Open fraud analytics dashboard">Full analytical report</a>
     </section>
     <section class="metric-grid" id="metric-grid" aria-label="Evaluation key performance indicators"></section>
     <div class="tabs" role="tablist" aria-label="Analytical workspace views">
