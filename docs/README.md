@@ -30,7 +30,8 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 - [Modeling decisions](modeling_decisions.md) and [model validation evidence](model_validation_evidence.md) — chronological evaluation and scoring contracts.
 - [Model results](model_results.md), [recomputed validation](model_validation_recomputed.md) and [model registry](model_registry.json) — historical metrics and supporting artifact metadata.
 - [17 Oct full-source Kaggle split results](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md) — first verified 590,540-row real-data random vs chronological metrics and source digest.
-- [17 Oct full-source temporal & calibration results](KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md) — measured F03/F04 590,540-row experiments, Brier/ECE/reliability findings, BigQuery readiness blocker.
+- [17 Oct canonical deterministic F03/F04 results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) — verified full-source matching data fingerprints, final temporal ROC-AUC/AP/Brier/ECE and top-k precision/recall results.
+- [Prior 17 Oct F03/F04 measurement](KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md) — dated preliminary research, superseded on deterministic source-order acceptance.
 - [Random vs. time-split reproduction](RANDOM_VS_TIME_SPLIT_REPRODUCTION.md), [temporal hygiene](TEMPORAL_HYGIENE_EXPERIMENT.md), [temporal calibration](TEMPORAL_CALIBRATION_EXPERIMENT.md) — experiment methodology and evidence limits.
 - [Local TreeSHAP explanations](LOCAL_SHAP_EXPLANATIONS.md) and [offline drift monitoring](OFFLINE_DRIFT_MONITORING.md) — gated/offline analyses, not default public inference.
 - [Business impact](banking_business_impact.md), [operational playbook](operational_playbook.md) and [regulatory context](regulatory_context.md) — capacity assumptions, analytical controls and governance context.
