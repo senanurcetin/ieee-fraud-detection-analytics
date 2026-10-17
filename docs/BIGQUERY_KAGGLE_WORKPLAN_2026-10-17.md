@@ -55,6 +55,34 @@ Variables -> New repository variable**, configure:
   read-only service account. This is a **non-secret repository variable**,
   not its JSON private key.
 
+### Previously established GCP identity and exact Fraud repository scope
+
+The owner's earlier WorkinTech federation setup was named pool `nexus-gha`,
+provider `nexus-main`, service account
+`nexus-bq-readonly@workintech-working.iam.gserviceaccount.com`.
+These are **historical setup identifiers, not evidence of current live IAM**.
+Obtain the actual numeric Google Cloud project number from the provider
+details; the complete provider variable has form
+`projects/<ACTUAL_PROJECT_NUMBER>/locations/global/workloadIdentityPools/nexus-gha/providers/nexus-main`.
+
+The actual Fraud GitHub repository numeric ID is **`1242336340`**
+(verified from GitHub repository metadata). Earlier e-commerce WIF setup
+notes scoped the provider to repository ID `1217831974`, main ref and
+`workflow_dispatch`, with a similarly restricted impersonation binding.
+Therefore **do not assume** that the Fraud repository can impersonate this
+service account. The pool/provider attribute condition, if still restricted
+to the old repository, must explicitly permit the Fraud ID **without deleting
+the old ID**, while maintaining `refs/heads/main` and
+`workflow_dispatch` constraints. The service account must separately
+authorize `roles/iam.workloadIdentityUser` for the *Fraud* mapped GitHub
+principal `attribute.repository_id/1242336340` (assuming that provider
+attribute mapping is still in place). Dataset reader IAM must also cover
+`workintech-working.fraud_project_reporting`.
+
+Use the **existing manual workflow on `main`** for this GCP access.
+The single-use research branch is `push`-triggered and **must not be
+added to the GCP trust policy** just to bypass these restrictions.
+
 The service account must have the minimal dataset permissions to
 `get_dataset`, `list_tables`, `get_table` and bounded `list_rows` on
 `workintech-working.fraud_project_reporting`. Its IAM WIF
