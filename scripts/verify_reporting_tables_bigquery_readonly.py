@@ -35,7 +35,7 @@ def normalized_value(value: Any) -> Any:
         return value
     if isinstance(value, datetime.datetime | datetime.date | datetime.time):
         return value.isoformat()
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         return [normalized_value(item) for item in value]
     if isinstance(value, dict):
         return {key: normalized_value(item) for key, item in value.items()}
