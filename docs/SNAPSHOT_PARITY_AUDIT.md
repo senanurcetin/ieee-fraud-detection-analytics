@@ -6,6 +6,22 @@ The historical web snapshot at \`webapp/snapshots/dashboard.json\` reports **27 
 
 The actual project and region were verified separately on 15 October 2026 as \`workintech-working\` / \`US\`; see \`docs/BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md\`. The snapshot remains dated **2026-09-10T19:41:45Z** and must not be relabeled as fresh.
 
+## Optional authenticated inventory — BigQuery metadata APIs, no SQL
+
+On an **authorized network-enabled machine**, run the standalone metadata inventory. It requires an existing read-only service-account credential and can run without gcloud login:
+
+~~~bash
+python -m scripts.inventory_reporting_bigquery \
+  --credentials-file /private/workintech-service-account.json \
+  --project workintech-working \
+  --dataset fraud_project_reporting \
+  --output outputs/fraud_bigquery_inventory.json
+~~~
+
+It calls **get_dataset, list_tables and get_table** only, using the BigQuery read-only OAuth scope. It does not use query jobs or download any table rows. It compares the 24 expected table names and their location to the historical snapshot's declared project/dataset, and reports table metadata, row counts, modification timestamps and field names. A green \`INVENTORY_MATCH\` verifies mapping and metadata presence **only**, never current data content or model validity. Access/egress policies still apply. A missing table or wrong project/region produces a nonzero exit; exceptions never print credentials or credential paths.
+
+This command could not be run against the owner's Windows environment during the 17 October development session because remote desktop operations were blocked by the connector's monthly usage limit. No new BigQuery metadata from that session is claimed. A fresh report must be produced after authorized access is available.
+
 ## Run offline — no SQL jobs or credentials
 
 Inventory the source mapping and all historical group row counts:
@@ -64,8 +80,8 @@ For a **full release-ready** parity result, use the *exact source query-and-norm
 ### Data-free CI verification
 
 ~~~bash
-python -m pytest -q tests/python/test_snapshot_parity_audit.py tests/python/test_snapshot_evidence_consistency.py
-python -m ruff check scripts/audit_reporting_snapshot.py tests/python/test_snapshot_parity_audit.py
+python -m pytest -q tests/python/test_snapshot_parity_audit.py tests/python/test_bigquery_reporting_inventory.py tests/python/test_snapshot_evidence_consistency.py
+python -m ruff check scripts/audit_reporting_snapshot.py scripts/inventory_reporting_bigquery.py tests/python/test_snapshot_parity_audit.py tests/python/test_bigquery_reporting_inventory.py
 ~~~
 
 All tests operate on the committed historical JSON and synthetic records only.
