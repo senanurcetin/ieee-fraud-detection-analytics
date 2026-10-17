@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import secrets
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -55,6 +56,10 @@ def main() -> None:
     os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(Path(args.credentials).resolve())
     # Read through to BigQuery rather than to any snapshot already on disk.
     os.environ["WEB_SNAPSHOT_DISABLE"] = "1"
+    # Short-lived, process-local credential for authorized maintenance refreshes.
+    # Do not expose it in command arguments, snapshots, logs or committed files.
+    refresh_token = secrets.token_urlsafe(32)
+    os.environ["WEB_INTERNAL_REFRESH_TOKEN"] = refresh_token
 
     sys.path.insert(0, str(WEBAPP_DIR))
     import main as webapp_main  # noqa: PLC0415
@@ -65,7 +70,7 @@ def main() -> None:
     SNAPSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
     for name, url in TARGETS.items():
-        response = client.get(url)
+        response = client.get(url, headers={"X-Internal-Refresh-Token": refresh_token})
         if response.status_code != 200:
             raise SystemExit(f"{url} returned {response.status_code}: {response.text[:300]}")
         payload = response.json()

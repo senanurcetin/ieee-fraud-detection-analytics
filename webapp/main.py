@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import secrets
 import time
 from datetime import date, datetime
 from decimal import Decimal
@@ -13,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -1120,6 +1121,49 @@ def build_dashboard_payload() -> dict[str, Any]:
     return data
 
 
+
+def require_refresh_authorization(refresh: bool, supplied_token: str | None) -> None:
+    """Prevent public API callers from bypassing the governed reporting snapshot.
+
+    Live refresh is a maintenance operation, not a public dashboard feature.
+    The token stays in the server environment and is never exposed in a URL.
+    """
+    if not refresh:
+        return
+    expected = os.getenv("WEB_INTERNAL_REFRESH_TOKEN", "")
+    if not expected or not isinstance(supplied_token, str) or not secrets.compare_digest(
+        supplied_token, expected
+    ):
+        raise HTTPException(
+            status_code=403,
+            detail="Live reporting refresh requires an authorized internal token.",
+        )
+
+
+
+def require_warehouse_read_access(supplied_token: str | None) -> None:
+    """Forbid unbounded public BigQuery reads on routes without a full snapshot."""
+    if data_backend() == "duckdb":
+        return
+    require_refresh_authorization(True, supplied_token)
+
+
+def require_snapshot_or_internal_access(
+    snapshot_name: str, refresh: bool, supplied_token: str | None
+) -> None:
+    """Keep public snapshot serving available but fail closed on a missing payload."""
+    if refresh or data_backend() == "duckdb" or load_snapshot(snapshot_name) is not None:
+        return
+    expected = os.getenv("WEB_INTERNAL_REFRESH_TOKEN", "")
+    if not expected or not isinstance(supplied_token, str) or not secrets.compare_digest(
+        supplied_token, expected
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail="Historical reporting snapshot unavailable; warehouse fallback disabled.",
+        )
+
+
 def cached_dashboard_payload(refresh: bool = False) -> dict[str, Any]:
     if not refresh:
         snapshot = load_snapshot("dashboard")
@@ -1438,7 +1482,12 @@ def metadata() -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/summary")
-def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_summary(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
+    require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
     payload = cached_dashboard_payload(refresh=refresh)
     kpis = (payload.get("executive_kpis") or [{}])[0]
     threshold_rows = payload.get("validation_threshold_simulation") or payload.get("threshold_simulation") or []
@@ -1465,12 +1514,16 @@ def enterprise_summary(refresh: bool = Query(default=False)) -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/cases")
-def enterprise_cases(limit: int = Query(default=150, ge=10, le=500)) -> dict[str, Any]:
+def enterprise_cases(
+    limit: int = Query(default=150, ge=10, le=500),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
     snapshot = load_snapshot("enterprise-cases")
     if snapshot is not None:
         cases = (snapshot.get("cases") or [])[:limit]
         return {**snapshot, "cases": cases, "count": len(cases)}
 
+    require_snapshot_or_internal_access("enterprise-cases", False, x_internal_refresh_token)
     rows = direct_aggregate(case_queue_sql(limit=limit))
     return {
         "cases": rows,
@@ -1488,13 +1541,17 @@ def enterprise_cases(limit: int = Query(default=150, ge=10, le=500)) -> dict[str
 
 
 @app.get("/api/enterprise/cases/{transaction_id}/explain")
-def enterprise_case_explain(transaction_id: int) -> dict[str, Any]:
+def enterprise_case_explain(
+    transaction_id: int,
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
     """Feature-importance-based explanation for a specific transaction.
 
     Combines LightGBM importance rankings from the reporting layer with
     the transaction's observable attributes to produce an operator-friendly
     breakdown of the top contributing signals.
     """
+    require_warehouse_read_access(x_internal_refresh_token)
     rows = direct_aggregate(transaction_detail_sql(transaction_id))
     if not rows:
         raise HTTPException(status_code=404, detail="Transaction not found in reporting fact table.")
@@ -1601,7 +1658,11 @@ def enterprise_case_explain(transaction_id: int) -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/cases/{transaction_id}")
-def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
+def enterprise_case_detail(
+    transaction_id: int,
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_warehouse_read_access(x_internal_refresh_token)
     rows = direct_aggregate(transaction_detail_sql(transaction_id))
     if not rows:
         raise HTTPException(status_code=404, detail="Transaction not found in reporting fact table.")
@@ -1619,7 +1680,12 @@ def enterprise_case_detail(transaction_id: int) -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/segments")
-def enterprise_segments(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_segments(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
+    require_snapshot_or_internal_access("enterprise-segments", refresh, x_internal_refresh_token)
     if not refresh:
         snapshot = load_snapshot("enterprise-segments")
         if snapshot is not None:
@@ -1665,7 +1731,12 @@ limit 20
 
 
 @app.get("/api/enterprise/alerts")
-def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_alerts(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
+    require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
     payload = cached_dashboard_payload(refresh=refresh)
     alerts: list[dict[str, Any]] = []
     drift_rows = payload.get("daily_drift", [])
@@ -1725,7 +1796,12 @@ def enterprise_alerts(refresh: bool = Query(default=False)) -> dict[str, Any]:
 
 
 @app.get("/api/enterprise/model-monitoring")
-def enterprise_model_monitoring(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def enterprise_model_monitoring(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
+    require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
     payload = cached_dashboard_payload(refresh=refresh)
     return {
         "model_version": MODEL_REGISTRY["model_version"],
@@ -1770,17 +1846,25 @@ def enterprise_metadata() -> dict[str, Any]:
 
 
 @app.get("/api/dashboard")
-def dashboard(refresh: bool = Query(default=False)) -> dict[str, Any]:
+def dashboard(
+    refresh: bool = Query(default=False),
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, x_internal_refresh_token)
+    require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
     return cached_dashboard_payload(refresh=refresh)
 
 
 @app.get("/api/diagnostics")
-def diagnostics() -> dict[str, Any]:
+def diagnostics(
+    x_internal_refresh_token: str | None = Header(default=None, alias="X-Internal-Refresh-Token"),
+) -> dict[str, Any]:
     """Report dataset reachability, location and table coverage.
 
     Metadata calls only, so this stays usable when the reporting tables are gone
     and every data endpoint is failing.
     """
+    require_warehouse_read_access(x_internal_refresh_token)
     expected = sorted(set(BIGQUERY_TABLES.values()))
     report: dict[str, Any] = {
         "backend": data_backend(),

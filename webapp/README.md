@@ -139,8 +139,15 @@ Then commit `webapp/snapshots/` and redeploy. The header pill reads
 "BigQuery snapshot" with the build time, and `/api/health` reports
 `snapshot_served`.
 
-Set `WEB_SNAPSHOT_DISABLE=1` to bypass the snapshots and read BigQuery live;
-`/api/dashboard?refresh=true` does the same for a single request.
+Set `WEB_SNAPSHOT_DISABLE=1` only inside an authorized maintenance process.
+In BigQuery mode, `/api/dashboard?refresh=true` and other live-refresh routes require
+`X-Internal-Refresh-Token` matching the server-only `WEB_INTERNAL_REFRESH_TOKEN`;
+unauthenticated requests return HTTP 403. The snapshot builder generates an
+in-process temporary token automatically. Do not use browser-side tokens or URL
+query secrets. If a snapshot is absent in public BigQuery mode, API endpoints
+return HTTP 503 instead of launching fallback warehouse queries. Transaction
+case detail/explanation and diagnostics endpoints require internal authorization
+in BigQuery mode. See `docs/SECURE_RELEASE_GATES.md`.
 
 ## Vercel Runtime
 
@@ -173,4 +180,4 @@ $env:FRAUD_E2E_BASE_URL="http://127.0.0.1:8891"
 python -m unittest discover -s tests/browser -p test_fraud_release_acceptance.py -v
 ```
 
-The published reporting data is an **historical BigQuery snapshot**. The UI shows the source/build timestamp and flags age over 30 days. Neither a historical dataset nor a modeled scenario constitutes live bank fraud monitoring. As of the October 14 audit, Vercel daily deployment quota blocks a new preview for this branch; the draft is not merged to production.
+The published reporting data is an **historical BigQuery snapshot**. The UI shows the source/build timestamp and flags age over 30 days. Neither a historical dataset nor a modeled scenario constitutes live bank fraud monitoring. That October 14 release-readiness note is historical. Production releases via the repository's Vercel workflow now require explicit manual dispatch and configured deployment secrets; an unexecuted job is not a deployment.

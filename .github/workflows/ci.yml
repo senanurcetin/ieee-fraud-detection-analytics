@@ -84,7 +84,8 @@ jobs:
             echo "Full IEEE-CIS data build: REQUESTED; Kaggle access will be verified by the download step." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Full IEEE-CIS data build: NOT RUN (no configured repository secret)." >> "$GITHUB_STEP_SUMMARY"
+            echo "Full IEEE-CIS data build: BLOCKED (manual request without Kaggle credentials)." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
           fi
 
       - name: Download Kaggle data
