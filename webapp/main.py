@@ -8,7 +8,7 @@ import os
 import secrets
 import sqlite3
 import time
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from functools import lru_cache
 from pathlib import Path
@@ -1443,6 +1443,75 @@ def model_registry_payload() -> dict[str, Any]:
         "governance_controls": MODEL_GOVERNANCE_CONTROLS,
         "registry_note": "Registry values are exposed for model governance and presentation traceability.",
     }
+
+
+def public_evidence_status(snapshot: dict[str, Any] | None, *, now: datetime | None = None) -> dict[str, Any]:
+    """Evidence about the committed source snapshot, never a live-data claim.
+
+    This intentionally does not use /api/metadata's request timestamp, run
+    warehouse SQL, or infer model retraining from reporting publication dates.
+    """
+    baseline = {
+        "report_scope": "historical_ieee_cis_masked_transactions",
+        "source_status": "unavailable",
+        "source_as_of": None,
+        "age_days": None,
+        "source_project": None,
+        "reporting_dataset": None,
+        "report_groups": None,
+        "physical_source_tables": None,
+        "source_parity": "not_verified_against_current_bigquery",
+        "presentation_quality_passed": None,
+        "presentation_quality_total": None,
+        "model_output_contract": "uncalibrated_ranking_score_not_validated_probability",
+        "explanation_contract": "global_heuristic_unless_verified_local_treeshap_artifact",
+        "live_transaction_monitoring": False,
+        "production_model_evidence": False,
+        "note": "A reporting snapshot and green CI do not prove current BigQuery parity or live fraud performance.",
+    }
+    if not isinstance(snapshot, dict) or not isinstance(snapshot.get("meta"), dict):
+        return baseline
+    meta = snapshot["meta"]
+    source_time = meta.get("refreshed_at")
+    try:
+        if not isinstance(source_time, str):
+            raise ValueError("missing timestamp")
+        parsed = datetime.fromisoformat(source_time.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            raise ValueError("timestamp must have an offset")
+        current = now or datetime.now(UTC)
+        if current.tzinfo is None:
+            raise ValueError("now must have an offset")
+        age_seconds = (current - parsed).total_seconds()
+        if age_seconds < 0:
+            raise ValueError("timestamp cannot be in the future")
+        days = int(age_seconds // 86400)
+    except (TypeError, ValueError, OverflowError):
+        return {**baseline, "source_status": "timestamp_unverified"}
+    readiness = snapshot.get("report_readiness")
+    if not isinstance(readiness, list):
+        readiness = []
+    quality_passed = sum(
+        1 for item in readiness if isinstance(item, dict) and item.get("status") == "PASS"
+    )
+    return {
+        **baseline,
+        "source_status": "historical_over_30d" if days > 30 else "historical_dated",
+        "source_as_of": parsed.astimezone(UTC).isoformat().replace("+00:00", "Z"),
+        "age_days": days,
+        "source_project": meta.get("project_id"),
+        "reporting_dataset": meta.get("dataset"),
+        "report_groups": len(BIGQUERY_TABLES),
+        "physical_source_tables": len(set(BIGQUERY_TABLES.values())),
+        "presentation_quality_passed": quality_passed,
+        "presentation_quality_total": len(readiness),
+    }
+
+
+@app.get("/api/evidence-status")
+def evidence_status() -> dict[str, Any]:
+    """Public, bounded source disclosure; no BigQuery access or data refresh."""
+    return public_evidence_status(load_snapshot("dashboard"))
 
 
 @app.get("/api/metadata")
