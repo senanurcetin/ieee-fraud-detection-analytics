@@ -29,6 +29,7 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 
 - [Modeling decisions](modeling_decisions.md) and [model validation evidence](model_validation_evidence.md) — chronological evaluation and scoring contracts.
 - [Model results](model_results.md), [recomputed validation](model_validation_recomputed.md) and [model registry](model_registry.json) — historical metrics and supporting artifact metadata.
+- [17 Oct full-source Kaggle split results](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md) — first verified 590,540-row real-data random vs chronological metrics and source digest.
 - [Random vs. time-split reproduction](RANDOM_VS_TIME_SPLIT_REPRODUCTION.md), [temporal hygiene](TEMPORAL_HYGIENE_EXPERIMENT.md), [temporal calibration](TEMPORAL_CALIBRATION_EXPERIMENT.md) — experiment methodology and evidence limits.
 - [Local TreeSHAP explanations](LOCAL_SHAP_EXPLANATIONS.md) and [offline drift monitoring](OFFLINE_DRIFT_MONITORING.md) — gated/offline analyses, not default public inference.
 - [Business impact](banking_business_impact.md), [operational playbook](operational_playbook.md) and [regulatory context](regulatory_context.md) — capacity assumptions, analytical controls and governance context.
