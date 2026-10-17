@@ -1,455 +1,135 @@
 <p align="center">
-  <img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS — personal brand identity" width="660">
+  <img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS identity" width="540">
 </p>
 
 # IEEE-CIS Fraud Risk Intelligence
 
-**SEO and social cards:** [Documented canonical URLs, screenshot sources and preview assets](docs/SEO_AND_SOCIAL_PREVIEW_GUIDE.md).
+**An evidence-first, historical fraud analytics project** combining data engineering, time-aware machine-learning evaluation and an interactive NEXUS dashboard. Built on the [IEEE-CIS Fraud Detection dataset](https://www.kaggle.com/c/ieee-fraud-detection); no competition data is redistributed here.
 
-**Technical reviewer brief:** [Problem, quantitative evidence and limitations](docs/hiring-summary.md).
+[![Python CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
+[![Browser acceptance](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/browser-acceptance.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/browser-acceptance.yml)
+[![Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-![Current NEXUS Fraud Analytics production executive overview, captured with Chromium on 2026-10-14](docs/assets/web_dashboard_executive_overview.png)
+[**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
 
-> **Production screenshot (14 October 2026):** captured directly from the deployed NEXUS Fraud Analytics Vercel app using real Chromium after the reporting backend connected. The image shows a governed historical BigQuery reporting snapshot, **not** live transaction monitoring. [Screenshot provenance](docs/assets/production_screenshot_provenance_20261014.json).
+![Historical NEXUS executive overview, captured 14 October 2026](docs/assets/web_dashboard_executive_overview.png)
 
-[![CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
-[![Historical Dashboard](https://img.shields.io/badge/Historical%20Dashboard-Vercel-black)](https://fraud-project-web.vercel.app)
-![Python](https://img.shields.io/badge/Python-3.11-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+*Screenshot captured on 14 October 2026; [capture and hash provenance](docs/assets/production_screenshot_provenance_20261014.json). It depicts an older deployed revision, not a live transaction feed.*
 
-**Temporal validation:** The headline ranking result uses an out-of-time holdout rather than an optimistic random split. See the [reproducible model validation evidence](docs/model_validation_evidence.md) and [scoring decisions](docs/modeling_decisions.md). A previously linked random-CV Kaggle notebook currently returns HTTP 404 to public visitors; its unpublished comparison numbers are not represented here as independently verifiable.
+## What this project demonstrates
 
-## Quick Summary
+- **Analytics engineering:** DuckDB preparation; BigQuery raw, staging, intermediate, mart and reporting datasets; 38 dbt models with reconciliation and governance tests.
+- **Risk modeling:** LightGBM ranking, chronological holdout, class-imbalance-aware evaluation and cost/capacity-sensitive threshold analysis.
+- **Product analytics:** Nine BI-style pages, filter-linked visuals, masked-proxy drill-through, explainability summaries and a read-only historical analyst review.
+- **Delivery engineering:** FastAPI, containerized offline demo, Vercel, Python CI, real-browser acceptance and separately gated public release attestation.
 
-| | |
-|--|--|
-| **Dataset** | IEEE-CIS Fraud Detection — 590,540 transactions, $79.7M, 3.50% baseline fraud rate |
-| **Core finding** | Fraud is not random. Product C carries **11.7% fraud rate (3.34x lift)** and drives 38.8% of all fraud labels. Identity-present transactions show **7.85% fraud rate (2.24x lift)**. |
-| **Model** | LightGBM — holdout ROC-AUC **0.9134**, top 5% score band captures **58.32% of fraud** at **40.13% precision** — 7.12x better than baseline review. Band quality is reported on the time-based holdout, not the split the model was fitted on. |
-| **Stack** | DuckDB → BigQuery → dbt (38 models) → LightGBM → FastAPI → Vercel |
-| **Output** | Historical snapshot-backed BI dashboard; threshold simulator, segment analytics and global SHAP summaries |
+## Historical dataset and evaluation
 
----
+| Historical evidence | Value |
+|---|---:|
+| Train transactions | 590,540 |
+| Fraud-labeled train transactions | 20,663 |
+| Baseline fraud rate | 3.50% |
+| Chronological validation ROC-AUC | 0.9134 |
+| Chronological validation average precision | 0.5354 |
+| Top 5% score band: precision / fraud recall | 40.13% / 58.32% |
 
-End-to-end fraud analytics project built on the IEEE-CIS Fraud Detection dataset. The project turns raw Kaggle CSV files into governed BigQuery datasets, dbt models, machine-learning risk scores, and an executive live web analytics dashboard.
+The reported evaluation is based on a **time-ordered holdout**, not random validation. [Methodology and limitations](docs/ieee_cis_dataset_methodology.md) · [Model validation evidence](docs/model_validation_evidence.md) · [Modeling decisions](docs/modeling_decisions.md).
 
-The business question is simple: where does fraud concentrate, what is the exposure, and which segment-level controls should the business prioritize?
+**Important boundaries:** IEEE-CIS has masked transaction and identity features; `TransactionDT` is relative elapsed time, not a real calendar timestamp. The current `predicted_fraud_probability` field is an **uncalibrated ranking score**, not a verified customer-specific fraud probability. Global feature-importance summaries are distinct from locally generated TreeSHAP evidence. No real-time payment monitoring, card blocking, customer identification or fully validated production model is provided.
 
-## Zero-budget offline demo
+## Architecture
 
-The live website URL is a **published historical analytics interface**, not a
-live banking feed. Source snapshot built: **10 September 2026**. The model's
-`predicted_fraud_probability` is an uncalibrated ranking score; current
-BigQuery source parity and all new F03/F04 real-data experiments still need
-independent acceptance.
+```mermaid
+flowchart LR
+    A["IEEE-CIS CSV files (not in Git)"] --> B["Python / DuckDB"]
+    B --> C["LightGBM & offline evidence"]
+    B --> D["BigQuery (authorized, optional)"]
+    D --> E["dbt staging → intermediate → marts"]
+    C --> E
+    E --> F["24 physical reporting tables"]
+    F --> G["27 dashboard reporting groups"]
+    G --> H["Historical JSON snapshots"]
+    H --> I["FastAPI · NEXUS dashboard"]
+    I --> J["Docker / Vercel"]
+```
 
-For a local, snapshot-only preview without GCP credentials or paid queries:
+The **public dashboard reads committed historical JSON snapshots** by default; it does not query BigQuery to serve every request. The latest committed snapshot was built **10 September 2026**. The source project and major KPI values were previously checked, but full current BigQuery parity remains unverified. See [architecture](docs/architecture.md), [lineage](docs/bigquery_dbt_lineage.md) and [source evidence](docs/BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
+
+## Quick start — no cloud account required
+
+From the repository root, with Python 3.11 and Docker Compose:
 
 ```bash
 docker compose build
 docker compose up -d
 python -m scripts.verify_snapshot_release --base-url http://127.0.0.1:8000
+# Open http://127.0.0.1:8000/
 docker compose down
 ```
 
-The local checker can return `PASS_HISTORICAL_OFFLINE_DEMO`; that result is
-**not** Docker runtime evidence until the commands are actually run, and is
-never approval for production/live payments or a refreshed data claim. Read
-[the F08 deployment runbook](docs/F08_LOCAL_RELEASE.md) and
-[the F07 source trust contract](docs/F07_EVIDENCE_TRUST_RAIL.md) before using
-the output in a demonstration.
+This demo loads **historical snapshots only**. A `PASS_HISTORICAL_OFFLINE_DEMO` confirms local presentation contract integrity, **not** freshness, BigQuery reconciliation or model recalibration. [Docker runbook](docs/F08_LOCAL_RELEASE.md).
 
-## Problem Statement
-
-Financial fraud is a low-prevalence, high-impact risk: the baseline fraud rate is only 3.50%, so portfolio averages hide the segments that actually drive exposure. This project builds an analytics and scoring layer that identifies where fraud concentrates and converts model scores into threshold and segment-control evidence.
-
-## Key Findings
-
-- Product risk is concentrated: Product C has an 11.7% fraud rate, 3.34x lift, and 38.8% of fraud labels while representing 68,519 transactions.
-- Identity availability is an analytical signal: only 144,233 of 590,540 train transactions have identity records, creating a 24.42% identity coverage rate; identity-present transactions show 7.85% fraud rate and 2.24x lift.
-- Model ranking is strong enough for prioritization: the LightGBM validation ROC-AUC is 0.9134 and the average precision / AUC-PR proxy is 0.5354.
-- The top-score region is analytically valuable: the top 10% validation score band has 7.12x lift versus the validation fraud baseline.
-- The model threshold page separates holdout evidence from reporting-score segmentation: the top 5% validation score band captures 58.32% of fraud labels at 40.13% precision, while the fixed 0.50 threshold captures 69.78% at 25.68% precision.
-
-## Executive Summary
-
-Fraud is a low-frequency event in the dataset, but it is not random. Product, identity coverage, payment attributes, email domains, transaction amount bands, and model risk bands show clear concentration patterns. The final web dashboard is structured as a senior banking fraud analyst presentation: first the portfolio exposure, then trend behavior, then amount risk, then masked customer and payment-email segmentation, then masked address/distance proxy signals, then model explainability, model threshold tradeoffs, and final recommendations.
-
-Portfolio snapshot:
-
-- Total transactions profiled: 590,540
-- Fraud-labeled transactions: 20,663
-- Baseline fraud rate: 3.50%
-- Total transaction amount: $79.7M
-- Fraud-labeled amount: $3.08M
-- Recommended threshold-policy frame: start with the top 5% validation score band for a focused business-control scenario, then use the 0.50 threshold scenario when recall is prioritized over workload.
-
-## Architecture Diagram
-
-```mermaid
-flowchart LR
-    A["Kaggle IEEE-CIS CSV"] --> B["DuckDB local analytical store"]
-    B --> C["BigQuery raw dataset"]
-    C --> D["dbt staging models"]
-    D --> E["dbt intermediate models"]
-    E --> F["dbt mart models"]
-    F --> G["Executive reporting tables"]
-    B --> H["LightGBM scoring"]
-    H --> F
-    G --> I["FastAPI web dashboard"]
-    I --> J["Vercel public presentation"]
-```
-
-BigQuery datasets used by the production target:
-
-- `fraud_project_raw`
-- `fraud_project_staging`
-- `fraud_project_intermediate`
-- `fraud_project_mart`
-- `fraud_project_reporting`
-
-## Tech Stack
-
-- Data ingestion: Kaggle CLI, Python, DuckDB
-- Warehouse: Google BigQuery
-- Transformation: dbt Core, dbt-bigquery, custom dbt tests
-- Machine learning: LightGBM, scikit-learn, time-based validation
-- Reporting: FastAPI live dashboard, static HTML/CSS/JavaScript, BigQuery client
-- Deployment: Vercel production deployment
-- Quality gates: dbt tests, Python validation scripts, GitHub Actions
-- Infrastructure definition: Terraform dataset manifest for BigQuery
-
-## Repository Structure
-
-```text
-fraud_project/
-|-- .github/workflows/        # CI, dbt validation, docs workflow
-|-- analyses/                 # dbt ad-hoc analysis area
-|-- bigquery/                 # BigQuery deployment notes
-|-- config/dbt/               # sanitized dbt profile templates
-|-- docs/                     # project documentation and business narrative
-|-- infra/bigquery/           # Terraform dataset definitions
-|-- macros/                   # dbt macros and generic tests
-|-- models/                   # staging, intermediate, marts, reporting dbt models
-|-- scripts/                  # local deployment and validation commands
-|-- src/                      # ingestion, ML, and deployment helper scripts
-|-- webapp/                   # FastAPI + browser dashboard over BigQuery
-`-- tests/                    # dbt singular tests and Python tests
-```
-
-## Data Setup
-
-The raw Kaggle files are not committed to the repository. Download them with the Kaggle CLI:
-
-```bash
-kaggle competitions download -c ieee-fraud-detection -p data/raw/kaggle_ieee_fraud
-unzip -o data/raw/kaggle_ieee_fraud/ieee-fraud-detection.zip -d data/raw/kaggle_ieee_fraud
-```
-
-Expected files:
-
-- `train_transaction.csv`
-- `train_identity.csv`
-- `test_transaction.csv`
-- `test_identity.csv`
-- `sample_submission.csv`
-
-## Environment Setup
-
-Python 3.11 or 3.12 is recommended.
+Alternatively, start the web server in a local Python 3.11 environment:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
+# Activate .venv for your shell
+python -m pip install -r webapp/requirements.txt
+python -m uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 ```
 
-On Windows PowerShell:
+## Reproduce the analytical pipeline (data access required)
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
-```
-
-The dbt profile templates under `config/dbt/` are sanitized and use environment variables. For BigQuery, set credentials through environment variables. Do not commit service-account files.
-
-```bash
-export GCP_PROJECT_ID="your-gcp-project"
-export BIGQUERY_LOCATION="US"
-export GOOGLE_APPLICATION_CREDENTIALS="<private-service-account-json-path>"
-```
-
-## Run Locally
-
-Build the local analytical store and model scores:
+The raw IEEE-CIS files are **not** tracked. Obtain them through Kaggle under the competition's terms and place them under `data/raw/kaggle_ieee_fraud/`. After installing `requirements.txt` and `requirements-dev.txt`:
 
 ```bash
 python src/prepare_raw_and_ml.py
-dbt deps
+dbt deps --project-dir .
 dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
-uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 ```
 
-## BigQuery Deployment
+The local `dev` profile uses DuckDB. BigQuery production models, table uploads and billed queries require **separate authorized credentials, budget checks and release approval**. They are not part of routine CI. [Environment setup](docs/environment_setup.md) · [BigQuery source audit](docs/BIGQUERY_BOUNDED_SOURCE_PARITY.md).
 
-PowerShell deployment:
-
-```powershell
-$env:GCP_PROJECT_ID = "your-gcp-project"
-$env:BIGQUERY_LOCATION = "US"
-$env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
-
-.\scripts\deploy_bigquery.ps1 `
-  -Credentials $env:GOOGLE_APPLICATION_CREDENTIALS `
-  -ProjectId $env:GCP_PROJECT_ID `
-  -Location $env:BIGQUERY_LOCATION `
-  -ReportingDataset "fraud_project_reporting"
-```
-
-Minimum IAM roles:
-
-- BigQuery Job User
-- BigQuery Data Editor
-- BigQuery Data Viewer
-
-Terraform dataset definitions are available under `infra/bigquery/`.
-
-## Results and Visualizations
-
-The final report is designed for executive review, not exploratory notebook browsing. It focuses on six questions:
-
-| Question | Primary evidence |
-|---|---|
-| How large is the fraud problem? | `rpt_executive_kpis`, `mart_fraud_summary` |
-| Where does risk concentrate? | `rpt_product_risk`, `rpt_identity_risk`, `rpt_segment_watchlist` |
-| Do amount and time patterns matter? | `rpt_amount_bands`, `rpt_time_amount_signals`, `rpt_daily_drift` |
-| Which payment and email segments need monitoring? | `rpt_payment_heatmap`, `rpt_email_domain_risk` |
-| Can the model support threshold policy? | `rpt_model_risk_bands`, `rpt_validation_threshold_simulation`, `rpt_segment_model_performance` |
-| Is the data pipeline trustworthy? | `rpt_quality_contract`, `rpt_report_readiness`, dbt tests |
-
-Current validation snapshot:
-
-| Result | Value |
-|---|---:|
-| Total profiled train transactions | 590,540 |
-| Fraud-labeled train transactions | 20,663 |
-| Baseline fraud rate | 3.50% |
-| Identity coverage rate | 24.42% |
-| ROC-AUC | 0.9134 |
-| Average precision / AUC-PR proxy | 0.5354 |
-| Top 10% validation score lift | 7.12x |
-| Top 5% validation precision | 40.13% |
-| Top 5% validation recall | 58.32% |
-| Top 5% validation false-positive rate | 3.10% |
-| Top 5% validation workload | 5.00% |
-| Fixed 0.50 threshold precision | 25.68% |
-| Fixed 0.50 threshold recall | 69.78% |
-| Fixed 0.50 threshold workload | 9.35% |
-
-## ML Scoring Layer
-
-The scoring script trains a `LightGBMClassifier` with a time-based validation split using the last 20% of `TransactionDT` as holdout data. Outputs include:
-
-- `raw.ml_predictions`
-- `raw.validation_predictions`
-- `raw.validation_threshold_simulation`
-- `raw.feature_importance`
-- validation ROC curve data
-- model metrics in `raw_profile.json`
-
-The model is used as a threshold-policy and prioritization evidence layer, not as an automated decline engine.
-
-Current validation design:
-
-- Algorithm: LightGBM binary classifier
-- Validation: time-based holdout
-- Primary metric: ROC-AUC
-- Secondary metric: average precision
-- Risk bands: p80, p95, p99 score thresholds
-
-Latest local validation snapshot:
-
-- ROC-AUC: 0.9134
-- Average precision: 0.5354
-- Top 5% validation score band: 40.13% precision, 58.32% recall, 3.10% false-positive rate, 5.00% workload
-- Fixed 0.50 threshold: 25.68% precision, 69.78% recall, 7.20% false-positive rate, 9.35% workload
-- Registry feature scope: 425 features, including V1-V339 after missingness filtering
-- Categorical features: 26
-- Model registry endpoint: `/api/enterprise/model-registry`
-- Case explainability endpoint: `/api/enterprise/cases/{transaction_id}/explain`
-
-Model explainability artifacts:
-
-- [Feature importance](docs/assets/model_feature_importance.png)
-- [Feature contribution summary](docs/assets/model_shap_summary.png)
-- [Precision-recall curve](docs/assets/precision_recall_curve.svg)
-- [Threshold simulation and business impact](docs/banking_business_impact.md)
-
-Validation evidence:
-
-| Metric | Value |
-|---|---:|
-| ROC-AUC | 0.9134 |
-| Average precision / AUC-PR proxy | 0.5354 |
-| Validation top 10% lift | 7.12x |
-| Validation top 5% precision | 40.13% |
-| Validation top 5% recall | 58.32% |
-| Validation top 5% false-positive rate | 3.10% |
-| Validation top 5% workload share | 5.00% |
-| Fixed 0.50 threshold precision | 25.68% |
-| Fixed 0.50 threshold recall | 69.78% |
-
-## Live Web Dashboard
-
-Main deliverable:
-
-```text
-https://fraud-project-web.vercel.app
-```
-
-The live dashboard reads the dbt-built BigQuery reporting tables and is the main presentation layer. It includes:
-
-- BI-style report canvas with nine analytical pages
-- Global slicers for relative day, product, amount band, email group, identity status, and risk band
-- Primary Analysis / Supporting Visuals layer on every page to keep the main story focused
-- Chart-level drill-through for every report visual
-- Segment-level drill-through through clickable product, amount, email, identity, risk, and proxy marks
-- Custom tooltips on bars, heatmaps, time series, scatter plots, model curves, and risk-band visuals
-- Pareto, heatmap, waterfall, scatter, boxplot, treemap, matrix, and threshold-simulation visuals
-- Customer proxy analysis with full-width payment x email heatmap and supporting identity/device drilldowns
-- Masked address and distance analysis without unsupported geography claims
-- Validation threshold what-if simulation with workload, capture, precision, missed exposure, and a net benefit frame whose two cost assumptions are stated on screen and adjustable
-- Feature importance, feature-family treemap, missingness analysis, and model-quality evidence
-- KPI dictionary, methodology limitations, production validation, and public API metadata contract
-
-Run locally:
-
-```powershell
-$env:GCP_PROJECT_ID = "your-gcp-project"
-$env:BQ_DATASET = "fraud_project_reporting"
-$env:BIGQUERY_LOCATION = "US"
-$env:GOOGLE_APPLICATION_CREDENTIALS = "<private-service-account-json-path>"
-
-uvicorn webapp.main:app --host 127.0.0.1 --port 8000
-```
-
-Then open `http://127.0.0.1:8000`.
-
-The API reads pre-aggregated `rpt_*` tables only and exposes a cached `/api/dashboard` payload for the executive web dashboard. A separate `/api/metadata` endpoint publishes the KPI dictionary, methodology controls, operating assumptions, and quality gates used by the public dashboard. Transaction explanation endpoints use model feature-importance context and transaction-level raw values; they are not presented as full instance-level model attribution.
-
-Vercel deploys the `webapp/` folder as the project root. The production runtime uses Vercel environment variables, including `GOOGLE_APPLICATION_CREDENTIALS_JSON_B64`, instead of local credential files.
-
-## Dashboard Preview
-
-The dashboard follows the fraud analyst presentation sequence: portfolio exposure → concentration patterns → proxy signals → model evidence → threshold decision → recommendations.
-
-### 1. Executive Fraud Overview — Portfolio context and risk band exposure
-
-*Answers: What is total fraud exposure? Where does the model concentrate fraud across risk bands?*
-
-[Open the full-resolution executive dashboard screenshot](docs/assets/web_dashboard_executive_overview.png) (shown at the beginning of this README).
-
-Portfolio KPIs: 590,540 transactions, 3.50% fraud rate, $3.08M fraud exposure. Net benefit is not a fixed figure: IEEE-CIS has no cost columns, so the simulator exposes the two assumptions it depends on — cost per reviewed false positive and loss per fraud dollar — and recomputes as you move them. The risk band chart reports the holdout: Critical carries a 90.49% fraud rate and High 30.34%, against 96.68% and 44.59% on the train split the model was partly fitted on. The model page shows that gap band by band. Product risk ranking visible at page bottom.
-
----
-
-### 2. Customer Risk Analysis — Identity and email segmentation
-
-*Answers: Which customer proxies signal higher fraud? Does identity availability predict risk?*
-
-![Actual production Customer Risk Analysis workspace](docs/assets/web_dashboard_customer_risk.png)
-
-Identity-present transactions: 7.85% fraud rate (2.24x lift). Identity-missing: 2.09%. Email domain ranking: hotmail.com 5.30%, gmail.com 4.33%. Payment × email heatmap isolates MASTERCARD/CREDIT + gmail.com at 11.16% — the highest observable cross-segment rate.
-
----
-
-### 3. Model Performance Analysis — Threshold decision evidence
-
-*Answers: How well does the model rank fraud? Which threshold policy is defensible?*
-
-![Actual production Model Performance Analysis workspace](docs/assets/web_dashboard_model_threshold.png)
-
-Holdout ROC-AUC 0.9134, average precision 0.5354 (vs 3.44% baseline). Interactive threshold simulator: at the 0.50 threshold — 69.78% fraud capture, 25.68% precision, 11,043 reviewed transactions (9.35% workload), 1,228 fraud labels missed. Precision-recall curve and confusion matrix confirm the model separates fraud from legitimate transactions at every operating point.
-
----
-
-### 4. Masked Address & Distance Analysis — Proxy risk signals
-
-*Answers: Do anonymized address and distance fields carry fraud signal?*
-
-![Actual production Masked Address and Distance Analysis workspace](docs/assets/web_dashboard_masked_proxy.png)
-
-Top proxy lift: 3.37x for "Address missing" segment. Product × proxy heatmap: **Product C with address missing shows 11.87% fraud rate** — the single highest observable rate in the dataset. Proxy fraud share vs volume share chart confirms signal strength is independent of population size.
-
----
-
-### 5. Mobile Executive View
-
-![Actual production 375px Fraud executive overview](docs/assets/web_dashboard_mobile_overview.png)
-
-Responsive layout for executive review on mobile. Portfolio KPIs and risk band distribution accessible without desktop.
-
-### Opt-in real-browser dashboard acceptance (local, no hosted CI)
-
-The NEXUS dashboard is deployed in production and its current interface was captured directly from the live app on 14 October 2026. The optional [browser acceptance suite](tests/browser/test_fraud_dashboard.py) checks nine-page navigation, the dark/light control, 375px overflow, the visible error/retry state, and uncaught JavaScript exceptions. A live reporting backend is required for the non-error tests; the production browser suite passed 12/12 on 14 October 2026. It does **not** substitute mocked values for successful business metrics.
-
-Run FastAPI locally with its documented reporting data configuration, install Playwright and Chromium, then execute:
+## Validation and delivery
 
 ```bash
-python -m pip install playwright
-python -m playwright install chromium
-FRAUD_E2E_BASE_URL=http://127.0.0.1:8000 E2E_SCREENSHOT_DIR=artifacts/dashboard-browser python -m unittest discover -s tests/browser -p 'test_fraud_dashboard.py' -v
-```
-
-The screenshots in this README were captured from the verified production dashboard on 14 October 2026; the opt-in Chromium acceptance suite ran **12/12 successfully** against the live production URL. This browser suite remains separate from the default pytest testpath and hosted CI. [Image SHA-256 and capture provenance](docs/assets/production_screenshot_provenance_20261014.json).
-
-## Quality Gates
-
-```bash
+python -m pip install -r requirements.txt -r requirements-dev.txt
 ruff check .
 pytest
-pip-audit -r requirements.txt --ignore-vuln PYSEC-2024-277
-dbt build --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
+python -m compileall webapp
+dbt deps --project-dir .
+dbt parse --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 ```
 
-Latest validation snapshot:
+GitHub Actions additionally covers real Chromium/Firefox/WebKit dashboard acceptance and a Docker/HTTP snapshot smoke test. The **public-production** test checks the exact deployed SHA and HTTPS responses and must not be confused with local test success.
 
-- dbt local build: `PASS=164 WARN=0 ERROR=0 SKIP=0 NO-OP=1 TOTAL=165`
-- dbt project scope: 38 models, 126 data tests, 10 sources, 1 exposure
-- Critical BigQuery row counts verified: train transactions 590,540; train identity 144,233; reporting fact 590,540
-- GitHub Actions: Python quality, pytest, web dashboard contract checks, dependency audit, and dbt parse/build workflow
-
-## Documentation
-
-**14 October 2026 source/security follow-up:** [read-only BigQuery executive KPI revalidation](docs/bigquery_source_revalidation_2026-10-14.md) and [runtime/CI dependency security review](docs/dependency_security_review_2026-10-14.md). The competition data is historical; the BigQuery table was last modified 11 September and snapshot generation date remains 10 September. Neither date should be misrepresented as live banking activity.
-
-The `docs/` folder is thorough rather than short. If you are reviewing this
-project, these four cover it:
-
-| Read | For |
+| Release gate | Scope |
 |---|---|
-| [Executive summary](docs/executive_summary.md) | What the analysis found and what it recommends |
-| [Dataset methodology](docs/ieee_cis_dataset_methodology.md) | What IEEE-CIS does and does not contain, and how that bounds every claim |
-| [Modeling decisions](docs/modeling_decisions.md) | Time-based validation, feature scope, why the V-features are filtered on missingness |
-| [Business impact](docs/banking_business_impact.md) | Threshold economics and the two cost assumptions behind the net-benefit figure |
+| [CI](.github/workflows/ci.yml) | Python, Ruff, Pytest, dependency auditing, dbt parse; data build only with authorized credentials |
+| [Browser acceptance](.github/workflows/browser-acceptance.yml) | Real browsers against local historical snapshot |
+| [Container smoke](.github/workflows/container-smoke.yml) | Docker Compose boot and historical HTTP contract |
+| [Public release attestation](.github/workflows/public-release-smoke.yml) | Exact Vercel commit SHA, source disclosure and public HTTPS routes |
 
-Supporting depth:
+Current unresolved acceptance: [BigQuery data parity #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9), [reproducibility #8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8), [model calibration #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20), and [production release verification #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29). Do not infer those are complete from green code checks.
 
-- Evidence — [model results](docs/model_results.md), [validation evidence](docs/model_validation_evidence.md), [production validation](docs/production_validation.md)
-- Engineering — [architecture](docs/architecture.md), [BigQuery/dbt lineage](docs/bigquery_dbt_lineage.md), [dbt guide](docs/dbt_project_guide.md), [dashboard guide](docs/live_web_dashboard_guide.md)
-- Operations — [operational playbook](docs/operational_playbook.md) including retraining triggers, [regulatory context](docs/regulatory_context.md), [security and secrets](docs/security_and_secrets.md)
-- Reference — [data dictionary](docs/data_dictionary.md), [analysis story](docs/analysis_story.md)
+## Project map
 
-The remaining files are working notes: backlogs, coverage checklists and QA
-acceptance records kept for traceability rather than for reading start to
-finish.
+```text
+config/dbt/        dbt connection profiles (no secrets)
+models/            staging → intermediate → marts → reporting SQL
+src/               ingestion, modeling, SHAP and drift utilities
+scripts/           reproducible audits, benchmarks and local release checks
+webapp/            FastAPI, static dashboard and historical JSON snapshots
+tests/             Python, browser and dbt reconciliation tests
+docs/              technical reference, methodology and dated evidence
+infra/bigquery/    optional Terraform dataset definitions
+notebooks/         controlled analytical research notebook
+```
+
+**Documentation starts at [docs/README.md](docs/README.md).** Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Security reporting and credential policy: [SECURITY.md](SECURITY.md).
 
 ## License
 
-Code and documentation are released under the MIT License. The Kaggle dataset is not redistributed; users must download it from Kaggle and comply with the competition terms.
-
+Source code is released under the [MIT License](LICENSE). The IEEE-CIS dataset is subject to its original competition terms and is not included in this repository.
