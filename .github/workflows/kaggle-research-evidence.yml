@@ -1,0 +1,169 @@
+name: Kaggle Research Evidence
+
+# Kaggle access and full-data experiments require an explicit maintainer click.
+# A push or PR must never consume Kaggle credentials or download competition data.
+on:
+  workflow_dispatch:
+    inputs:
+      study:
+        description: "Run one authorized historical IEEE-CIS research stage"
+        required: true
+        default: random_vs_time
+        type: choice
+        options:
+          - access_check
+          - random_vs_time
+          - temporal_hygiene
+          - calibration
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kaggle-research-evidence
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  PYTHONUNBUFFERED: "1"
+  OPENBLAS_NUM_THREADS: "2"
+  OMP_NUM_THREADS: "2"
+  MKL_NUM_THREADS: "2"
+
+jobs:
+  authorized-research:
+    name: "Kaggle historical IEEE-CIS / ${{ inputs.study }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout reviewed source SHA
+        uses: actions/checkout@v4
+
+      - name: Set up pinned Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Confirm encrypted Kaggle token is configured
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${KAGGLE_API_TOKEN:-}" ]; then
+            echo "BLOCKED: repository secret KAGGLE_API_TOKEN is missing or empty." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Kaggle secret exists; remote authentication and competition access are still unverified." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install Kaggle client and pinned research dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install kaggle
+
+      - name: Download competition source privately (no data artifacts)
+        shell: bash
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p data/raw/kaggle_ieee_fraud
+          kaggle competitions download -c ieee-fraud-detection -p data/raw/kaggle_ieee_fraud
+          test -s data/raw/kaggle_ieee_fraud/ieee-fraud-detection.zip
+          unzip -oq data/raw/kaggle_ieee_fraud/ieee-fraud-detection.zip             train_transaction.csv train_identity.csv -d data/raw/kaggle_ieee_fraud
+          test -s data/raw/kaggle_ieee_fraud/train_transaction.csv
+          test -s data/raw/kaggle_ieee_fraud/train_identity.csv
+          echo "PASS: Kaggle competition files downloaded to ephemeral runner storage." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Capture hash-only source provenance
+        shell: bash
+        env:
+          RESEARCH_MODE: ${{ inputs.study }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          paths = {
+              n: Path("data/raw/kaggle_ieee_fraud") / (n + ".csv")
+              for n in ("train_transaction", "train_identity")
+          }
+          def file_hash(path):
+              digest = hashlib.sha256()
+              with path.open("rb") as handle:
+                  for block in iter(lambda: handle.read(1024 * 1024), b""):
+                      digest.update(block)
+              return digest.hexdigest()
+          provenance = {
+              "source": "kaggle/competitions/ieee-fraud-detection",
+              "competition_accepted_and_downloaded": True,
+              "mode": os.environ["RESEARCH_MODE"],
+              "tested_commit": os.environ["GITHUB_SHA"],
+              "run_id": os.environ["GITHUB_RUN_ID"],
+              "source_sha256": {name: file_hash(path) for name, path in paths.items()},
+              "sample_only": False,
+              "warehouse_queries": 0,
+              "model_promotion": False,
+              "public_dashboard_changed": False,
+          }
+          dest = Path("outputs/research/source_manifest.json")
+          dest.parent.mkdir(parents=True, exist_ok=True)
+          dest.write_text(json.dumps(provenance, indent=2) + "\n", encoding="utf-8")
+          PY
+
+      - name: Verify source only
+        if: inputs.study == 'access_check'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          obj = json.loads(Path("outputs/research/source_manifest.json").read_text(encoding="utf-8"))
+          obj["study"] = "Credential and Kaggle competition download verification ONLY"
+          obj["measured_model_performance"] = False
+          Path("outputs/research/research_report.json").write_text(json.dumps(obj, indent=2)+"\n", encoding="utf-8")
+          PY
+
+      - name: Run real full-data random-vs-time comparison
+        if: inputs.study == 'random_vs_time'
+        run: |
+          python scripts/compare_random_time_holdout.py             --csv data/raw/kaggle_ieee_fraud/train_transaction.csv             --output outputs/research/research_report.json
+
+      - name: Prepare local research DuckDB (not for BigQuery publishing)
+        if: inputs.study == 'temporal_hygiene' || inputs.study == 'calibration'
+        run: |
+          python -m scripts.prepare_research_duckdb             --source data/raw/kaggle_ieee_fraud             --duckdb data/processed/ieee_fraud.duckdb
+
+      - name: Run full-row temporal hygiene experiment
+        if: inputs.study == 'temporal_hygiene'
+        run: |
+          python -m scripts.benchmark_temporal_hygiene             --duckdb data/processed/ieee_fraud.duckdb             --n-estimators 100 --windows 1 --min-train-rows 10000             --output outputs/research/research_report.json
+
+      - name: Run full-row three-window calibration experiment
+        if: inputs.study == 'calibration'
+        run: |
+          python -m scripts.benchmark_temporal_calibration             --duckdb data/processed/ieee_fraud.duckdb             --n-estimators 150             --output outputs/research/research_report.json
+
+      - name: Attach reproducible evidence — hash and metrics only
+        uses: actions/upload-artifact@v4
+        with:
+          name: "fraud-kaggle-${{ inputs.study }}-${{ github.run_id }}"
+          path: |
+            outputs/research/research_report.json
+            outputs/research/source_manifest.json
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Describe evidence boundaries
+        shell: bash
+        run: |
+          echo "Research ${{ inputs.study }} COMPLETE on immutable SHA ${GITHUB_SHA}." >> "$GITHUB_STEP_SUMMARY"
+          echo "Only hash-only source manifest and aggregate numerical metrics are in the run artifact (7-day retention)." >> "$GITHUB_STEP_SUMMARY"
+          echo "Experimental result is not a production calibration or a live BigQuery validation." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove raw competition data and temporary DuckDB
+        if: always()
+        run: |
+          rm -rf data/raw/kaggle_ieee_fraud data/processed/ieee_fraud.duckdb data/processed/ieee_fraud.duckdb.wal

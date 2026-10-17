@@ -18,6 +18,7 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 ## Engineering and development
 
 - [Environment setup](environment_setup.md) — prerequisites, DuckDB/dbt configuration and credential handling.
+- [Kaggle manual research workflow](KAGGLE_RESEARCH_RUNBOOK.md) — authorized full-data random-vs-time, temporal hygiene and calibration experiments with hash-only artifacts.
 - [dbt project guide](dbt_project_guide.md) and [BigQuery/dbt lineage](bigquery_dbt_lineage.md) — transformation and reporting contracts.
 - [Web application guide](../webapp/README.md) — API, nine-page report, snapshots and local serving.
 - [Source code contribution workflow](../CONTRIBUTING.md) — PR review and reproducible tests.
