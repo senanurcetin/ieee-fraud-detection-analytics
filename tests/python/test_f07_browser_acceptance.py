@@ -30,7 +30,7 @@ def test_main_dashboard_has_accessible_studio_link() -> None:
 
 def test_new_browser_workflow_runs_all_engines_without_paid_cloud_data() -> None:
     file = (ROOT / ".github/workflows/browser-acceptance.yml").read_text(encoding="utf-8")
-    assert "playwright==1.56.1" in file
+    assert "playwright==1.56.0" in file
     assert "install --with-deps chromium firefox webkit" in file
     assert "python -m unittest discover -s tests/browser -p 'test_*.py' -v" in file
     assert "verify_snapshot_release" in file
