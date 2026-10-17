@@ -1382,7 +1382,7 @@ def build_transaction_explanation(row: dict[str, Any]) -> list[dict[str, Any]]:
     if str(row.get("purchaser_email_group") or "").lower() in {"anonymous.com", "unknown", "other"}:
         factors.append({"factor": "Email domain group", "direction": "Raises uncertainty", "impact": "Medium", "detail": str(row.get("purchaser_email_group") or "Unknown")})
     if probability >= 0.2:
-        factors.append({"factor": "Model probability", "direction": "Raises risk", "impact": "High", "detail": f"{probability:.2%} fraud probability"})
+        factors.append({"factor": "Uncalibrated model score", "direction": "Raises analytical priority", "impact": "High", "detail": f"{probability:.4f} ranking score; not a calibrated fraud probability"})
     if not factors:
         factors.append({"factor": "Low analytical score", "direction": "Baseline monitoring", "impact": "Low", "detail": "No critical driver exceeded the selected threshold"})
     return factors[:5]

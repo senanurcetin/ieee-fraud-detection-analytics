@@ -215,6 +215,63 @@
   }));
   document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.tab)));
   window.addEventListener('popstate',()=>render(new URLSearchParams(location.search).get('view')||'overview'));
+  async function loadHistoricalCases(){
+    const list=$('historical-review-queue'),detail=$('historical-review-detail');
+    if(!list||!detail)return;
+    const scope='Historical masked IEEE-CIS evaluation sample; scores are uncalibrated ranking outputs. No individual action or case status is recorded.';
+    try {
+      const response=await fetch('/api/enterprise/cases?limit=40',{headers:{Accept:'application/json'}});
+      if(!response.ok)throw new Error('No committed historical case sample');
+      const payload=await response.json();
+      const rows=Array.isArray(payload.cases)
+        ? payload.cases.filter(item=>item && Number.isSafeInteger(Number(item.transaction_id))).slice(0,40)
+        : [];
+      if(!rows.length){
+        list.replaceChildren(el('p','','No historical review records are available.'));
+        detail.textContent=scope;
+        return;
+      }
+      function selectCase(item,button) {
+        list.querySelectorAll('button').forEach(node=>node.setAttribute('aria-pressed',node===button?'true':'false'));
+        const title=el('h3','','Historical transaction '+String(item.transaction_id));
+        const description=el('p','studio-review-scope',scope);
+        const dl=el('dl');
+        const score=Number(item.model_probability);
+        const displayScore=item.model_probability!==null && item.model_probability!==undefined &&
+          Number.isFinite(score) && score>=0 && score<=1 ? score.toFixed(4) : 'Not available';
+        const attrs=[
+          ['Risk band',item.risk_band||'Unknown'],
+          ['Uncalibrated model score',displayScore],
+          ['Masked product group',item.product_cd||'Unknown'],
+          ['Amount band',item.amount_band||'Unknown'],
+          ['Identity coverage',item.identity_status||'Not reported'],
+          ['Relative TransactionDT day',item.transaction_day??'Not reported']
+        ];
+        attrs.forEach(([label,value])=>{
+          const wrapper=el('div');
+          wrapper.append(el('dt','',label),el('dd','',String(value)));
+          dl.append(wrapper);
+        });
+        detail.replaceChildren(title,dl,description);
+      }
+      const buttons=rows.map((item,i)=>{
+        const button=el('button','studio-review-item');
+        button.type='button';
+        button.setAttribute('aria-pressed','false');
+        button.setAttribute('aria-label','Inspect historical transaction '+String(item.transaction_id));
+        button.append(el('span','','#'+String(item.transaction_id)),el('small','',String(item.risk_band||'Unscored')));
+        button.addEventListener('click',()=>selectCase(item,button));
+        if(i===0)button.dataset.firstCase='true';
+        return button;
+      });
+      list.replaceChildren(...buttons);
+      selectCase(rows[0],buttons[0]);
+    } catch {
+      list.replaceChildren(el('p','','Historical case sample unavailable. No warehouse fallback or simulated cases.'));
+      detail.textContent=scope;
+    }
+  }
+
   fetch('/api/evidence-status',{headers:{Accept:'application/json'}})
     .then(res=>res.ok?res.json():null)
     .then(evidence=>{
@@ -235,6 +292,7 @@
     return res.json();
   }).then(data=>{
     state.data=data;render(new URLSearchParams(location.search).get('view')||'overview');
+    loadHistoricalCases();
   }).catch(error=>{
     $('status').replaceChildren(el('div','error',error.message));
     text('hero-title','Reporting evidence temporarily unavailable');
