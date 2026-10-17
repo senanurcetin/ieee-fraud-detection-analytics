@@ -213,7 +213,10 @@ def read_local_features(db_path: Path, max_rows: int = 0) -> tuple[pd.DataFrame,
         txn_cols = ml.table_columns(con, "raw.train_transaction")
         all_v = [f"V{i}" for i in range(1, 340) if f"V{i}" in txn_cols]
         features = list(dict.fromkeys(features + all_v))
-        frame = con.execute(ml.feature_query("train", features)).fetch_df()
+        # Stable TransactionID tie-break makes original-row ordering and
+        # source identity/time/label fingerprints identical across runs.
+        # The historic publishing pipeline retains its old default SQL.
+        frame = con.execute(ml.feature_query("train", features, stable_ties=True)).fetch_df()
     if max_rows:
         frame = frame.iloc[:max_rows].copy()
     return frame, features, categorical
