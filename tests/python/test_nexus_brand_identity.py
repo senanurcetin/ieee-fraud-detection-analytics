@@ -6,14 +6,16 @@ No browser/network access or SVG alterations are required in this test.
 from __future__ import annotations
 
 import hashlib
+import importlib
+import sys
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
 from fastapi.testclient import TestClient
 
-from webapp.main import app
-
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+app = importlib.import_module("webapp.main").app
 SHA256 = {
     "docs/assets/nexus-official-midnight.svg": "c31c9df29384ea3d75587a757a7b28386e66e41c1b52ce072887df1cbf00d6bd",
     "docs/assets/nexus-official-transparent.svg": "143788fc114348b03bcef5285c134d63135bd7dbd908380e973596f743c9f45b",
