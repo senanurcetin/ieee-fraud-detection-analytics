@@ -42,6 +42,12 @@ flowchart LR
 
 The published dashboard normally serves **committed historical JSON snapshots** through FastAPI. The snapshots are derived from the `fraud_project_reporting` layer but are not live BigQuery query results. Internal source refresh or independent data verification is a separate authenticated workflow. Raw Kaggle tables and staging models are intentionally excluded from the public presentation surface. Source freshness and model-scoring limitations are disclosed in the UI and [release status](RELEASE_STATUS.md).
 
+Snapshot loading checks the aggregate group structure and reloads replaced artifacts. Missing, corrupt or deleted files fail closed for public requests, including a file disappearing after an initial availability check; the authorized internal token is required before any warehouse fallback. Structural validation does not certify source parity or metric truth. `/api/health` remains network-free even with a configured cloud project; dataset reachability is handled by authorized diagnostics.
+
+The restricted research importer (`scripts/prepare_research_duckdb.py`) replaces both train tables in one DuckDB transaction. Required row counts, unique non-null transaction/identity keys, identity referential integrity, binary labels and finite nonnegative relative times must pass before commit. Any failed validation preserves previously valid research tables. This validates input integrity, not independent Kaggle authenticity.
+
+Private TreeSHAP evidence uses SQLite artifacts with explicit connection closure on reads, successful writes and exceptions. Writers commit and close before atomic replacement, so artifact rotation also works on Windows. The web reader remains standard-library-only and read-only; no explanation artifact is generated or published by serving the dashboard.
+
 ## Quality Gates
 
 - Source row-count tests verify Kaggle table completeness.

@@ -11,9 +11,11 @@
 <link rel="stylesheet" href="/static/decision-studio.css">
 <link rel="stylesheet" href="/static/nexus-evidence.css">
 <link rel="stylesheet" href="/static/review-queue.css">
+<link rel="stylesheet" href="/static/nexus-accessibility.css">
 <script src="/static/risk-decision-studio.js" defer></script>
 </head>
 <body class="studio-finance">
+<a class="skip-link" href="#main-content">Skip to analysis</a>
 <div class="shell">
   <aside class="rail" aria-label="Decision studio navigation">
     <a class="brand" href="/" title="Current operational fraud analytics dashboard">
@@ -39,7 +41,7 @@
       <span>Historical dataset only · no live fraud monitoring or automated enforcement</span>
     </div>
   </aside>
-  <main class="workspace" id="main-content">
+  <main class="workspace" id="main-content" tabindex="-1" aria-busy="true">
     <div class="topline"><div class="crumb"><span>NEXUS</span><b>/</b><span>RISK DECISION STUDIO</span><b>/</b><span id="crumb-page">Loading</span></div><span class="pill">REPORTING SNAPSHOT / GOVERNED DATA</span></div>
     <section class="hero" aria-label="Page introduction">
       <div class="hero-copy">
@@ -63,7 +65,8 @@
       <button type="button" role="tab" id="tab-performance" data-tab="performance" aria-controls="panel-performance" aria-selected="false">02 / Detailed evidence</button>
       <button type="button" role="tab" id="tab-governance" data-tab="governance" aria-controls="panel-governance" aria-selected="false">03 / Governance</button>
     </div>
-    <div id="status" role="status" aria-live="polite"></div>
+    <div id="status" role="status" aria-live="polite">Loading historical reporting evidence.</div>
+    <button id="studio-retry" class="studio-retry" type="button" hidden>Retry reporting connection</button>
     <section class="workspace-section" id="panel-brief" role="tabpanel" aria-labelledby="tab-brief">
       <div class="feature-grid">
         <article class="studio-card"><div class="card-top"><div><h2 id="brief-chart-heading">Ranked risk exposure</h2><p id="brief-chart-desc">Observed segment data from governed reports.</p></div><span class="card-index">FIG / 01</span></div><div class="chart-rows" id="brief-chart"></div><div id="selected-detail" class="studio-selected-detail" role="status" aria-live="polite"><strong>Selected segment</strong><span>Select a ranked mark to inspect its reported value.</span></div></article>

@@ -18,6 +18,10 @@ PUBLIC_ENTRYPOINTS = [
     ROOT / "docs/README.md",
     ROOT / "docs/RELEASE_STATUS.md",
     ROOT / "docs/architecture.md",
+    ROOT / "docs/DEVELOPMENT_PLAN.md",
+    ROOT / "docs/archive/nexus_fraud_release_readiness_2026-10-14.md",
+    ROOT / "docs/archive/bigquery_source_revalidation_2026-10-14.md",
+    ROOT / "docs/archive/KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md",
 ]
 LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 
@@ -50,6 +54,7 @@ def test_obsolete_project_notes_are_not_in_active_tree() -> None:
         "docs/05_development_backlog.md",
         "docs/06_next_development_backlog.md",
         "docs/github_portfolio_checklist.md",
+        "docs/data_analyst_gap_closure.md",
     ]
     assert all(not (ROOT / name).exists() for name in obsolete)
     assert (ROOT / "docs/analysis_hypotheses.md").is_file()
@@ -66,6 +71,8 @@ def test_start_pages_disclose_history_and_external_gates() -> None:
     assert "docs/README.md" in readme and "docs/RELEASE_STATUS.md" in readme
     assert "issue #9" in release and "issue #20" in release
     assert "historical" in index.lower() and "dated" in index.lower()
+    assert "active noncommercial" in readme.lower()
+    assert "DEVELOPMENT_PLAN.md" in readme and "DEVELOPMENT_PLAN.md" in index
 
 
 def test_public_contributor_and_security_guides_describe_actual_controls() -> None:

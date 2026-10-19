@@ -31,7 +31,7 @@ def test_anonymous_live_refresh_is_denied_without_query(
     monkeypatch.setattr(
         app_module,
         "cached_dashboard_payload",
-        lambda refresh=False: pytest.fail("Unauthenticated refresh reached reporting."),
+        lambda refresh=False, **kwargs: pytest.fail("Unauthenticated refresh reached reporting."),
     )
     response = client.get(f"{route}?refresh=true")
     assert response.status_code == 403
@@ -54,7 +54,7 @@ def test_valid_token_allows_explicit_internal_refresh(monkeypatch: pytest.Monkey
     monkeypatch.setenv("WEB_INTERNAL_REFRESH_TOKEN", "private-refresh-secret")
     calls: list[bool] = []
 
-    def guarded_payload(refresh: bool = False) -> dict:
+    def guarded_payload(refresh: bool = False, **kwargs) -> dict:
         calls.append(refresh)
         return {"source": "internal-verified"}
 
@@ -73,7 +73,7 @@ def test_public_snapshot_read_still_works_without_token(monkeypatch: pytest.Monk
     monkeypatch.setattr(
         app_module,
         "cached_dashboard_payload",
-        lambda refresh=False: {"refresh": refresh, "source": "historical-snapshot"},
+        lambda refresh=False, **kwargs: {"refresh": refresh, "source": "historical-snapshot"},
     )
     response = client.get("/api/dashboard")
     assert response.status_code == 200
@@ -116,7 +116,7 @@ def test_missing_snapshots_fail_closed_instead_of_querying_bigquery(
     monkeypatch.setattr(
         app_module,
         "cached_dashboard_payload",
-        lambda refresh=False: pytest.fail("Snapshot fallback must not execute a query."),
+        lambda refresh=False, **kwargs: pytest.fail("Snapshot fallback must not execute a query."),
     )
     response = client.get(route)
     assert response.status_code == 503
@@ -132,7 +132,7 @@ def test_snapshot_can_be_bypassed_by_authorized_internal_read(
     monkeypatch.setattr(
         app_module,
         "cached_dashboard_payload",
-        lambda refresh=False: {"source": "authorized-warehouse", "refresh": refresh},
+        lambda refresh=False, **kwargs: {"source": "authorized-warehouse", "refresh": refresh},
     )
     response = client.get(
         "/api/dashboard",

@@ -14,4 +14,4 @@ This is a dated dependency-advisory audit, **not** a complete security certifica
 
 A clean known-CVE result does not replace SAST, secret scanning, authorization review, supply-chain integrity, dependency hash locking, browser accessibility tests, or production penetration testing. This change does not modify the model, BigQuery reporting source, dashboard API, dataset, or risk metrics.
 
-The production dashboard uses governed IEEE-CIS *historical* snapshot evidence; source revalidation and the non-live data boundary are documented separately in [BigQuery read-only revalidation](bigquery_source_revalidation_2026-10-14.md).
+The production dashboard uses governed IEEE-CIS *historical* snapshot evidence; source revalidation and the non-live data boundary are documented separately in [BigQuery read-only revalidation](archive/bigquery_source_revalidation_2026-10-14.md).

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import importlib
 import math
+import sqlite3
 import sys
 from pathlib import Path
 
@@ -161,6 +162,46 @@ def test_private_sqlite_roundtrip_and_safe_replace(tmp_path: Path) -> None:
     with pytest.raises(ValueError):
         store.save_explanations(dest, [{**verified_case(), "method": "heuristic"}])
     assert dest.read_bytes() == before
+    assert list(tmp_path.glob(".local-shap-*.sqlite")) == []
+
+
+def test_artifact_connections_close_after_writes_reads_and_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Retain handles so garbage collection cannot hide Windows rotation locks."""
+    production_reader = importlib.import_module("webapp.explanation_store")
+    original_connect = sqlite3.connect
+    connections: list[sqlite3.Connection] = []
+
+    def track_connect(*args, **kwargs) -> sqlite3.Connection:
+        connection = original_connect(*args, **kwargs)
+        connections.append(connection)
+        return connection
+
+    def assert_connections_closed() -> None:
+        assert connections
+        for connection in connections:
+            with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+                connection.execute("SELECT 1")
+
+    monkeypatch.setattr(sqlite3, "connect", track_connect)
+    destination = tmp_path / "private.sqlite"
+    store.save_explanations(destination, [verified_case()])
+    assert_connections_closed()
+    for reader in (store.load_explanation, production_reader.load_explanation):
+        assert reader(destination, 321) is not None
+        assert reader(destination, 12345) is None
+        assert_connections_closed()
+    previous = destination.read_bytes()
+    with pytest.raises(ValueError, match="unverified"):
+        store.save_explanations(destination, [{**verified_case(), "method": "heuristic"}])
+    assert_connections_closed()
+    assert destination.read_bytes() == previous
+    store.save_explanations(destination, [verified_case(transaction_id=322)])
+    assert_connections_closed()
+    assert store.load_explanation(destination, 321) is None
+    assert store.load_explanation(destination, 322) is not None
+    assert_connections_closed()
     assert list(tmp_path.glob(".local-shap-*.sqlite")) == []
 
 

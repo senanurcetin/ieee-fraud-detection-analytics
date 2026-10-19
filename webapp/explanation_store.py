@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +21,7 @@ def load_explanation(path: Path, transaction_id: int) -> dict[str, Any] | None:
     resolved = Path(path).expanduser().resolve(strict=True)
     if not resolved.is_file() or resolved.suffix != ".sqlite":
         raise ValueError("Expected an existing private SQLite attribution store")
-    with sqlite3.connect(resolved.as_uri() + "?mode=ro", uri=True, timeout=2) as connection:
+    with closing(sqlite3.connect(resolved.as_uri() + "?mode=ro", uri=True, timeout=2)) as connection:
         row = connection.execute(
             "SELECT payload_json FROM local_explanations WHERE transaction_id = ?",
             (int(transaction_id),),

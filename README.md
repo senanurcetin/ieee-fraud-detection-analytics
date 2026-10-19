@@ -13,12 +13,12 @@
 
 [**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
 
-**Project status (18 October 2026): Paused — maintenance/portfolio reference only.**
-The [canonical 590,540-row Kaggle temporal hygiene and calibration experiments](docs/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) are documented and reproducible; they are **research evidence, not promoted production scores**. Public Vercel exact-SHA release and current BigQuery reporting parity are **not accepted**. No more experiments, deployments or snapshot refreshes are scheduled for this project until the owner explicitly resumes it. See the [handoff and remaining gates](docs/RELEASE_STATUS.md).
+**Project status (19 October 2026): Active noncommercial research and engineering.**
+Development has resumed under the [engineering plan](docs/DEVELOPMENT_PLAN.md). The [canonical 590,540-row Kaggle temporal hygiene and calibration experiments](docs/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) remain **research evidence, not promoted production scores**. Public Vercel exact-SHA release and current BigQuery reporting parity are **not accepted**. See [verification results and remaining gates](docs/RELEASE_STATUS.md).
 
 ![Historical NEXUS executive overview, captured 14 October 2026](docs/assets/web_dashboard_executive_overview.png)
 
-*Screenshot captured on 14 October 2026; [capture and hash provenance](docs/assets/production_screenshot_provenance_20261014.json). It depicts an older deployed revision, not a live transaction feed.*
+*Screenshot captured on 14 October 2026; [capture and hash provenance](docs/assets/production_screenshot_provenance_20261014.json) and [preview asset guide](docs/SEO_AND_SOCIAL_PREVIEW_GUIDE.md). It depicts an older deployed revision, not a live transaction feed.*
 
 ## What this project demonstrates
 

@@ -1,6 +1,6 @@
 # Documentation
 
-**Project status: PAUSED (18 October 2026).** The final verified [deterministic Kaggle research results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) have been merged; source/model/production gates listed in [Release status](RELEASE_STATUS.md) remain open. This is a handoff archive, not a request to schedule new work.
+**Project status: active noncommercial development (19 October 2026).** The owner resumed engineering work. Start with the [development plan](DEVELOPMENT_PLAN.md) and [release status](RELEASE_STATUS.md). Canonical Kaggle research remains reproducible historical evidence; external source/model/production gates remain open.
 
 This directory contains **maintained project reference** and **dated research/release evidence**. For a short introduction and working commands, start with the [repository README](../README.md).
 
@@ -33,7 +33,7 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 - [Model results](model_results.md), [recomputed validation](model_validation_recomputed.md) and [model registry](model_registry.json) — historical metrics and supporting artifact metadata.
 - [17 Oct full-source Kaggle split results](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md) — first verified 590,540-row real-data random vs chronological metrics and source digest.
 - [17 Oct canonical deterministic F03/F04 results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) — verified full-source matching data fingerprints, final temporal ROC-AUC/AP/Brier/ECE and top-k precision/recall results.
-- [Prior 17 Oct F03/F04 measurement](KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md) — dated preliminary research, superseded on deterministic source-order acceptance.
+- [Prior 17 Oct F03/F04 measurement](archive/KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md) — dated preliminary research, superseded on deterministic source-order acceptance.
 - [Random vs. time-split reproduction](RANDOM_VS_TIME_SPLIT_REPRODUCTION.md), [temporal hygiene](TEMPORAL_HYGIENE_EXPERIMENT.md), [temporal calibration](TEMPORAL_CALIBRATION_EXPERIMENT.md) — experiment methodology and evidence limits.
 - [Local TreeSHAP explanations](LOCAL_SHAP_EXPLANATIONS.md) and [offline drift monitoring](OFFLINE_DRIFT_MONITORING.md) — gated/offline analyses, not default public inference.
 - [Business impact](banking_business_impact.md), [operational playbook](operational_playbook.md) and [regulatory context](regulatory_context.md) — capacity assumptions, analytical controls and governance context.
@@ -41,9 +41,9 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 ## Data lineage, audits and release controls
 
 - [BigQuery discovery](BIGQUERY_SOURCE_DISCOVERY.md) and [15 Oct source verification](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) — dated metadata and partial source comparison.
-- [BigQuery + Kaggle verified workplan](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md) — prioritized research and source acceptance with keyless WIF prerequisites and scientific gates.
+- [BigQuery + Kaggle source acceptance reference](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md) — WIF prerequisites and scientific gates; current execution scope is in the development plan.
 - [Bounded BigQuery table parity](BIGQUERY_BOUNDED_SOURCE_PARITY.md) and [offline snapshot audit](SNAPSHOT_PARITY_AUDIT.md) — source validation tools with explicit boundaries.
-- [Source revalidation (14 Oct)](bigquery_source_revalidation_2026-10-14.md) — retained historical evidence, not fresh source certification.
+- [Source revalidation (14 Oct)](archive/bigquery_source_revalidation_2026-10-14.md) — retained historical evidence, not fresh source certification.
 - [CI and research credentials](CI_AND_RESEARCH_CREDENTIALS.md), [security controls](SECURE_RELEASE_GATES.md) and [security review](dependency_security_review_2026-10-14.md) — credential/safety acceptance.
 - [Docker release runbook](F08_LOCAL_RELEASE.md) and [public release attestation](PUBLIC_RELEASE_ATTESTATION.md) — local demo vs. real production SHA verification.
 - [Evidence/provenance rail](F07_EVIDENCE_TRUST_RAIL.md), [analyst case review](F07_HISTORICAL_ANALYST_REVIEW.md) and [three-engine browser acceptance](F07_BROWSER_ACCEPTANCE.md) — NEXUS UI safety contracts.
@@ -51,12 +51,12 @@ The product is a **historical IEEE-CIS analytics demonstration**, not live bank 
 
 ## Historical records
 
-The following are **date-specific evidence or acceptance snapshots**. Their PASS flags belong to the period described and must not be read as proof of today's complete release gates.
+Superseded dated reports are grouped under `archive/`; active runbooks and canonical research remain at this level. The following are **date-specific evidence or acceptance snapshots**. Their PASS flags belong to the period described and must not be read as proof of today's complete release gates.
 
-- [14 October readiness audit](nexus_fraud_release_readiness_2026-10-14.md)
+- [14 October readiness audit](archive/nexus_fraud_release_readiness_2026-10-14.md)
 - [Historical production validation](production_validation.md)
 - [Historical QA acceptance checklist](qa_acceptance_checklist.md)
-- [Analyst coverage and prior closure notes](professional_analysis_coverage.md) · [gap closure](data_analyst_gap_closure.md)
+- [Analyst coverage and prior closure notes](professional_analysis_coverage.md)
 - [Analysis story](analysis_story.md) and [dashboard presentation guide](live_web_dashboard_guide.md)
 
 For **current unresolved work**, use [GitHub Issues](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues), not historical backlogs. Do not edit old evidence dates to manufacture recency or delete reproducibility/security artifacts simply to shorten the repo.

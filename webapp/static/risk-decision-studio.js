@@ -125,6 +125,7 @@
     document.querySelectorAll('[data-tab]').forEach(button=>{
       const selected=button.dataset.tab===name;
       button.setAttribute('aria-selected',selected?'true':'false');
+      button.tabIndex=selected?0:-1;
       $('panel-'+button.dataset.tab).hidden=!selected;
     });
   };
@@ -174,6 +175,7 @@
     const selected=$('selected-detail');selected.replaceChildren(el('strong','','Relative time / observed fraud rates'),el('span','','The axis is relative day, not a calendar date.'));
   }
   function render(view){
+    if(!state.data)return;
     state.view=views.includes(view)?view:'overview';
     const d=defineView(state.view),rows=normalizedRows(d.main,d.mainLabel,d.value),detail=normalizedRows(d.secondary,d.secondaryLabel,d.secondaryValue);
     document.querySelectorAll('[data-view]').forEach(a=>{
@@ -209,11 +211,21 @@
     setTab('brief');
   }
   document.querySelectorAll('[data-view]').forEach(link=>link.addEventListener('click',event=>{
+    if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
     event.preventDefault();
     history.pushState({},'',link.getAttribute('href'));
     render(link.dataset.view);
   }));
   document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>setTab(button.dataset.tab)));
+  document.querySelector('.tabs').addEventListener('keydown',event=>{
+    const tabs=[...document.querySelectorAll('[data-tab]')],index=tabs.indexOf(event.target);
+    if(index<0||!['ArrowRight','ArrowLeft','Home','End'].includes(event.key))return;
+    event.preventDefault();
+    const next=event.key==='Home'?0:event.key==='End'?tabs.length-1:
+      (index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;
+    setTab(tabs[next].dataset.tab);tabs[next].focus();
+  });
+  setTab('brief');
   window.addEventListener('popstate',()=>render(new URLSearchParams(location.search).get('view')||'overview'));
   async function loadHistoricalCases(){
     const list=$('historical-review-queue'),detail=$('historical-review-detail');
@@ -287,15 +299,30 @@
       }
     })
     .catch(()=>{text('studio-evidence-source','Source verification unavailable. Historical scope; no live feed.');});
-  fetch('/api/dashboard',{headers:{Accept:'application/json'}}).then(async res=>{
-    if(!res.ok)throw new Error('Dashboard data unavailable: HTTP '+res.status);
-    return res.json();
-  }).then(data=>{
-    state.data=data;render(new URLSearchParams(location.search).get('view')||'overview');
-    loadHistoricalCases();
-  }).catch(error=>{
-    $('status').replaceChildren(el('div','error',error.message));
-    text('hero-title','Reporting evidence temporarily unavailable');
-    document.querySelectorAll('.workspace-section').forEach(x=>x.hidden=true);
-  });
+  let loading=false;
+  async function loadDashboard(){
+    if(loading)return;
+    loading=true;$('main-content').setAttribute('aria-busy','true');
+    $('studio-retry').hidden=true;
+    text('status','Loading historical reporting evidence.');
+    try{
+      const res=await fetch('/api/dashboard',{headers:{Accept:'application/json'}});
+      if(!res.ok)throw new Error('Dashboard data unavailable: HTTP '+res.status);
+      const data=await res.json();
+      if(!data||typeof data!=='object'||Array.isArray(data)||!Array.isArray(data.executive_kpis)||!data.executive_kpis.length)
+        throw new Error('Reporting snapshot is incomplete.');
+      state.data=data;render(new URLSearchParams(location.search).get('view')||'overview');
+      text('status','Historical reporting evidence loaded.');
+      loadHistoricalCases();
+    }catch(error){
+      $('status').replaceChildren(el('div','error',error.message+' Retry the connection to reload the committed snapshot.'));
+      text('hero-title','Reporting evidence temporarily unavailable');
+      document.querySelectorAll('.workspace-section').forEach(x=>x.hidden=true);
+      $('studio-retry').hidden=false;
+    }finally{
+      loading=false;$('main-content').setAttribute('aria-busy','false');
+    }
+  }
+  $('studio-retry').addEventListener('click',()=>loadDashboard());
+  loadDashboard();
 })();
