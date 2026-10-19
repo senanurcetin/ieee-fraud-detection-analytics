@@ -12,6 +12,7 @@ import os
 import sqlite3
 import tempfile
 from collections.abc import Sequence
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -147,7 +148,7 @@ def save_explanations(path: Path, explanations: Sequence[dict[str, Any]]) -> Non
         os.chmod(temporary, 0o600)
         with os.fdopen(fd, "rb"):
             pass
-        with sqlite3.connect(temporary) as conn:
+        with closing(sqlite3.connect(temporary)) as conn, conn:
             conn.execute(
                 "create table local_explanations ("
                 "transaction_id integer primary key, model_version text not null, payload_json text not null)"
@@ -179,7 +180,7 @@ def save_explanations(path: Path, explanations: Sequence[dict[str, Any]]) -> Non
 def load_explanation(path: Path, transaction_id: int) -> dict[str, Any] | None:
     """Lookup without SQL writes; callers must enforce API authorization."""
     uri = Path(path).resolve().as_uri() + "?mode=ro"
-    with sqlite3.connect(uri, uri=True) as conn:
+    with closing(sqlite3.connect(uri, uri=True)) as conn:
         row = conn.execute(
             "select payload_json from local_explanations where transaction_id=?",
             (int(transaction_id),),

@@ -75,6 +75,72 @@ def test_research_import_rejects_duplicate_transaction_ids(tmp_path: Path) -> No
         )
 
 
+@pytest.mark.parametrize(
+    ("identity_ids", "message"),
+    [([11, 11], "Duplicate"), ([11, None], "Null"), ([11, 99], "absent")],
+)
+def test_research_import_rejects_invalid_identity_keys(
+    tmp_path: Path, identity_ids: list[int | None], message: str,
+) -> None:
+    origin = source(tmp_path)
+    write_csv(origin / "train_identity.csv", ["TransactionID"], [[key] for key in identity_ids])
+    with pytest.raises(ValueError, match=message):
+        prepare(origin, tmp_path / "invalid.duckdb", expected={"train_transaction": 3, "train_identity": 2})
+
+
+@pytest.mark.parametrize(
+    ("column", "invalid", "message"),
+    [("isFraud", None, "binary"), ("isFraud", 0.5, "binary"),
+     ("isFraud", "unknown", "binary"), ("TransactionDT", -1, "finite"),
+     ("TransactionDT", "inf", "finite"), ("TransactionDT", None, "finite")],
+)
+def test_invalid_import_preserves_existing_valid_source(
+    tmp_path: Path, column: str, invalid: object, message: str,
+) -> None:
+    origin = source(tmp_path)
+    database = tmp_path / "experiment.duckdb"
+    expected = {"train_transaction": 3, "train_identity": 2}
+    prepare(origin, database, expected=expected)
+    with duckdb.connect(str(database)) as con:
+        original = con.execute("SELECT * FROM raw.train_transaction ORDER BY TransactionID").fetchall()
+    rows = [[11, 100, 0], [12, 200, 1], [13, 300, 0]]
+    header = ["TransactionID", "TransactionDT", "isFraud"]
+    rows[0][header.index(column)] = invalid
+    write_csv(origin / "train_transaction.csv", header, rows)
+    with pytest.raises(ValueError, match=message):
+        prepare(origin, database, expected=expected)
+    with duckdb.connect(str(database), read_only=True) as con:
+        assert con.execute("SELECT * FROM raw.train_transaction ORDER BY TransactionID").fetchall() == original
+        assert con.execute("SELECT COUNT(*) FROM raw.train_identity").fetchone()[0] == 2
+
+
+def test_failed_second_table_rolls_back_both_imports(tmp_path: Path) -> None:
+    origin = source(tmp_path)
+    database = tmp_path / "experiment.duckdb"
+    expected = {"train_transaction": 3, "train_identity": 2}
+    prepare(origin, database, expected=expected)
+    write_csv(origin / "train_transaction.csv", ["TransactionID", "TransactionDT", "isFraud"],
+              [[21, 100, 0], [22, 200, 1], [23, 300, 0]])
+    write_csv(origin / "train_identity.csv", ["TransactionID"], [[21]])
+    with pytest.raises(ValueError, match="unexpected row count"):
+        prepare(origin, database, expected=expected)
+    with duckdb.connect(str(database), read_only=True) as con:
+        assert con.execute("SELECT MIN(TransactionID) FROM raw.train_transaction").fetchone()[0] == 11
+        assert con.execute("SELECT COUNT(*) FROM raw.train_identity").fetchone()[0] == 2
+
+
+@pytest.mark.parametrize("expected", [
+    {"train_transaction": 3},
+    {"train_transaction": True, "train_identity": 2},
+    {"train_transaction": 3, "train_identity": 0},
+])
+def test_invalid_expected_counts_do_not_create_database(tmp_path: Path, expected: dict[str, int]) -> None:
+    database = tmp_path / "invalid.duckdb"
+    with pytest.raises(ValueError, match="Expected row counts"):
+        prepare(source(tmp_path), database, expected=expected)
+    assert not database.exists()
+
+
 def test_github_research_workflow_never_runs_on_push_or_exports_raw_files() -> None:
     path = ROOT / ".github/workflows/kaggle-research-evidence.yml"
     workflow = path.read_text(encoding="utf-8")

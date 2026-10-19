@@ -1,6 +1,6 @@
 # Fraud Risk Intelligence — BigQuery and Kaggle acceptance plan (17 October 2026)
 
-> **Paused as of 18 October 2026:** The owner suspended further project work. The F03/F04 work below is already supported by [canonical real-data evidence](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). BigQuery source parity, full reporting reconciliation, model promotion and public Vercel release remain unverified. This plan is retained for later resumption only; do not auto-run manual workflows. See [pause handoff](RELEASE_STATUS.md).
+> **Historical 17 October plan:** Engineering resumed on 18 October 2026 under the [current development plan](DEVELOPMENT_PLAN.md). F03/F04 scientific results are documented in [canonical evidence](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). This older plan is a source-acceptance reference, not an automatic workflow instruction. See [release status](RELEASE_STATUS.md).
 
 This page is an **execution plan**, not an assertion that the source and model
 release gates have passed. It replaces assumptions with exact access, data

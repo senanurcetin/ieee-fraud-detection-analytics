@@ -1076,6 +1076,15 @@ _CACHE: dict[str, Any] = {"expires_at": 0.0, "payload": None}
 
 SNAPSHOT_DIR = APP_DIR / "snapshots"
 _SNAPSHOT_CACHE: dict[str, Any] = {}
+_SNAPSHOT_SIGNATURES: dict[str, tuple[str, int, int]] = {}
+SNAPSHOT_ROWS: dict[str, tuple[str, ...]] = {
+    "dashboard": tuple(BIGQUERY_TABLES),
+    "enterprise-cases": ("cases",),
+    "enterprise-segments": (
+        "segment_watchlist", "niche_drilldown", "payment_heatmap", "time_amount_signals",
+        "daily_drift", "device_identity_heatmap", "masked_entity_edges",
+    ),
+}
 
 
 def snapshots_enabled() -> bool:
@@ -1088,15 +1097,31 @@ def load_snapshot(name: str) -> Any:
     Reporting marts change once per rebuild, so serving them from disk keeps a
     visitor arriving after an idle period from waiting on a cold BigQuery query.
     """
-    if not snapshots_enabled():
+    if not snapshots_enabled() or name not in SNAPSHOT_ROWS:
         return None
-    if name in _SNAPSHOT_CACHE:
-        return _SNAPSHOT_CACHE[name]
+    path = SNAPSHOT_DIR / f"{name}.json"
     try:
-        payload = json.loads((SNAPSHOT_DIR / f"{name}.json").read_text(encoding="utf-8"))
+        stat = path.stat()
+        signature = (str(path.resolve()), stat.st_mtime_ns, stat.st_size)
+        if name in _SNAPSHOT_CACHE and _SNAPSHOT_SIGNATURES.get(name) == signature:
+            return _SNAPSHOT_CACHE[name]
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("Snapshot must contain an object")
+        for key in SNAPSHOT_ROWS[name]:
+            rows = payload.get(key)
+            if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+                raise ValueError("Snapshot reporting groups must contain records")
+        if name == "dashboard" and not isinstance(payload.get("meta"), dict):
+            raise ValueError("Dashboard snapshot requires source metadata")
     except (OSError, ValueError):
-        payload = None
+        # Never retain missing, invalid, or obsolete evidence. A rebuilt artifact
+        # must become available without restarting the API process.
+        _SNAPSHOT_CACHE.pop(name, None)
+        _SNAPSHOT_SIGNATURES.pop(name, None)
+        return None
     _SNAPSHOT_CACHE[name] = payload
+    _SNAPSHOT_SIGNATURES[name] = signature
     return payload
 
 
@@ -1168,12 +1193,19 @@ def require_snapshot_or_internal_access(
         )
 
 
-def cached_dashboard_payload(refresh: bool = False) -> dict[str, Any]:
+def cached_dashboard_payload(
+    refresh: bool = False, supplied_token: str | None = None
+) -> dict[str, Any]:
+    require_refresh_authorization(refresh, supplied_token)
     if not refresh:
         snapshot = load_snapshot("dashboard")
         if snapshot is not None:
             return snapshot
 
+    # Recheck authorization at the warehouse boundary: a snapshot may have been
+    # replaced or removed after the route checked it. This also protects cached
+    # internal reporting payloads from becoming an anonymous snapshot fallback.
+    require_warehouse_read_access(supplied_token)
     now = time.time()
     if not refresh and _CACHE["payload"] is not None and _CACHE["expires_at"] > now:
         return _CACHE["payload"]
@@ -1570,7 +1602,7 @@ def enterprise_summary(
 ) -> dict[str, Any]:
     require_refresh_authorization(refresh, x_internal_refresh_token)
     require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
-    payload = cached_dashboard_payload(refresh=refresh)
+    payload = cached_dashboard_payload(refresh=refresh, supplied_token=x_internal_refresh_token)
     kpis = (payload.get("executive_kpis") or [{}])[0]
     threshold_rows = payload.get("validation_threshold_simulation") or payload.get("threshold_simulation") or []
     risk_rows = payload.get("model_risk_bands") or []
@@ -1606,6 +1638,7 @@ def enterprise_cases(
         return {**snapshot, "cases": cases, "count": len(cases)}
 
     require_snapshot_or_internal_access("enterprise-cases", False, x_internal_refresh_token)
+    require_warehouse_read_access(x_internal_refresh_token)
     rows = direct_aggregate(case_queue_sql(limit=limit))
     return {
         "cases": rows,
@@ -1807,7 +1840,8 @@ def enterprise_segments(
         if snapshot is not None:
             return snapshot
 
-    payload = cached_dashboard_payload(refresh=refresh)
+    payload = cached_dashboard_payload(refresh=refresh, supplied_token=x_internal_refresh_token)
+    require_warehouse_read_access(x_internal_refresh_token)
     fact_table = enterprise_table("fact_train_transactions")
     device_identity_sql = f"""
 select
@@ -1853,7 +1887,7 @@ def enterprise_alerts(
 ) -> dict[str, Any]:
     require_refresh_authorization(refresh, x_internal_refresh_token)
     require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
-    payload = cached_dashboard_payload(refresh=refresh)
+    payload = cached_dashboard_payload(refresh=refresh, supplied_token=x_internal_refresh_token)
     alerts: list[dict[str, Any]] = []
     drift_rows = payload.get("daily_drift", [])
     drift = next((row for row in reversed(drift_rows) if row.get("drift_flag") != "Normal band"), None)
@@ -1918,7 +1952,7 @@ def enterprise_model_monitoring(
 ) -> dict[str, Any]:
     require_refresh_authorization(refresh, x_internal_refresh_token)
     require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
-    payload = cached_dashboard_payload(refresh=refresh)
+    payload = cached_dashboard_payload(refresh=refresh, supplied_token=x_internal_refresh_token)
     return {
         "model_version": MODEL_REGISTRY["model_version"],
         "last_training_date": MODEL_REGISTRY["training_date"],
@@ -1968,7 +2002,7 @@ def dashboard(
 ) -> dict[str, Any]:
     require_refresh_authorization(refresh, x_internal_refresh_token)
     require_snapshot_or_internal_access("dashboard", refresh, x_internal_refresh_token)
-    return cached_dashboard_payload(refresh=refresh)
+    return cached_dashboard_payload(refresh=refresh, supplied_token=x_internal_refresh_token)
 
 
 @app.get("/api/diagnostics")
@@ -2030,7 +2064,9 @@ def health() -> dict[str, Any]:
         "dataset": dataset_id(),
         "duckdb_path": duckdb_path() if data_backend() == "duckdb" else None,
         "location": bigquery_location() or "default",
-        "resolved_location": resolved_location() if data_backend() == "bigquery" else None,
+        # Liveness is a local check. Dataset reachability belongs exclusively to
+        # the authorized diagnostics endpoint, including when ADC is unavailable.
+        "resolved_location": _LOCATION_CACHE.get(f"{project_label()}.{dataset_id()}") if data_backend() == "bigquery" else None,
         "snapshot_served": load_snapshot("dashboard") is not None,
         "cache_seconds": int(os.getenv("WEB_CACHE_SECONDS", str(DEFAULT_CACHE_SECONDS))),
     }

@@ -1,23 +1,42 @@
 # Release status and acceptance gates
 
-**Evidence checked:** 18 October 2026 (final GitHub handoff). This is a dated overview, **not** a substitute for current [Actions](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions), [open issues](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues) or the live [Vercel project](https://vercel.com/).
+**Engineering resumed:** 18 October 2026, at the owner's request. This page separates current local verification from dated research and external acceptance. See the [development plan](DEVELOPMENT_PLAN.md) for scope and [Actions](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions) for hosted results.
 
-## Project handoff — PAUSED
+## Current engineering delivery
 
-The owner explicitly paused this project after merging the canonical deterministic real-data research documentation ([PR #42](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/42), merge `0ed99cf7598a63e7383dca6c92d8f854b8d6607c`). Its [exact merged-main CI run #39070386467](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39070386467) passed Python/Ruff/Pytest/security and dbt parse. Both source-fingerprint-matched research jobs in [run #39069399816](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39069399816) passed and have been permanently summarized in the [canonical metrics report](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md); temporary GitHub artifact ZIPs are retained for only seven days. The Fraud-specific `Fraud Production Release` condition-watch automation was **disabled at the owner's request**.
+The project is an active **noncommercial historical research application** with a $0 operating budget. The earlier pause is superseded for this development work. No release-monitor automation has been re-enabled, and the published data/model artifacts retain their original dates.
 
-**Pause contract:** Do not initiate new Kaggle experiments, paid cloud queries, BigQuery dataset edits/dbt rebuilds, automatic deployments, screenshot refreshes, model registry changes, source snapshot rewrites or renewed production-release monitoring until the owner explicitly resumes. Keep historical demo and NEXUS brand assets unchanged. An existing separately managed multi-project uptime monitor is not a production-release authorization.
+This iteration improves offline API reliability, validated transactional research imports, private SQLite artifact rotation on Windows, and Decision Studio loading/error/keyboard behavior. The dbt score contract now rejects null risk bands. The owner-approved Drive transparent logo was rechecked against the tracked SVG: SHA-256 `143788fc114348b03bcef5285c134d63135bd7dbd908380e973596f743c9f45b` matches exactly. One redundant closure checklist was removed; three superseded dated reports moved to `docs/archive/` with links updated.
 
-**Unresolved acceptance at pause:** [#8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8) missing original public Kaggle notebook; [#20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20) independent production-target calibration/governance approval; [#9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9) missing Fraud repo-scoped WIF variables and current BigQuery parity; [#29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29) unverified exact production Vercel SHA, current nine-page visual acceptance and public HTTP release. No issue is closed by the pause; no public refresh/deployment is implied.
+### Verification for this iteration
 
-### Resume checklist
+**Final local verification: 19 October 2026.** Continued verification follows the owner's instruction not to use Playwright. No browser automation was run during this continuation.
 
-1. Review the canonical research report and `main` CI SHA; preserve the `2026-09-10` published historical snapshot until genuine authorized source refresh.
-2. Establish Fraud-specific `GCP_WIF_PROVIDER` and `GCP_BIGQUERY_READONLY_SA` Actions variables and repository-scoped Google impersonation/dataset reader rights; use the **manual, read-only** BigQuery verifier, never the completed one-shot research branches.
-3. Reconcile direct and derived/filtered BigQuery groups and get explicit cost approval **before** any SQL/dbt write. Avoid treating metadata or 20-group partial agreement as full 27-group parity.
-4. Make an independent decision on producing a versioned, externally validated calibrated model. Keep historical 500-estimator ranker and its public score labels separate from the 150-estimator calibration experiment.
-5. Verify exact production Vercel commit/HTTP/three-engine browser acceptance only when quota and permission permit a reviewed release; re-enable the release watch only if explicitly requested.
+| Check | Observed result | Scope |
+|---|---|---|
+| Full Python suite | **248 passed**, exit 0; 8 dependency/SHAP warnings | Python 3.11.9, Pytest 9.1.1, plugin autoload disabled, unique temporary directory; includes SQLite lifecycle and API deletion-race regressions |
+| Ruff | **PASS** | Repository-pinned Ruff 0.4.10; no blanket exclusions added |
+| JavaScript syntax | **PASS** | `node --check webapp/static/risk-decision-studio.js` |
+| Python compilation | **PASS** | `python -m compileall -q webapp src scripts` |
+| SEO and source-image contracts | **PASS** | `python -m scripts.check_seo_assets` |
+| Markdown/archived-link integrity | **PASS** | Included in Python suite; moved evidence remains reachable |
+| dbt deps and local parse | **PASS on 18 October** | DuckDB target only; installed dbt 1.11.10 / adapter 1.10.1, not an assertion of pinned CI dependency parity or a full source build |
+| Direct local HTTP | **PASS_HISTORICAL_OFFLINE_DEMO** | FastAPI 0.136.3 with pinned web requirements, Python 3.12.13, loopback server; source timestamp remains `2026-09-10T19:41:45Z` |
 
+The earlier **18 October** Chromium dashboard/Studio run passed **16 tests**, including retry and keyboard interaction; desktop/mobile screenshots were inspected at 1440, 375 and 320 pixels. This is dated prior evidence, not a new browser acceptance claim after the owner's 19 October restriction. Existing browser test source is retained, but no browser workflow was dispatched. A new cross-engine result is not claimed.
+
+Local results do not establish hosted CI status, current BigQuery reconciliation, real-data retraining, Docker acceptance on this revision, model promotion or a new production deployment. Check the reviewed commit in GitHub Actions independently. The JUnit report is generated under ignored `outputs/qa/`, not included as source or competition data.
+
+### Existing scientific evidence retained
+
+Canonical deterministic full-data research was merged in [PR #42](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/42), merge `0ed99cf7598a63e7383dca6c92d8f854b8d6607c`. Its [main CI run #39070386467](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39070386467) passed the then-current checks. Both source-fingerprint-matched jobs in [research run #39069399816](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39069399816) passed; permanent aggregate metrics remain in the [canonical report](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). These are dated results, not evidence for the current development branch.
+
+### External dependencies
+
+- **BigQuery:** No standard local ADC file or GCP credential environment was available during inspection. GitHub repository variable listing returned no variables, so Fraud-specific WIF variables are not configured. Repository-scoped WIF setup and all-group parity remain open ([issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9)). No paid query, dataset write or dbt cloud rebuild was performed.
+- **Kaggle:** The local credential file is present, but an actual read-only `kaggle competitions files -c ieee-fraud-detection` call returned **401 Unauthorized**. Local authentication needs renewal. The GitHub repository contains a `KAGGLE_API_TOKEN` secret name; its value was not read and its validity was not inferred. Existing full-data research is retained without retraining or redistributing source records. Original public notebook recovery remains open ([issue #8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8)).
+- **Model promotion:** Independent governance and production-target calibration remain open ([issue #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20)). The public ranking score is still uncalibrated.
+- **Public deployment:** An exact-SHA Vercel release and current public browser/HTTP attestation remain open ([issue #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29)). Local acceptance is a separate result.
 
 ## Supported scope
 

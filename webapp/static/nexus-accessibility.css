@@ -1,0 +1,24 @@
+/* Shared keyboard and motion behavior for the historical NEXUS research UI. */
+:root{--nexus-midnight:#0b0f19;--nexus-navy:#061524;--nexus-cyan:#00e0ff;--nexus-blue:#4ea8ff;--nexus-lavender:#8f9bff;--nexus-violet:#6e55c6;--nexus-silver:#b9c5ce}
+.skip-link{position:fixed;left:16px;top:12px;z-index:10000;padding:12px 18px;border:2px solid var(--nexus-cyan);border-radius:8px;background:var(--nexus-navy);color:#fff;font:600 14px/1.4 Inter,system-ui,sans-serif;text-decoration:none;transform:translateY(-180%)}
+.skip-link:focus{transform:translateY(0)}
+:is(a,button,input,select,[tabindex]):focus-visible{outline:3px solid #3658ae;outline-offset:3px}
+:is(.sidebar,.rail,.topbar) :is(a,button):focus-visible{outline-color:var(--nexus-cyan)}
+#main-content:focus{outline:none}
+.studio-finance .rail{background:var(--nexus-navy)}
+.studio-finance .rail-nav a.active{border-color:var(--nexus-blue);box-shadow:inset 3px 0 var(--nexus-cyan)}
+.studio-finance .hero-copy{background:linear-gradient(125deg,var(--nexus-navy),#14263e)}
+.studio-finance .eyebrow{color:var(--nexus-silver)}
+.studio-finance .eyebrow:before{background:var(--nexus-cyan)}
+.studio-finance .chart-track>span{background:linear-gradient(90deg,#285a90,var(--nexus-blue))}
+.studio-finance .chart-track>span.best{background:linear-gradient(90deg,var(--nexus-violet),var(--nexus-lavender))}
+.studio-retry{padding:12px 18px;margin:0 0 20px;border:1px solid #355e9a;border-radius:9px;background:var(--nexus-navy);color:#fff;font-weight:650;min-height:44px}
+.studio-retry[hidden]{display:none}
+.studio-finance .chart-row[role="button"]:focus-visible{outline:3px solid #3658ae;outline-offset:3px}
+.studio-finance .metric-label{color:#526781}.studio-finance .metric-note{color:#596e86}
+.studio-finance .aside-label,.studio-finance .source-line{color:#526781}
+.studio-finance .hero-aside .aside-caption{color:#526781}
+.studio-finance #status{font-size:12px;line-height:1.6;color:#526781;margin-bottom:12px}
+.studio-finance .topline,.studio-finance .crumb{min-width:0;overflow-wrap:anywhere}
+@media(max-width:490px){.studio-finance .crumb{flex-wrap:wrap}.studio-finance .tabs{gap:4px}.studio-finance .tabs button{flex:1 1 100%;min-height:44px;text-align:left}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

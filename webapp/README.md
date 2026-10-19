@@ -69,4 +69,4 @@ GitHub Actions also runs [real three-engine browser tests](../.github/workflows/
 
 Deploy only through the established, authorized Vercel release process, respecting Hobby quota and preview protection. Require [public commit/HTTP attestation](../docs/PUBLIC_RELEASE_ATTESTATION.md) for the actual production URL. **Do not** set broad cloud credentials merely to serve the committed historical demo, and never put access tokens in frontend code or issues.
 
-The older [14 October 2026 readiness audit](../docs/nexus_fraud_release_readiness_2026-10-14.md) is retained as an historical record, not a current production approval.
+The older [14 October 2026 readiness audit](../docs/archive/nexus_fraud_release_readiness_2026-10-14.md) is retained as an historical record, not a current production approval.
