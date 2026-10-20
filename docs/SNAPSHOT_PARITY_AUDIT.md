@@ -1,5 +1,7 @@
 # F02 — Deterministic reporting snapshot parity audit
 
+> **20 October source update:** [Current read-only validation](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md) verifies local access and explains the four direct-group text differences through the existing public-copy contract. Seven derived/filtered groups remain unverified; full parity is not certified.
+
 ## Scope and verified source-map finding (17 October 2026)
 
 The historical web snapshot at \`webapp/snapshots/dashboard.json\` reports **27 dashboard data groups**. \`webapp/main.py::BIGQUERY_TABLES\` maps those groups to exactly **24 unique BigQuery source table names**. The reported 27-vs-24 count is not, by itself, a missing-table error: \`payment_email_matrix\`, \`proxy_product_matrix\`, \`proxy_cross_matrix\`, and \`niche_drilldown\` are derived from the **same** \`fact_train_transactions\` source. This accounts exactly for the three-count difference. It does **not** prove that all tables currently exist, have correct schemas or match the published snapshot.
