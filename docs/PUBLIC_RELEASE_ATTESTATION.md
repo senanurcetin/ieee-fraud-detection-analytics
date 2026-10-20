@@ -63,5 +63,7 @@ The local CI suites serve independent purposes:
 
 A green production attestation is **not** a claim of current BigQuery
 truth, cardholder identities, fraud model calibration, operational fraud
-blocking or a live banking data stream. Issues #8, #9 and #20 remain open
-until their real-data evidence requirements are independently satisfied.
+blocking or a live banking data stream. BigQuery issue #9 and published-model
+calibration issue #20 remain separate acceptance gates. Original Kaggle source
+recovery and completed public companion execution are documented in
+[20 October publication evidence](research/KAGGLE_RECOVERY_2026-10-20.md).

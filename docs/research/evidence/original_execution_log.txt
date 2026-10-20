@@ -1,0 +1,42 @@
+[{"stream_name":"stderr","time":11.750531549,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":11.750620757,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":11.750627972,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":11.750632325,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":12.67774349,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":12.677815957,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":12.677823737,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":12.677838195,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":58.778818672,"data":"(590540, 434) fraud rate 0.0350 (36s)\n"}
+,{"stream_name":"stdout","time":63.556196859,"data":"431 features | 217850 customer keys | months [130968  89838  91768  98027  85303  86525   8111]\n"}
+,{"stream_name":"stdout","time":1237.346911653,"data":"random fold 0: AUC 0.9708  (1214s)\n"}
+,{"stream_name":"stdout","time":2423.834132576,"data":"random fold 1: AUC 0.9713  (2401s)\n"}
+,{"stream_name":"stdout","time":3618.75190392,"data":"random fold 2: AUC 0.9696  (3596s)\n"}
+,{"stream_name":"stdout","time":4825.943534155,"data":"random fold 3: AUC 0.9729  (4803s)\n"}
+,{"stream_name":"stdout","time":6001.033984158,"data":"random fold 4: AUC 0.9706  (5978s)\n"}
+,{"stream_name":"stdout","time":6624.089156546,"data":"{'AUC': np.float64(0.9205572326070034), 'val frauds from seen customers': np.float64(0.25221456692913385)} (6601s)\n"}
+,{"stream_name":"stdout","time":6949.797008988,"data":"month 2: AUC 0.9129  seen-customer frauds 0.21\n"}
+,{"stream_name":"stdout","time":7360.709726214,"data":"month 3: AUC 0.9109  seen-customer frauds 0.20\n"}
+,{"stream_name":"stdout","time":7808.934215222,"data":"month 4: AUC 0.9291  seen-customer frauds 0.31\n"}
+,{"stream_name":"stdout","time":8335.961190591,"data":"month 5: AUC 0.9274  seen-customer frauds 0.26\n"}
+,{"stream_name":"stdout","time":8614.81325485,"data":"month 6: AUC 0.9624  seen-customer frauds 0.37\n"}
+,{"stream_name":"stdout","time":8615.109039496,"data":"           split customers   rows  fraud rate    AUC\n"}
+,{"stream_name":"stdout","time":8615.109086568,"data":"   random 5-fold      seen 448189      0.0382 0.9782\n"}
+,{"stream_name":"stdout","time":8615.10909405,"data":"   random 5-fold    unseen 142351      0.0247 0.9337\n"}
+,{"stream_name":"stdout","time":8615.109100979,"data":"time split 80/20      seen  51380      0.0199 0.9632\n"}
+,{"stream_name":"stdout","time":8615.109106616,"data":"time split 80/20    unseen  66728      0.0455 0.8865\n"}
+,{"stream_name":"stdout","time":8615.156341871,"data":"validation frauds from seen customers: random 83% | time split 25%\n"}
+,{"stream_name":"stdout","time":8615.156383273,"data":"gap random vs time split:           +0.0505\n"}
+,{"stream_name":"stdout","time":8615.156390103,"data":"seen vs unseen, random split:       +0.0445  (customer overlap)\n"}
+,{"stream_name":"stdout","time":8615.15640115,"data":"random vs time, unseen customers:   +0.0472  (time drift)\n"}
+,{"stream_name":"stdout","time":8615.795057785,"data":"total runtime 8593s\n"}
+,{"stream_name":"stderr","time":8622.296246095,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":8622.296318763,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":8622.584797688,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":8622.584829539,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":8623.621428467,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":8624.043518249,"data":"[NbConvertApp] Writing 60805 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":8627.521182934,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":8628.83697411,"data":"[NbConvertApp] Support files will be in __results___files/\n"}
+,{"stream_name":"stderr","time":8628.837018323,"data":"[NbConvertApp] Making directory __results___files\n"}
+,{"stream_name":"stderr","time":8628.837775707,"data":"[NbConvertApp] Writing 322381 bytes to __results__.html\n"}
+]

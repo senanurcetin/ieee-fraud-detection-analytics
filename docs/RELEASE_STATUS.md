@@ -27,10 +27,10 @@ The [published model summary](model_validation_evidence.md) and [canonical 17 Oc
 | Area | State | Remaining work |
 |---|---|---|
 | Engineering / historical release | Recorded 19 October checks passed | Validate each subsequent revision; keep source timestamps unchanged |
-| BigQuery source reconciliation | **OPEN**, [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9) | Configure repository-scoped WIF/ADC and reconcile all 27 dashboard groups, including derived/filtered groups; 24 physical tables are not 27 verified groups |
+| BigQuery source reconciliation | **OPEN**, [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9) | [20 October read-only evidence](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md): 16 strict matches, four copy differences explained; seven derived/filtered groups remain unverified. Local access works; keyless runner setup is separate |
 | GitHub Kaggle access | Configured secret and [successful 17 October full-source run](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39063907895) | A stored secret alone does not establish its current validity |
-| Local Kaggle access | Previous local listing returned 401 | A new credential was supplied for this task; fresh authentication has not yet been tested during this documentation-first stage |
-| Kaggle notebook publication | **OPEN**, [issue #8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8) | Authenticate, execute and read back the replacement notebook/public URL; the original unavailable notebook is not recovered |
+| Local Kaggle access | **Verified 20 October** | Owner authentication and actual competition file listing succeeded in a memory-only session; repository secret updated. The old default local credential file was not rewritten |
+| Kaggle notebook publication | Original **recovered, public, COMPLETE**; companion **public, COMPLETE** | [Recovery evidence](research/KAGGLE_RECOVERY_2026-10-20.md); original source and provider logs retrieved, public HTTP 200 verified |
 | Research F03/F04 | **PASS for recorded research** | Retain source hashes, exact runs and methodological limits |
 | Calibrated published-model promotion | **OPEN**, [issue #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20) | Match the exact base model/features, independent temporal validation and versioned probability contract |
 | Browser acceptance | Prior dated evidence only | Playwright workflow is disabled at the owner's request; no current browser run is claimed |

@@ -1,0 +1,128 @@
+{
+  "study": "IEEE-CIS random and chronological holdout, new reproduction",
+  "seed": 42,
+  "predictors": [
+    "TransactionAmt",
+    "card1",
+    "card2",
+    "card3",
+    "card5",
+    "addr1",
+    "addr2",
+    "dist1",
+    "dist2",
+    "C1",
+    "C2",
+    "C3",
+    "C4",
+    "C5",
+    "C6",
+    "C7",
+    "C8",
+    "C9",
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14",
+    "D1",
+    "D2",
+    "D3",
+    "D4",
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D9",
+    "D10",
+    "D11",
+    "D12",
+    "D13",
+    "D14",
+    "D15",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V8",
+    "V9",
+    "V10",
+    "V11",
+    "V12",
+    "V13",
+    "V14",
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19",
+    "V20"
+  ],
+  "rows": 590540,
+  "splits": {
+    "random": {
+      "train_rows": 472432,
+      "holdout_rows": 118108,
+      "holdout": {
+        "n": 118108,
+        "fraud_rate": 0.034993,
+        "roc_auc": 0.92022,
+        "average_precision": 0.619111
+      },
+      "seen_card_proxy_fraction": 0.965362,
+      "seen_proxy_subset": {
+        "n": 114017,
+        "fraud_rate": 0.035188,
+        "roc_auc": 0.920417,
+        "average_precision": 0.620589
+      },
+      "unseen_proxy_subset": {
+        "n": 4091,
+        "fraud_rate": 0.029577,
+        "roc_auc": 0.915342,
+        "average_precision": 0.579736
+      },
+      "train_max_transaction_dt": 15811131.0,
+      "holdout_min_transaction_dt": 86499.0
+    },
+    "chronological": {
+      "train_rows": 472432,
+      "holdout_rows": 118108,
+      "holdout": {
+        "n": 118108,
+        "fraud_rate": 0.034409,
+        "roc_auc": 0.89314,
+        "average_precision": 0.485269
+      },
+      "seen_card_proxy_fraction": 0.951527,
+      "seen_proxy_subset": {
+        "n": 112383,
+        "fraud_rate": 0.034374,
+        "roc_auc": 0.893718,
+        "average_precision": 0.486025
+      },
+      "unseen_proxy_subset": {
+        "n": 5725,
+        "fraud_rate": 0.035109,
+        "roc_auc": 0.887664,
+        "average_precision": 0.483416
+      },
+      "train_max_transaction_dt": 12192842.0,
+      "holdout_min_transaction_dt": 12192900.0
+    }
+  },
+  "interpretation_limit": "A random-vs-time score difference is not by itself a causal estimate of leakage; temporal distribution shift and card-family correlation can also affect it. Card attributes are masked proxies, not validated customer IDs.",
+  "input_sha256": "3a5c83ab6b3cc13dcabe5ffa9f522307fd5f7f7b6e6f6a60c32284ca6283d642",
+  "input_path_logged": false,
+  "subset_mode": false,
+  "versions": {
+    "python": "3.13.15",
+    "numpy": "2.1.3",
+    "pandas": "2.3.3",
+    "lightgbm": "4.6.0",
+    "sklearn": "1.6.1"
+  }
+}

@@ -1,0 +1,3 @@
+# Preserve downloaded provider evidence byte-for-byte for SHA-256 provenance.
+/docs/research/evidence/original_execution_log.txt -text
+/notebooks/archive/original_ieee_cis_leakage.ipynb -text

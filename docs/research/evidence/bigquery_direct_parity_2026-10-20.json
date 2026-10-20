@@ -1,0 +1,631 @@
+{
+  "dataset": "fraud_project_reporting",
+  "groups": {
+    "amount_bands": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 6,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 6,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_amount_bands",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 6,
+      "source_rows_read": 6,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "daily_drift": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 182,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 182,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_daily_drift",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 182,
+      "source_rows_read": 182,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "data_quality": {
+      "physical_table": "rpt_data_quality_scorecard",
+      "query_shape": "derived_aggregate",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "email_domain_risk": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 8,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 8,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_email_domain_risk",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 8,
+      "source_rows_read": 8,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "executive_kpis": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 1,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 1,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_executive_kpis",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 1,
+      "source_rows_read": 1,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "feature_importance": {
+      "physical_table": "rpt_feature_importance",
+      "query_shape": "filtered",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "identity_product_coverage": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 5,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 5,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_identity_product_coverage",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 5,
+      "source_rows_read": 5,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "identity_risk": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 2,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 2,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_identity_risk",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 2,
+      "source_rows_read": 2,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "model_calibration": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 10,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 10,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_model_calibration",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 10,
+      "source_rows_read": 10,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "model_risk_bands": {
+      "physical_table": "rpt_model_risk_bands",
+      "query_shape": "filtered",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "niche_drilldown": {
+      "physical_table": "fact_train_transactions",
+      "query_shape": "derived_aggregate",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "payment_email_matrix": {
+      "physical_table": "fact_train_transactions",
+      "query_shape": "derived_aggregate",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "payment_heatmap": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 6,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 6,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_payment_heatmap",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 6,
+      "source_rows_read": 6,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "product_risk": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 5,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 5,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_product_risk",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 5,
+      "source_rows_read": 5,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "proxy_cross_matrix": {
+      "physical_table": "fact_train_transactions",
+      "query_shape": "derived_aggregate",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "proxy_product_matrix": {
+      "physical_table": "fact_train_transactions",
+      "query_shape": "derived_aggregate",
+      "source_rows_read": 0,
+      "status": "SKIPPED_DERIVED_OR_FILTERED"
+    },
+    "proxy_signal_risk": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 6,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 6,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_proxy_signal_risk",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 6,
+      "source_rows_read": 6,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "quality_contract": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 6,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 6,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_quality_contract",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 6,
+      "source_rows_read": 6,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "report_narrative": {
+      "comparison": {
+        "changed_field_counts": {
+          "analytical_focus": 9,
+          "executive_message": 8,
+          "recommended_action": 9
+        },
+        "current_only_keys": 0,
+        "current_only_rows": 9,
+        "current_rows": 9,
+        "examples": [
+          {
+            "current_sha256": "cf168fe4cb37fd7a",
+            "field": "analytical_focus",
+            "historical_sha256": "a8e925d95c4afac6",
+            "key_sha256": "4bd00ca359388a44"
+          },
+          {
+            "current_sha256": "8a6f18346fefbc68",
+            "field": "executive_message",
+            "historical_sha256": "6ad8febc68ce01f8",
+            "key_sha256": "4bd00ca359388a44"
+          },
+          {
+            "current_sha256": "361cddacfc3e1bf6",
+            "field": "recommended_action",
+            "historical_sha256": "34f562e6810346e4",
+            "key_sha256": "4bd00ca359388a44"
+          },
+          {
+            "current_sha256": "63a91cfd500d3b91",
+            "field": "analytical_focus",
+            "historical_sha256": "bc88832db58fd849",
+            "key_sha256": "1e347e4a233bd29d"
+          },
+          {
+            "current_sha256": "011a2b9a8747b3f1",
+            "field": "executive_message",
+            "historical_sha256": "4cd1a2bc0f906d1a",
+            "key_sha256": "1e347e4a233bd29d"
+          }
+        ],
+        "historical_only_keys": 0,
+        "historical_only_rows": 9,
+        "historical_rows": 9,
+        "match_basis": "unique_natural_key_and_full_row_multiset",
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "DIFF"
+      },
+      "physical_table": "rpt_report_narrative",
+      "public_presentation_comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 9,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 9,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 9,
+      "source_rows_read": 9,
+      "status": "DIFF_DIRECT"
+    },
+    "report_readiness": {
+      "comparison": {
+        "changed_field_counts": {
+          "check_name": 6,
+          "readiness_area": 7
+        },
+        "current_only_keys": 0,
+        "current_only_rows": 7,
+        "current_rows": 8,
+        "examples": [
+          {
+            "current_sha256": "95fb82386ec3b4fc",
+            "field": "readiness_area",
+            "historical_sha256": "c4c47c8a84c154ee",
+            "key_sha256": "76c2ebcbd0e30bf3"
+          },
+          {
+            "current_sha256": "853e761062dd7b68",
+            "field": "check_name",
+            "historical_sha256": "ab7c4f6b7d6d2601",
+            "key_sha256": "0584a3a07a9cdc3d"
+          },
+          {
+            "current_sha256": "b5eb1a75da520786",
+            "field": "readiness_area",
+            "historical_sha256": "95fb82386ec3b4fc",
+            "key_sha256": "0584a3a07a9cdc3d"
+          },
+          {
+            "current_sha256": "9193464ea173e9dd",
+            "field": "check_name",
+            "historical_sha256": "00ea98f9d87c85fd",
+            "key_sha256": "d25c566b07419cac"
+          },
+          {
+            "current_sha256": "b5eb1a75da520786",
+            "field": "readiness_area",
+            "historical_sha256": "c4c47c8a84c154ee",
+            "key_sha256": "d25c566b07419cac"
+          }
+        ],
+        "historical_only_keys": 0,
+        "historical_only_rows": 7,
+        "historical_rows": 8,
+        "match_basis": "unique_natural_key_and_full_row_multiset",
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "DIFF"
+      },
+      "physical_table": "rpt_report_readiness",
+      "public_presentation_comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 8,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 8,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 8,
+      "source_rows_read": 8,
+      "status": "DIFF_DIRECT"
+    },
+    "review_strategy": {
+      "comparison": {
+        "changed_field_counts": {
+          "review_priority": 3
+        },
+        "current_only_keys": 0,
+        "current_only_rows": 3,
+        "current_rows": 4,
+        "examples": [
+          {
+            "current_sha256": "9ebc570952725ecf",
+            "field": "review_priority",
+            "historical_sha256": "7404aeefe9dda30e",
+            "key_sha256": "2049436592add647"
+          },
+          {
+            "current_sha256": "096975f3a2074397",
+            "field": "review_priority",
+            "historical_sha256": "7668d8751af87ffd",
+            "key_sha256": "71827a4710c1d1b1"
+          },
+          {
+            "current_sha256": "0151ec07ed690690",
+            "field": "review_priority",
+            "historical_sha256": "4a033e2760f88811",
+            "key_sha256": "b4e9475d83df914b"
+          }
+        ],
+        "historical_only_keys": 0,
+        "historical_only_rows": 3,
+        "historical_rows": 4,
+        "match_basis": "unique_natural_key_and_full_row_multiset",
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "DIFF"
+      },
+      "physical_table": "rpt_review_strategy",
+      "public_presentation_comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 4,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 4,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 4,
+      "source_rows_read": 4,
+      "status": "DIFF_DIRECT"
+    },
+    "segment_model_performance": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 528,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 528,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_segment_model_performance",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 528,
+      "source_rows_read": 528,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "segment_watchlist": {
+      "comparison": {
+        "changed_field_counts": {
+          "recommended_action": 20
+        },
+        "current_only_keys": 0,
+        "current_only_rows": 20,
+        "current_rows": 20,
+        "examples": [
+          {
+            "current_sha256": "10fc13ca63072dd4",
+            "field": "recommended_action",
+            "historical_sha256": "889a8694eae9a170",
+            "key_sha256": "4bd00ca359388a44"
+          },
+          {
+            "current_sha256": "4b9cb361bd84b2a5",
+            "field": "recommended_action",
+            "historical_sha256": "9aca93a27ef6e2ca",
+            "key_sha256": "554821d042e8b142"
+          },
+          {
+            "current_sha256": "69b242177aafb816",
+            "field": "recommended_action",
+            "historical_sha256": "99c53eb0f0852bb4",
+            "key_sha256": "d5bf23cfae9a7b5d"
+          },
+          {
+            "current_sha256": "69b242177aafb816",
+            "field": "recommended_action",
+            "historical_sha256": "4d9c503fc5c52b33",
+            "key_sha256": "adf41f0d25cd1e20"
+          },
+          {
+            "current_sha256": "69b242177aafb816",
+            "field": "recommended_action",
+            "historical_sha256": "e9f22e2f2b63384a",
+            "key_sha256": "fecd0cc3cf1808e5"
+          }
+        ],
+        "historical_only_keys": 0,
+        "historical_only_rows": 20,
+        "historical_rows": 20,
+        "match_basis": "unique_natural_key_and_full_row_multiset",
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "DIFF"
+      },
+      "physical_table": "rpt_segment_watchlist",
+      "public_presentation_comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 20,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 20,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 20,
+      "source_rows_read": 20,
+      "status": "DIFF_DIRECT"
+    },
+    "threshold_simulation": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 16,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 16,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_threshold_simulation",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 16,
+      "source_rows_read": 16,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "time_amount_signals": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 48,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 48,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_time_amount_signals",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 48,
+      "source_rows_read": 48,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "validation_risk_bands": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 4,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 4,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_validation_risk_bands",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 4,
+      "source_rows_read": 4,
+      "status": "MATCH_DIRECT_SCHEMA"
+    },
+    "validation_threshold_simulation": {
+      "comparison": {
+        "changed_field_counts": {},
+        "current_only_rows": 0,
+        "current_rows": 16,
+        "examples": [],
+        "historical_only_rows": 0,
+        "historical_rows": 16,
+        "missing_fields_in_current": [],
+        "new_fields_in_current": [],
+        "status": "MATCH"
+      },
+      "physical_table": "rpt_validation_threshold_simulation",
+      "query_shape": "direct",
+      "source_extra_fields": [],
+      "source_row_count_metadata": 16,
+      "source_rows_read": 16,
+      "status": "MATCH_DIRECT_SCHEMA"
+    }
+  },
+  "historical_refresh_unchanged": "2026-09-10T19:41:45Z",
+  "mode": "BOUNDED_BIGQUERY_TABLEDATA_READ_ONLY",
+  "project": "workintech-working",
+  "raw_fraud_transactions_downloaded": false,
+  "region": "US",
+  "report_groups": 27,
+  "snapshot_rewritten": false,
+  "source_row_limit_each": 10000,
+  "source_rows_read_total": 890,
+  "sql_query_jobs_submitted": 0,
+  "status": "DIRECT_TABLES_UNRESOLVED",
+  "status_counts": {
+    "DIFF_DIRECT": 4,
+    "MATCH_DIRECT_SCHEMA": 16,
+    "SKIPPED_DERIVED_OR_FILTERED": 7
+  },
+  "unique_source_table_references": 24,
+  "unresolved_direct_groups": [
+    "report_narrative",
+    "report_readiness",
+    "review_strategy",
+    "segment_watchlist"
+  ],
+  "verified_full_27_group_parity": false,
+  "warning": "Only bounded, directly table-backed published columns were compared. Derived aggregates, filtered views, source lineage, real-data model calibration and full 27-group snapshot parity remain UNVERIFIED. Metadata and tabledata API access may be subject to service quotas."
+}
