@@ -1,5 +1,7 @@
 # F08 — Zero-budget historical dashboard container
 
+> Current scope: full-source F03/F04 research has measured canonical results; model promotion and BigQuery parity remain separate. The 19 October release passed exact-SHA/HTTPS and container checks. Playwright is disabled at the owner's request. Use [release status](RELEASE_STATUS.md) for the current gates.
+
 This is a **local portfolio demo**, not production authorization for payment
 decisions or live bank traffic. It uses only the committed September 10, 2026
 IEEE-CIS / BigQuery reporting snapshot, and never requires Kaggle credentials,

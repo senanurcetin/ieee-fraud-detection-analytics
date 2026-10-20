@@ -1,6 +1,6 @@
 # QA Acceptance Checklist
 
-> **Historical checklist.** Checked boxes are evidence of an earlier development/release review, **not** current real-data model sign-off or BigQuery all-group parity. Refer to [release status](RELEASE_STATUS.md) for active blockers and exact-run acceptance.
+> **Historical checklist.** Checked boxes are evidence of an earlier development/release review, **not** current real-data model sign-off or BigQuery all-group parity. Refer to [release status](../RELEASE_STATUS.md) for active blockers and exact-run acceptance.
 
 
 Final acceptance target: the live web dashboard is the only presentation layer.

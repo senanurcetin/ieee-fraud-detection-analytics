@@ -94,7 +94,7 @@ that way. `rpt_model_calibration` publishes the reliability curve so a reader
 can check this rather than take it on trust.
 
 Making the score a probability would mean fitting a calibrator (Platt or
-isotonic) on held-out data and reporting both. That is a deliberate open item,
+isotonic) on held-out data and reporting both. For the published model this remains an open item; the separate 150-estimator research calibration is already measured. It is
 not an oversight: the decision layer here does not need probabilities.
 
 ## Feature Scope
@@ -116,11 +116,7 @@ fields) are encoded as integer codes numbered by order of first appearance in th
 published metrics were produced by passing these codes to LightGBM **as ordinary numeric columns**, so the trees
 split on an arbitrary ordering of the categories rather than on category membership.
 
-This is a known limitation, not yet a measured one. Setting `LIGHTGBM_NATIVE_CATEGORICALS=1` makes
-`src/prepare_raw_and_ml.py` pass the columns via `categorical_feature`, so LightGBM splits on category subsets.
-The flag is off by default because switching it changes every reported metric; the comparison (holdout ROC-AUC,
-average precision, top-5% capture, both settings, same seed) needs to be run on the full data before it becomes the
-default and the numbers in this project are regenerated.
+This limitation was measured in the separate full-source F03 study: native categorical handling and fold-fit preprocessing have canonical results in [the research report](research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). The published 500-estimator pipeline remains unchanged. Its opt-in `LIGHTGBM_NATIVE_CATEGORICALS=1` flag must not be treated as a validated replacement merely because the distinct 100-estimator research experiment passed.
 
 ## Risk Bands
 
@@ -147,4 +143,3 @@ The project includes drift-style reporting tables, daily fraud-rate monitoring, 
 - Approved drift thresholds
 - Governance checks on score distribution and fraud-rate movement
 - Human approval process for threshold changes
-

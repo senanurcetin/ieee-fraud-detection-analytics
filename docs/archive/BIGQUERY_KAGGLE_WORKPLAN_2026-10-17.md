@@ -1,6 +1,6 @@
 # Fraud Risk Intelligence — BigQuery and Kaggle acceptance plan (17 October 2026)
 
-> **Historical 17 October plan:** Engineering resumed on 18 October 2026 under the [current development plan](DEVELOPMENT_PLAN.md). F03/F04 scientific results are documented in [canonical evidence](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). This older plan is a source-acceptance reference, not an automatic workflow instruction. See [release status](RELEASE_STATUS.md).
+> **Historical 17 October plan:** Engineering resumed on 18 October 2026 under the [current development plan](../DEVELOPMENT_PLAN.md). F03/F04 scientific results are documented in [canonical evidence](../research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). This older plan is a source-acceptance reference, not an automatic workflow instruction. See [release status](../RELEASE_STATUS.md).
 
 This page is an **execution plan**, not an assertion that the source and model
 release gates have passed. It replaces assumptions with exact access, data
@@ -15,11 +15,11 @@ snapshot until approval.
   downloaded full IEEE-CIS competition data and successfully tested all
   **590,540 train transactions**. Random-vs-chronological 80/20 ROC-AUC:
   **0.920220 vs 0.893140**, AP: **0.619111 vs 0.485269**. Details and
-  source SHA: [full-source evidence](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md).
+  source SHA: [full-source evidence](../research/KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md).
 - Historic GCP inspection confirmed **`workintech-working`**,
   **`fraud_project_reporting`**, location **US**. There are 24 physical
   reporting tables behind 27 dashboard groups. This is **not** proof of
-  present-day row parity; [see source evidence](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
+  present-day row parity; [see source evidence](../BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
 - As of this audit, ChatGPT's provider-native BigQuery plugin reports
   `DISABLED_BY_ADMIN`. No BigQuery API call can be made **inside** this
   assistant session merely because an account is connected elsewhere.
@@ -122,7 +122,7 @@ Both states are **partial**; neither means a live bank fraud system.
 
 The first `random_vs_time` run and the F03 `temporal_hygiene` / F04
 `calibration` full-source runs **have now completed** as separately evidenced:
-[canonical deterministic temporal and calibration measurements](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md).
+[canonical deterministic temporal and calibration measurements](../research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md).
 The user-authorized initial run [#39067832865](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39067832865) executed both studies; BigQuery auth was **skipped** because both Fraud WIF repository variables were empty. Later, independent deterministic full-source repeat [#39069399816](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39069399816) successfully ran F03 and F04, and verified **identical input row fingerprints across both runner jobs**. Use the latter for canonical numerical model metrics; it made no BigQuery API calls. Repeats of the research studies remain manual via the standard opt-in workflow below. Select each explicitly from
 [Kaggle Research Evidence](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/kaggle-research-evidence.yml)
 on `main`:
@@ -149,7 +149,7 @@ in the ephemeral runner.
   test fixtures.
 - BigQuery source-parity acceptance does not replace model calibration.
   Neither acceptance automatically refreshes historical published data or
-  bypasses [production attestation](PUBLIC_RELEASE_ATTESTATION.md).
+  bypasses [production attestation](../PUBLIC_RELEASE_ATTESTATION.md).
 - Track source parity in [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9),
   missing original Kaggle notebook/research in [#8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8),
   calibration in [#20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20),

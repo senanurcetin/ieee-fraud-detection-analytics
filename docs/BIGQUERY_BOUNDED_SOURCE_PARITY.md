@@ -48,7 +48,7 @@ python -m scripts.verify_reporting_tables_bigquery_readonly \
 The verifier now also accepts keyless Application Default Credentials with
 `--use-adc`; the older `--credentials-file` option remains available.
 Both paths request the `bigquery.readonly` OAuth scope. For GitHub runners,
-use [manual keyless BigQuery workflow and WIF setup](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md)
+use [manual keyless BigQuery workflow and WIF setup](archive/BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md)
 rather than uploading a long-lived service-account JSON key.
 
 For example, from a **separately authenticated** environment with ADC:

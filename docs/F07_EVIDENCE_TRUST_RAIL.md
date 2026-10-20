@@ -1,5 +1,7 @@
 # F07 — NEXUS evidence provenance rail
 
+> Current scope: full-source F03/F04 research has measured canonical results; model promotion and BigQuery parity remain separate. The 19 October release passed exact-SHA/HTTPS and container checks. Playwright is disabled at the owner's request. Use [release status](RELEASE_STATUS.md) for the current gates.
+
 The public dashboard and secondary Decision Studio now disclose source history and
 the model-score contract alongside charts, not hidden in an unrelated FAQ.
 
@@ -27,8 +29,7 @@ stream or a customer identity/credit/payment enforcement system.
   **ranking score**. No unverified calibrated-probability wording is introduced.
 - Model explanation is `global_importance_heuristic` unless a genuine,
   locally validated TreeSHAP artifact with matching model version exists.
-- The current BigQuery source parity and all real-data F03/F04/F05/F06
-  experiments must be verified separately; a green CI does not prove them.
+- Full-source F03/F04 experiments have canonical measured evidence. BigQuery parity, published-model promotion and any real-data F05/F06 claims require separate evidence; a green CI does not establish them.
 
 ## Frontend behavior
 

@@ -114,7 +114,7 @@ authorized.
 
 BigQuery-specific blockers, the precise Fraud repository numeric ID and
 repo-scoped WIF instructions are documented in
-[BigQuery + Kaggle workplan](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md)
+[BigQuery + Kaggle workplan](../archive/BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md)
 and [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9).
 Original unpublished Kaggle notebook recovery remains [issue #8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8);
 production model calibration acceptance remains [issue #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20).
