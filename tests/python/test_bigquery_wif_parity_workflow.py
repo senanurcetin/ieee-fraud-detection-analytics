@@ -17,8 +17,9 @@ sys.path.insert(0, str(ROOT))
 verify = importlib.import_module("scripts.verify_reporting_tables_bigquery_readonly")
 
 
+@pytest.mark.parametrize("explain_copy", [False, True])
 def test_adc_uses_only_bigquery_readonly_oauth_scope(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, explain_copy: bool,
 ) -> None:
     import google.auth
     from google.cloud import bigquery
@@ -35,11 +36,12 @@ def test_adc_uses_only_bigquery_readonly_oauth_scope(
         captured["credentials"] = credentials
         return SimpleNamespace(marker="fake-client")
 
-    def fake_inspect(client, snapshot, *, project, dataset, max_source_rows):
+    def fake_inspect(client, snapshot, *, project, dataset, max_source_rows, explain_public_copy):
         assert client.marker == "fake-client"
         assert snapshot["meta"]["project_id"] == project
         assert dataset == "fraud_project_reporting"
         assert max_source_rows == 10000
+        assert explain_public_copy is explain_copy
         return {
             "status": "DIRECT_TABLES_MATCH_PARTIAL_ONLY",
             "sql_query_jobs_submitted": 0,
@@ -57,6 +59,7 @@ def test_adc_uses_only_bigquery_readonly_oauth_scope(
         "--use-adc", "--project", "workintech-working",
         "--dataset", "fraud_project_reporting",
         "--snapshot", str(source), "--output", str(output),
+        *(["--explain-public-copy"] if explain_copy else []),
     ])
     assert code == 0
     assert captured == {
