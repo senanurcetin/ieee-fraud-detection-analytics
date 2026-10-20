@@ -1,5 +1,7 @@
 # Full-source Kaggle validation: random vs chronological split
 
+> **20 October update:** The original notebook source and its prior completed provider run have now been recovered and its public page verified. See [recovery and publication evidence](KAGGLE_RECOVERY_2026-10-20.md). Earlier missing-notebook statements below describe the historical state; they do not establish current unavailability.
+
 **Run date:** 17 October 2026  
 **Study:** New reproducible random-vs-chronological IEEE-CIS holdout comparison  
 **Execution:** [GitHub Actions run #39063907895](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39063907895) — `workflow_dispatch: random_vs_time`, **SUCCESS**  

@@ -10,7 +10,7 @@
 [![Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
+[**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**Kaggle notebooks**](notebooks/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
 
 **Project status (20 October 2026): Active noncommercial research and engineering.**
 Development has resumed under the [engineering plan](docs/DEVELOPMENT_PLAN.md). The [canonical 590,540-row Kaggle temporal hygiene and calibration experiments](docs/research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) remain **research evidence, not promoted production scores**. Exact production SHA/HTTPS and container checks passed on 19 October for `2c54bb3`; current BigQuery reporting parity remains **unverified**. Playwright is disabled at the owner's request. See [verification results and remaining gates](docs/RELEASE_STATUS.md).
@@ -114,7 +114,7 @@ GitHub Actions additionally covers real Chromium/Firefox/WebKit dashboard accept
 | [Container smoke](.github/workflows/container-smoke.yml) | Docker Compose boot and historical HTTP contract |
 | [Public release attestation](.github/workflows/public-release-smoke.yml) | Exact Vercel commit SHA, source disclosure and public HTTPS routes |
 
-Current unresolved acceptance: [BigQuery data parity #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9), [reproducibility #8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8), [model calibration #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20), and [production release verification #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29). Do not infer those are complete from green code checks.
+Current unresolved acceptance: [BigQuery data parity #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9), [model calibration #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20), and [production release verification #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29). Do not infer those are complete from green code checks.
 
 ## Project map
 

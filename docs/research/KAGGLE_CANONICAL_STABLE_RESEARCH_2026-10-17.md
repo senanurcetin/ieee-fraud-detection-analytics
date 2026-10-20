@@ -1,5 +1,7 @@
 # Canonical 17 October 2026 IEEE-CIS research — stable source order and full data
 
+> **20 October update:** The original notebook source and its prior completed provider run have now been recovered and its public page verified. See [recovery and publication evidence](KAGGLE_RECOVERY_2026-10-20.md). Earlier missing-notebook statements below describe the historical state; they do not establish current unavailability.
+
 **Scientific acceptance type:** bounded historical, independent temporal holdout research; **not** current bank monitoring or production calibrated-model sign-off.
 
 ## Immutable source and code evidence

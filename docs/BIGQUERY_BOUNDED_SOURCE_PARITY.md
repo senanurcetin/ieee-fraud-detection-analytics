@@ -82,12 +82,16 @@ public snapshot. Read the per-group status and compare source schema.
    report artifact was generated, quality-assured and published.
 5. Keep real IEEE-CIS ML/calibration acceptance Issues #8/#20 separate.
 
-## Current execution limitation in this chat
+## Historical execution limitation — 17 October 2026
 
 As of 17 Oct 2026 the account's BigQuery plugin is disabled by admin,
 the authorized remote Windows device has exhausted Desktop Commander
 monthly calls, and this assistant's local container cannot resolve
 `oauth2.googleapis.com` or `bigquery.googleapis.com` DNS. A prior private
 service-account file exists in the user's Library, but this chat has not
-used, published or copied its key. **No current BigQuery source read or
-full parity certification has been performed in this environment.**
+used, published or copied its key. **No BigQuery source read had been performed in that earlier environment.**
+
+
+## Current verified execution — 20 October 2026
+
+Local authorization now succeeds. [Current evidence](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md) records 16 direct matches, four strict text differences explained by the existing public copy transformation, and seven skipped groups. Full 27-group parity remains unverified. The `--explain-public-copy` option adds an independent presentation diagnostic without changing strict verdicts or exit codes. No SQL jobs or source writes were used.

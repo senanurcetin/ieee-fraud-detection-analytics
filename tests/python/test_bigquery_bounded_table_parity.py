@@ -129,3 +129,23 @@ def test_unsupported_source_field_types_fail_for_group_not_entire_process() -> N
     result = verify.inspect(BadRowsClient(), historical())
     assert result["groups"]["executive_kpis"]["status"] == "SOURCE_READ_ERROR"
     assert result["status"] == "DIRECT_TABLES_UNRESOLVED"
+
+
+def test_presentation_copy_explains_text_without_masking_numeric_changes() -> None:
+    from webapp.main import normalize_public_row
+
+    source = {"risk_band": "critical", "review_priority": "legacy wording", "transaction_count": 10}
+    published = normalize_public_row("review_strategy", source)
+    assert verify.compare_public_copy("review_strategy", [published], [source])["status"] == "MATCH"
+    assert verify.compare_public_copy(
+        "review_strategy", [published], [{**source, "transaction_count": 11}],
+    )["status"] == "DIFF"
+
+
+def test_presentation_diagnostic_preserves_strict_failure() -> None:
+    result = verify.inspect(FakeClient(changed="rpt_review_strategy"), historical(), explain_public_copy=True)
+    group = result["groups"]["review_strategy"]
+    assert group["status"] == "DIFF_DIRECT"
+    assert group["public_presentation_comparison"]["status"] == "DIFF"
+    assert result["status"] == "DIRECT_TABLES_UNRESOLVED"
+    assert result["verified_full_27_group_parity"] is False

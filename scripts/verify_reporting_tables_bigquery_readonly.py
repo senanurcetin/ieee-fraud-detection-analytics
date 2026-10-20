@@ -42,11 +42,25 @@ def normalized_value(value: Any) -> Any:
     raise TypeError("Unsupported reporting field value")
 
 
+def compare_public_copy(group: str, historic: list[dict[str, Any]], rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Explain presentation copy separately; never alter strict source verdicts."""
+    from webapp.main import normalize_public_row
+
+    fields = {key for row in historic for key in row}
+    projected = [
+        {key: normalized.get(key) for key in fields}
+        for row in rows
+        for normalized in [normalize_public_row(group, row)]
+    ]
+    return compare_group(group, historic, projected)
+
+
 def inspect(
     client: Any, snapshot: dict[str, Any], *,
     project: str = DEFAULT_PROJECT,
     dataset: str = DEFAULT_DATASET,
     max_source_rows: int = MAX_SOURCE_ROWS,
+    explain_public_copy: bool = False,
 ) -> dict[str, Any]:
     """Compare direct, bounded tables only; never infer full 27-group parity."""
     if not 1 <= max_source_rows <= MAX_SOURCE_ROWS:
@@ -122,6 +136,8 @@ def inspect(
                                 )
                             else:
                                 result["status"] = "DIFF_DIRECT"
+                                if explain_public_copy:
+                                    result["public_presentation_comparison"] = compare_public_copy(group, historic, projected)
                             result["source_extra_fields"] = sorted(fields - published_fields)
             except Exception:
                 # Do not print API errors; they may contain tenant identifiers.
@@ -178,6 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--snapshot", type=Path, default=SNAPSHOT_PATH)
     parser.add_argument("--max-source-rows", type=int, default=MAX_SOURCE_ROWS)
     parser.add_argument("--output", type=Path, default=None)
+    parser.add_argument("--explain-public-copy", action="store_true",
+                        help="Also compare through public copy normalization; strict verdict remains unchanged")
     args = parser.parse_args(argv)
     if args.credentials_file is not None and not args.credentials_file.is_file():
         print("Authorized service-account file not accessible", file=sys.stderr)
@@ -206,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
             project=args.project,
             dataset=args.dataset,
             max_source_rows=args.max_source_rows,
+            explain_public_copy=args.explain_public_copy,
         )
     except Exception:
         print("Read-only BigQuery parity inspection unavailable", file=sys.stderr)

@@ -1,5 +1,7 @@
 # Reproducible random vs chronological validation (new study)
 
+> **20 October update:** The original notebook source and its prior completed provider run have now been recovered and its public page verified. See [recovery and publication evidence](KAGGLE_RECOVERY_2026-10-20.md). Earlier missing-notebook statements below describe the historical state; they do not establish current unavailability.
+
 > **17 Oct 2026 update:** The new study has now run successfully on the original, complete 590,540-row Kaggle IEEE-CIS competition dataset. See [measured results, exact Git run, SHA-256 and interpretation caveats](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md). The unavailable *original* Kaggle notebook remains unverified, and this new study uses different modeling settings.
 
 
@@ -20,6 +22,6 @@ python -m pytest tests/python/test_compare_random_time_holdout.py -q
 
 The script writes a JSON result to `outputs/research/ieee_cis_split_comparison.json`, including source file SHA-256, environment package versions, split boundaries, predictors, sample sizes and measured metrics. `--max-rows` is a smoke-only subset, not full-data evidence.
 
-A standalone Kaggle-ready notebook with the same analysis code is at [notebooks/ieee_cis_random_vs_time_reproduction.ipynb](../../notebooks/ieee_cis_random_vs_time_reproduction.ipynb). Upload the notebook to a Kaggle session with the IEEE-CIS dataset attached, then execute and publish it under the owner's account. **A full-data GitHub Actions run is now independently evidenced** by [17 October Kaggle study results](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md). The public Kaggle notebook URL remains **unverified** until the notebook is actually uploaded, executed and publicly accessible. Do not conflate GitHub-run metrics with a published Kaggle notebook or the missing original notebook's claims.
+A standalone Kaggle-ready notebook with the same analysis code is at [notebooks/ieee_cis_random_vs_time_reproduction.ipynb](../../notebooks/ieee_cis_random_vs_time_reproduction.ipynb). Upload the notebook to a Kaggle session with the IEEE-CIS dataset attached, then execute and publish it under the owner's account. **A full-data GitHub Actions run is now independently evidenced** by [17 October Kaggle study results](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md). The [public companion notebook](https://www.kaggle.com/code/senanuretin/ieee-cis-random-vs-time-reproducible-study) completed successfully on 20 October; aggregate output and unauthenticated HTTP access were verified. See [current publication evidence](KAGGLE_RECOVERY_2026-10-20.md). Its results and original-notebook observations remain separate model contracts.
 
 No Kaggle API tokens or BigQuery private keys are stored in this repository.

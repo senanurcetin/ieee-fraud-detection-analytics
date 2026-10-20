@@ -38,3 +38,7 @@ venv/
 !.env.example
 
 .vercel
+
+# Public Kaggle publication configuration; never credentials.
+!notebooks/kernel-metadata.json
+!docs/research/evidence/*.json

@@ -1,0 +1,44 @@
+{
+  "observed_date": "2026-10-20",
+  "method": "Bounded tabledata reads followed by webapp.main.normalize_public_row, then published-field comparison",
+  "sql_query_jobs_submitted": 0,
+  "snapshot_rewritten": false,
+  "full_27_group_parity": false,
+  "groups": {
+    "report_narrative": {
+      "status": "MATCH",
+      "source_rows": 9,
+      "source_modified_at": "2026-09-11T02:00:41.815000+00:00",
+      "raw_differing_fields": {
+        "analytical_focus": 9,
+        "executive_message": 8,
+        "recommended_action": 9
+      }
+    },
+    "report_readiness": {
+      "status": "MATCH",
+      "source_rows": 8,
+      "source_modified_at": "2026-09-11T02:02:27.790000+00:00",
+      "raw_differing_fields": {
+        "check_name": 6,
+        "readiness_area": 7
+      }
+    },
+    "review_strategy": {
+      "status": "MATCH",
+      "source_rows": 4,
+      "source_modified_at": "2026-09-11T02:02:08.494000+00:00",
+      "raw_differing_fields": {
+        "review_priority": 3
+      }
+    },
+    "segment_watchlist": {
+      "status": "MATCH",
+      "source_rows": 20,
+      "source_modified_at": "2026-09-11T02:02:13.011000+00:00",
+      "raw_differing_fields": {
+        "recommended_action": 20
+      }
+    }
+  }
+}
