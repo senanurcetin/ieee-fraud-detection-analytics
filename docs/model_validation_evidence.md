@@ -1,55 +1,44 @@
-﻿# Model Validation Evidence
+# Published historical model: validation and limitations
 
-## Validation Design
+This is the maintained model summary, consolidating the former `model_results.md`. Metrics belong to the **historical 500-estimator LightGBM ranker**, not the later 100/150-estimator research experiments. They are retained evidence, not a new training run or certification of current BigQuery parity.
 
-The model is evaluated with a chronological holdout:
+## Source and population
 
-- Training window: first 80% of train transactions by `TransactionDT`.
-- Validation window: final 20% of train transactions by `TransactionDT`.
+- Registry: [model_registry.json](model_registry.json), version `lightgbm-v2-v339-missingness-filtered`, 425 selected predictors.
+- Reporting snapshot: [dashboard.json](../webapp/snapshots/dashboard.json), built 10 September 2026.
+- Chronological holdout: final 20% of `TransactionDT`; 118,108 rows, 4,064 fraud labels. `TransactionDT` is relative elapsed time, not a calendar timestamp.
+- Supporting aggregate tables: [recomputed validation](model_validation_recomputed.md). Recreating that report requires the private validation artifacts; it does not retrain or independently validate the model.
 
-The project does not use random k-fold validation because random splits can leak temporal fraud patterns and overstate model quality in this dataset.
+## Recorded holdout metrics
 
-## Core Metrics
+| Metric | Historical value |
+|---|---:|
+| ROC-AUC | 0.9134 |
+| Average precision | 0.5354 |
+| Fraud prevalence | 3.44% |
+| Top 5% score band precision | 40.13% |
+| Top 5% score band fraud recall | 58.32% |
+| Top 5% score band workload | 5.00% |
+| Top 5% score band false-positive rate | 3.10% |
+| Score threshold for that band | 0.6767 |
+| Fixed score threshold 0.50 precision / recall | 25.68% / 69.78% |
+| Brier score / constant-prevalence baseline | 0.0636 / 0.0332 |
+| Expected calibration error | 0.1452 |
 
-| Metric | Value | Interpretation |
-|---|---:|---|
-| ROC-AUC | 0.9134 | Ranking quality across thresholds |
-| Average precision / AUC-PR proxy | 0.5354 | More relevant than accuracy for 3.5% fraud prevalence |
-| Validation fraud baseline | 3.44% | Precision baseline for the holdout set |
-| Top 10% validation score lift | 7.12x | Top-score decile fraud rate vs. validation baseline |
-| Top 5% validation precision | 40.13% | Precision in the focused top-score validation band |
-| Top 5% validation recall | 58.32% | Fraud capture in the focused top-score validation band |
-| Top 5% validation false-positive rate | 3.10% | Legitimate validation transactions flagged by the focused band |
-| Top 5% validation workload share | 5.00% | Share of validation transactions flagged by the focused band |
-| Fixed 0.50 threshold precision | 25.68% | Precision under a fixed probability threshold |
-| Fixed 0.50 threshold recall | 69.78% | Fraud capture under a fixed probability threshold |
+Average precision is reported as its own metric, not as an interchangeable trapezoidal PR-AUC. The 0.50 setting is a **ranking-score threshold**, not a calibrated probability cutoff. The top 5% band is retrospective capacity evidence; selecting a policy requires separate data and actual review costs.
 
-The reporting-score risk bands remain useful for segmentation, but the validation metrics above should be used when discussing model generalization.
+![Historical precision-recall evidence](assets/precision_recall_curve.svg)
 
-## Precision-Recall Curve
+## Validation scope
 
-![Precision-recall curve](assets/precision_recall_curve.svg)
+The published pipeline and registry include three expanding-window evaluations in addition to the final holdout, with a recorded mean ROC-AUC of approximately 0.9100. This supersedes the old statement that rolling evaluation had not been implemented. These historical evaluations do not establish that every preprocessing decision was fitted independently within each fold. See [modeling decisions](modeling_decisions.md).
 
-## Class Imbalance Treatment
+The separate [canonical full-source research](research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) measures fold-fit temporal hygiene, native categorical handling, and disjoint 60/20/20 Platt/isotonic calibration. Those experiments use different estimator counts and feature/preprocessing contracts. Their results must not be substituted into the published registry or dashboard.
 
-The fraud rate is approximately 3.5%, so accuracy is not used as a success metric. The model and reporting layer use:
+## Explainability and safe interpretation
 
-- ROC-AUC for ranking quality.
-- Average precision / PR behavior for imbalance-aware evaluation.
-- Workload share to connect model thresholds to capacity.
-- Precision, recall, and false-positive rate at operating thresholds.
-- Lift to explain concentration in the highest-score population.
+Feature-importance summaries are global model diagnostics. `/api/enterprise/cases/{transaction_id}/explain` is explicitly a global-importance heuristic, **not local TreeSHAP**. Verified local TreeSHAP has a separate private artifact and authorized endpoint; see [local explanations](LOCAL_SHAP_EXPLANATIONS.md).
 
-## Cross-Validation Position
+The public score is **uncalibrated**. Masked variables do not identify real customers, geography, causal fraud mechanisms or prevented monetary losses. Hypothetical review-cost scenarios are not measured business savings.
 
-Current implementation:
-
-- Single chronological holdout using the final 20% of `TransactionDT`.
-- This is leakage-safer than random k-fold and aligns with fraud monitoring chronology.
-
-Recommended next experiment:
-
-- Add expanding-window time-based cross-validation.
-- Report mean and standard deviation for ROC-AUC, AUC-PR, recall, false-positive rate, and lift.
-- Compare against the current single-holdout result before changing model policy.
-
+Before publishing a calibrated replacement, match the exact base model and feature scope, reserve independent later evaluation data, check calibration by time/segment, and version the output contract. Current source and release gates are tracked in [release status](RELEASE_STATUS.md).

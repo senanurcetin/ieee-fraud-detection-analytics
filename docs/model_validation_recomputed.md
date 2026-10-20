@@ -1,6 +1,6 @@
 # Recomputed Model Validation Evidence
 
-This file is generated from exported validation artifacts and can be recreated with `python scripts/generate_model_evidence.py`.
+This is retained historical evidence generated from exported validation artifacts. Recreating it with `python scripts/generate_model_evidence.py` requires those private artifacts; the command does not independently retrain or validate the model. Use [the maintained model summary](model_validation_evidence.md) for interpretation and current limitations.
 
 ## Validation Metrics
 

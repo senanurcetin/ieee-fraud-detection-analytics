@@ -46,12 +46,6 @@ The masked card-family proxy combines card/address columns; it is **not** a veri
 
 **Completed:** The repository's new random-versus-time experiment has now been run on an independently downloaded original full Kaggle competition source. Its exact input digest, source SHA, dependencies, splits and measured metrics are tied to GitHub Actions evidence.
 
-**Still open:**
-1. The original historical Kaggle notebook titled *IEEE-CIS: How Much of Random-CV AUC Is Leakage?* and its public URL are not recovered or re-published. These results must **not** be described as reproducing that old notebook's numbers.
-2. Strict fold-fit preprocessing and rolling temporal evaluation must be separately run on original full data; synthetic checks alone are insufficient. Follow [temporal hygiene experiment](TEMPORAL_HYGIENE_EXPERIMENT.md).
-3. Disjoint time-window Platt/isotonic fraud score calibration needs a separate full-data run and external review; current raw ranking outputs remain **uncalibrated**. Follow [temporal calibration experiment](TEMPORAL_CALIBRATION_EXPERIMENT.md).
-4. A public source or model refresh and exact deployed SHA still require their independent BigQuery/Vercel acceptance gates. This Kaggle run must **not** modify web snapshots.
+**Subsequent evidence:** Full-source temporal hygiene and disjoint calibration research also completed on 17 October; see [canonical deterministic results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). The earlier instruction to run F03/F04 next is superseded.
 
-**Next secure research step:** Open the [manual Kaggle Research Evidence workflow](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/kaggle-research-evidence.yml) with branch `main`, study `temporal_hygiene`, then `calibration` only after reviewing actual output. The GitHub connector currently supports reading runs but **cannot initiate `workflow_dispatch`**, so do not claim either has executed until its own run ID exists.
-
-**Tracking:** [Issue #8](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/8) (random vs. chronological / missing notebook), [issue #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20) (calibration).
+**Remaining:** Recovery of the original notebook is not established. Publication of the replacement on Kaggle requires separate execution and a verified URL. Model promotion requires a matched base model and independent validation; BigQuery parity remains a separate gate. Current production checks and access are recorded in [release status](../RELEASE_STATUS.md). This research run does not refresh the dashboard snapshot.

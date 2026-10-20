@@ -1,6 +1,6 @@
 # Full-source IEEE-CIS temporal and calibration acceptance evidence
 
-> **SUPERSEDED RESEARCH MEASUREMENT:** These are the initial 17 October full-source results before same-timestamp SQL ties were deterministically ordered. Source CSV hashes match but row-order fingerprints differed between runners. Use the [canonical deterministically ordered full-source F03/F04 results](../KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) for the latest empirical values. This dated record is retained for transparent provenance, not production metrics.
+> **SUPERSEDED RESEARCH MEASUREMENT:** These are the initial 17 October full-source results before same-timestamp SQL ties were deterministically ordered. Source CSV hashes match but row-order fingerprints differed between runners. Use the [canonical deterministically ordered full-source F03/F04 results](../research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) for the latest empirical values. This dated record is retained for transparent provenance, not production metrics.
 
 
 **Execution date:** 17 October 2026  
@@ -62,7 +62,7 @@ The same one-shot run included a BigQuery WIF readiness check. **Neither**
 was configured for the Fraud repo; the actual OIDC authentication and source
 table reads were **skipped**. The BigQuery job exit status is green **only
 because the no-credential path was explicitly treated as BLOCKED**, not
-because it verified source parity. See [keyless WIF runbook](../BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md), [source verification](../BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) and [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9).
+because it verified source parity. See [keyless WIF runbook](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md), [source verification](../BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) and [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9).
 
 ## Review and disposition
 

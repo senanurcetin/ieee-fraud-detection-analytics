@@ -1,62 +1,47 @@
 # Documentation
 
-**Project status: active noncommercial development (19 October 2026).** The owner resumed engineering work. Start with the [development plan](DEVELOPMENT_PLAN.md) and [release status](RELEASE_STATUS.md). Canonical Kaggle research remains reproducible historical evidence; external source/model/production gates remain open.
+**Status: active noncommercial historical research, 20 October 2026.** Start with [release status](RELEASE_STATUS.md) for verified results and remaining gates. The [repository README](../README.md) provides the project overview and local quick start.
 
-This directory contains **maintained project reference** and **dated research/release evidence**. For a short introduction and working commands, start with the [repository README](../README.md).
+The dashboard serves historical aggregates built 10 September 2026. Its public model scores are uncalibrated rankings. Source freshness, model promotion and hosted release checks are distinct claims.
 
-The product is a **historical IEEE-CIS analytics demonstration**, not live bank monitoring. Model scores are **uncalibrated rankings** unless a separately validated calibration artifact exists. A green CI run does not by itself establish source freshness or live production readiness.
-
-## Start here
+## Maintained reference
 
 | Document | Purpose |
 |---|---|
-| [Release status and open gates](RELEASE_STATUS.md) | What has been tested, what remains blocked, and where to check current status |
-| [Executive summary](executive_summary.md) | Business question, evidence and recommended analytical review strategy |
-| [Dataset methodology](ieee_cis_dataset_methodology.md) | Source, `TransactionDT`, masked fields and interpretation constraints |
-| [Architecture](architecture.md) | Offline pipeline, dbt layers and snapshot-serving model |
-| [Data dictionary](data_dictionary.md) | Reporting and model field definitions |
-| [Analytical hypotheses](analysis_hypotheses.md) | Research questions and segment findings |
+| [Executive summary](executive_summary.md) | Analytical question, historical observations and interpretation limits |
+| [Architecture](architecture.md) | Offline serving, data layers, API authorization and research import boundaries |
+| [Dataset methodology](ieee_cis_dataset_methodology.md) | Masked variables, relative time, source terms and cohort definitions |
+| [Data dictionary](data_dictionary.md) | Reporting field definitions |
+| [Published model evidence](model_validation_evidence.md) | One maintained model summary, metrics and validation limits |
+| [Modeling decisions](modeling_decisions.md) | Historical implementation versus measured research alternatives |
+| [Recomputed aggregate evidence](model_validation_recomputed.md) | Retained artifact-derived tables; not a new model run |
+| [Analytical hypotheses](analysis_hypotheses.md) | Exploratory questions and observed segment patterns |
+| [Business scenarios](banking_business_impact.md) | Explicit hypothetical costs and review capacity |
+| [Analysis coverage](professional_analysis_coverage.md) | Questions mapped to dashboard evidence |
+| [NEXUS identity](BRAND_IDENTITY.md) | Official Drive source and immutable artwork hashes |
 
-## Engineering and development
+## Research and operations
 
-- [Environment setup](environment_setup.md) — prerequisites, DuckDB/dbt configuration and credential handling.
-- [Kaggle manual research workflow](KAGGLE_RESEARCH_RUNBOOK.md) — authorized full-data random-vs-time, temporal hygiene and calibration experiments with hash-only artifacts.
-- [dbt project guide](dbt_project_guide.md) and [BigQuery/dbt lineage](bigquery_dbt_lineage.md) — transformation and reporting contracts.
-- [Web application guide](../webapp/README.md) — API, nine-page report, snapshots and local serving.
-- [Source code contribution workflow](../CONTRIBUTING.md) — PR review and reproducible tests.
-- [Security policy](../SECURITY.md) — secret handling, reporting and supported use.
-- [NEXUS official brand identity](BRAND_IDENTITY.md) — approved Drive source files, vector SHA checksums and dashboard/Studio usage.
+- [Research index](research/README.md): canonical measured results, reproduction methods and scope distinctions.
+- [Notebook handoff](../notebooks/README.md): execution prerequisites and publication state.
+- [Kaggle runbook](runbooks/KAGGLE_RESEARCH_RUNBOOK.md) and [credential modes](runbooks/CI_AND_RESEARCH_CREDENTIALS.md): explicit research execution without source redistribution.
+- [Environment setup](environment_setup.md), [dbt guide](dbt_project_guide.md) and [BigQuery/dbt lineage](bigquery_dbt_lineage.md).
+- [Web application guide](../webapp/README.md), [local release](F08_LOCAL_RELEASE.md) and [public HTTP attestation](PUBLIC_RELEASE_ATTESTATION.md).
+- [Bounded BigQuery parity](BIGQUERY_BOUNDED_SOURCE_PARITY.md), [source discovery](BIGQUERY_SOURCE_DISCOVERY.md), [15 October source evidence](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) and [snapshot audit](SNAPSHOT_PARITY_AUDIT.md).
+- [Local TreeSHAP](LOCAL_SHAP_EXPLANATIONS.md), [offline drift](OFFLINE_DRIFT_MONITORING.md), [analyst policy](operational_playbook.md) and [governance context](regulatory_context.md).
+- [Security policy](../SECURITY.md), [secret handling](security_and_secrets.md), [release controls](SECURE_RELEASE_GATES.md) and [contribution workflow](../CONTRIBUTING.md).
+- [Evidence rail](F07_EVIDENCE_TRUST_RAIL.md), [historical case review](F07_HISTORICAL_ANALYST_REVIEW.md), [prior browser methodology](F07_BROWSER_ACCEPTANCE.md) and [SEO assets](SEO_AND_SOCIAL_PREVIEW_GUIDE.md). Playwright is disabled at the owner's request; previous browser evidence remains dated.
+- [Development scope and folder map](DEVELOPMENT_PLAN.md).
 
-## Research and model evidence
+## Folder policy
 
-- [Modeling decisions](modeling_decisions.md) and [model validation evidence](model_validation_evidence.md) — chronological evaluation and scoring contracts.
-- [Model results](model_results.md), [recomputed validation](model_validation_recomputed.md) and [model registry](model_registry.json) — historical metrics and supporting artifact metadata.
-- [17 Oct full-source Kaggle split results](KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md) — first verified 590,540-row real-data random vs chronological metrics and source digest.
-- [17 Oct canonical deterministic F03/F04 results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) — verified full-source matching data fingerprints, final temporal ROC-AUC/AP/Brier/ECE and top-k precision/recall results.
-- [Prior 17 Oct F03/F04 measurement](archive/KAGGLE_TEMPORAL_CALIBRATION_EVIDENCE_2026-10-17.md) — dated preliminary research, superseded on deterministic source-order acceptance.
-- [Random vs. time-split reproduction](RANDOM_VS_TIME_SPLIT_REPRODUCTION.md), [temporal hygiene](TEMPORAL_HYGIENE_EXPERIMENT.md), [temporal calibration](TEMPORAL_CALIBRATION_EXPERIMENT.md) — experiment methodology and evidence limits.
-- [Local TreeSHAP explanations](LOCAL_SHAP_EXPLANATIONS.md) and [offline drift monitoring](OFFLINE_DRIFT_MONITORING.md) — gated/offline analyses, not default public inference.
-- [Business impact](banking_business_impact.md), [operational playbook](operational_playbook.md) and [regulatory context](regulatory_context.md) — capacity assumptions, analytical controls and governance context.
+```text
+docs/             maintained reference and current status
+  research/       experiment methods and canonical measured results
+  runbooks/       Kaggle execution and credential modes
+  archive/        superseded plans and historical acceptance records
+  assets/         approved logos, dated images and provenance
+notebooks/        standalone analytical notebooks and publication handoff
+```
 
-## Data lineage, audits and release controls
-
-- [BigQuery discovery](BIGQUERY_SOURCE_DISCOVERY.md) and [15 Oct source verification](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) — dated metadata and partial source comparison.
-- [BigQuery + Kaggle source acceptance reference](BIGQUERY_KAGGLE_WORKPLAN_2026-10-17.md) — WIF prerequisites and scientific gates; current execution scope is in the development plan.
-- [Bounded BigQuery table parity](BIGQUERY_BOUNDED_SOURCE_PARITY.md) and [offline snapshot audit](SNAPSHOT_PARITY_AUDIT.md) — source validation tools with explicit boundaries.
-- [Source revalidation (14 Oct)](archive/bigquery_source_revalidation_2026-10-14.md) — retained historical evidence, not fresh source certification.
-- [CI and research credentials](CI_AND_RESEARCH_CREDENTIALS.md), [security controls](SECURE_RELEASE_GATES.md) and [security review](dependency_security_review_2026-10-14.md) — credential/safety acceptance.
-- [Docker release runbook](F08_LOCAL_RELEASE.md) and [public release attestation](PUBLIC_RELEASE_ATTESTATION.md) — local demo vs. real production SHA verification.
-- [Evidence/provenance rail](F07_EVIDENCE_TRUST_RAIL.md), [analyst case review](F07_HISTORICAL_ANALYST_REVIEW.md) and [three-engine browser acceptance](F07_BROWSER_ACCEPTANCE.md) — NEXUS UI safety contracts.
-- [Visual provenance](assets/production_screenshot_provenance_20261014.json) and [SEO/social preview](SEO_AND_SOCIAL_PREVIEW_GUIDE.md) — reviewed image dates and asset integrity.
-
-## Historical records
-
-Superseded dated reports are grouped under `archive/`; active runbooks and canonical research remain at this level. The following are **date-specific evidence or acceptance snapshots**. Their PASS flags belong to the period described and must not be read as proof of today's complete release gates.
-
-- [14 October readiness audit](archive/nexus_fraud_release_readiness_2026-10-14.md)
-- [Historical production validation](production_validation.md)
-- [Historical QA acceptance checklist](qa_acceptance_checklist.md)
-- [Analyst coverage and prior closure notes](professional_analysis_coverage.md)
-- [Analysis story](analysis_story.md) and [dashboard presentation guide](live_web_dashboard_guide.md)
-
-For **current unresolved work**, use [GitHub Issues](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues), not historical backlogs. Do not edit old evidence dates to manufacture recency or delete reproducibility/security artifacts simply to shorten the repo.
+The former duplicate `model_results.md` and `hiring-summary.md` were consolidated into the published model evidence and executive summary. Historical production/QA checklists and presentation guides are archived, not active acceptance gates. Their checked boxes and PASS values belong to the period described. Preserve scientific provenance and original timestamps; use [release status](RELEASE_STATUS.md) for current decisions.

@@ -91,11 +91,26 @@ def test_public_contributor_and_security_guides_describe_actual_controls() -> No
 
 def test_dated_acceptance_documents_are_visibly_labeled_historical() -> None:
     for name in (
-        "docs/production_validation.md",
-        "docs/qa_acceptance_checklist.md",
-        "docs/live_web_dashboard_guide.md",
+        "docs/archive/production_validation.md",
+        "docs/archive/qa_acceptance_checklist.md",
+        "docs/archive/live_web_dashboard_guide.md",
         "webapp/README.md",
     ):
         body = (ROOT / name).read_text(encoding="utf-8")
         assert "snapshot" in body.lower() or "historical" in body.lower()
         assert "RELEASE_STATUS.md" in body
+
+
+def test_all_document_links_stay_inside_repository_and_resolve() -> None:
+    documents = [ROOT / "README.md", ROOT / "notebooks/README.md", *sorted((ROOT / "docs").rglob("*.md"))]
+    broken = []
+    for path in documents:
+        for raw_target in LINK.findall(path.read_text(encoding="utf-8")):
+            target = raw_target.strip().split(maxsplit=1)[0]
+            parsed = urlparse(target)
+            if parsed.scheme or parsed.netloc or not parsed.path or target.startswith("#"):
+                continue
+            destination = (path.parent / unquote(parsed.path)).resolve()
+            if not destination.is_relative_to(ROOT.resolve()) or not destination.exists():
+                broken.append(f"{path.relative_to(ROOT)}: {target}")
+    assert not broken, "Broken documentation targets:\n" + "\n".join(broken)

@@ -7,14 +7,13 @@
 **An evidence-first, historical fraud analytics project** combining data engineering, time-aware machine-learning evaluation and an interactive NEXUS dashboard. Built on the [IEEE-CIS Fraud Detection dataset](https://www.kaggle.com/c/ieee-fraud-detection); no competition data is redistributed here.
 
 [![Python CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
-[![Browser acceptance](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/browser-acceptance.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/browser-acceptance.yml)
 [![Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 [**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
 
-**Project status (19 October 2026): Active noncommercial research and engineering.**
-Development has resumed under the [engineering plan](docs/DEVELOPMENT_PLAN.md). The [canonical 590,540-row Kaggle temporal hygiene and calibration experiments](docs/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) remain **research evidence, not promoted production scores**. Public Vercel exact-SHA release and current BigQuery reporting parity are **not accepted**. See [verification results and remaining gates](docs/RELEASE_STATUS.md).
+**Project status (20 October 2026): Active noncommercial research and engineering.**
+Development has resumed under the [engineering plan](docs/DEVELOPMENT_PLAN.md). The [canonical 590,540-row Kaggle temporal hygiene and calibration experiments](docs/research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) remain **research evidence, not promoted production scores**. Exact production SHA/HTTPS and container checks passed on 19 October for `2c54bb3`; current BigQuery reporting parity remains **unverified**. Playwright is disabled at the owner's request. See [verification results and remaining gates](docs/RELEASE_STATUS.md).
 
 ![Historical NEXUS executive overview, captured 14 October 2026](docs/assets/web_dashboard_executive_overview.png)
 

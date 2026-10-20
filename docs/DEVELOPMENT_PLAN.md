@@ -60,6 +60,6 @@ Free-tier eligibility and remaining capacity must be checked in the relevant pro
 
 ## External acceptance boundaries
 
-Current BigQuery parity, original public Kaggle notebook recovery, calibrated-model promotion and exact production Vercel SHA remain separate gates. Local tests cannot close them. Keep the 10 September 2026 published snapshot and its provenance until an authorized, independently reconciled refresh exists. No automatic release monitor is re-enabled by this development work.
+Current BigQuery parity, original public Kaggle notebook recovery and calibrated-model promotion remain separate gates. Exact production Vercel SHA/HTTPS passed on 19 October for `2c54bb3`; later releases require their own checks. Local tests alone cannot close external gates. Keep the 10 September 2026 published snapshot and its provenance until an authorized, independently reconciled refresh exists. No automatic release monitor is re-enabled by this development work.
 
-See [release status](RELEASE_STATUS.md), [architecture](architecture.md), [brand provenance](BRAND_IDENTITY.md) and [canonical research](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md).
+See [release status](RELEASE_STATUS.md), [architecture](architecture.md), [brand provenance](BRAND_IDENTITY.md) and [canonical research](research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md).

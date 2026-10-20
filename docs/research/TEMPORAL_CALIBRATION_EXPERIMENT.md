@@ -86,5 +86,4 @@ no BigQuery jobs, no dbt writes and no model promotion.
 - Do not use automated payment/credit decisions, make live-stream claims,
   update BI snapshots, or release a model based only on synthetic test success.
 
-Issue #20 tracks scientific acceptance. This PR delivers experiment
-infrastructure, not new full-data benchmark results.
+Issue #20 tracks promotion of a specifically versioned model. Full-data research has since executed successfully; use the [canonical measured results](KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). The historical published ranker is unchanged.
