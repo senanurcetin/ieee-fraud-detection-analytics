@@ -1,0 +1,16 @@
+{
+  "id": "senanuretin/ieee-cis-lightgbm500-temporal-calibration",
+  "title": "IEEE-CIS: LightGBM500 Temporal Calibration",
+  "code_file": "published_model_calibration.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "competition_sources": [
+    "ieee-fraud-detection"
+  ],
+  "kernel_sources": []
+}

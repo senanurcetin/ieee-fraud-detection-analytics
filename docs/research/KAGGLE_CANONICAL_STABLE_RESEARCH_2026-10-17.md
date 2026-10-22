@@ -1,5 +1,7 @@
 # Canonical 17 October 2026 IEEE-CIS research — stable source order and full data
 
+> **Current evidence:** [21 October completed validation](COMPLETED_VALIDATION_2026-10-21.md) supersedes earlier open source/calibration gates for the bounded historical release. Earlier measurements and limitations below retain their original dates.
+
 > **20 October update:** The original notebook source and its prior completed provider run have now been recovered and its public page verified. See [recovery and publication evidence](KAGGLE_RECOVERY_2026-10-20.md). Earlier missing-notebook statements below describe the historical state; they do not establish current unavailability.
 
 **Scientific acceptance type:** bounded historical, independent temporal holdout research; **not** current bank monitoring or production calibrated-model sign-off.

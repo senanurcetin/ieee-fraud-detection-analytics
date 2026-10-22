@@ -1,0 +1,202 @@
+{
+  "captured_at_utc": "2026-10-22T03:28:17.503640+00:00",
+  "client_date": "2026-10-22",
+  "browser": "Chrome/155.0.8059.84",
+  "capture_method": "Native Chromium Chrome DevTools Protocol; no Playwright; unedited viewport PNG bytes",
+  "browser_profile": "Isolated temporary profile; loopback debugging; best-effort cleanup after process-tree termination",
+  "observed_deployed_git_commit": null,
+  "historical_source_as_of": "2026-09-10T19:41:45Z",
+  "served_official_mark_sha256": "62b6f2a3b306b4c969098f92dfb578ef7ca20373b202872782c70ec8e1dd1dbe",
+  "status": "PASS_NATIVE_CHROMIUM_PRESENTATION_CONTRACT",
+  "files": [
+    {
+      "asset": "docs/assets/nexus_dashboard_desktop_20261022.png",
+      "source_url": "http://127.0.0.1:8767/",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "fe37cbf9e51da458e3ac0c6a377e68cf91d8227db38d319ce9e7139eceb4e74c",
+      "observations": {
+        "title": "NEXUS Fraud Risk Intelligence | BigQuery & Fraud Analytics",
+        "horizontal_overflow": false,
+        "viewport": [
+          1440,
+          1000
+        ],
+        "logo_sources": [
+          "/static/seo/favicon.svg"
+        ],
+        "historical_disclosure": true,
+        "metric_count": 2,
+        "font_family": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+      },
+      "javascript_exceptions": [],
+      "interactions": [
+        "Historical report page overview selects successfully",
+        "Historical report page trend selects successfully",
+        "Historical report page amount selects successfully",
+        "Historical report page customer selects successfully",
+        "Historical report page geo selects successfully",
+        "Historical report page behavior selects successfully",
+        "Historical report page features selects successfully",
+        "Historical report page model selects successfully",
+        "Historical report page insights selects successfully",
+        "Light/dark theme control toggles and restores original state"
+      ]
+    },
+    {
+      "asset": "docs/assets/nexus_dashboard_mobile_20261022.png",
+      "source_url": "http://127.0.0.1:8767/",
+      "pixel_size": [
+        390,
+        844
+      ],
+      "sha256": "7a3b3c6c6be5283bac1ebf63320b543fa416f1f9cd95a3c396b1a5e8faa52a18",
+      "observations": {
+        "title": "NEXUS Fraud Risk Intelligence | BigQuery & Fraud Analytics",
+        "horizontal_overflow": false,
+        "viewport": [
+          390,
+          844
+        ],
+        "logo_sources": [
+          "/static/seo/favicon.svg"
+        ],
+        "historical_disclosure": true,
+        "metric_count": 2,
+        "font_family": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+      },
+      "javascript_exceptions": [],
+      "interactions": []
+    },
+    {
+      "asset": "docs/assets/nexus_studio_desktop_20261022.png",
+      "source_url": "http://127.0.0.1:8767/studio?view=overview",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "1d009160895fcd3e3c5d37f5c7c179fd5808d78090901f93e3024b607a588841",
+      "observations": {
+        "title": "NEXUS | Risk Decision Studio",
+        "horizontal_overflow": false,
+        "viewport": [
+          1440,
+          1000
+        ],
+        "logo_sources": [
+          "/static/seo/favicon.svg"
+        ],
+        "historical_disclosure": true,
+        "metric_count": 4,
+        "font_family": "Inter, \"Segoe UI\", system-ui, sans-serif"
+      },
+      "javascript_exceptions": [],
+      "interactions": [
+        "performance tab selects and reveals corresponding panel",
+        "governance tab selects and reveals corresponding panel",
+        "brief tab selects and reveals corresponding panel"
+      ]
+    },
+    {
+      "asset": "docs/assets/nexus_studio_mobile_20261022.png",
+      "source_url": "http://127.0.0.1:8767/studio?view=overview",
+      "pixel_size": [
+        390,
+        844
+      ],
+      "sha256": "76618a62ad96d8ae4e57e908c80f7b151238bd59ec4047d4d28b8fc85f571ce5",
+      "observations": {
+        "title": "NEXUS | Risk Decision Studio",
+        "horizontal_overflow": false,
+        "viewport": [
+          390,
+          844
+        ],
+        "logo_sources": [
+          "/static/seo/favicon.svg"
+        ],
+        "historical_disclosure": true,
+        "metric_count": 4,
+        "font_family": "Inter, \"Segoe UI\", system-ui, sans-serif"
+      },
+      "javascript_exceptions": [],
+      "interactions": [
+        "performance tab selects and reveals corresponding panel",
+        "governance tab selects and reveals corresponding panel",
+        "brief tab selects and reveals corresponding panel"
+      ]
+    },
+    {
+      "asset": "docs/assets/nexus_research_desktop_20261022.png",
+      "source_url": "http://127.0.0.1:8767/research",
+      "pixel_size": [
+        1440,
+        1000
+      ],
+      "sha256": "85f4aaa463736dc20068542dae8857bf8e5e7f4dd9b756a109573b4b211ccfbc",
+      "observations": {
+        "title": "NEXUS | Model Research Evidence",
+        "horizontal_overflow": false,
+        "viewport": [
+          1440,
+          1000
+        ],
+        "logo_sources": [
+          "/static/seo/favicon.svg"
+        ],
+        "historical_disclosure": true,
+        "metric_count": 0,
+        "font_family": "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif"
+      },
+      "javascript_exceptions": [],
+      "interactions": []
+    },
+    {
+      "asset": "docs/assets/nexus_research_mobile_20261022.png",
+      "source_url": "http://127.0.0.1:8767/research",
+      "pixel_size": [
+        390,
+        844
+      ],
+      "sha256": "70cc6a2acb89dc401d6ae174c0b9fe3b8e85c643991a172c178ebf456d331522",
+      "observations": {
+        "title": "NEXUS | Model Research Evidence",
+        "horizontal_overflow": false,
+        "viewport": [
+          390,
+          844
+        ],
+        "logo_sources": [
+          "/static/seo/favicon.svg"
+        ],
+        "historical_disclosure": true,
+        "metric_count": 0,
+        "font_family": "Inter, ui-sans-serif, system-ui, -apple-system, sans-serif"
+      },
+      "javascript_exceptions": [],
+      "interactions": []
+    }
+  ],
+  "scope": "Chromium desktop/mobile dashboard, Studio and research; nine-page selection, theme and Studio tabs. Not Firefox/WebKit or prospective model validation.",
+  "source_text_sha256_lf_normalized": {
+    "webapp/__init__.py": "6da57c3c0dcd9d0df2fe09e28cef26de083913e67e983a36a019c6ce9339b28c",
+    "webapp/api/index.py": "4dde42f22ca8e4d96e634a819427a795b6491f3329199d8bc11e5f59729c4d42",
+    "webapp/explanation_store.py": "75c048c5fdbe566029dda338dffcdcde73fe8ad157778986c9dcfdf42996d6c5",
+    "webapp/main.py": "f79b5b4b43a57a682ba78dae05b1958859c6e7351051f0d1e252758ed2a26865",
+    "webapp/research_evidence.py": "b62cb57c7af289dfa94aebcbd330bb8af7e0b110817fde1bee77ad04146ab0e7",
+    "webapp/static/decision-studio.css": "ab5987eaa689f8fc18d972b7c677f13f8116543ef8363ea54a499c312314f03e",
+    "webapp/static/decision-studio.html": "750b6849a7defd2c3358d3a90f7b1a0d63b9a9140def930a16fbbd9eeb357e0e",
+    "webapp/static/index.html": "4b43a313dc0151c68098c2a9ca1e4c33d7a0772f5b36bf87daec386c7725ab58",
+    "webapp/static/nexus-accessibility.css": "fd34b4719c04ced70731dbb6dac876b481c44abe474ff5989c384bed62fff466",
+    "webapp/static/nexus-design.css": "4d647d6aca7043a4d8da805cbb3f9a9ba358084e0a0bd77b820dd94ddb57cca0",
+    "webapp/static/nexus-evidence.css": "328403598c1623f1966babf771f95da5841204e91eb50b1d75446020e415b55b",
+    "webapp/static/nexus-studio.css": "b4af09e5745397a1b9e5a3bb7e546617a4cc86bca1f6578d2e05950854c7ef36",
+    "webapp/static/research.css": "b09caeccdd03d894915e56afd9ff8201da19dac8cea4d9ce201e32dfc5f7a3de",
+    "webapp/static/research.html": "34818adcb850a34e3066ab3d52b6d214738dc20702b42e21e15e366bc2826413",
+    "webapp/static/research.js": "b41f8ff82a9f47c191a7825b7dda2e2e714a0da9943c315f309a6ea23ce79188",
+    "webapp/static/review-queue.css": "37aa4db12848d44ce38ff5a77e6852e2bb0ad7fa8db8951412d406cbec1c00c6",
+    "webapp/static/risk-decision-studio.js": "8ebd51e1f6f5f96ba32846823c38aa744c0f67f79e23564a23ef8ae5a2e0078e"
+  }
+}

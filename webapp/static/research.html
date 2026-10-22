@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0B0F19">
+  <meta name="description" content="Versioned IEEE-CIS temporal calibration research, source fingerprints and independently evaluated historical model evidence.">
+  <title>NEXUS | Model Research Evidence</title>
+  <link rel="icon" type="image/svg+xml" href="/static/seo/favicon.svg">
+  <link rel="stylesheet" href="/static/research.css">
+  <script src="/static/research.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to research evidence</a>
+  <header>
+    <a class="brand" href="/"><img class="brand-symbol" src="/static/seo/favicon.svg" width="38" height="38" alt=""><span>NEXUS / RISK<small>MODEL RESEARCH</small></span></a>
+    <nav aria-label="Main navigation"><a href="/">Dashboard</a><a href="/studio">Decision Studio</a><a href="https://github.com/senanurcetin/ieee-fraud-detection-analytics/tree/main/docs/research">Methods &amp; source</a></nav>
+  </header>
+  <main id="main">
+    <section class="hero">
+      <p class="eyebrow">RETROSPECTIVE IEEE-CIS RESEARCH</p>
+      <h1>Measure uncertainty.<br><em>Publish the evidence.</em></h1>
+      <p>A versioned calibration study with rolling development windows, a separate calibration period and a final chronological evaluation. All results describe the licensed historical competition dataset.</p>
+      <p class="boundary">The dashboard's historical v2 model remains an uncalibrated ranking model. This new model has its own version and evaluation; its probability mapping must not be applied to the old dashboard scores.</p>
+    </section>
+    <p id="status" role="status" aria-live="polite">Loading verified research evidence…</p>
+    <button id="retry" type="button" hidden>Retry loading evidence</button>
+    <div id="results" hidden>
+      <section class="cards" aria-label="Study provenance">
+        <article><h2>Training source</h2><strong id="rows"></strong><p>Full IEEE-CIS training population</p></article>
+        <article><h2>Development windows</h2><strong id="folds"></strong><p>Calibration method selected before final evaluation</p></article>
+        <article><h2>Selected mapping</h2><strong id="method"></strong><p id="acceptance"></p></article>
+      </section>
+      <section class="panel">
+        <h2>Final chronological evaluation</h2>
+        <p>Each method uses the same final records. The constant baseline is fitted from the earlier calibration period. Lower Brier score, log loss and calibration error are better; higher ROC-AUC and average precision are better.</p>
+        <div class="table-scroll"><table><caption id="model-version"></caption><thead><tr><th scope="col">Method</th><th scope="col">ROC-AUC</th><th scope="col">Average precision</th><th scope="col">Brier score</th><th scope="col">Log loss</th><th scope="col">Calibration error</th></tr></thead><tbody id="metrics"></tbody></table></div>
+      </section>
+      <section class="panel"><h2>Reliability of the selected mapping</h2><p>Average predicted probability and observed fraud prevalence within populated, fixed probability bins. The diagonal represents perfect empirical calibration. Sparse bins and temporal dependence limit inference.</p><div id="reliability"></div></section>
+      <section class="panel"><h2>Research boundaries</h2><ul id="limitations"></ul><p>This page serves committed aggregate evidence. It performs no model training, BigQuery queries or transaction scoring.</p></section>
+      <section class="panel provenance"><h2>Reproduce and inspect</h2><p><a href="/api/research/calibration">Calibration evidence JSON</a> · <a href="/api/research/source-parity">Dated BigQuery reconciliation</a> · <a href="https://github.com/senanurcetin/ieee-fraud-detection-analytics">Repository &amp; reproducible source</a></p><dl><dt>Training transaction SHA-256</dt><dd id="source-hash"></dd><dt>Publication artifact SHA-256</dt><dd id="artifact-hash"></dd></dl></section>
+    </div>
+  </main>
+  <footer>NEXUS · Historical research · No live payment decisions</footer>
+</body>
+</html>

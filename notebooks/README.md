@@ -16,3 +16,7 @@ The notebook writes aggregate metrics/source provenance and two comparison figur
 The embedded analysis is checked against `scripts/compare_random_time_holdout.py` by an AST equivalence regression. Publication and execution do not promote the study into the separately published dashboard model. The recovered original has stronger causal/customer wording and different preprocessing; retain the limitations in the recovery report when citing it.
 
 See [research methods](../docs/research/RANDOM_VS_TIME_SPLIT_REPRODUCTION.md), [canonical F03/F04 evidence](../docs/research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md), [Kaggle runbook](../docs/runbooks/KAGGLE_RESEARCH_RUNBOOK.md) and [release status](../docs/RELEASE_STATUS.md).
+
+## Versioned LightGBM500 calibration
+
+The [standalone calibration notebook](published_model_calibration/published_model_calibration.ipynb) completed publicly on Kaggle (kernel 140019647, version 2) using all 590,540 training rows. It fits preprocessing on core windows, selects Platt versus isotonic across three earlier validation windows, and evaluates the final chronological cohort separately. See [full measured evidence](../docs/research/COMPLETED_VALIDATION_2026-10-21.md). This new version does not supply a probability mapping for historical v2 dashboard scores.

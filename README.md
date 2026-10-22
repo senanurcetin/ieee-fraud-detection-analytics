@@ -12,12 +12,12 @@
 
 [**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**Kaggle notebooks**](notebooks/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
 
-**Project status (20 October 2026): Active noncommercial research and engineering.**
-Development has resumed under the [engineering plan](docs/DEVELOPMENT_PLAN.md). The [canonical 590,540-row Kaggle temporal hygiene and calibration experiments](docs/research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) remain **research evidence, not promoted production scores**. Exact production SHA/HTTPS and container checks passed on 19 October for `2c54bb3`; current BigQuery reporting parity remains **unverified**. Playwright is disabled at the owner's request. See [verification results and remaining gates](docs/RELEASE_STATUS.md).
+**Project status (22 October 2026): Active noncommercial research portfolio; historical validation completed.**
+The [completed validation report](docs/research/COMPLETED_VALIDATION_2026-10-21.md) records all 27 BigQuery public groups reconciled and a full-source, three-window LightGBM500 calibration study. [Explore the separate model research page](https://fraud-project-web.vercel.app/research). The historical dashboard model remains explicitly uncalibrated; new calibrated probabilities belong to a separate version. Playwright remains disabled. See [release evidence and scope](docs/RELEASE_STATUS.md).
 
-![Historical NEXUS executive overview, captured 14 October 2026](docs/assets/web_dashboard_executive_overview.png)
+![NEXUS historical dashboard with the official X identity](docs/assets/nexus_dashboard_desktop_20261022.png)
 
-*Screenshot captured on 14 October 2026; [capture and hash provenance](docs/assets/production_screenshot_provenance_20261014.json) and [preview asset guide](docs/SEO_AND_SOCIAL_PREVIEW_GUIDE.md). It depicts an older deployed revision, not a live transaction feed.*
+*Real browser capture on 22 October 2026; [native Chromium capture provenance](docs/assets/native_browser_provenance_20261022.json). The view serves the 10 September historical snapshot. Capture source/revision and normalized source hashes are retained; it is not a live transaction feed.*
 
 ## What this project demonstrates
 
@@ -57,7 +57,7 @@ flowchart LR
     I --> J["Docker / Vercel"]
 ```
 
-The **public dashboard reads committed historical JSON snapshots** by default; it does not query BigQuery to serve every request. The latest committed snapshot was built **10 September 2026**. The source project and major KPI values were previously checked, but full current BigQuery parity remains unverified. See [architecture](docs/architecture.md), [lineage](docs/bigquery_dbt_lineage.md) and [source evidence](docs/BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
+The **public dashboard reads committed historical JSON snapshots** by default; it does not query BigQuery to serve every request. The latest committed snapshot was built **10 September 2026**. All 27 public report groups were reconciled against authorized source reads on 21 October, including explicit floating-aggregation tolerance for one group. This dated audit does not refresh the snapshot or establish a live feed. See [architecture](docs/architecture.md), [lineage](docs/bigquery_dbt_lineage.md) and [source evidence](docs/BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
 
 ## Quick start — no cloud account required
 
@@ -105,16 +105,16 @@ dbt deps --project-dir .
 dbt parse --project-dir . --profiles-dir config/dbt --profile ieee_fraud_detection --target dev
 ```
 
-GitHub Actions additionally covers real Chromium/Firefox/WebKit dashboard acceptance and a Docker/HTTP snapshot smoke test. The **public-production** test checks the exact deployed SHA and HTTPS responses and must not be confused with local test success.
+A native Chromium CDP tool covers desktop/mobile dashboard, Studio and research rendering, nine-page navigation, themes and Studio tabs. The earlier Playwright workflow stays disabled. GitHub Actions covers the Docker/HTTP snapshot smoke test. The **public-production** test checks the exact deployed SHA and HTTPS responses and must not be confused with local test success.
 
 | Release gate | Scope |
 |---|---|
 | [CI](.github/workflows/ci.yml) | Python, Ruff, Pytest, dependency auditing, dbt parse; data build only with authorized credentials |
-| [Browser acceptance](.github/workflows/browser-acceptance.yml) | Real browsers against local historical snapshot |
+| [Native browser acceptance](scripts/capture_browser_evidence_cdp.py) | Real Chromium desktop/mobile; optional local capture, no Playwright |
 | [Container smoke](.github/workflows/container-smoke.yml) | Docker Compose boot and historical HTTP contract |
 | [Public release attestation](.github/workflows/public-release-smoke.yml) | Exact Vercel commit SHA, source disclosure and public HTTPS routes |
 
-Current unresolved acceptance: [BigQuery data parity #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9), [model calibration #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20), and [production release verification #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29). Do not infer those are complete from green code checks.
+Historical [source reconciliation](webapp/research/source-parity.json) and [versioned calibration evidence](webapp/research/published-model-calibration.json) are complete for the recorded runs. Prospective customer validation, live payment decisions and untested browser engines are outside the current noncommercial release scope. Green code checks do not imply those capabilities.
 
 ## Project map
 
@@ -130,7 +130,7 @@ infra/bigquery/    optional Terraform dataset definitions
 notebooks/         controlled analytical research notebook
 ```
 
-**Documentation starts at [docs/README.md](docs/README.md).** Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Security reporting and credential policy: [SECURITY.md](SECURITY.md).
+**Documentation starts at [docs/README.md](docs/README.md).** [Development scope and roadmap](docs/DEVELOPMENT_PLAN.md). Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Security reporting and credential policy: [SECURITY.md](SECURITY.md).
 
 ## License
 

@@ -1020,6 +1020,7 @@
           <span class="pill" id="dataset-pill">Dataset pending</span>
           <span class="pill" id="freshness-pill">Freshness pending</span>
           <a class="btn" href="/studio?view=overview" aria-label="Open historical Risk Decision Studio">Decision Studio</a>
+          <a class="btn" href="/research">Model research</a>
           <button class="btn" id="theme-btn" type="button">Light Mode</button>
           <button class="btn" id="csv-btn" type="button">Export CSV</button>
           <button class="btn primary" id="pdf-btn" type="button">Export PDF</button>
@@ -1383,7 +1384,13 @@
         built.textContent = 'Timestamp not verified';
         context.textContent = 'Reporting provenance unavailable. Do not treat these figures as current.';
       }
-      parity.textContent = 'Current BigQuery parity unverified';
+      const reconciliation = evidence?.historical_reconciliation;
+      if (reconciliation?.verified_full_27_group_parity === true && Number.isFinite(Date.parse(reconciliation.observed_at_utc))) {
+        const observed = new Date(reconciliation.observed_at_utc).toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'short', day: 'numeric' });
+        parity.textContent = '27 historical groups reconciled · ' + observed + ' (UTC)';
+      } else {
+        parity.textContent = 'Current BigQuery parity unverified';
+      }
       interpretation.textContent = 'Uncalibrated ranking · explanations require evidence';
     }
 
