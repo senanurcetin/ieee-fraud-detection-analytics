@@ -292,8 +292,12 @@
       if(evidence && typeof evidence.source_as_of==='string' && Number.isFinite(Date.parse(evidence.source_as_of))
           && evidence.source_status?.startsWith('historical_')){
         const day=new Date(evidence.source_as_of).toLocaleDateString('en-US',{timeZone:'UTC',year:'numeric',month:'short',day:'numeric'});
+        const audit=evidence.historical_reconciliation;
+        const parity=audit?.verified_full_27_group_parity===true && Number.isFinite(Date.parse(audit.observed_at_utc))
+          ? '27 historical groups reconciled · dated '+new Date(audit.observed_at_utc).toLocaleDateString('en-US',{timeZone:'UTC',year:'numeric',month:'short',day:'numeric'})+' UTC'
+          : 'BigQuery parity unverified';
         target.textContent='Historical IEEE-CIS reporting built '+day+' UTC · '+evidence.age_days+
-          ' days old · BigQuery parity unverified · Uncalibrated model ranking, not a live probability.';
+          ' days old · '+parity+' · Uncalibrated model ranking, not a live probability.';
       } else {
         target.textContent='Snapshot provenance could not be verified. Do not infer current data or live monitoring.';
       }

@@ -60,6 +60,6 @@ Free-tier eligibility and remaining capacity must be checked in the relevant pro
 
 ## External acceptance boundaries
 
-Current BigQuery parity and calibrated-model promotion remain separate gates. Original public Kaggle source recovery and a completed independent public companion were verified on 20 October; see [publication evidence](research/KAGGLE_RECOVERY_2026-10-20.md). Exact production Vercel SHA/HTTPS passed on 19 October for `2c54bb3`; later releases require their own checks. Local tests alone cannot close external gates. Keep the 10 September 2026 published snapshot and its provenance until an authorized, independently reconciled refresh exists. No automatic release monitor is re-enabled by this development work.
+Full dated BigQuery reconciliation and versioned retrospective LightGBM500 calibration are now completed; see [measured validation](research/COMPLETED_VALIDATION_2026-10-21.md). Prospective operational validation is outside the noncommercial release scope. Preserve historical source timestamps and keep the old model separate from the new probability mapping.
 
 See [release status](RELEASE_STATUS.md), [architecture](architecture.md), [brand provenance](BRAND_IDENTITY.md) and [canonical research](research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md).

@@ -25,6 +25,8 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 
 from webapp.explanation_store import load_explanation
+from webapp.research_evidence import router as research_router
+from webapp.research_evidence import source_reconciliation_summary
 
 load_dotenv()
 
@@ -708,10 +710,11 @@ MODEL_REPRODUCIBILITY: list[dict[str, str]] = [
 ]
 
 app = FastAPI(
-    title="Fraud Analytics Live Dashboard",
-    description="Live API over the dbt-built BigQuery reporting layer.",
+    title="NEXUS Historical Fraud Analytics",
+    description="Historical fraud reporting and separately versioned retrospective model research.",
     version="1.0.0",
 )
+app.include_router(research_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -1475,6 +1478,8 @@ def model_registry_payload() -> dict[str, Any]:
         "metrics": MODEL_VALIDATION_METRICS,
         "governance_controls": MODEL_GOVERNANCE_CONTROLS,
         "registry_note": "Registry values are exposed for model governance and presentation traceability.",
+        "separate_calibration_research": {"page": "/research", "aggregate_evidence": "/api/research/calibration",
+                                          "applies_to_historical_v2_scores": False},
     }
 
 
@@ -1548,7 +1553,9 @@ def evidence_status() -> dict[str, Any]:
     Revision is Vercel's own build metadata (if enabled); it is never a
     caller-controlled query parameter or evidence of current BigQuery parity.
     """
-    result = public_evidence_status(load_snapshot("dashboard"))
+    snapshot = load_snapshot("dashboard")
+    result = public_evidence_status(snapshot)
+    result["historical_reconciliation"] = source_reconciliation_summary(snapshot)
     revision = os.getenv("VERCEL_GIT_COMMIT_SHA", "").strip()
     result["deployed_git_commit"] = (
         revision.lower() if re.fullmatch(r"[a-fA-F0-9]{40}", revision) else None

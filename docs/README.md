@@ -1,8 +1,12 @@
 # Documentation
 
-**Status: active noncommercial historical research, 20 October 2026.** Start with [release status](RELEASE_STATUS.md) for verified results and remaining gates. The [repository README](../README.md) provides the project overview and local quick start.
+Read the [completed historical validation](research/COMPLETED_VALIDATION_2026-10-21.md) and [current release status](RELEASE_STATUS.md) first. Earlier dated partial audits remain provenance, not current blockers.
+
+**Status: active noncommercial historical research, 22 October 2026.** Start with [release status](RELEASE_STATUS.md) for verified results and remaining gates. The [repository README](../README.md) provides the project overview and local quick start.
 
 The dashboard serves historical aggregates built 10 September 2026. Its public model scores are uncalibrated rankings. Source freshness, model promotion and hosted release checks are distinct claims.
+
+[Development scope and roadmap](DEVELOPMENT_PLAN.md).
 
 ## Maintained reference
 

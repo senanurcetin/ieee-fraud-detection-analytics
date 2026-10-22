@@ -1,53 +1,42 @@
 # Release status and acceptance gates
 
-**Documentation reviewed: 20 October 2026.** This is a noncommercial historical research application. Evidence dates below belong to the actual runs; reviewing this page does not refresh source data or retrain a model.
+**Reviewed: 22 October 2026.** This is a noncommercial historical research release. Source and model measurements retain their actual execution dates; documentation review does not refresh data.
 
-## Verified delivery
+## Current delivered evidence
 
-[PR #44](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/44) merged on 19 October as `2c54bb3d6c090c36181162b31f402f3ea8bfdc44`. Its exact-main checks passed:
-
-| Evidence | Result and scope |
+| Area | Decision and evidence |
 |---|---|
-| [Main CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39245073391) | Python tests, Ruff, compilation, dependency audit and dbt parse passed. Full-source dbt run/test was skipped, not certified. |
-| [Container smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39245073372) | Docker historical snapshot and local HTTP contract passed. |
-| [Public production attestation](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39245073536) | Exact deployed Git SHA and public HTTPS historical-report contract passed on that revision. |
-| Local Python suite, 19 October | 248 passed, exit 0; 8 dependency/SHAP warnings. Includes atomic imports, SQLite lifecycle and snapshot deletion-race regressions. |
-| Local static/HTTP checks, 19 October | Ruff 0.4.10, JavaScript syntax, compileall, Markdown links, SEO/image provenance and pinned FastAPI 0.136.3 HTTP checks passed. |
+| Full source reconciliation | **PASS, dated 21 October.** All 27 public groups across 24 sources reconcile; 26 strict matches and one explicitly disclosed floating-aggregation equivalence. [Canonical audit](../webapp/research/source-parity.json). No cloud SQL jobs, cloud writes or raw-record exports. |
+| Model calibration and robustness | **PASS for versioned retrospective research.** Full 590,540-row LightGBM500 study; three earlier development windows select Platt before final evaluation. Brier 0.023268 versus raw 0.063165 and prior baseline 0.033247. [Methods, support and uncertainty](research/COMPLETED_VALIDATION_2026-10-21.md). |
+| Kaggle publication | **COMPLETE and public.** Original source recovered, independent random/time companion complete, and [LightGBM500 calibration notebook](https://www.kaggle.com/code/senanuretin/ieee-cis-lightgbm500-temporal-calibration) completed as version 2. Repository and downloaded notebook source/digests agree. |
+| Public research contract | `/research`, `/api/research/calibration` and `/api/research/source-parity` serve committed aggregate evidence. Invalid, missing or changed evidence fails closed. Historical v2 scores remain uncalibrated. |
+| NEXUS identity | Official Drive SVGs match byte-for-byte. Dashboard, Studio and research use the official X. Brand colors and sans-serif typography were compared with the local NEXUS Commerce and MS Capital sources. See [brand provenance](BRAND_IDENTITY.md). |
+| Native browser evidence | [22 October Chromium desktop/mobile capture](assets/native_browser_provenance_20261022.json), including six real screenshots, nine dashboard page selections, theme controls and Studio tabs. The record identifies its actual target and normalized source hashes. No Playwright. |
 
-These checks apply to the recorded revision. Subsequent code changes require their own checks. READY preview status alone never substitutes for production attestation.
+The bounded historical acceptance for issue #9 and issue #20 is supported by the [completed validation report](research/COMPLETED_VALIDATION_2026-10-21.md). It does not establish prospective customer-data validation, operational scoring approval or automatic payment interventions.
 
-## Historical data and model boundaries
+## Source and model separation
 
-The public dashboard serves **historical JSON snapshots**, built **10 September 2026** (`2026-09-10T19:41:45Z`). It does not perform live transaction monitoring. The published 500-estimator model score is **uncalibrated**, despite the historical source field name `predicted_fraud_probability`.
+The dashboard serves **historical JSON snapshots**, built **10 September 2026** (`2026-09-10T19:41:45Z`). The published `lightgbm-v2-v339-missingness-filtered` model's `predicted_fraud_probability` remains an **uncalibrated ranking score**.
 
-The [published model summary](model_validation_evidence.md) and [canonical 17 October research](research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md) describe different model contracts. Full-source F03 temporal hygiene and F04 calibration research passed; those results were not promoted into the dashboard. No automatic declines, real customer identification or measured prevented losses are claimed.
+`lightgbm-v3-temporal-calibrated-20261021` is a new, separately evaluated fit with training-only preprocessing and distinct calibration/evaluation windows. Its probability mapping applies only to its own scores. The historical v2 weights, dashboard observations and snapshot timestamps were not replaced. Research acceptance is not live transaction monitoring, verified customer identity, prevented loss, or a production banking-model sign-off.
 
-## Current acceptance matrix
+## Engineering and deployment verification
 
-| Area | State | Remaining work |
-|---|---|---|
-| Engineering / historical release | Recorded 19 October checks passed | Validate each subsequent revision; keep source timestamps unchanged |
-| BigQuery source reconciliation | **OPEN**, [issue #9](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/9) | [20 October read-only evidence](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md): 16 strict matches, four copy differences explained; seven derived/filtered groups remain unverified. Local access works; keyless runner setup is separate |
-| GitHub Kaggle access | Configured secret and [successful 17 October full-source run](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39063907895) | A stored secret alone does not establish its current validity |
-| Local Kaggle access | **Verified 20 October** | Owner authentication and actual competition file listing succeeded in a memory-only session; repository secret updated. The old default local credential file was not rewritten |
-| Kaggle notebook publication | Original **recovered, public, COMPLETE**; companion **public, COMPLETE** | [Recovery evidence](research/KAGGLE_RECOVERY_2026-10-20.md); original source and provider logs retrieved, public HTTP 200 verified |
-| Research F03/F04 | **PASS for recorded research** | Retain source hashes, exact runs and methodological limits |
-| Calibrated published-model promotion | **OPEN**, [issue #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/20) | Match the exact base model/features, independent temporal validation and versioned probability contract |
-| Browser acceptance | Prior dated evidence only | Playwright workflow is disabled at the owner's request; no current browser run is claimed |
+The last already merged revision, [PR #46](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/46), is `b280568df8db6ef095e2220d64a9bec1b096d675`:
 
-The previous blanket statement that exact production SHA/HTTPS was unverified is superseded by the 19 October attestation. [Issue #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29) also includes browser acceptance; its remaining scope must not be silently marked complete.
+- [Main CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39494241953): 256 tests, Ruff, compilation, dependency audits and dbt parse passed.
+- [Exact public HTTPS/SHA attestation](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39494268807): passed on that revision.
+- [Prior Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39245073372): passed on `2c54bb3`; it is not represented as a new revision's container result.
 
-## Browser and cost policy
+The completion change requires its own PR CI and merged-main checks. Its PR/check records are the authoritative revision-specific results; the earlier counts above are explicitly historical. Full-source dbt rebuilding is not part of metadata-only push/PR CI.
 
-The owner instructed continued development without Playwright on 19 October. The existing `Historical Browser Acceptance` workflow was disabled before merging #44 to prevent automatic execution. Keep it disabled unless the owner changes that instruction. The 18 October Chromium/Studio run passed 16 tests; screenshots at 1440, 375 and 320 pixels are dated prior evidence, not a new cross-engine result.
+## Browser and zero-cost release policy
 
-No paid cloud query, dataset rebuild or commercial payment integration is part of this work. Public serving uses committed aggregates. Kaggle workflows are manual and upload aggregate metrics/source hashes only. Never expose credentials or redistribute competition CSVs. Do not re-enable the previous release-monitor automation by implication.
+The current noncommercial presentation acceptance uses installed Chromium through native CDP. Firefox/WebKit coverage and print/download edge cases are not claimed by that limited native acceptance. The prior tri-engine Playwright workflow remains disabled under the owner's instruction. Earlier browser records retain their dates; no new cross-engine result is inferred.
 
-## Reproduction and source references
+Public routes never perform cloud queries or training. Authorized full source reconciliation uses bounded tabledata reads and local in-memory SQL. Raw competition records and credentials remain outside Git and public APIs. Training uses free Kaggle CPU. There is no payment integration, paid-plan activation, billing change or recurring release-monitor automation.
 
-- [Development scope](DEVELOPMENT_PLAN.md), [architecture](architecture.md), [environment](environment_setup.md), [Kaggle runbook](runbooks/KAGGLE_RESEARCH_RUNBOOK.md).
-- [BigQuery bounded parity](BIGQUERY_BOUNDED_SOURCE_PARITY.md), [15 October partial source evidence](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md), [snapshot audit](SNAPSHOT_PARITY_AUDIT.md).
-- [Local container release](F08_LOCAL_RELEASE.md), [public attestation method](PUBLIC_RELEASE_ATTESTATION.md).
-- Approved NEXUS SVG rechecked against the owner's Drive pack: SHA-256 `143788fc114348b03bcef5285c134d63135bd7dbd908380e973596f743c9f45b` matches. See [brand provenance](BRAND_IDENTITY.md).
+## Navigation
 
-Archived checklists, old plans and screenshot dates are historical records. Use this page and exact-run GitHub evidence for current claims.
+[Completed validation](research/COMPLETED_VALIDATION_2026-10-21.md) · [Documentation index](README.md) · [Architecture](architecture.md) · [Published historical model](model_validation_evidence.md) · [Kaggle notebooks](../notebooks/README.md) · [Public attestation method](PUBLIC_RELEASE_ATTESTATION.md)

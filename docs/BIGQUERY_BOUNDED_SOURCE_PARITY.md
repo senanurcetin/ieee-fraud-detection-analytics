@@ -1,5 +1,7 @@
 # F02-R / Issue #9 — bounded BigQuery source parity without SQL
 
+> **Current evidence:** [21 October completed validation](research/COMPLETED_VALIDATION_2026-10-21.md) supersedes earlier open source/calibration gates for the bounded historical release. Earlier measurements and limitations below retain their original dates.
+
 The authorized fraud reporting dataset is
 `workintech-working.fraud_project_reporting` in the `US` region.
 Previously verified project metadata (15 Oct 2026) found 24 physical

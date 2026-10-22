@@ -1,5 +1,7 @@
 # BigQuery read-only validation — 20 October 2026
 
+> **Current evidence:** [21 October completed validation](COMPLETED_VALIDATION_2026-10-21.md) supersedes earlier open source/calibration gates for the bounded historical release. Earlier measurements and limitations below retain their original dates.
+
 ## Source and method
 
 Authorized access to `workintech-working.fraud_project_reporting` in `US` succeeded using the owner's local service-account file. The key remains outside Git; no credential content or credential path is included in the evidence. OAuth refresh and dataset metadata returned successfully.

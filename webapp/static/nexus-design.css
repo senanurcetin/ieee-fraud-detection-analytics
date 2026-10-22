@@ -9,6 +9,7 @@
   --radius: 12px;
   --shadow: 0 20px 50px rgba(4,18,37,.12);
 }
+.top-actions a.btn { text-decoration:none; font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
 body {
   background: radial-gradient(ellipse at 88% -5%, rgba(78,168,255,.16), transparent 40%), #071829;
 }

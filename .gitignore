@@ -42,3 +42,6 @@ venv/
 # Public Kaggle publication configuration; never credentials.
 !notebooks/kernel-metadata.json
 !docs/research/evidence/*.json
+!webapp/research/*.json
+!notebooks/published_model_calibration/kernel-metadata.json
+!docs/assets/native_browser_provenance_20261022.json

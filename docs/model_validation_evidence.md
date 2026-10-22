@@ -1,5 +1,7 @@
 # Published historical model: validation and limitations
 
+> **Separate new model evidence:** [Completed LightGBM500 calibration and rolling-window study](research/COMPLETED_VALIDATION_2026-10-21.md). The measurements below remain the historical v2 dashboard model; the new mapping must not be attached to its scores.
+
 This is the maintained model summary, consolidating the former `model_results.md`. Metrics belong to the **historical 500-estimator LightGBM ranker**, not the later 100/150-estimator research experiments. They are retained evidence, not a new training run or certification of current BigQuery parity.
 
 ## Source and population
