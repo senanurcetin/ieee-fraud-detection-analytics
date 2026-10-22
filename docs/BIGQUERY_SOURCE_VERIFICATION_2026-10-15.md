@@ -1,5 +1,7 @@
 # BigQuery Fraud reporting source verification — 15 October 2026
 
+> **Status update, 22 October 2026:** the authorized source is `workintech-working.fraud_project_reporting` in US. Issue #9 is closed for the [completed dated 27-group reconciliation](research/COMPLETED_VALIDATION_2026-10-21.md). Earlier discovery findings and blockers below describe their original investigation, not current release status.
+
 ## Verified source identity (metadata-only)
 
 On 15 October 2026, the owner-authorized Windows environment contained an existing service-account JSON in Downloads. Its service-account project was `workintech-working`. Using `google.cloud.bigquery.Client.from_service_account_json`, **metadata and table rows only** were read. No credentials or service-account key contents were copied to GitHub or this document, and no SQL query, new job, export, table write or dbt rebuild was executed.

@@ -2,7 +2,7 @@
 
 Development resumed at the owner's request on **18 October 2026**. This plan supersedes the paused engineering backlog, while preserving dated scientific evidence and all open external acceptance gates.
 
-**19 October verification constraint:** At the owner's request, continued development and final validation do not use Playwright. Existing browser tests are retained as source; no new browser automation or browser workflow dispatch is part of this continuation. Python/API/SQL tests, JavaScript syntax checks, static assets and direct HTTP checks provide the current acceptance evidence.
+**19 October verification constraint:** At the owner's request, continued development and final validation do not use Playwright. Existing Playwright tests are retained as historical source and their workflow stays disabled. Native Chromium CDP checks now provide desktop/mobile presentation evidence without Playwright, alongside Python/API/SQL tests, JavaScript syntax checks and direct HTTP verification. Broader browser coverage remains tracked separately in issue #29.
 
 ## Purpose and scope
 
@@ -19,9 +19,9 @@ There is **no monetization, subscription, payment integration or commercial laun
 | Backend | Make health checks network-free; validate and recover snapshot cache | Tests for unavailable/malformed/replaced snapshots and zero cloud calls |
 | Private explanations | Close SQLite writers/readers before atomic artifact rotation | Round-trip, failure and retained-handle lifecycle regressions |
 | Research | Make CSV import transactional and validate join keys | Failed validation preserves previous research tables; duplicate/null/orphan identities rejected |
-| Interface | Improve Decision Studio loading, error recovery and keyboard navigation | Earlier dated browser evidence retained; continuation uses source contracts and JavaScript syntax checks |
+| Interface | Improve Decision Studio loading, error recovery and keyboard navigation | Native Chromium desktop/mobile, source contracts and JavaScript syntax checks; broader browser coverage tracked separately |
 | Documentation | Maintain one current plan and release status; separate dated records | Working local links, clear folder map, redundant closure checklist removed |
-| Verification | Run Python, lint, dbt parse and direct HTTP checks | Record only observed results in release status; distinguish local from hosted release |
+| Verification | Run Python, lint, dbt parse, native Chromium and direct HTTP checks | Record only observed results in release status; distinguish local from hosted release |
 
 ## Modular architecture and folder ownership
 
@@ -34,6 +34,7 @@ models/              staging / intermediate / marts / reporting SQL
 tests/python/        deterministic API, pipeline and evidence regression tests
 tests/browser/       actual dashboard and Studio browser journeys
 webapp/              FastAPI application and explanation store
+  research/          versioned aggregate calibration and source audit evidence
   snapshots/         versioned historical reporting JSON, no raw competition CSV
   static/            dashboard, Studio, styles and approved logo favicon
 docs/                maintained references and canonical research evidence

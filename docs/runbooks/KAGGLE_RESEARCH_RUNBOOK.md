@@ -75,3 +75,7 @@ or [issue #20](https://github.com/senanurcetin/ieee-fraud-detection-analytics/is
 after reviewing the actual artifact. Never close these issues solely because
 Kaggle access succeeded. Historical report snapshots and production aliases
 must remain unchanged by this workflow.
+
+## Completed versioned LightGBM500 study
+
+The workflow's `calibration` option above remains the distinct 150-estimator experiment. The newer [standalone LightGBM500 notebook](../../notebooks/published_model_calibration/published_model_calibration.ipynb) completed publicly as Kaggle version 2, with three development windows and a separate final chronological evaluation. Use its own notebook metadata or the documented local CLI to reproduce that study; it is not selected by the workflow dropdown. [Measured results and limitations](../research/COMPLETED_VALIDATION_2026-10-21.md).

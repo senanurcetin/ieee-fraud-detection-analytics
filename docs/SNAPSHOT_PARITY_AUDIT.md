@@ -2,7 +2,7 @@
 
 > **Current evidence:** [21 October completed validation](research/COMPLETED_VALIDATION_2026-10-21.md) supersedes earlier open source/calibration gates for the bounded historical release. Earlier measurements and limitations below retain their original dates.
 
-> **20 October source update:** [Current read-only validation](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md) verifies local access and explains the four direct-group text differences through the existing public-copy contract. Seven derived/filtered groups remain unverified; full parity is not certified.
+> **Historical partial result, 20 October:** [20 October read-only validation](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md) verifies local access and explains the four direct-group text differences through the existing public-copy contract. Seven derived/filtered groups remain unverified; full parity is not certified.
 
 ## Scope and verified source-map finding (17 October 2026)
 

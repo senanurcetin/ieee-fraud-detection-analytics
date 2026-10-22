@@ -1,6 +1,6 @@
 # F01 — Fraud production trust and release gates
 
-Implemented on branch `fix/fraud-production-trust-gates-20261017`.
+Implemented in the merged F01 engineering work. See [current release status](RELEASE_STATUS.md) for later source, model and deployment verification.
 
 ## What changed
 
@@ -19,13 +19,13 @@ Authorized maintenance: `python scripts/build_web_snapshot.py --project-id <auth
 
 Direct internal API usage: set `WEB_INTERNAL_REFRESH_TOKEN` to a strong server-only random string, then send `X-Internal-Refresh-Token: <value>` on the live refresh request. Never place the secret in a browser bundle, URL, GitHub commit, issue, or logs. Do not enable credential-bearing origins or expose this header to untrusted clients.
 
-Publish: run the **Vercel Deploy** workflow manually after green CI and review; configure `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` via encrypted repository secrets. Verify the deployed commit and the resulting site rather than treating a CLI step alone as proof of public readiness.
+Publish: the existing Vercel Git integration deploys reviewed changes. The separate **Vercel Deploy** workflow is an optional manual path requiring `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID` in encrypted repository secrets; avoid duplicate deploys. Verify the deployed commit and public responses independently.
 
 ## Known limitations for subsequent phases
 
 - The internal-token check restricts the known public routes that can trigger BigQuery, but the backend still allows authorized query execution. Admin operations require budget, explicit runtime credential boundaries, quotas, and monitoring.
 - The public case-detail and explanation endpoints now return 403 without internal authorization in BigQuery mode; this is an intentional security trade-off. A fully public case-explanation experience should use precomputed, appropriately governed artifacts or a separate authenticated service.
-- Snapshot contents are historical; token authorization does not prove dataset parity or make the model ready for automated decisions. F02 remains open.
+- Snapshot contents are historical; token authorization does not prove dataset parity or make the model ready for automated decisions. Dated 27-group reconciliation is now complete; see [measured evidence](research/COMPLETED_VALIDATION_2026-10-21.md).
 
 ## Tests
 
@@ -35,4 +35,4 @@ A green standard PR build is **not** a real-data model training run, a BigQuery 
 
 ## Release policy
 
-This branch is for review and CI verification. No production deployment or source snapshot rewrite is implied by creating or testing the PR.
+Creating or testing a PR does not itself establish production deployment or authorize a source snapshot rewrite. Record actual merged revision and deployed-SHA evidence separately.

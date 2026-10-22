@@ -6,8 +6,6 @@ Read the [completed historical validation](research/COMPLETED_VALIDATION_2026-10
 
 The dashboard serves historical aggregates built 10 September 2026. Its public model scores are uncalibrated rankings. Source freshness, model promotion and hosted release checks are distinct claims.
 
-[Development scope and roadmap](DEVELOPMENT_PLAN.md).
-
 ## Maintained reference
 
 | Document | Purpose |
