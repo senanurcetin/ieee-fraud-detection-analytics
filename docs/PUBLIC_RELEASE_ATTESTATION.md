@@ -22,7 +22,7 @@ no tokens or cookies, makes no paid SQL calls, and limits response bytes.
    revision to bypass the check.
 2. `/api/dashboard` matches the **committed historical** 27-group
    snapshot, `590540` transactions, `20663` observed fraud labels,
-   original source timestamp, and explicit unverified source parity.
+   original source timestamp, and the legacy `source_parity` field describing the absence of a per-request live cloud check. A separate `historical_reconciliation` object exposes the dated 27-group audit when its snapshot/query bindings validate.
 3. `/` and `/studio` both return HTTP 200 and contain the required
    historic-trust / Decision Studio elements and navigation links.
 4. The report explicitly states that live BigQuery parity, real payment
@@ -55,15 +55,13 @@ The local CI suites serve independent purposes:
 - `CI` — static code, Python regression, dbt parse and dependency audit.
 - `Historical Container Smoke` — actual Docker build, Compose boot and
   localhost HTTP snapshot validation.
-- `Historical Browser Acceptance` — real Chromium, Firefox and WebKit
-  against the committed source snapshot.
+- Native Chromium CDP — desktop/mobile dashboard, Studio and research checks using `scripts/capture_browser_evidence_cdp.py`, without Playwright. The older `Historical Browser Acceptance` tri-engine workflow remains disabled; its records are historical.
 - `Public Production Attestation` — live public alias, exact reviewed
   commit and strict historical disclosure. This does *not* validate
   private dashboards or full IEEE-CIS retraining.
 
 A green production attestation is **not** a claim of current BigQuery
 truth, cardholder identities, fraud model calibration, operational fraud
-blocking or a live banking data stream. BigQuery issue #9 and published-model
-calibration issue #20 remain separate acceptance gates. Original Kaggle source
+blocking or a live banking data stream. Issues #9 and #20 are closed for the separately documented [historical reconciliation and versioned calibration](research/COMPLETED_VALIDATION_2026-10-21.md); this HTTPS probe does not perform those studies. Original Kaggle source
 recovery and completed public companion execution are documented in
 [20 October publication evidence](research/KAGGLE_RECOVERY_2026-10-20.md).

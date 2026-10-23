@@ -69,7 +69,7 @@ direct table projections matched. A nonzero exit means some direct group was
 incomplete, unavailable, too large or different; stop before refreshing a
 public snapshot. Read the per-group status and compare source schema.
 
-## Still required to close Issue #9
+## Historical closure checklist for Issue #9 (before 21 October)
 
 1. Reconstruct the five derived/aggregated dashboard groups and the two
    filtered groups under the exact `webapp/main.py TABLE_QUERIES` contract.
@@ -96,4 +96,4 @@ used, published or copied its key. **No BigQuery source read had been performed 
 
 ## Current verified execution — 20 October 2026
 
-Local authorization now succeeds. [Current evidence](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md) records 16 direct matches, four strict text differences explained by the existing public copy transformation, and seven skipped groups. Full 27-group parity remains unverified. The `--explain-public-copy` option adds an independent presentation diagnostic without changing strict verdicts or exit codes. No SQL jobs or source writes were used.
+Local authorization now succeeds. [20 October evidence](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md) records 16 direct matches, four strict text differences explained by the existing public copy transformation, and seven skipped groups. Full 27-group parity remains unverified. The `--explain-public-copy` option adds an independent presentation diagnostic without changing strict verdicts or exit codes. No SQL jobs or source writes were used.

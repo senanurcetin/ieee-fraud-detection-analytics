@@ -41,6 +41,4 @@ node --check webapp/static/risk-decision-studio.js
 ```
 
 These are integration/source/JavaScript syntax checks, not complete live
-cross-browser visual validation. Production UI still requires owner-side
-browser smoke tests and the separate real-source snapshot parity work
-in issue #9.
+cross-browser visual validation. Native Chromium desktop/mobile acceptance and the dated 27-group source reconciliation have since passed; see [current release status](RELEASE_STATUS.md). Broader browser and interaction coverage remains tracked in issue #29.

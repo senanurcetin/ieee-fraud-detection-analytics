@@ -71,35 +71,15 @@ ruff check webapp/main.py webapp/explanation_store.py scripts/verify_snapshot_re
 ```
 
 The normal GitHub workflow validates Python semantics, privacy boundaries,
-report contract and source integrity. It **does not necessarily build or boot
-a Docker image** in CI. To claim an actual Docker runtime test, capture a
+report contract and source integrity. The separate **Historical Container Smoke** workflow builds and boots the Docker image; ordinary Python CI alone does not. To claim an actual Docker runtime test, capture a
 successful local `docker compose build/up` and run the smoke checker against
 that exact image. Do not report a successful source-level pytest as a Docker
 test.
 
-## Future production publication
+## Hosted publication and remaining scope
 
-1. Independently confirm BigQuery 24-table/27-group parity and authorized
-   source snapshot build. This is still issue #9.
-2. Complete real-data F03/F04 scientific acceptance and local explanation
-   artifact checks. They remain distinct from this historical web demo.
-3. Obtain full browser verification (keyboard, responsive screens, exports,
-   missing-data UI and no uncaught client exceptions).
-4. Record intended git revision and test artifacts; verify model/registry,
-   documentation and disclosure copy match that revision.
-5. Check Vercel project permissions, remaining deployment quota and
-   configured secrets. Trigger the existing **manual release** workflow
-   only after explicit release authorization, then validate the deployment's
-   actual immutable SHA, URL, HTTP responses and browser behavior.
-6. Preserve Vercel preview protection and avoid billed quotas or unapproved
-   service account use. No auto-push to production is configured by this PR.
-
-## Deployment risk resolved
-
-The prior FastAPI HTTP entrypoint directly imported
-`src.local_shap`, which eagerly imported NumPy even when serving only
-historical snapshots. The `webapp/requirements.txt` minimal runtime
-does not install NumPy. F08 replaces this with
-`webapp/explanation_store.py`, a pure-standard-library, read-only SQLite
-reader. It preserves the existing private endpoint semantics without
-requiring the ML training environment in Vercel or the offline Docker image.
+1. The dated BigQuery 24-source/27-group reconciliation and separate full-source calibration research are complete. See [completed evidence](research/COMPLETED_VALIDATION_2026-10-21.md). Retain the historical snapshot unless new source evidence supports a change.
+2. Current native Chromium desktop/mobile checks passed; the broader keyboard, export, error and browser-matrix acceptance remains tracked in issue #29.
+3. For each later implementation release, record the intended Git revision, model/registry contracts and actual verification results separately.
+4. Check project permissions and available free-tier quota before a new deployment. The existing Vercel Git integration publishes reviewed changes; use the optional manual deployment workflow only when needed, avoiding duplicate deploys.
+5. Verify the actual deployed SHA and public HTTP behavior independently. [Release status](RELEASE_STATUS.md) links the measured implementation release, Docker and HTTPS results.

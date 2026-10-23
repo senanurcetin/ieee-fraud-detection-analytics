@@ -23,13 +23,14 @@ The dashboard serves **historical JSON snapshots**, built **10 September 2026** 
 
 ## Engineering and deployment verification
 
-The last already merged revision, [PR #46](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/46), is `b280568df8db6ef095e2220d64a9bec1b096d675`:
+The implementation release [PR #47](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/47) merged as `cafd527ffccbb511534454584469aea1f7487945`. The following checks belong to that exact implementation revision:
 
-- [Main CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39494241953): 256 tests, Ruff, compilation, dependency audits and dbt parse passed.
-- [Exact public HTTPS/SHA attestation](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39494268807): passed on that revision.
-- [Prior Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39245073372): passed on `2c54bb3`; it is not represented as a new revision's container result.
+- [Main CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39717332604): **288 tests**, Ruff, compilation, runtime/development dependency audits and dbt parse passed. Full-source dbt rebuilding is not part of metadata-only push/PR CI.
+- [Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39717332559): actual image build, Compose startup and historical HTTP contract passed.
+- [Exact public HTTPS/SHA attestation](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39717332516): passed. Research page and both research evidence APIs also returned HTTP 200 on the deployed revision.
+- Native Chromium desktop/mobile checks were repeated against the public production alias and exact implementation SHA: six captures, nine-page navigation, themes and Studio tabs passed. [Final verification record](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/47#issuecomment-6332024236).
 
-The completion change requires its own PR CI and merged-main checks. Its PR/check records are the authoritative revision-specific results; the earlier counts above are explicitly historical. Full-source dbt rebuilding is not part of metadata-only push/PR CI.
+Later documentation-only commits do not turn these into runtime checks of a different SHA. Their own PR/main records identify their validation. The broader Firefox/WebKit, exhaustive screenshots and keyboard/export/error acceptance remains tracked in [issue #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29); it is not claimed complete.
 
 ## Browser and zero-cost release policy
 

@@ -1,5 +1,7 @@
 # Fraud reporting: read-only BigQuery source discovery
 
+> **Status update, 22 October 2026:** the authorized source is `workintech-working.fraud_project_reporting` in US. Issue #9 is closed for the [completed dated 27-group reconciliation](research/COMPLETED_VALIDATION_2026-10-21.md). Earlier discovery findings and blockers below describe their original investigation, not current release status.
+
 ## Current evidence and scope
 
 The published dashboard JSON snapshot is historical, with a recorded refresh timestamp of **2026-09-10T19:41:45Z** (see issue #9). The expected fraud_project_reporting dataset was not found in the previously checked default project data-analiz-490513. This absence does not establish that the dataset has been deleted or that the snapshot is inaccurate. Establish the source GCP project and dataset location before changing reporting figures or refresh timestamps.
