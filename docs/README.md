@@ -28,6 +28,7 @@ The dashboard serves historical aggregates built 10 September 2026. Its public m
 - [Notebook handoff](../notebooks/README.md): execution prerequisites and publication state.
 - [Kaggle runbook](runbooks/KAGGLE_RESEARCH_RUNBOOK.md) and [credential modes](runbooks/CI_AND_RESEARCH_CREDENTIALS.md): explicit research execution without source redistribution.
 - [Environment setup](environment_setup.md), [dbt guide](dbt_project_guide.md) and [BigQuery/dbt lineage](bigquery_dbt_lineage.md).
+- [Advisory dbt schema report](../.github/workflows/dbt-plan.yml): compare compiled PR/base columns and downstream risks with the existing local DuckDB profile; no data build or historical snapshot refresh.
 - [Web application guide](../webapp/README.md), [local release](F08_LOCAL_RELEASE.md) and [public HTTP attestation](PUBLIC_RELEASE_ATTESTATION.md).
 - [20 October BigQuery validation](research/BIGQUERY_READ_ONLY_VALIDATION_2026-10-20.md), [bounded BigQuery parity](BIGQUERY_BOUNDED_SOURCE_PARITY.md), [source discovery](BIGQUERY_SOURCE_DISCOVERY.md), [15 October source evidence](BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md) and [snapshot audit](SNAPSHOT_PARITY_AUDIT.md).
 - [Local TreeSHAP](LOCAL_SHAP_EXPLANATIONS.md), [offline drift](OFFLINE_DRIFT_MONITORING.md), [analyst policy](operational_playbook.md) and [governance context](regulatory_context.md).
