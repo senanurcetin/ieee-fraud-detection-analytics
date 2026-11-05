@@ -15,9 +15,11 @@
 **Project status (22 October 2026): Active noncommercial research portfolio; historical validation completed.**
 The [completed validation report](docs/research/COMPLETED_VALIDATION_2026-10-21.md) records all 27 BigQuery public groups reconciled and a full-source, three-window LightGBM500 calibration study. [Explore the separate model research page](https://fraud-project-web.vercel.app/research). The historical dashboard model remains explicitly uncalibrated; new calibrated probabilities belong to a separate version. Playwright remains disabled. See [release evidence and scope](docs/RELEASE_STATUS.md).
 
-![NEXUS historical dashboard with the official X identity](docs/assets/nexus_dashboard_desktop_20261022.png)
+![NEXUS Risk Intelligence executive overview in the official dark theme](docs/assets/nexus_fraud_desktop_20261105.jpg)
 
-*Real browser capture on 22 October 2026; [native Chromium capture provenance](docs/assets/native_browser_provenance_20261022.json). The view serves the 10 September historical snapshot. Capture source/revision and normalized source hashes are retained; it is not a live transaction feed.*
+*Chromium capture of the [public Executive Fraud Overview](https://fraud-project-web.vercel.app/) on 5 November 2026 at 1600 × 1250. The dashboard displays the 10 September historical IEEE-CIS snapshot.*
+
+[Mobile capture, 390 × 844](docs/assets/nexus_fraud_mobile_20261105.jpg) · [Archived October capture provenance](docs/assets/native_browser_provenance_20261022.json)
 
 ## What this project demonstrates
 
