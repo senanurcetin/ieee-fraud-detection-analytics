@@ -118,7 +118,7 @@ Historical [source reconciliation](webapp/research/source-parity.json) and [vers
 
 ## GPU acceleration with RAPIDS (November 2026)
 
-[`scripts/benchmark_rapids_gpu.py`](scripts/benchmark_rapids_gpu.py) runs one feature and model recipe twice, once on pandas with XGBoost on CPU and once on RAPIDS cuDF with XGBoost on CUDA. Because cuDF follows the pandas API, both runs use the same code. The recipe is: CSV read, identity join, the pipeline's 0.95 V-column missingness filter, categorical encoding, group-by aggregates, and XGBoost (200 trees) on the pipeline's time-ordered 80/20 split. All 590,540 training transactions and 434 features are used. Raw results: [GPU](docs/data/rapids-benchmark/gpu.json) · [CPU](docs/data/rapids-benchmark/cpu_windows.json).
+[`scripts/benchmark_rapids_gpu.py`](scripts/benchmark_rapids_gpu.py) runs one feature and model recipe twice, once on pandas with XGBoost on CPU and once on RAPIDS cuDF with XGBoost on CUDA. Because cuDF follows the pandas API, both runs use the same code. The recipe is: CSV read, identity join, the pipeline's 0.95 V-column missingness filter, categorical encoding, group-by aggregates, and XGBoost (200 trees) on the pipeline's time-ordered 80/20 split. All 590,540 training transactions and 434 features are used. Raw results: [GPU](docs/research/evidence/rapids_benchmark_gpu.json) · [CPU](docs/research/evidence/rapids_benchmark_cpu_windows.json).
 
 | Step (seconds) | GPU: cuDF + XGBoost CUDA | CPU: pandas + XGBoost, 16 threads |
 |---|---|---|

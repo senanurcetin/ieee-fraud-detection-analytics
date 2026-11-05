@@ -1,0 +1,65 @@
+{
+ "engine": "cudf",
+ "model_device": "cuda",
+ "label": "WSL2 Ubuntu, RTX 3060 Laptop GPU",
+ "cold_run": {
+  "rows": 590540,
+  "train_rows": 472432,
+  "valid_rows": 118108,
+  "features": 434,
+  "v_columns_kept": 339,
+  "steps_s": {
+   "read_csv": 10.64,
+   "drop_sparse_v_columns": 9.86,
+   "join_identity": 4.646,
+   "sort_by_time": 1.486,
+   "encode_categoricals": 4.832,
+   "groupby_aggregates": 2.232,
+   "xgboost_fit": 28.602,
+   "xgboost_predict": 1.924
+  },
+  "pipeline_total_s": 33.696,
+  "total_s": 64.222,
+  "valid_roc_auc": 0.9158,
+  "valid_average_precision": 0.5581
+ },
+ "warm_run": {
+  "rows": 590540,
+  "train_rows": 472432,
+  "valid_rows": 118108,
+  "features": 434,
+  "v_columns_kept": 339,
+  "steps_s": {
+   "read_csv": 4.72,
+   "drop_sparse_v_columns": 3.904,
+   "join_identity": 2.687,
+   "sort_by_time": 1.91,
+   "encode_categoricals": 3.08,
+   "groupby_aggregates": 1.902,
+   "xgboost_fit": 26.143,
+   "xgboost_predict": 1.011
+  },
+  "pipeline_total_s": 18.203,
+  "total_s": 45.357,
+  "valid_roc_auc": 0.9158,
+  "valid_average_precision": 0.5581
+ },
+ "xgboost_params": {
+  "n_estimators": 200,
+  "max_depth": 8,
+  "learning_rate": 0.05,
+  "subsample": 0.8,
+  "colsample_bytree": 0.5,
+  "tree_method": "hist",
+  "eval_metric": "auc",
+  "random_state": 42,
+  "device": "cuda"
+ },
+ "cpu_count_visible": 4,
+ "platform": "Linux-6.18.33.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+ "versions": {
+  "xgboost": "3.4.1",
+  "cudf": "26.10.02",
+  "python": "3.12.16"
+ }
+}

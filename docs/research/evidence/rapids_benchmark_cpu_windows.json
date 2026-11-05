@@ -1,0 +1,65 @@
+{
+ "engine": "pandas",
+ "model_device": "cpu",
+ "label": "Windows 11 native, 16 logical cores",
+ "cold_run": {
+  "rows": 590540,
+  "train_rows": 472432,
+  "valid_rows": 118108,
+  "features": 434,
+  "v_columns_kept": 339,
+  "steps_s": {
+   "read_csv": 30.27,
+   "drop_sparse_v_columns": 1.009,
+   "join_identity": 1.853,
+   "sort_by_time": 0.09,
+   "encode_categoricals": 2.346,
+   "groupby_aggregates": 0.363,
+   "xgboost_fit": 131.522,
+   "xgboost_predict": 1.421
+  },
+  "pipeline_total_s": 35.931,
+  "total_s": 168.874,
+  "valid_roc_auc": 0.9147,
+  "valid_average_precision": 0.5553
+ },
+ "warm_run": {
+  "rows": 590540,
+  "train_rows": 472432,
+  "valid_rows": 118108,
+  "features": 434,
+  "v_columns_kept": 339,
+  "steps_s": {
+   "read_csv": 16.677,
+   "drop_sparse_v_columns": 0.993,
+   "join_identity": 1.112,
+   "sort_by_time": 0.045,
+   "encode_categoricals": 2.095,
+   "groupby_aggregates": 0.339,
+   "xgboost_fit": 235.392,
+   "xgboost_predict": 2.098
+  },
+  "pipeline_total_s": 21.261,
+  "total_s": 258.751,
+  "valid_roc_auc": 0.9147,
+  "valid_average_precision": 0.5553
+ },
+ "xgboost_params": {
+  "n_estimators": 200,
+  "max_depth": 8,
+  "learning_rate": 0.05,
+  "subsample": 0.8,
+  "colsample_bytree": 0.5,
+  "tree_method": "hist",
+  "eval_metric": "auc",
+  "random_state": 42,
+  "device": "cpu"
+ },
+ "cpu_count_visible": 16,
+ "platform": "Windows-10-10.0.26300-SP0",
+ "versions": {
+  "xgboost": "3.2.0",
+  "pandas": "3.1.1",
+  "python": "3.11.9"
+ }
+}

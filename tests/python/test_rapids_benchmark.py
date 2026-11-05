@@ -16,7 +16,7 @@ bench = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = bench
 spec.loader.exec_module(bench)
 
-RESULTS = ROOT / "docs" / "data" / "rapids-benchmark"
+RESULTS = ROOT / "docs" / "research" / "evidence"
 
 
 def test_sparse_v_columns_follow_the_pipeline_threshold():
@@ -59,7 +59,7 @@ def _range(a: float, b: float) -> str:
 def test_readme_table_quotes_the_recorded_results():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     section = readme.split("## GPU acceleration with RAPIDS", 1)[1].split("\n## ", 1)[0]
-    for name in ("gpu.json", "cpu_windows.json"):
+    for name in ("rapids_benchmark_gpu.json", "rapids_benchmark_cpu_windows.json"):
         report = json.loads((RESULTS / name).read_text())
         cold, warm = report["cold_run"], report["warm_run"]
         assert cold["rows"] == warm["rows"] == 590540
