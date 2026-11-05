@@ -116,6 +116,40 @@ A native Chromium CDP tool covers desktop/mobile dashboard, Studio and research 
 
 Historical [source reconciliation](webapp/research/source-parity.json) and [versioned calibration evidence](webapp/research/published-model-calibration.json) are complete for the recorded runs. Prospective customer validation, live payment decisions and untested browser engines are outside the current noncommercial release scope. Green code checks do not imply those capabilities.
 
+## GPU acceleration with RAPIDS (November 2026)
+
+[`scripts/benchmark_rapids_gpu.py`](scripts/benchmark_rapids_gpu.py) runs one feature and model recipe twice, once on pandas with XGBoost on CPU and once on RAPIDS cuDF with XGBoost on CUDA. Because cuDF follows the pandas API, both runs use the same code. The recipe is: CSV read, identity join, the pipeline's 0.95 V-column missingness filter, categorical encoding, group-by aggregates, and XGBoost (200 trees) on the pipeline's time-ordered 80/20 split. All 590,540 training transactions and 434 features are used. Raw results: [GPU](docs/data/rapids-benchmark/gpu.json) · [CPU](docs/data/rapids-benchmark/cpu_windows.json).
+
+| Step (seconds) | GPU: cuDF + XGBoost CUDA | CPU: pandas + XGBoost, 16 threads |
+|---|---|---|
+| CSV read | 4.72 – 10.64 | 16.677 – 30.27 |
+| Rest of the data preparation | 13.483 – 23.056 | 4.584 – 5.661 |
+| XGBoost fit | 26.143 – 28.602 | 131.522 – 235.392 |
+| **Total** | **45.357 – 64.222** | **168.874 – 258.751** |
+| Validation ROC-AUC / average precision | 0.9158 / 0.5581 | 0.9147 / 0.5553 |
+
+Each cell is the range over a cold and a warm run in the same process. The first GPU run includes one-time kernel compilation.
+
+What this shows:
+- Model training is where the GPU pays off: 4.6–9× faster here.
+- CSV parsing is about 3.5× faster on the GPU when warm.
+- The smaller steps (filters, join, encoding, group-bys) are faster on the CPU at this size (590k rows). Each GPU operation has a fixed cost, so overall data preparation takes about the same time on both engines.
+- Model quality is the same; ROC-AUC differs by 0.001.
+
+Limits:
+- Measured on one laptop: Intel i7-11800H (16 logical cores) and an NVIDIA RTX 3060 Laptop GPU (6 GB).
+- The GPU ran in WSL2 with Python 3.12, cuDF 26.10 and XGBoost 3.4.1. The CPU ran natively on Windows with Python 3.11, pandas 3.1.1 and XGBoost 3.2.0, because XGBoost 3.4.1 needs Python 3.12.
+- The CPU fit time varies with laptop thermals (132–235 s).
+- A CPU run inside WSL2 was discarded: WSL there is capped at 4 GB RAM and 4 cores, and it started swapping.
+- This XGBoost recipe is a speed benchmark. It is not the published LightGBM model, and its AUC is not that model's AUC.
+
+```bash
+# Linux or WSL2 with an NVIDIA GPU; data: train_transaction.csv and train_identity.csv from Kaggle
+pip install --extra-index-url=https://pypi.nvidia.com "cudf-cu13" pandas pyarrow xgboost scikit-learn
+python scripts/benchmark_rapids_gpu.py --data <dir> --engine cudf   --n-estimators 200 --out results/gpu.json
+python scripts/benchmark_rapids_gpu.py --data <dir> --engine pandas --n-estimators 200 --out results/cpu.json
+```
+
 ## Project map
 
 ```text
