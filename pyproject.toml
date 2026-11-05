@@ -20,6 +20,8 @@ extend-exclude = [
     "logs",
     "data",
     "outputs",
+    # Exploratory notebooks; ruff >= 0.6 lints .ipynb by default.
+    "notebooks",
 ]
 
 [tool.ruff.lint]
