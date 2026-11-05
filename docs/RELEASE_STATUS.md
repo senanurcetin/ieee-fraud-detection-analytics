@@ -31,7 +31,7 @@ The implementation release [PR #47](https://github.com/senanurcetin/ieee-fraud-d
 - [Exact public HTTPS/SHA attestation](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/runs/39717332516): passed. Research page and both research evidence APIs also returned HTTP 200 on the deployed revision.
 - Native Chromium desktop/mobile checks were repeated against the public production alias and exact implementation SHA: six captures, nine-page navigation, themes and Studio tabs passed. [Final verification record](https://github.com/senanurcetin/ieee-fraud-detection-analytics/pull/47#issuecomment-6332024236).
 
-Later documentation-only commits do not turn these into runtime checks of a different SHA. Their own PR/main records identify their validation. The broader Firefox/WebKit, exhaustive screenshots and keyboard/export/error acceptance remains tracked in [issue #29](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/29); it is not claimed complete.
+Later documentation-only commits do not turn these into runtime checks of a different SHA. Their own PR/main records identify their validation. Keyboard, export and error-state acceptance remains tracked in [issue #52](https://github.com/senanurcetin/ieee-fraud-detection-analytics/issues/52); it is not claimed complete.
 
 ## Browser and zero-cost release policy
 
