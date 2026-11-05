@@ -1,65 +1,27 @@
-<p align="center">
-  <img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS identity" width="540">
-</p>
-
 # IEEE-CIS Fraud Risk Intelligence
 
-**An evidence-first, historical fraud analytics project** combining data engineering, time-aware machine-learning evaluation and an interactive NEXUS dashboard. Built on the [IEEE-CIS Fraud Detection dataset](https://www.kaggle.com/c/ieee-fraud-detection); no competition data is redistributed here.
+<img src="docs/assets/nexus-official-midnight.svg" alt="NEXUS identity" width="180" align="right">
+
+End-to-end fraud-risk analytics on the [IEEE-CIS Fraud Detection dataset](https://www.kaggle.com/c/ieee-fraud-detection): a DuckDB → BigQuery/dbt → LightGBM pipeline feeding an interactive FastAPI dashboard.
 
 [![Python CI](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/ci.yml)
 [![Docker smoke](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml/badge.svg)](https://github.com/senanurcetin/ieee-fraud-detection-analytics/actions/workflows/container-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**Kaggle notebooks**](notebooks/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
+**Key results** (historical evaluation; see [Limitations](#limitations)):
 
-**Project status (22 October 2026): Active noncommercial research portfolio; historical validation completed.**
-The [completed validation report](docs/research/COMPLETED_VALIDATION_2026-10-21.md) records all 27 BigQuery public groups reconciled and a full-source, three-window LightGBM500 calibration study. [Explore the separate model research page](https://fraud-project-web.vercel.app/research). The historical dashboard model remains explicitly uncalibrated; new calibrated probabilities belong to a separate version. Playwright remains disabled. See [release evidence and scope](docs/RELEASE_STATUS.md).
+- **ROC-AUC 0.9134** and **average precision 0.5354** on a chronological (time-ordered) validation split of **590,540** training transactions (3.50% fraud).
+- The **top 5% score band** reaches **40.13% precision** and **58.32% fraud recall**.
+- **38 dbt models** with reconciliation and governance tests; all **27** dashboard reporting groups reconciled against BigQuery source reads.
+- **Nine** BI-style dashboard pages served by FastAPI, with a containerized offline demo and a Vercel deployment.
+
+[**Explore the published dashboard**](https://fraud-project-web.vercel.app) · [**Read the documentation**](docs/README.md) · [**Kaggle notebooks**](notebooks/README.md) · [**View release evidence and blockers**](docs/RELEASE_STATUS.md)
 
 ![NEXUS Risk Intelligence executive overview in the official dark theme](docs/assets/nexus_fraud_desktop_20261105.jpg)
 
 *Chromium capture of the [public Executive Fraud Overview](https://fraud-project-web.vercel.app/) on 5 November 2026 at 1600 × 1250. The dashboard displays the 10 September historical IEEE-CIS snapshot.*
 
 [Mobile capture, 390 × 844](docs/assets/nexus_fraud_mobile_20261105.jpg) · [Archived October capture provenance](docs/assets/native_browser_provenance_20261022.json)
-
-## What this project demonstrates
-
-- **Analytics engineering:** DuckDB preparation; BigQuery raw, staging, intermediate, mart and reporting datasets; 38 dbt models with reconciliation and governance tests.
-- **Risk modeling:** LightGBM ranking, chronological holdout, class-imbalance-aware evaluation and cost/capacity-sensitive threshold analysis.
-- **Product analytics:** Nine BI-style pages, filter-linked visuals, masked-proxy drill-through, explainability summaries and a read-only historical analyst review.
-- **Delivery engineering:** FastAPI, containerized offline demo, Vercel, Python CI, real-browser acceptance and separately gated public release attestation.
-
-## Historical dataset and evaluation
-
-| Historical evidence | Value |
-|---|---:|
-| Train transactions | 590,540 |
-| Fraud-labeled train transactions | 20,663 |
-| Baseline fraud rate | 3.50% |
-| Chronological validation ROC-AUC | 0.9134 |
-| Chronological validation average precision | 0.5354 |
-| Top 5% score band: precision / fraud recall | 40.13% / 58.32% |
-
-The reported evaluation is based on a **time-ordered holdout**, not random validation. [Methodology and limitations](docs/ieee_cis_dataset_methodology.md) · [Model validation evidence](docs/model_validation_evidence.md) · [Modeling decisions](docs/modeling_decisions.md).
-
-**Important boundaries:** IEEE-CIS has masked transaction and identity features; `TransactionDT` is relative elapsed time, not a real calendar timestamp. The current `predicted_fraud_probability` field is an **uncalibrated ranking score**, not a verified customer-specific fraud probability. Global feature-importance summaries are distinct from locally generated TreeSHAP evidence. No real-time payment monitoring, card blocking, customer identification or fully validated production model is provided.
-
-## Architecture
-
-```mermaid
-flowchart LR
-    A["IEEE-CIS CSV files (not in Git)"] --> B["Python / DuckDB"]
-    B --> C["LightGBM & offline evidence"]
-    B --> D["BigQuery (authorized, optional)"]
-    D --> E["dbt staging → intermediate → marts"]
-    C --> E
-    E --> F["24 physical reporting tables"]
-    F --> G["27 dashboard reporting groups"]
-    G --> H["Historical JSON snapshots"]
-    H --> I["FastAPI · NEXUS dashboard"]
-    I --> J["Docker / Vercel"]
-```
-
-The **public dashboard reads committed historical JSON snapshots** by default; it does not query BigQuery to serve every request. The latest committed snapshot was built **10 September 2026**. All 27 public report groups were reconciled against authorized source reads on 21 October, including explicit floating-aggregation tolerance for one group. This dated audit does not refresh the snapshot or establish a live feed. See [architecture](docs/architecture.md), [lineage](docs/bigquery_dbt_lineage.md) and [source evidence](docs/BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
 
 ## Quick start — no cloud account required
 
@@ -83,6 +45,54 @@ python -m venv .venv
 python -m pip install -r webapp/requirements.txt
 python -m uvicorn webapp.main:app --host 127.0.0.1 --port 8000
 ```
+
+## Limitations
+
+**An evidence-first, historical fraud analytics project** combining data engineering, time-aware machine-learning evaluation and an interactive NEXUS dashboard. Built on the [IEEE-CIS Fraud Detection dataset](https://www.kaggle.com/c/ieee-fraud-detection); no competition data is redistributed here.
+
+**Project status (22 October 2026): Active noncommercial research portfolio; historical validation completed.**
+The [completed validation report](docs/research/COMPLETED_VALIDATION_2026-10-21.md) records all 27 BigQuery public groups reconciled and a full-source, three-window LightGBM500 calibration study. [Explore the separate model research page](https://fraud-project-web.vercel.app/research). The historical dashboard model remains explicitly uncalibrated; new calibrated probabilities belong to a separate version. Playwright remains disabled. See [release evidence and scope](docs/RELEASE_STATUS.md).
+
+**Important boundaries:** IEEE-CIS has masked transaction and identity features; `TransactionDT` is relative elapsed time, not a real calendar timestamp. The current `predicted_fraud_probability` field is an **uncalibrated ranking score**, not a verified customer-specific fraud probability. Global feature-importance summaries are distinct from locally generated TreeSHAP evidence. No real-time payment monitoring, card blocking, customer identification or fully validated production model is provided.
+
+## What this project demonstrates
+
+- **Analytics engineering:** DuckDB preparation; BigQuery raw, staging, intermediate, mart and reporting datasets; 38 dbt models with reconciliation and governance tests.
+- **Risk modeling:** LightGBM ranking, chronological holdout, class-imbalance-aware evaluation and cost/capacity-sensitive threshold analysis.
+- **Product analytics:** Nine BI-style pages, filter-linked visuals, masked-proxy drill-through, explainability summaries and a read-only historical analyst review.
+- **Delivery engineering:** FastAPI, containerized offline demo, Vercel, Python CI, real-browser acceptance and separately gated public release attestation.
+
+## Historical dataset and evaluation
+
+| Historical evidence | Value |
+|---|---:|
+| Train transactions | 590,540 |
+| Fraud-labeled train transactions | 20,663 |
+| Baseline fraud rate | 3.50% |
+| Chronological validation ROC-AUC | 0.9134 |
+| Chronological validation average precision | 0.5354 |
+| Top 5% score band: precision / fraud recall | 40.13% / 58.32% |
+
+The reported evaluation is based on a **time-ordered holdout**, not random validation. [Methodology and limitations](docs/ieee_cis_dataset_methodology.md) · [Model validation evidence](docs/model_validation_evidence.md) · [Modeling decisions](docs/modeling_decisions.md).
+
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["IEEE-CIS CSV files (not in Git)"] --> B["Python / DuckDB"]
+    B --> C["LightGBM & offline evidence"]
+    B --> D["BigQuery (authorized, optional)"]
+    D --> E["dbt staging → intermediate → marts"]
+    C --> E
+    E --> F["24 physical reporting tables"]
+    F --> G["27 dashboard reporting groups"]
+    G --> H["Historical JSON snapshots"]
+    H --> I["FastAPI · NEXUS dashboard"]
+    I --> J["Docker / Vercel"]
+```
+
+The **public dashboard reads committed historical JSON snapshots** by default; it does not query BigQuery to serve every request. The latest committed snapshot was built **10 September 2026**. All 27 public report groups were reconciled against authorized source reads on 21 October, including explicit floating-aggregation tolerance for one group. This dated audit does not refresh the snapshot or establish a live feed. See [architecture](docs/architecture.md), [lineage](docs/bigquery_dbt_lineage.md) and [source evidence](docs/BIGQUERY_SOURCE_VERIFICATION_2026-10-15.md).
 
 ## Reproduce the analytical pipeline (data access required)
 
