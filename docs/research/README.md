@@ -12,6 +12,7 @@ Research uses the licensed IEEE-CIS competition source. Raw transactions and ide
 | [Reproduction method](RANDOM_VS_TIME_SPLIT_REPRODUCTION.md) | Split definition, feature restrictions, source provenance and notebook execution |
 | [Temporal hygiene](TEMPORAL_HYGIENE_EXPERIMENT.md) | Fold-fit preprocessing and categorical comparison |
 | [Temporal calibration](TEMPORAL_CALIBRATION_EXPERIMENT.md) | Disjoint core/calibration/final windows and candidate evaluation |
+| [GPU acceleration benchmark](../../README.md#gpu-acceleration-with-rapids-november-2026) | 5 November speed comparison of pandas + XGBoost (CPU) with RAPIDS cuDF + XGBoost (CUDA) on all 590,540 rows; [GPU](evidence/rapids_benchmark_gpu.json) and [CPU](evidence/rapids_benchmark_cpu_windows.json) results. Not a model release |
 | [Published model summary](../model_validation_evidence.md) | Historical dashboard model; different from the experimental candidates |
 | [Kaggle runbook](../runbooks/KAGGLE_RESEARCH_RUNBOOK.md) | Authorized execution and artifact handling |
 | [Notebook handoff](../../notebooks/README.md) | Source file and publication state |

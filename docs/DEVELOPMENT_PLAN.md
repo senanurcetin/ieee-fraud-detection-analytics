@@ -45,6 +45,21 @@ infra/bigquery/      optional infrastructure definitions; no automatic apply
 
 Backend modules and research scripts remain independently testable. The public interface consumes aggregate snapshot contracts; credentials and raw competition records stay outside public routes. Reuse shared code rather than adding a new service for every experiment.
 
+## Branch policy
+
+`main` is the only long-lived branch. Each change goes on a short-lived branch, merges through a pull request with green checks, and the branch is deleted after the merge.
+
+On 5 November 2026 the four remaining research branches were reviewed and removed. None of them had content missing from `main`:
+
+| Branch | Tip | Reason |
+|---|---|---|
+| `research/authorized-fraud-20261017` | `d02648a` | One-shot research workflow, added and then retired; no net file change. Results are in the [canonical research](research/KAGGLE_CANONICAL_STABLE_RESEARCH_2026-10-17.md). |
+| `research/authorized-stable-temporal-20261017` | `1618e31` | Same pattern for the stable replay; no net file change. |
+| `research/authorized-topk-20261017` | `010c3f4` | Same pattern for the top-k run; no net file change. |
+| `research/reconstruct-leakage-audit-20261015` | `006d1ec` | Unexecuted 15 October reconstruction notebook. Superseded by the [executed full-data study](research/KAGGLE_FULL_SOURCE_VALIDATION_2026-10-17.md) and the [recovered original](research/KAGGLE_RECOVERY_2026-10-20.md). |
+
+Each tip is kept as an `archive/<branch name>` tag, so the work can be restored with `git switch -c <name> archive/<name>`.
+
 ## Zero-cost operation and scale triggers
 
 | Resource | Default control | Trigger and response |
