@@ -176,7 +176,7 @@ infra/bigquery/    optional Terraform dataset definitions
 notebooks/         controlled analytical research notebook
 ```
 
-**Documentation starts at [docs/README.md](docs/README.md).** [Development scope and roadmap](docs/DEVELOPMENT_PLAN.md). Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Security reporting and credential policy: [SECURITY.md](SECURITY.md).
+**Documentation starts at [docs/README.md](docs/README.md).** [Development scope and roadmap](docs/DEVELOPMENT_PLAN.md). Contribution workflow: [CONTRIBUTING.md](CONTRIBUTING.md). Search and social previews: [SEO and social preview guide](docs/SEO_AND_SOCIAL_PREVIEW_GUIDE.md). Security reporting and credential policy: [SECURITY.md](SECURITY.md).
 
 ## License
 
