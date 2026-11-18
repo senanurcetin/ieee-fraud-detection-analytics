@@ -29,6 +29,6 @@ select = ["E", "F", "I", "UP", "B"]
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests/python"]
+testpaths = ["tests/python", "tests/test_seo_public.py"]
 python_files = ["test_*.py"]
 addopts = "-q"

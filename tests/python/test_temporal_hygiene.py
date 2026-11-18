@@ -93,7 +93,7 @@ def test_fit_only_encoding_rejects_unknown_future_categories() -> None:
     assert new["card4"].iloc[1] == -1
     assert new["card4"].iloc[2] == -1
     assert transform.category_maps_["card4"] == {"mastercard": 0, "visa": 1}
-    assert fit["card4"].iloc[2] is None
+    assert pd.isna(fit["card4"].iloc[2])
     assert future["card4"].iloc[1] == "discover"
 
 
